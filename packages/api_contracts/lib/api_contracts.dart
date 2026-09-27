@@ -1,6 +1,9 @@
 /// Public, JSON-serializable API v1 contracts. No database or domain models.
 library;
 
+export 'src/platform_identity.dart';
+export 'src/platform_plugins.dart';
+
 class HealthResponse {
   const HealthResponse({required this.status});
 

@@ -2,7 +2,7 @@
 
 StoreOS ist ein langfristig angelegtes, quelloffenes Betriebssystem für standortgebundene Unternehmen. Es soll tägliche Arbeit, Wissen und betriebliche Daten in einer selbst betriebenen Plattform verbinden. Der erste fachliche Schwerpunkt ist die geführte Arbeit von Mitarbeitenden.
 
-**Projektstand:** Phase 0 – ausführbare technische Grundlage. Dart-Server, Flutter-Webclient, PostgreSQL, lokale Anmeldung mit Standortprüfung, Migrationen, Logs und Backup/Restore. Es gibt noch keine Fachmodule und keine Offline-Schreibfunktionen.
+**Projektstand:** Phase 1 – Plattformverwaltung auf der technischen P0-Grundlage. Company, Location, Benutzer, rollenbasierte Rechte, Audit, lokaler Event Bus und eine begrenzte externe Plugin-API. Es gibt noch keine Workforce-, Warenwirtschafts-, HACCP-, POS- oder Accounting-Funktionen und keine Offline-Schreibfunktionen.
 
 ## Lokal starten
 
@@ -19,7 +19,9 @@ Im Repository-Hauptverzeichnis:
 ./scripts/dev.ps1 server
 ```
 
-`setup` erzeugt einmalig `.env`, stabile technische Company-/Location-Scope-IDs und zufällige Secrets in `.local/secrets/`. Es verändert eine vorhandene Installation nicht. `migrate` ist wiederholbar; `bootstrap` legt genau einen lokalen Account an und vergibt keine Fachrechte. Die Scope-IDs sind noch keine Company-/Location-Datensätze. Der Bootstrap-Zugang wird nach erfolgreicher Anlage nicht erneut verwendet.
+`setup` erzeugt einmalig `.env`, stabile Company-/Location-IDs und zufällige Secrets in `.local/secrets/`. Es verändert eine vorhandene Installation nicht. `migrate` ist wiederholbar; `bootstrap` legt genau einen lokalen Administrator und die noch nicht benannten Company-/Location-Datensätze an. Nach Anmeldung werden die tatsächlichen Organisationsnamen eingerichtet. Der Bootstrap-Vorgang lässt sich nach erfolgreicher Anlage nicht wiederholen.
+
+**Upgrade von P0:** Server stoppen, `.env`, Secrets und Datenbank sichern, `./scripts/dev.ps1 migrate` ausführen und Server/Client neu starten. `bootstrap` nicht erneut aufrufen. Bestehende IDs und Passwort-Hashes bleiben erhalten; ausschließlich der ursprüngliche Bootstrap-Account erhält beim Upgrade die Administratorrolle. Angewendete Migrationsdateien niemals ändern.
 
 In einem zweiten Terminal:
 
@@ -36,7 +38,7 @@ Server und Flutter lassen sich mit `Ctrl+C` stoppen; `docker compose stop db` st
 `.env.example` dokumentiert lokale Einstellungen. Die Entwicklungsskripte laden `.env` ohne Shell-Auswertung und lösen relative Secret-Pfade gegen das Repository auf. Bereits gesetzte Umgebungsvariablen haben Vorrang. Direkte Dart-Aufrufe laden keine `.env` automatisch. Der Server validiert Ports, Scopes, Origins und Secrets beim Start und bricht bei ungültiger Konfiguration ab.
 
 - API: `GET /health` prüft den HTTP-Prozess; `GET /ready` prüft zusätzlich Datenbank und Schema. Nur `/ready` ist ein Bereitschaftsnachweis.
-- [API-Verträge / OpenAPI](packages/api_contracts/openapi.yaml) enthalten Anmeldung, Abmeldung und geschützten Standort-Systemstatus.
+- [API-Verträge / OpenAPI](packages/api_contracts/openapi.yaml) und [Plattformverträge](docs/development/phase-1.md) beschreiben Anmeldung, Standort-Systemstatus und Verwaltung.
 - [Docker-Betrieb](infra/docker/README.md) beschreibt Backend-Container sowie getrennte Migrations- und Bootstrap-Kommandos.
 - [Lokales TLS](infra/reverse_proxy/README.md) beschreibt den optionalen HTTPS-Zugang. HTTP ist ausschließlich für Loopback-Entwicklung vorgesehen; LAN-Betrieb benötigt vertrauenswürdig eingerichtete Zertifikate.
 - [Backup und Restoreprobe](infra/backup/README.md) sichern die Datenbank verschlüsselt und prüfen eine isolierte Wiederherstellung. Den Wiederherstellungsschlüssel separat vom Server und Backup aufbewahren.
@@ -53,9 +55,9 @@ Die Compose-Referenz verwendet `storeos` als eingeschränkten Runtime-Datenbankn
 
 `check` führt `dart format --output=none --set-exit-if-changed`, `dart analyze`, `dart test`, `flutter analyze`, `flutter test` in den passenden Packages und `docker compose config --quiet` aus. Zum Anwenden der Formatierung: `dart format apps/server packages/api_contracts apps/client_flutter/lib apps/client_flutter/test packages/design_system`.
 
-Die PostgreSQL-Integrationstests benötigen zusätzlich `STOREOS_TEST_DATABASE` als PostgreSQL-Verbindungs-URI zu einer ausdrücklich dafür vorgesehenen Testdatenbank (Details im [Server-README](apps/server/README.md)). Sie verwenden isolierte Schemas und prüfen echte Transaktionen. Ohne diese Variable werden sie sichtbar übersprungen; das ersetzt keine vollständige Abnahme. Die CI richtet eine eigene PostgreSQL-Testdatenbank ein. Der Smoke-Test prüft Liveness, Readiness, Anmeldung, Standortgrenzen und Sitzungswiderruf ohne Ausgabe von Zugangsdaten.
+Die PostgreSQL-Integrationstests benötigen zusätzlich `STOREOS_TEST_DATABASE` als PostgreSQL-Verbindungs-URI zu einer ausdrücklich dafür vorgesehenen Testdatenbank (Details im [Server-README](apps/server/README.md)). Sie verwenden isolierte Schemas und prüfen echte Transaktionen. Ohne diese Variable werden sie sichtbar übersprungen; das ersetzt keine vollständige Abnahme. Die CI richtet eine eigene PostgreSQL-Testdatenbank ein. Der Smoke-Test prüft Liveness, Readiness, Anmeldung, stabile Organisations-IDs, Rechte, Audit-/Event-/Plugin-Abfragen, Standortgrenzen und Sitzungswiderruf ohne Ausgabe von Zugangsdaten. Er verwendet den ursprünglichen Bootstrap-Zugang; nach dessen Passwortänderung sind eigene aktuelle Testzugänge zu verwenden.
 
-Weitere Implementierungsgrenzen und Abnahmekriterien: [Phase-0-Grundlage](docs/development/phase-0.md).
+Weitere Implementierungsgrenzen und Abnahmekriterien: [Phase-0-Grundlage](docs/development/phase-0.md), [Phase-1-Plattform](docs/development/phase-1.md) und [Phase-1-Prüfnachweis](docs/development/phase-1-verification.md). Plugin-Registrierungen sind externe API-Clients mit ausdrücklicher Freigabe; StoreOS installiert oder startet keinen fremden Code. Der Client hält auch Plugin-Tokens nur zur einmaligen Anzeige im Arbeitsspeicher. Separate Standortserver und Unternehmenssynchronisation sind noch nicht implementiert.
 
 ## Einstieg
 

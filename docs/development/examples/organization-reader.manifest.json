@@ -1,0 +1,15 @@
+{
+  "id": "example.organization-reader",
+  "name": "Organisation lesen",
+  "version": "1.0.0",
+  "vendor": "Eigener API-Client",
+  "coreApiVersion": 1,
+  "capabilities": ["organization.read", "events.read"],
+  "permissions": ["organization.read", "events.read"],
+  "subscriptions": ["organization.location.updated"],
+  "configurationSchema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  }
+}

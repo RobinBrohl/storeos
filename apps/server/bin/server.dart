@@ -7,13 +7,17 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:storeos_server/src/application/auth_service.dart';
 import 'package:storeos_server/src/config.dart';
 import 'package:storeos_server/src/http/json_logger.dart';
+import 'package:storeos_server/src/http/platform_app.dart';
 import 'package:storeos_server/src/http/server_app.dart';
 import 'package:storeos_server/src/infrastructure/auth_store.dart';
+import 'package:storeos_server/src/platform/event_bus.dart';
+import 'package:storeos_server/src/platform/platform_database.dart';
 
 Future<void> main() async {
   const logger = JsonLogger();
   Pool<void>? pool;
   HttpServer? server;
+  EventBus? eventBus;
   final signalSubscriptions = <StreamSubscription<ProcessSignal>>[];
   try {
     final config = ServerConfig.fromEnvironment(Platform.environment);
@@ -27,8 +31,19 @@ Future<void> main() async {
       locationId: config.locationId,
       sessionTtl: config.sessionTtl,
     );
-    final app = ServerApp(config: config, auth: auth, store: store);
+    final database = PlatformDatabase(
+      pool,
+      companyId: config.companyId,
+      locationId: config.locationId,
+    );
+    final app = ServerApp(
+      config: config,
+      auth: auth,
+      store: store,
+      platformHandler: createPlatformHandler(auth, database),
+    );
     server = await shelf_io.serve(app.handler, config.host, config.port);
+    eventBus = EventBus(database: database)..start();
     logger.event(
       'server_started',
       fields: {'host': config.host, 'port': config.port},
@@ -61,6 +76,7 @@ Future<void> main() async {
       await subscription.cancel();
     }
     await server?.close(force: false);
+    await eventBus?.stop();
     await pool?.close();
   }
 }

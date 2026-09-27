@@ -126,6 +126,7 @@ switch ($Action) {
         Invoke-Tool 'flutter' @('run', '-d', 'web-server', '--web-hostname=127.0.0.1', '--web-port=8085', "--dart-define=STOREOS_API_URL=$apiUrl") (Join-Path $repo 'apps/client_flutter')
     }
     'check' {
+        if (Test-Path -LiteralPath (Join-Path $repo '.env')) { Import-LocalConfiguration }
         foreach ($package in @('packages/api_contracts', 'apps/server', 'packages/design_system', 'apps/client_flutter')) {
             $directory = Join-Path $repo $package
             Invoke-Tool 'dart' @('format', '--output=none', '--set-exit-if-changed', '.') $directory
@@ -149,6 +150,20 @@ switch ($Action) {
             $statusUri = "$baseUri/api/v1/locations/$env:STOREOS_LOCATION_ID/system/status"
             $status = Invoke-RestMethod $statusUri -Headers $headers -TimeoutSec 10
             if ($status.database -ne 'reachable' -or $status.companyId -ne $env:STOREOS_COMPANY_ID -or $status.locationId -ne $env:STOREOS_LOCATION_ID) { throw 'Wrong authorized server scope/status.' }
+            $context = Invoke-RestMethod "$baseUri/api/v1/platform/context" -Headers $headers -TimeoutSec 10
+            if ($context.companyId -ne $env:STOREOS_COMPANY_ID -or $context.userId -ne $session.user.id) { throw 'Wrong platform identity or company scope.' }
+            $organization = Invoke-RestMethod "$baseUri/api/v1/platform/organization" -Headers $headers -TimeoutSec 10
+            if ($organization.company.id -ne $env:STOREOS_COMPANY_ID -or $env:STOREOS_LOCATION_ID -notin $organization.locations.id) { throw 'Existing organization IDs were not preserved.' }
+            if ('audit.read' -in $context.permissions) {
+                $audit = Invoke-RestMethod "$baseUri/api/v1/platform/audit" -Headers $headers -TimeoutSec 10
+                if ($audit.items.Count -lt 1) { throw 'Platform audit is empty.' }
+            }
+            if ('events.read' -in $context.permissions) {
+                Invoke-RestMethod "$baseUri/api/v1/platform/events" -Headers $headers -TimeoutSec 10 | Out-Null
+            }
+            if ('plugins.read' -in $context.permissions) {
+                Invoke-RestMethod "$baseUri/api/v1/platform/plugins" -Headers $headers -TimeoutSec 10 | Out-Null
+            }
             $denied = Invoke-WebRequest $statusUri -SkipHttpErrorCheck -TimeoutSec 10
             if ([int]$denied.StatusCode -ne 401) { throw 'Unauthenticated request was not denied.' }
             $foreign = Invoke-WebRequest "$baseUri/api/v1/locations/$([guid]::NewGuid())/system/status" -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
@@ -158,6 +173,6 @@ switch ($Action) {
         }
         $revoked = Invoke-WebRequest $statusUri -Headers $headers -SkipHttpErrorCheck -TimeoutSec 10
         if ([int]$revoked.StatusCode -ne 401) { throw 'Logged-out session remains usable.' }
-        Write-Host 'Smoke passed: liveness, database readiness, login, site scope, denied anonymous/foreign requests and session revocation.'
+        Write-Host 'Smoke passed: liveness, database readiness, login, preserved organization IDs, platform permissions, audit/events/plugins, denied anonymous/foreign requests and session revocation.'
     }
 }

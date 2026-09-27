@@ -102,8 +102,7 @@ class AuthService {
       if (account == null ||
           !account.isActive ||
           !validPassword ||
-          account.companyId != companyId ||
-          account.locationId != locationId) {
+          account.companyId != companyId) {
         limiter.failure(usernameKey, remoteKey);
         throw const AuthFailure(AuthFailureReason.invalidCredentials);
       }
@@ -111,11 +110,18 @@ class AuthService {
         List<int>.generate(32, (_) => _random.nextInt(256)),
       ).replaceAll('=', '');
       final expiresAt = _clock().toUtc().add(sessionTtl);
-      await store.createSession(
-        accountId: account.id,
-        tokenHash: digestToken(token),
-        expiresAt: expiresAt,
-      );
+      try {
+        await store.createSession(
+          accountId: account.id,
+          tokenHash: digestToken(token),
+          expiresAt: expiresAt,
+          expectedPasswordHash: account.passwordHash,
+          expectedCompanyId: companyId,
+        );
+      } on SessionCreationRejected {
+        limiter.failure(usernameKey, remoteKey);
+        throw const AuthFailure(AuthFailureReason.invalidCredentials);
+      }
       limiter.success(usernameKey);
       return SessionResponse(
         token: token,
@@ -137,9 +143,7 @@ class AuthService {
       throw const AuthFailure(AuthFailureReason.invalidSession);
     }
     final principal = await store.findSession(digestToken(token));
-    if (principal == null ||
-        principal.companyId != companyId ||
-        principal.locationId != locationId) {
+    if (principal == null || principal.companyId != companyId) {
       throw const AuthFailure(AuthFailureReason.invalidSession);
     }
     return principal;
@@ -154,8 +158,7 @@ class AuthService {
 
   void requireLocation(SessionPrincipal principal, String pathLocationId) {
     if (principal.companyId != companyId ||
-        principal.locationId != locationId ||
-        pathLocationId.toLowerCase() != locationId) {
+        pathLocationId.toLowerCase() != principal.locationId) {
       throw const AuthFailure(AuthFailureReason.forbidden);
     }
   }

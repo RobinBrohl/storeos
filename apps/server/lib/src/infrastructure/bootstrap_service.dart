@@ -5,6 +5,7 @@ import 'package:postgres/postgres.dart';
 import '../application/auth_service.dart';
 import '../application/password_hasher.dart';
 import '../config.dart';
+import '../platform/audit_repository.dart';
 import 'auth_store.dart';
 
 class BootstrapException implements Exception {
@@ -58,12 +59,38 @@ class BootstrapService {
       if (state.isNotEmpty || accounts.isNotEmpty) {
         throw BootstrapException('Initial account already exists.');
       }
+      await tx.execute(
+        Sql.named(
+          'INSERT INTO $_schema.companies (id) '
+          'VALUES (CAST(@companyId AS uuid)) ON CONFLICT (id) DO NOTHING',
+        ),
+        parameters: {'companyId': companyId},
+      );
+      await tx.execute(
+        Sql.named(
+          'INSERT INTO $_schema.locations (id, company_id) '
+          'VALUES (CAST(@locationId AS uuid), CAST(@companyId AS uuid)) '
+          'ON CONFLICT (id) DO NOTHING',
+        ),
+        parameters: {'locationId': locationId, 'companyId': companyId},
+      );
+      final location = await tx.execute(
+        Sql.named(
+          'SELECT 1 FROM $_schema.locations '
+          'WHERE id = CAST(@locationId AS uuid) '
+          'AND company_id = CAST(@companyId AS uuid)',
+        ),
+        parameters: {'locationId': locationId, 'companyId': companyId},
+      );
+      if (location.isEmpty) {
+        throw BootstrapException('Bootstrap location has a different company.');
+      }
       final inserted = await tx.execute(
         Sql.named(
           'INSERT INTO $_schema.accounts '
-          '(username, username_key, password_hash, company_id, location_id) '
+          '(username, username_key, password_hash, company_id, location_id, role) '
           'VALUES (@username, @usernameKey, @passwordHash, '
-          'CAST(@companyId AS uuid), CAST(@locationId AS uuid)) '
+          "CAST(@companyId AS uuid), CAST(@locationId AS uuid), 'admin') "
           'RETURNING id::text AS id',
         ),
         parameters: {
@@ -81,6 +108,17 @@ class BootstrapService {
           'VALUES (true, CAST(@accountId AS uuid))',
         ),
         parameters: {'accountId': accountId},
+      );
+      await AuditRepository(_schema).append(
+        tx,
+        actorKind: 'system',
+        actorId: 'bootstrap-cli',
+        companyId: companyId,
+        locationId: locationId,
+        action: 'platform.bootstrapped',
+        entityType: 'user',
+        entityId: accountId,
+        changes: const {'role': 'admin'},
       );
       return accountId;
     });

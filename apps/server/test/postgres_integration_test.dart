@@ -9,6 +9,9 @@ import 'package:storeos_server/src/application/password_hasher.dart';
 import 'package:storeos_server/src/infrastructure/auth_store.dart';
 import 'package:storeos_server/src/infrastructure/bootstrap_service.dart';
 import 'package:storeos_server/src/infrastructure/migration_runner.dart';
+import 'package:storeos_server/src/platform/identity_service.dart';
+import 'package:storeos_server/src/platform/organization_service.dart';
+import 'package:storeos_server/src/platform/platform_database.dart';
 import 'package:test/test.dart';
 
 const _company = '11111111-1111-4111-8111-111111111111';
@@ -95,6 +98,78 @@ void main() {
         expect(tables.single.toColumnMap()['table_name'], isNull);
       } finally {
         await directory.delete(recursive: true);
+      }
+    }),
+    skip: _testDatabase == null ? 'STOREOS_TEST_DATABASE is not set' : false,
+  );
+
+  test(
+    'P0 bootstrap account upgrades without changing IDs or password hash',
+    () => _withSchema((connection, endpoint, schema) async {
+      final p0Directory = await _migrationCopy();
+      try {
+        await MigrationRunner(
+          connection: connection,
+          migrationsDirectory: p0Directory,
+          schemaName: schema,
+        ).apply();
+        final passwordHash = await PasswordHasher(
+          memoryKiB: 64,
+          iterations: 1,
+        ).hash('unchanged-p0-password');
+        final originalId = newUuid();
+        await connection.execute(
+          Sql.named(
+            'INSERT INTO "$schema".accounts '
+            '(id, username, username_key, password_hash, company_id, location_id) '
+            'VALUES (CAST(@id AS uuid), @username, @usernameKey, @hash, '
+            'CAST(@companyId AS uuid), CAST(@locationId AS uuid))',
+          ),
+          parameters: {
+            'id': originalId,
+            'username': 'operator',
+            'usernameKey': 'operator',
+            'hash': passwordHash,
+            'companyId': _company,
+            'locationId': _location,
+          },
+        );
+        await connection.execute(
+          Sql.named(
+            'INSERT INTO "$schema".bootstrap_state (account_id) '
+            'VALUES (CAST(@id AS uuid))',
+          ),
+          parameters: {'id': originalId},
+        );
+        expect(
+          await MigrationRunner(
+            connection: connection,
+            migrationsDirectory: _sourceMigrations(),
+            schemaName: schema,
+          ).apply(),
+          ['0002_platform_organization', '0003_platform_events_plugins'],
+        );
+        final account = await connection.execute(
+          'SELECT id::text AS id, password_hash, role, version '
+          'FROM "$schema".accounts',
+        );
+        final row = account.single.toColumnMap();
+        expect(row['id'], originalId);
+        expect(row['password_hash'], passwordHash);
+        expect(row['role'], 'admin');
+        expect(row['version'], 1);
+        final company = await connection.execute(
+          'SELECT id::text AS id, name FROM "$schema".companies',
+        );
+        expect(company.single.toColumnMap()['id'], _company);
+        expect(company.single.toColumnMap()['name'], isNull);
+        final location = await connection.execute(
+          'SELECT id::text AS id, name FROM "$schema".locations',
+        );
+        expect(location.single.toColumnMap()['id'], _location);
+        expect(location.single.toColumnMap()['name'], isNull);
+      } finally {
+        await p0Directory.delete(recursive: true);
       }
     }),
     skip: _testDatabase == null ? 'STOREOS_TEST_DATABASE is not set' : false,
@@ -194,16 +269,232 @@ void main() {
             ),
             remoteKey: 'integration-test',
           );
+          final previouslyValid = await auth.authenticate(second.token);
           await connection.execute(
             'UPDATE "$schema".auth_sessions SET revoked_at = now() '
             'WHERE revoked_at IS NULL',
           );
           expect(await store.findSession(digestToken(second.token)), isNull);
+          final platform = PlatformDatabase(
+            pool,
+            schemaName: schema,
+            companyId: _company,
+            locationId: _location,
+          );
+          await expectLater(
+            IdentityService(platform, hasher).context(previouslyValid),
+            throwsA(
+              isA<PlatformFailure>().having(
+                (failure) => failure.status,
+                'status',
+                401,
+              ),
+            ),
+          );
+
+          final oldAccount = await store.findAccount('operator');
+          await connection.execute(
+            Sql.named('UPDATE "$schema".accounts SET password_hash = @hash'),
+            parameters: {'hash': await hasher.hash('new-test-password')},
+          );
+          await expectLater(
+            store.createSession(
+              accountId: oldAccount!.id,
+              tokenHash: digestToken('test-invalid-after-password-reset'),
+              expiresAt: DateTime.now().toUtc().add(const Duration(hours: 1)),
+              expectedPasswordHash: oldAccount.passwordHash,
+              expectedCompanyId: _company,
+            ),
+            throwsA(isA<SessionCreationRejected>()),
+          );
         } finally {
           await pool.close();
         }
       } finally {
         await concurrentConnection.close();
+      }
+    }),
+    skip: _testDatabase == null ? 'STOREOS_TEST_DATABASE is not set' : false,
+  );
+
+  test(
+    'organization setup cannot be bypassed and audit failure rolls back state and event',
+    () => _withSchema((connection, endpoint, schema) async {
+      await MigrationRunner(
+        connection: connection,
+        migrationsDirectory: _sourceMigrations(),
+        schemaName: schema,
+      ).apply();
+      final adminId =
+          await BootstrapService(
+            connection: connection,
+            passwordHasher: PasswordHasher(memoryKiB: 64, iterations: 1),
+            schemaName: schema,
+          ).bootstrap(
+            username: 'operator',
+            password: 'test-only-password-24-characters',
+            companyId: _company,
+            locationId: _location,
+          );
+      final bootstrapAudit = await connection.execute(
+        'SELECT actor_kind, action, changes FROM "$schema".audit_entries '
+        "WHERE action = 'platform.bootstrapped'",
+      );
+      expect(bootstrapAudit, hasLength(1));
+      expect(bootstrapAudit.single.toColumnMap()['actor_kind'], 'system');
+      expect(
+        bootstrapAudit.single.toColumnMap()['changes'].toString(),
+        isNot(contains('password')),
+      );
+      final pool = Pool<void>.withEndpoints([
+        endpoint,
+      ], settings: const PoolSettings(sslMode: SslMode.disable));
+      try {
+        final service = OrganizationService(
+          PlatformDatabase(
+            pool,
+            schemaName: schema,
+            companyId: _company,
+            locationId: _location,
+          ),
+        );
+        final principal = SessionPrincipal(
+          id: adminId,
+          username: 'operator',
+          companyId: _company,
+          locationId: _location,
+        );
+        await expectLater(
+          service.renameLocation(principal, _location, {
+            'name': 'Bypass',
+            'expectedVersion': 1,
+          }),
+          throwsA(
+            isA<PlatformFailure>().having(
+              (failure) => failure.code,
+              'code',
+              'setup_required',
+            ),
+          ),
+        );
+        final setup = await service.setup(principal, {
+          'companyName': 'First company',
+          'locationName': 'First location',
+        });
+        final company = setup['company']! as Map<String, dynamic>;
+        expect(company['version'], 2);
+        final beforeEvents = await connection.execute(
+          'SELECT count(*)::int AS count FROM "$schema".event_outbox',
+        );
+        await connection.execute(
+          'ALTER TABLE "$schema".audit_entries '
+          "ADD CONSTRAINT reject_company_change CHECK (action <> 'organization.company.updated')",
+        );
+        await expectLater(
+          service.renameCompany(principal, {
+            'name': 'Must rollback',
+            'expectedVersion': 2,
+          }),
+          throwsA(isA<PgException>()),
+        );
+        final after = await service.read(principal);
+        final unchanged = after['company']! as Map<String, dynamic>;
+        expect(unchanged['name'], 'First company');
+        expect(unchanged['version'], 2);
+        final afterEvents = await connection.execute(
+          'SELECT count(*)::int AS count FROM "$schema".event_outbox',
+        );
+        expect(
+          afterEvents.single.toColumnMap()['count'],
+          beforeEvents.single.toColumnMap()['count'],
+        );
+      } finally {
+        await pool.close();
+      }
+    }),
+    skip: _testDatabase == null ? 'STOREOS_TEST_DATABASE is not set' : false,
+  );
+
+  test(
+    'concurrent demotions preserve one active administrator',
+    () => _withSchema((connection, endpoint, schema) async {
+      await MigrationRunner(
+        connection: connection,
+        migrationsDirectory: _sourceMigrations(),
+        schemaName: schema,
+      ).apply();
+      final firstId =
+          await BootstrapService(
+            connection: connection,
+            passwordHasher: PasswordHasher(memoryKiB: 64, iterations: 1),
+            schemaName: schema,
+          ).bootstrap(
+            username: 'operator',
+            password: 'test-only-password-24-characters',
+            companyId: _company,
+            locationId: _location,
+          );
+      final pool = Pool<void>.withEndpoints([
+        endpoint,
+      ], settings: const PoolSettings(sslMode: SslMode.disable));
+      try {
+        final database = PlatformDatabase(
+          pool,
+          schemaName: schema,
+          companyId: _company,
+          locationId: _location,
+        );
+        final organization = OrganizationService(database);
+        final identity = IdentityService(
+          database,
+          PasswordHasher(memoryKiB: 64, iterations: 1),
+        );
+        final first = SessionPrincipal(
+          id: firstId,
+          username: 'operator',
+          companyId: _company,
+          locationId: _location,
+        );
+        await organization.setup(first, {
+          'companyName': 'Admin company',
+          'locationName': 'Admin location',
+        });
+        final secondId = newUuid();
+        await identity.createUser(first, {
+          'id': secondId,
+          'username': 'second_admin',
+          'password': 'test-only-password-24-characters',
+          'locationId': _location,
+          'role': 'admin',
+        });
+        final second = SessionPrincipal(
+          id: secondId,
+          username: 'second_admin',
+          companyId: _company,
+          locationId: _location,
+        );
+        Future<int> demote(SessionPrincipal principal) async {
+          try {
+            await identity.updateUser(principal, principal.id, {
+              'role': 'viewer',
+              'isActive': true,
+              'expectedVersion': 1,
+            });
+            return 200;
+          } on PlatformFailure catch (failure) {
+            return failure.status;
+          }
+        }
+
+        final outcomes = await Future.wait([demote(first), demote(second)]);
+        expect(outcomes..sort(), [200, 409]);
+        final administrators = await connection.execute(
+          'SELECT count(*)::int AS count FROM "$schema".accounts '
+          "WHERE role = 'admin' AND is_active",
+        );
+        expect(administrators.single.toColumnMap()['count'], 1);
+      } finally {
+        await pool.close();
       }
     }),
     skip: _testDatabase == null ? 'STOREOS_TEST_DATABASE is not set' : false,

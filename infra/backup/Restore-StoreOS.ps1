@@ -84,6 +84,18 @@ finally {
 # rollback. Never open a restored database to clients before this succeeds.
 $verificationSql = @'
 UPDATE storeos_platform.auth_sessions SET revoked_at = now() WHERE revoked_at IS NULL;
+DO $$
+DECLARE active_tokens bigint;
+BEGIN
+  IF to_regclass('storeos_platform.plugin_tokens') IS NOT NULL THEN
+    UPDATE storeos_platform.plugin_tokens SET revoked_at = now() WHERE revoked_at IS NULL;
+    SELECT count(*) INTO active_tokens FROM storeos_platform.plugin_tokens
+      WHERE revoked_at IS NULL AND expires_at > now();
+    IF active_tokens <> 0 THEN
+      RAISE EXCEPTION 'Restored plugin tokens remain active.';
+    END IF;
+  END IF;
+END $$;
 SELECT (SELECT count(*) FROM storeos_platform.accounts),
        (SELECT count(*) FROM storeos_platform.bootstrap_state),
        (SELECT count(*) FROM storeos_platform.auth_sessions WHERE revoked_at IS NULL AND expires_at > now()),
@@ -101,4 +113,5 @@ if ([int] $counts[0] -lt 1 -or [int] $counts[1] -ne 1 -or [int] $counts[2] -ne 0
 
 Write-Output "Restored and verified isolated database: $TargetDatabase"
 Write-Output "Accounts: $($counts[0]); bootstrap records: $($counts[1]); active sessions: $($counts[2]); runtime CONNECT: $($counts[3])"
+Write-Output 'Plugin tokens, when present, have been revoked and verified.'
 Write-Output 'The original database was not changed. This test database remains for inspection.'

@@ -29,6 +29,49 @@ class SessionController extends ChangeNotifier {
   String? get error => _error;
   String? get notice => _notice;
 
+  /// Grants a short-lived token only to an application-layer request callback.
+  /// A result from an expired or replaced session is never returned to callers.
+  Future<T> authorized<T>(Future<T> Function(String token) request) async {
+    final session = _session;
+    if (_disposed || session == null || !session.expiresAt.isAfter(_now())) {
+      if (!_disposed && session != null) _expireSession();
+      throw const StoreApiException(
+        'invalid_session',
+        'Die Sitzung ist nicht mehr gültig. Bitte erneut anmelden.',
+        statusCode: 401,
+      );
+    }
+    try {
+      final result = await request(session.token);
+      if (_disposed || !identical(_session, session)) {
+        throw const StoreApiException(
+          'stale_session',
+          'Die Sitzung wurde inzwischen beendet.',
+        );
+      }
+      if (!session.expiresAt.isAfter(_now())) {
+        _expireSession();
+        throw const StoreApiException(
+          'invalid_session',
+          'Die Sitzung ist abgelaufen. Bitte erneut anmelden.',
+          statusCode: 401,
+        );
+      }
+      return result;
+    } on StoreApiException catch (error) {
+      if (!_disposed &&
+          identical(_session, session) &&
+          error.statusCode == 401) {
+        _expireSession();
+      }
+      rethrow;
+    }
+  }
+
+  void invalidateSession() {
+    if (_session != null && !_disposed) _expireSession();
+  }
+
   Future<void> signIn({
     required String username,
     required String password,

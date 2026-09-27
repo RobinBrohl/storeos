@@ -5,16 +5,19 @@ import 'package:storeos_design_system/storeos_design_system.dart';
 import 'src/app/storeos_app.dart';
 import 'src/config/api_configuration.dart';
 import 'src/data/http_store_api.dart';
+import 'src/data/http_platform_api.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     final configuration = ApiConfiguration.fromEnvironment();
+    final client = http.Client();
     runApp(
       StoreOsApp(
-        api: HttpStoreApi(
+        api: HttpStoreApi(baseUri: configuration.baseUri, client: client),
+        platformApi: HttpPlatformApi(
           baseUri: configuration.baseUri,
-          client: http.Client(),
+          client: client,
         ),
         baseUri: configuration.baseUri,
       ),

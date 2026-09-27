@@ -10,7 +10,7 @@ Fehlende Freigabe bedeutet verweigerten Zugriff. Vom Client, Plugin oder Event �
 
 Für eine leere Installation ist die Erstanlage ausdrücklich geregelt: Ein lokal eingerichteter, installationsgebundener Setup-Akteur darf ausschließlich den ersten Administrator und die erste Company samt Rechtezuordnung anlegen. Der Zugang verwendet ein einmaliges lokal erzeugtes Secret und wird danach deaktiviert. Es gibt weder ein gemeinsames Standardpasswort noch eine öffentlich frei beanspruchbare Setup-Rolle; anschließend gelten normale Mandantenrechte. Damit erfordert die erste Company keine bereits bestehende Company-Berechtigung.
 
-P0 konkretisiert vorerst nur die technische Ersteinrichtung: Ein lokal aufgerufenes CLI mit separaten Datenbank-Owner-Rechten legt einen Account in stabilen, konfigurierten Company-/Location-Scopes an. Ein persistierter Marker verhindert die Wiederholung. Es gibt keine öffentliche Setup-Route und noch keine Company-Datensätze oder Fachrollenverwaltung; die oben beschriebene erste Company folgt in P1. Details stehen in der [Phase-0-Grundlage](../development/phase-0.md).
+P0 führte das lokale Bootstrap-CLI mit separaten Datenbank-Owner-Rechten und einem persistierten Wiederholungsverbot ein. P1 übernimmt diese stabilen IDs in Company-/Location-Datensätze und vergibt ausschließlich an diesen ursprünglichen Account die Administratorrolle. Die authentifizierte Einrichtung benennt diese Organisation; sie ist kein öffentlich beanspruchbarer Setup-Zugang. Feste Rollen und ihre konkreten Grenzen stehen in [Phase 1](../development/phase-1.md). Ein User bleibt ein Login-Account ohne Personalakte.
 
 ## Technische Mindestkontrollen
 

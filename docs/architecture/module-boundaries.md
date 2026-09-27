@@ -1,6 +1,6 @@
 # Modulgrenzen und Monorepo
 
-Status: fachlich geplanter Zuschnitt. P0 implementiert Server, Flutter-Client, API-Verträge und Designsystem. Weitere Verzeichnisse sind zunächst nur dokumentiert; Fachmodule werden erst mit ihrem jeweiligen Vertical Slice implementiert.
+Status: fachlich geplanter Zuschnitt. P0 implementiert Server, Flutter-Client, API-Verträge und Designsystem. P1 ergänzt Organization, Identity, Audit, Events und Plugin-Registrierungen als logisch getrennte Komponenten unter `apps/server/lib/src/organization/`, `identity/` und `platform/`. Weitere Verzeichnisse sind zunächst nur dokumentiert; Fachmodule werden erst mit ihrem jeweiligen Vertical Slice implementiert.
 
 ## Repo-Zuschnitt
 

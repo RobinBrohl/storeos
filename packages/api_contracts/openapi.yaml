@@ -2,11 +2,47 @@ openapi: 3.1.0
 info:
   title: StoreOS technical API
   version: 1.0.0
-  description: P0 platform only. No business modules or offline writes.
+  description: P1 platform only. No workforce modules or offline writes.
 servers:
   - url: http://127.0.0.1:8080
     description: Loopback development; use HTTPS for LAN deployments.
 paths:
+  /api/v1/platform/context:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1context'
+  /api/v1/platform/organization:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1organization'
+  /api/v1/platform/organization/setup:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1organization~1setup'
+  /api/v1/platform/company:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1company'
+  /api/v1/platform/locations:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations'
+  /api/v1/platform/locations/{id}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{id}'
+  /api/v1/platform/users:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1users'
+  /api/v1/platform/users/{id}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1users~1{id}'
+  /api/v1/platform/users/{id}/password:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1users~1{id}~1password'
+  /api/v1/platform/audit:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1audit'
+  /api/v1/platform/events:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1events'
+  /api/v1/platform/events/{id}/replay:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1events~1{id}~1replay'
+  /api/v1/platform/plugins:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1plugins'
+  /api/v1/platform/plugins/{id}/approve:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1plugins~1{id}~1approve'
+  /api/v1/platform/plugins/{id}/disable:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1plugins~1{id}~1disable'
+  /api/plugin/v1/organization:
+    $ref: './platform.openapi.json#/paths/~1api~1plugin~1v1~1organization'
+  /api/plugin/v1/events:
+    $ref: './platform.openapi.json#/paths/~1api~1plugin~1v1~1events'
+  /api/plugin/v1/events/{eventId}/ack:
+    $ref: './platform.openapi.json#/paths/~1api~1plugin~1v1~1events~1{eventId}~1ack'
   /health:
     get:
       operationId: liveness

@@ -1,6 +1,8 @@
 # StoreOS Standortclient
 
-P0-Webclient für die Anmeldung am lokalen Standortserver und den geschützten, tatsächlich abgerufenen Systemstatus. Die Sitzung liegt nur im Arbeitsspeicher; ein Reload verlangt eine neue Anmeldung. Die Anzeige erfindet bei Verbindungsverlust keinen gesunden Status. Fachmodule und Mitarbeiter-Home folgen erst im vorgesehenen Vertical Slice.
+Flutter-Webclient für den lokalen Standortserver. Nach der Anmeldung zeigt er den tatsächlich abgerufenen Systemstatus und den serverseitigen Berechtigungskontext. Phase 1 ergänzt die Einrichtung und Verwaltung von Unternehmen, Standorten und Login-Accounts sowie paginierte Audit- und Ereignislisten und die Freigabe externer Plugin-API-Clients. Fachmodule und Mitarbeiter-Home folgen erst im vorgesehenen Vertical Slice.
+
+Die Sitzung liegt nur im Arbeitsspeicher; ein Reload verlangt eine neue Anmeldung. Der Client trennt HTTP-Transport, Anwendungszustand und Widgets. Rollen steuern sichtbare Bereiche und Aktionen, der Server prüft jede Berechtigung erneut. Schreibanfragen verwenden Versionen beziehungsweise stabile Client-IDs; nach Konflikten oder unklaren Ausgängen lädt der Client den Serverstand neu. Verbindungsverlust wird sichtbar und ein alter Status nicht als gesund angezeigt. Ein Plugin-Zugangstoken erscheint nur direkt nach der Freigabe und wird nicht gespeichert.
 
 ```powershell
 cd apps/client_flutter

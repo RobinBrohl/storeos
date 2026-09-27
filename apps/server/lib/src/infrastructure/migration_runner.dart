@@ -105,6 +105,58 @@ class MigrationRunner {
         await tx.execute(
           'GRANT UPDATE (revoked_at) ON $_schema.auth_sessions TO $role',
         );
+        if (known.containsKey('0002_platform_organization')) {
+          await tx.execute('GRANT SELECT ON $_schema.companies TO $role');
+          await tx.execute(
+            'GRANT UPDATE (name, version, updated_at) '
+            'ON $_schema.companies TO $role',
+          );
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.locations TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (name, version, updated_at) '
+            'ON $_schema.locations TO $role',
+          );
+          await tx.execute('GRANT INSERT ON $_schema.accounts TO $role');
+          await tx.execute(
+            'GRANT UPDATE (role, is_active, password_hash, version) '
+            'ON $_schema.accounts TO $role',
+          );
+        }
+        if (known.containsKey('0003_platform_events_plugins')) {
+          await tx.execute('GRANT SELECT ON $_schema.platform_node TO $role');
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.audit_entries, '
+            '$_schema.event_outbox, $_schema.event_receipts, '
+            '$_schema.plugin_registrations, $_schema.plugin_tokens, '
+            '$_schema.plugin_inbox TO $role',
+          );
+          await tx.execute(
+            'GRANT USAGE ON SEQUENCE $_schema.audit_entries_id_seq, '
+            '$_schema.plugin_inbox_id_seq TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status, attempts, next_attempt_at, last_error, '
+            'dispatched_at) ON $_schema.event_outbox TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status, version, location_id, permissions, '
+            'subscriptions, approved_at, disabled_at) '
+            'ON $_schema.plugin_registrations TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (revoked_at) ON $_schema.plugin_tokens TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status, acknowledged_at) '
+            'ON $_schema.plugin_inbox TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.audit_entries '
+            'FROM $role',
+          );
+        }
       }
     });
     return applied;

@@ -1,9 +1,9 @@
-# StoreOS-Standortserver (P0)
+# StoreOS-Standortserver (P1)
 
-Dieser Dart-Prozess stellt nur die Plattformbasis bereit: Betriebspunkte,
-lokale Anmeldung, standortgebundene Sitzung und einen authentifizierten
-Systemstatus. Fachmodule und der spätere Vertical Slice sind hier noch nicht
-implementiert.
+Dieser Dart-Prozess stellt die Plattform bereit: lokale Anmeldung, Organisation,
+Benutzer und Rollen, Audit, lokale Outbox und eingeschränkte externe Plugin-API.
+Fachmodule und der spätere Workforce-Slice sind hier noch nicht implementiert.
+Verträge, Rechte und Grenzen stehen in [Phase 1](../../docs/development/phase-1.md).
 
 ## Start und Datenbankrollen
 
@@ -23,8 +23,9 @@ erneuten Bootstrap ab. Das Passwort wird ausschließlich aus einer Datei gelesen
 und nie ausgegeben. Beide CLI-Befehle benötigen die Migrationsrolle.
 
 Der HTTP-Prozess verwendet dagegen die eingeschränkte Runtime-Rolle. Die
-Migration vergibt ihr nur Schema-Nutzung, Lesezugriff auf Migrationen und
-Accounts sowie die für Sitzungen benötigten Rechte. Tabellenanlage und
+Migration vergibt ihr Schema-Nutzung, Lesezugriff auf Migrationen und die
+expliziten Tabellen-/Spaltenrechte für die Plattform. Audit bleibt für diese
+Rolle ausschließlich lesbar und ergänzbar; keine UPDATE-/DELETE-Rechte. Tabellenanlage und
 Bootstrap-State bleiben der Migrationsrolle vorbehalten. Migration und
 Bootstrap laufen nicht automatisch beim Serverstart.
 
@@ -53,7 +54,7 @@ ist die direkte Variante desselben Secrets unzulässig. Der Server liest keine
 | `GET /ready` | Datenbank und erforderliche Migration erreichbar: `200 {"status":"ok"}`, sonst `503 {"status":"unavailable"}` |
 | `POST /api/v1/auth/login` | JSON mit `username`, `password`; gibt ein zeitlich begrenztes Bearer-Token und User-Scope zurück |
 | `POST /api/v1/auth/logout` | Widerruft die aktuelle Sitzung; `204` |
-| `GET /api/v1/locations/{locationId}/system/status` | Erfordert gültige Sitzung im konfigurierten Company-/Location-Scope |
+| `GET /api/v1/locations/{locationId}/system/status` | Erfordert gültige Sitzung in der konfigurierten Company und dem Heimatstandort des Accounts |
 
 Passwörter werden mit Argon2id und individuellem Salt gespeichert. Die
 Datenbank enthält nur SHA-256-Digests der zufälligen Session-Token. Abläufe,
@@ -73,3 +74,11 @@ Schema und entfernt ausschließlich dieses Schema wieder. Er prüft
 Migrationen einschließlich Rollback und Prüfsumme, Rechte, konkurrierenden
 Bootstrap und Session-Lebenszyklus. Eine bestehende Produktivdatenbank darf
 nicht als Testdatenbank angegeben werden.
+
+Die P1-Rechtetests verbinden sich zusätzlich als eingeschränkte Runtime-Rolle:
+`STOREOS_DB_USER` (Standard `storeos`) und `STOREOS_DB_PASSWORD_FILE` müssen
+deren Zugang zur Testdatenbank beschreiben. Der Owner aus der Test-URL muss
+Schemas anlegen und Tabellenrechte an diese Rolle vergeben dürfen. `scripts/dev.ps1 check`
+lädt diese Runtime-Konfiguration aus einer vorhandenen `.env`; die Test-URL
+bleibt ausdrücklich separat zu setzen. Bei direkten `dart test`-Aufrufen sind
+alle drei Variablen selbst zu setzen. Die CI stellt diese Voraussetzungen bereit.

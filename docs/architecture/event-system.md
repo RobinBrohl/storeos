@@ -35,4 +35,6 @@ Der Server leitet den ausführenden Akteur aus der authentifizierten Sitzung ode
 
 ## Ausbaustufen und Risiken
 
+Die Plattformphase P1 besitzt einen konkreten Verbraucher: Ein lokaler Outbox-Worker verteilt freigegebene Organisationsereignisse an persistente Plugin-Inboxen. Externe Clients holen diese mit eigenen eingeschränkten Tokens ab und bestätigen die eventId. Das ist kein Standort-Synchronisationsprotokoll. Eine eigene, bei Installation persistierte Node-ID bleibt von Location-IDs getrennt. Der [P1-Vertrag](../development/phase-1.md) konkretisiert Payload, Rechte, Retry und Deaktivierung.
+
 Im ersten Slice entstehen Schicht und konfigurierte Aufgaben bereits atomar gemäß [ADR 0011](../adr/0011-atomare-schichtveroeffentlichung.md); ein Event-Verbraucher für diesen Erzeugungsweg entfällt. Dauerhafte Events und ein lokaler Outbox-Verarbeiter werden nur für konkret benötigte Folgereaktionen angelegt, nicht vorsorglich für jede Mutation. Audit gilt unabhängig davon für die relevanten Änderungen. Eine frei konfigurierbare `WHEN/IF/THEN`-Engine, standortübergreifendes Replay und Drittanbieter-Subscriptions folgen erst mit Berechtigungs-, Last- und Fehlerkonzept. Zyklen durch Event-Reaktionen, Event-Stürme und unbemerkte Verbraucherfehler sind konkrete Risiken; Kausalitäts-IDs, Wiederholungsgrenzen und Überwachung müssen sie beherrschbar machen.

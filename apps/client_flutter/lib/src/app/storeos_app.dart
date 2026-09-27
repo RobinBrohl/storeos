@@ -3,15 +3,24 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:storeos_design_system/storeos_design_system.dart';
 
 import '../application/session_controller.dart';
+import '../application/platform_controller.dart';
+import '../data/platform_api.dart';
 import '../data/store_api.dart';
 import '../ui/login_screen.dart';
+import '../ui/platform_home_screen.dart';
 import '../ui/system_status_screen.dart';
 
 class StoreOsApp extends StatefulWidget {
-  const StoreOsApp({required this.api, required this.baseUri, super.key});
+  const StoreOsApp({
+    required this.api,
+    required this.baseUri,
+    this.platformApi,
+    super.key,
+  });
 
   final StoreApi api;
   final Uri baseUri;
+  final PlatformApi? platformApi;
 
   @override
   State<StoreOsApp> createState() => _StoreOsAppState();
@@ -19,17 +28,38 @@ class StoreOsApp extends StatefulWidget {
 
 class _StoreOsAppState extends State<StoreOsApp> {
   late final SessionController _controller;
+  PlatformController? _platformController;
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  bool _wasAuthenticated = false;
 
   @override
   void initState() {
     super.initState();
     _controller = SessionController(widget.api);
+    _controller.addListener(_closeDialogsOnSessionEnd);
+    if (widget.platformApi case final api?) {
+      _platformController = PlatformController(_controller, api);
+    }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_closeDialogsOnSessionEnd);
+    _platformController?.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _closeDialogsOnSessionEnd() {
+    final authenticated = _controller.isAuthenticated;
+    if (_wasAuthenticated && !authenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+        }
+      });
+    }
+    _wasAuthenticated = authenticated;
   }
 
   @override
@@ -39,6 +69,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
       builder: (context, _) => MaterialApp(
         title: 'StoreOS',
         debugShowCheckedModeBanner: false,
+        navigatorKey: _navigatorKey,
         theme: StoreTheme.light(),
         locale: const Locale('de'),
         supportedLocales: const [Locale('de')],
@@ -48,10 +79,16 @@ class _StoreOsAppState extends State<StoreOsApp> {
           GlobalCupertinoLocalizations.delegate,
         ],
         home: _controller.isAuthenticated
-            ? SystemStatusScreen(
-                controller: _controller,
-                baseUri: widget.baseUri,
-              )
+            ? _platformController == null
+                  ? SystemStatusScreen(
+                      controller: _controller,
+                      baseUri: widget.baseUri,
+                    )
+                  : PlatformHomeScreen(
+                      session: _controller,
+                      platform: _platformController!,
+                      baseUri: widget.baseUri,
+                    )
             : LoginScreen(controller: _controller, baseUri: widget.baseUri),
       ),
     );

@@ -1,0 +1,1584 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "StoreOS Phase 1 platform API",
+    "version": "1.0.0",
+    "description": "Single company and writer. No workforce modules, device offline writes, or managed plugin runtime."
+  },
+  "paths": {
+    "/api/v1/platform/context": {
+      "get": {
+        "operationId": "platformContext",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Context"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/platform/organization": {
+      "get": {
+        "operationId": "readOrganization",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/platform/organization/setup": {
+      "post": {
+        "operationId": "setupOrganization",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Setup"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/company": {
+      "post": {
+        "operationId": "renameCompany",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Company"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rename"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations": {
+      "post": {
+        "operationId": "createLocation",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLocation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{id}": {
+      "post": {
+        "operationId": "renameLocation",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rename"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/users": {
+      "get": {
+        "operationId": "listUsers",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "users"
+                  ],
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createUser",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUser"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/users/{id}": {
+      "post": {
+        "operationId": "updateUser",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUser"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/users/{id}/password": {
+      "post": {
+        "operationId": "resetUserPassword",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPassword"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/audit": {
+      "get": {
+        "operationId": "readAudit",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque server cursor; absent starts a new page."
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/events": {
+      "get": {
+        "operationId": "readEvents",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEventPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque server cursor; absent starts a new page."
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/events/{id}/replay": {
+      "post": {
+        "operationId": "replayDeadLetter",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "eventId",
+                    "status"
+                  ],
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "const": "pending"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/plugins": {
+      "get": {
+        "operationId": "listPlugins",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "plugins"
+                  ],
+                  "properties": {
+                    "plugins": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Plugin"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "registerPlugin",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plugin"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "manifest"
+                ],
+                "properties": {
+                  "manifest": {
+                    "$ref": "#/components/schemas/Manifest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/plugins/{id}/approve": {
+      "post": {
+        "operationId": "approvePlugin",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Approved"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Approve"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/plugins/{id}/disable": {
+      "post": {
+        "operationId": "disablePlugin",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plugin"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "expectedVersion"
+                ],
+                "properties": {
+                  "expectedVersion": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/plugin/v1/organization": {
+      "get": {
+        "operationId": "pluginReadOrganization",
+        "security": [
+          {
+            "pluginToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/plugin/v1/events": {
+      "get": {
+        "operationId": "pluginReadEvents",
+        "security": [
+          {
+            "pluginToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginEventPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque server cursor; absent starts a new page."
+          }
+        ]
+      }
+    },
+    "/api/plugin/v1/events/{eventId}/ack": {
+      "post": {
+        "operationId": "pluginAcknowledgeEvent",
+        "security": [
+          {
+            "pluginToken": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Acknowledged or revoked."
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "pluginToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Separate approved, scoped, expiring external client identity."
+      }
+    },
+    "schemas": {
+      "Company": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "name",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "company",
+          "locations"
+        ],
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/Company"
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            }
+          }
+        }
+      },
+      "Context": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "companyId",
+          "locationId",
+          "role",
+          "permissions"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "auditor",
+              "viewer"
+            ]
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "username",
+          "companyId",
+          "locationId",
+          "role",
+          "isActive",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "auditor",
+              "viewer"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "Setup": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "companyName",
+          "locationName"
+        ],
+        "properties": {
+          "companyName": {
+            "type": "string"
+          },
+          "locationName": {
+            "type": "string"
+          }
+        }
+      },
+      "Rename": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "expectedVersion"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "CreateLocation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateUser": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "username",
+          "password",
+          "locationId",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "auditor",
+              "viewer"
+            ]
+          }
+        }
+      },
+      "UpdateUser": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role",
+          "isActive",
+          "expectedVersion"
+        ],
+        "properties": {
+          "role": {
+            "enum": [
+              "admin",
+              "auditor",
+              "viewer"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "ResetPassword": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "password",
+          "expectedVersion"
+        ],
+        "properties": {
+          "password": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "Manifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "version",
+          "vendor",
+          "coreApiVersion",
+          "capabilities",
+          "permissions",
+          "subscriptions",
+          "configurationSchema"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9._-]{2,63}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "description": "No leading/trailing whitespace or control characters."
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 32,
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "vendor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "description": "No leading/trailing whitespace or control characters."
+          },
+          "coreApiVersion": {
+            "const": 1
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "organization.read",
+                "events.read"
+              ]
+            }
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "organization.read",
+                "events.read"
+              ]
+            }
+          },
+          "subscriptions": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "organization.company.updated",
+                "organization.location.created",
+                "organization.location.updated"
+              ]
+            }
+          },
+          "configurationSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "properties",
+              "additionalProperties"
+            ],
+            "properties": {
+              "type": {
+                "const": "object"
+              },
+              "properties": {
+                "const": {}
+              },
+              "additionalProperties": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "Plugin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "manifest",
+          "status",
+          "version",
+          "locationId",
+          "permissions",
+          "subscriptions",
+          "tokenExpiresAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "manifest": {
+            "$ref": "#/components/schemas/Manifest"
+          },
+          "status": {
+            "enum": [
+              "registered",
+              "approved",
+              "disabled"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "locationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subscriptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tokenExpiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Approve": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "locationId",
+          "permissions",
+          "subscriptions"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subscriptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Approved": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "plugin",
+          "token",
+          "expiresAt"
+        ],
+        "properties": {
+          "plugin": {
+            "$ref": "#/components/schemas/Plugin"
+          },
+          "token": {
+            "type": "string",
+            "description": "Shown once; secret. Never persist in client logs."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AuditEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "occurredAt",
+          "actorKind",
+          "actorId",
+          "companyId",
+          "locationId",
+          "action",
+          "entityType",
+          "entityId",
+          "changes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actorKind": {
+            "type": "string"
+          },
+          "actorId": {
+            "type": "string"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action": {
+            "type": "string"
+          },
+          "entityType": {
+            "type": "string"
+          },
+          "entityId": {
+            "type": "string"
+          },
+          "changes": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "AuditPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditEntry"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "AdminEvent": {
+        "type": "object",
+        "description": "Versioned envelope; administrative view also includes processing status. Plugin view omits actor information.",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "aggregateType": {
+            "type": "string"
+          },
+          "aggregateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "aggregateVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "originNodeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "correlationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "causationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "payload": {
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "dispatched",
+              "dead_letter"
+            ]
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "actorId": {
+            "type": "string"
+          },
+          "lastError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "eventId",
+          "type",
+          "schemaVersion",
+          "aggregateType",
+          "aggregateId",
+          "aggregateVersion",
+          "companyId",
+          "locationId",
+          "originNodeId",
+          "occurredAt",
+          "recordedAt",
+          "correlationId",
+          "causationId",
+          "payload",
+          "status",
+          "attempts",
+          "actorId",
+          "lastError"
+        ]
+      },
+      "PluginEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "eventId",
+          "type",
+          "schemaVersion",
+          "companyId",
+          "locationId",
+          "originNodeId",
+          "occurredAt",
+          "recordedAt",
+          "payload"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "originNodeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "AdminEventPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminEvent"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PluginEventPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginEvent"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

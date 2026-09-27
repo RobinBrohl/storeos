@@ -210,6 +210,8 @@ class _MemoryStore implements AuthStore {
     required String accountId,
     required String tokenHash,
     required DateTime expiresAt,
+    String? expectedPasswordHash,
+    String? expectedCompanyId,
   }) async => sessions[tokenHash] = expiresAt;
 
   @override

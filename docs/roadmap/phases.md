@@ -12,7 +12,13 @@ Dart-Serverstart, PostgreSQL-Migrationen, Flutter-App-Grundgerüst, lokale Konfi
 
 Die implementierte Einzelstandort-Grundlage und ihre Grenzen sind in [Phase 0](../development/phase-0.md) dokumentiert. Der aktuelle Clientdurchstich verwendet Flutter Web; native Runner benötigen eine gesonderte Geräteabnahme. [Prüfnachweise](../development/phase-0-verification.md) halten den getesteten Stand fest. Fachmodule beginnen erst mit P1.
 
-## P1 – Erster fachlicher Vertical Slice
+## P1 – Plattformverwaltung
+
+Die ausdrückliche Freigabe vom 2026-09-27 zieht Company, Location, User/Authentication, feste Rollen, Audit Trail, lokalen Event Bus, Plugin-Manifest und eine minimale externe Plugin-API vor. Begründung: [ADR 0012](../adr/0012-phase-1-plattform-und-plugin-api.md). [Umfang, Verträge und Abnahme](../development/phase-1.md) beschreiben die Implementierung. Workforce, Tasks und alle weiteren Fachmodule sind ausgenommen.
+
+**Abnahme:** Bestehende P0-Daten werden ohne neue Identitäten migriert. Ein Administrator richtet Organisation und Benutzer ein; serverseitige Rechte, Versionskonflikte, letzter Administrator, Sitzungswiderruf und atomarer Audit werden mit echter Datenbank geprüft. Freigegebene externe API-Clients erhalten ausschließlich die genehmigten Organisationsdaten/Events; Deaktivierung widerruft Tokens und ausstehende Zustellungen. Formatter, Analyzer, Tests und Smoke-Test bestehen. Keine Plugin-Codeausführung und keine Standortreplikation.
+
+## P1b – Erster fachlicher Vertical Slice (noch nicht implementiert)
 
 **Verbindliche Ende-zu-Ende-Reise:**
 
@@ -76,4 +82,4 @@ Strukturierte Geschäftsdokumente, Rechnungen, E-Rechnungsformate und Buchhaltun
 
 Jeder Release benötigt dokumentierte Rechte, serverseitige Validierung, Migrationen, sinnvolle Tests, Fehlerbehandlung, Auditentscheidung, sichere Konfiguration, Export-/Backup-Auswirkung und verständliche Bedienung. Updates prüfen vorhandene Daten, laufende Guided-Work-Snapshots und unterstützte ältere Vertragsversionen; ein erfolgreicher Neuaufbau allein ist kein Migrationsnachweis. Zusätzliche regulatorische Gates stehen im [Compliance-Überblick](../compliance/overview.md). Die größten offenen Architekturfragen stehen in der [kritischen Prüfung](../risks-and-open-questions.md).
 
-**Nächste konkrete Entwicklungsaufgabe nach P0:** Das Umsetzungsdesign für P1 festziehen: Verantwortlichkeit von Company/Location/Employee/Shift/TaskTemplate/TaskInstance, Übernahme der bestehenden Scope-IDs, API-Kommandos, Berechtigungsmatrix, Zustandsmaschinen, Auditfelder und Ende-zu-Ende-Abnahmetests. Danach den ausdrücklich freigegebenen P1-Slice bauen.
+**Nächste konkrete Entwicklungsaufgabe nach der Plattformphase:** Das Umsetzungsdesign für P1b festziehen: Verantwortlichkeit von Employee/Shift/TaskTemplate/TaskInstance, API-Kommandos, Berechtigungsmatrix, Zustandsmaschinen, Auditfelder und Ende-zu-Ende-Abnahmetests. Implementierung erst nach ausdrücklicher Freigabe dieses fachlichen Slice.

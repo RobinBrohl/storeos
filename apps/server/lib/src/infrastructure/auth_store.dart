@@ -1,5 +1,7 @@
 import 'package:postgres/postgres.dart';
 
+import '../platform/audit_repository.dart';
+
 final _schemaPattern = RegExp(r'^[a-z][a-z0-9_]*$');
 
 String quotedSchema(String schemaName) {
@@ -33,12 +35,18 @@ class SessionPrincipal {
     required this.username,
     required this.companyId,
     required this.locationId,
+    this.tokenHash,
   });
 
   final String id;
   final String username;
   final String companyId;
   final String locationId;
+  final String? tokenHash;
+}
+
+class SessionCreationRejected implements Exception {
+  const SessionCreationRejected();
 }
 
 abstract interface class AuthStore {
@@ -48,6 +56,8 @@ abstract interface class AuthStore {
     required String accountId,
     required String tokenHash,
     required DateTime expiresAt,
+    String? expectedPasswordHash,
+    String? expectedCompanyId,
   });
   Future<SessionPrincipal?> findSession(String tokenHash);
   Future<bool> revokeSession(String tokenHash);
@@ -69,11 +79,12 @@ class PostgresAuthStore implements AuthStore {
         timeout: const Duration(seconds: 2),
       );
       final migration = await pool.execute(
-        "SELECT 1 FROM $_schema.schema_migrations "
-        "WHERE version = '0001_platform_auth' LIMIT 1",
+        'SELECT count(*)::int AS count FROM $_schema.schema_migrations '
+        "WHERE version IN ('0001_platform_auth', "
+        "'0002_platform_organization', '0003_platform_events_plugins')",
         timeout: const Duration(seconds: 2),
       );
-      return migration.isNotEmpty;
+      return migration.single.toColumnMap()['count'] == 3;
     } catch (_) {
       return false;
     }
@@ -83,9 +94,13 @@ class PostgresAuthStore implements AuthStore {
   Future<StoredAccount?> findAccount(String usernameKey) async {
     final result = await pool.execute(
       Sql.named(
-        'SELECT id::text AS id, username, password_hash, '
-        'company_id::text AS company_id, location_id::text AS location_id, '
-        'is_active FROM $_schema.accounts WHERE username_key = @usernameKey',
+        'SELECT a.id::text AS id, a.username, a.password_hash, '
+        'a.company_id::text AS company_id, '
+        'a.location_id::text AS location_id, a.is_active '
+        'FROM $_schema.accounts a '
+        'JOIN $_schema.locations l ON l.id = a.location_id '
+        'AND l.company_id = a.company_id '
+        'WHERE username_key = @usernameKey',
       ),
       parameters: {'usernameKey': usernameKey},
     );
@@ -106,32 +121,70 @@ class PostgresAuthStore implements AuthStore {
     required String accountId,
     required String tokenHash,
     required DateTime expiresAt,
+    String? expectedPasswordHash,
+    String? expectedCompanyId,
   }) async {
-    await pool.execute(
-      Sql.named(
-        'INSERT INTO $_schema.auth_sessions '
-        '(account_id, token_hash, expires_at) '
-        'VALUES (CAST(@accountId AS uuid), @tokenHash, @expiresAt)',
-      ),
-      parameters: {
-        'accountId': accountId,
-        'tokenHash': tokenHash,
-        'expiresAt': expiresAt.toUtc(),
-      },
-    );
+    if (expectedCompanyId == null || expectedPasswordHash == null) {
+      throw ArgumentError('Expected account state is required.');
+    }
+    await pool.runTx((tx) async {
+      await tx.execute(
+        Sql.named('SELECT pg_advisory_xact_lock(hashtext(@key))'),
+        parameters: {'key': 'storeos_platform:$schemaName:$expectedCompanyId'},
+      );
+      final current = await tx.execute(
+        Sql.named(
+          'SELECT location_id::text AS location_id FROM $_schema.accounts '
+          'WHERE id = CAST(@accountId AS uuid) '
+          'AND company_id = CAST(@companyId AS uuid) '
+          'AND password_hash = @passwordHash AND is_active',
+        ),
+        parameters: {
+          'accountId': accountId,
+          'companyId': expectedCompanyId,
+          'passwordHash': expectedPasswordHash,
+        },
+      );
+      if (current.isEmpty) throw const SessionCreationRejected();
+      final session = await tx.execute(
+        Sql.named(
+          'INSERT INTO $_schema.auth_sessions '
+          '(account_id, token_hash, expires_at) '
+          'VALUES (CAST(@accountId AS uuid), @tokenHash, @expiresAt) '
+          'RETURNING id::text AS id',
+        ),
+        parameters: {
+          'accountId': accountId,
+          'tokenHash': tokenHash,
+          'expiresAt': expiresAt.toUtc(),
+        },
+      );
+      await AuditRepository(_schema).append(
+        tx,
+        actorId: accountId,
+        companyId: expectedCompanyId,
+        locationId: current.single.toColumnMap()['location_id']! as String,
+        action: 'auth.login',
+        entityType: 'session',
+        entityId: session.single.toColumnMap()['id']! as String,
+        changes: const {},
+      );
+    });
   }
 
   @override
   Future<SessionPrincipal?> findSession(String tokenHash) async {
     final result = await pool.execute(
       Sql.named(
-        'SELECT a.id::text AS id, a.username, '
+        'SELECT a.id::text AS id, a.username, s.token_hash, '
         'a.company_id::text AS company_id, '
         'a.location_id::text AS location_id '
         'FROM $_schema.auth_sessions s '
         'JOIN $_schema.accounts a ON a.id = s.account_id '
+        'JOIN $_schema.locations l ON l.id = a.location_id '
+        'AND l.company_id = a.company_id '
         'WHERE s.token_hash = @tokenHash AND s.revoked_at IS NULL '
-        'AND s.expires_at > now() AND a.is_active',
+        'AND s.expires_at > clock_timestamp() AND a.is_active',
       ),
       parameters: {'tokenHash': tokenHash},
     );
@@ -142,19 +195,51 @@ class PostgresAuthStore implements AuthStore {
       username: row['username']! as String,
       companyId: row['company_id']! as String,
       locationId: row['location_id']! as String,
+      tokenHash: (row['token_hash']! as String).trim(),
     );
   }
 
   @override
   Future<bool> revokeSession(String tokenHash) async {
-    final result = await pool.execute(
-      Sql.named(
-        'UPDATE $_schema.auth_sessions SET revoked_at = now() '
-        'WHERE token_hash = @tokenHash AND revoked_at IS NULL '
-        'AND expires_at > now()',
-      ),
-      parameters: {'tokenHash': tokenHash},
-    );
-    return result.affectedRows > 0;
+    return pool.runTx((tx) async {
+      final owner = await tx.execute(
+        Sql.named(
+          'SELECT a.id::text AS account_id, '
+          'a.company_id::text AS company_id, '
+          'a.location_id::text AS location_id '
+          'FROM $_schema.auth_sessions s '
+          'JOIN $_schema.accounts a ON a.id = s.account_id '
+          'WHERE s.token_hash = @tokenHash',
+        ),
+        parameters: {'tokenHash': tokenHash},
+      );
+      if (owner.isEmpty) return false;
+      final account = owner.single.toColumnMap();
+      final companyId = account['company_id']! as String;
+      await tx.execute(
+        Sql.named('SELECT pg_advisory_xact_lock(hashtext(@key))'),
+        parameters: {'key': 'storeos_platform:$schemaName:$companyId'},
+      );
+      final revoked = await tx.execute(
+        Sql.named(
+          'UPDATE $_schema.auth_sessions SET revoked_at = now() '
+          'WHERE token_hash = @tokenHash AND revoked_at IS NULL '
+          'AND expires_at > clock_timestamp() RETURNING id::text AS id',
+        ),
+        parameters: {'tokenHash': tokenHash},
+      );
+      if (revoked.isEmpty) return false;
+      await AuditRepository(_schema).append(
+        tx,
+        actorId: account['account_id']! as String,
+        companyId: companyId,
+        locationId: account['location_id']! as String,
+        action: 'auth.logout',
+        entityType: 'session',
+        entityId: revoked.single.toColumnMap()['id']! as String,
+        changes: const {},
+      );
+      return true;
+    });
   }
 }

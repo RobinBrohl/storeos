@@ -11,6 +11,7 @@ import 'package:storeos_api_contracts/api_contracts.dart';
 import '../application/auth_service.dart';
 import '../config.dart';
 import '../infrastructure/auth_store.dart';
+import '../platform/platform_database.dart';
 import 'json_logger.dart';
 
 class ServerApp {
@@ -18,6 +19,7 @@ class ServerApp {
     required this.config,
     required this.auth,
     required this.store,
+    this.platformHandler,
     JsonLogger? logger,
   }) : _logger = logger ?? const JsonLogger() {
     _router.get('/health', _health);
@@ -30,6 +32,7 @@ class ServerApp {
   final ServerConfig config;
   final AuthService auth;
   final AuthStore store;
+  final Handler? platformHandler;
   final JsonLogger _logger;
   final Router _router = Router();
   final Random _random = Random.secure();
@@ -48,9 +51,16 @@ class ServerApp {
         response = _preflight(request);
       } else {
         response = await _router.call(request);
+        if (response.statusCode == 404 && platformHandler != null) {
+          response = await platformHandler!(request);
+        }
       }
     } on _InputFailure catch (error) {
       response = _error(error.status, error.code, error.message);
+    } on PlatformFailure catch (error) {
+      response = _error(error.status, error.code, error.message);
+    } on FormatException {
+      response = _error(400, 'invalid_request', 'Invalid request.');
     } on AuthFailure catch (error) {
       response = switch (error.reason) {
         AuthFailureReason.invalidCredentials => _error(
@@ -78,9 +88,19 @@ class ServerApp {
       _logger.event(
         'database_error',
         level: 'error',
-        fields: {'requestId': requestId, 'type': error.runtimeType.toString()},
+        fields: {
+          'requestId': requestId,
+          'type': error.runtimeType.toString(),
+          if (error is ServerException) 'sqlState': error.code,
+        },
       );
-      response = _error(503, 'database_unavailable', 'Database unavailable.');
+      response = switch (error is ServerException ? error.code : null) {
+        '23505' => _error(409, 'conflict', 'The record already exists.'),
+        '23503' ||
+        '23514' ||
+        '22P02' => _error(400, 'invalid_request', 'Invalid request.'),
+        _ => _error(503, 'database_unavailable', 'Database unavailable.'),
+      };
     } on SocketException catch (error) {
       _logger.event(
         'database_connection_error',

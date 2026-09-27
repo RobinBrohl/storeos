@@ -152,6 +152,7 @@ void main() {
             '0003_platform_events_plugins',
             '0004_employee_identity_and_audit',
             '0005_task_templates',
+            '0006_shifts_and_task_instances',
           ],
         );
         final account = await connection.execute(
@@ -566,6 +567,7 @@ void main() {
         expect(await runner.apply(), [
           '0004_employee_identity_and_audit',
           '0005_task_templates',
+          '0006_shifts_and_task_instances',
         ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(

@@ -45,6 +45,10 @@ const _permissions = <String>[
   'plugins.write',
   'people.manage',
   'tasks.templates.manage',
+  'workforce.shifts.manage',
+  'workforce.shifts.self.read',
+  'tasks.instances.read',
+  'tasks.instances.self.read',
   'people.self.read',
 ];
 
@@ -56,7 +60,13 @@ List<String> permissionsForRole(String role) => switch (role) {
     'audit.read',
     'events.read',
   ],
-  'employee' => const ['context.read', 'organization.read', 'people.self.read'],
+  'employee' => const [
+    'context.read',
+    'organization.read',
+    'people.self.read',
+    'workforce.shifts.self.read',
+    'tasks.instances.self.read',
+  ],
   'viewer' => const ['context.read', 'organization.read'],
   _ => const [],
 };

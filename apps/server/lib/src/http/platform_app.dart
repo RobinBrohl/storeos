@@ -1,3 +1,5 @@
+import 'shift_routes.dart';
+import '../application/shift_application.dart';
 import 'package:shelf/shelf.dart';
 
 import '../application/auth_service.dart';
@@ -14,6 +16,7 @@ import 'platform_plugin_routes.dart';
 /// Composition only; authorization and mutations remain in application services.
 Handler createPlatformHandler(AuthService auth, PlatformDatabase database) =>
     Cascade()
+        .add(ShiftRoutes(auth, ShiftApplication(database)).router.call)
         .add(
           TaskTemplateRoutes(auth, TaskTemplateService(database)).router.call,
         )

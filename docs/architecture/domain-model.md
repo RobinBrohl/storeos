@@ -63,3 +63,7 @@ Eine Temperaturangabe im ersten Guided-Work-Beispiel ist daher nur eine Eingabe 
 - Veröffentlichung und Änderungsfreigabe einer Shift; arbeitsrechtliche Regeln variieren je Einsatzland.
 - Versionierungs- und Freigabeverfahren für Vorlagen und SOPs einschließlich rückwirkender Korrekturen.
 - Welche Mitarbeiterdaten pro Standort repliziert werden dürfen und wie lange sie lokal bleiben.
+
+## Implementierter P1b.3-Teilslice
+
+Einzelschichten unterstützen `draft → published`; TaskInstance enthält einen unveränderlichen Snapshot und bleibt ausschließlich lesend `open`. Ausführung und Completion fehlen bewusst. Die Oberfläche verwendet explizites UTC; die konzeptionelle IANA-Standortzeitzone muss vor lokalen Kalender-/Serienregeln ergänzt werden. [Details und Grenzen](../development/phase-1b-shifts.md).

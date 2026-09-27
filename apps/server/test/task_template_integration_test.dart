@@ -84,7 +84,10 @@ void main() {
         schemaName: f.schema,
         runtimeDatabaseUser: f.runtimeUser,
       );
-      expect(await runner.apply(), ['0005_task_templates']);
+      expect(await runner.apply(), [
+        '0005_task_templates',
+        '0006_shifts_and_task_instances',
+      ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);
       await f.call('POST', '/task-templates', body: _input(), expected: 201);

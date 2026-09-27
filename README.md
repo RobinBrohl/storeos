@@ -2,7 +2,9 @@
 
 StoreOS ist ein langfristig angelegtes, quelloffenes Betriebssystem für standortgebundene Unternehmen. Es soll tägliche Arbeit, Wissen und betriebliche Daten in einer selbst betriebenen Plattform verbinden. Der erste fachliche Schwerpunkt ist die geführte Arbeit von Mitarbeitenden.
 
-**Projektstand:** Plattformverwaltung, P1b.1 – Mitarbeiteridentität und P1b.2 – versionierte Arbeitsvorlagen. Neben Company, Location, Benutzern, Rollen, Audit, Event Bus und begrenzter Plugin-API gibt es operative Mitarbeiterprofile, eine feste Standortzuordnung, explizite Account-Verknüpfungen und eine Eigenansicht. Administratoren können standortgebundene Vorlagen bearbeiten und unveränderliche Revisionen freigeben. Die vollständige Mitarbeiterreise ist noch nicht implementiert. Es gibt keine Workforce-, Warenwirtschafts-, HACCP-, POS- oder Accounting-Funktionen und keine Offline-Schreibfunktionen.
+**Projektstand:** P1-Plattform, P1b.1 Mitarbeiteridentität, P1b.2 Arbeitsvorlagen und [P1b.3 Schichten mit lesendem Employee Home](docs/development/phase-1b-shifts.md). Administratoren planen Einzelschichten und veröffentlichen ausgewählte Vorlagenrevisionen atomar als Aufgaben-Snapshots. Verknüpfte Mitarbeiter lesen ihre geplante Arbeit und Anleitungen. Guided Work, Completion, Änderungen veröffentlichter Schichten und Offline-Schreiben sind noch nicht implementiert. Warenwirtschaft, HACCP, POS und Accounting bleiben außerhalb des aktuellen Umfangs.
+
+**Upgrade auf P1b.3:** Datenbank sichern, Server stoppen, `./scripts/dev.ps1 migrate` ausführen und Server/Client neu starten. Migration `0006` ergänzt Schichten, Revisionszuordnungen und Aufgabeninstanzen; bestehende Daten bleiben erhalten. Unter **Schichten** einen aktiven Mitarbeiter und UTC-Zeiten wählen, veröffentlichte Revisionen zuordnen, speichern und veröffentlichen. Mitarbeiter öffnen anschließend **Meine Arbeit**. Eine Veröffentlichung kann derzeit nicht korrigiert oder storniert werden.
 
 ## Lokal starten
 

@@ -1,3 +1,4 @@
+import '../application/shift_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:storeos_design_system/storeos_design_system.dart';
@@ -33,6 +34,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   PlatformController? _platformController;
   EmployeeController? _employees;
   TaskTemplateController? _templates;
+  ShiftController? _shifts, _home;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _wasAuthenticated = false;
 
@@ -43,6 +45,13 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _controller.addListener(_closeDialogsOnSessionEnd);
     if (widget.platformApi case final api?) {
       _platformController = PlatformController(_controller, api);
+      _shifts = ShiftController(_controller, _platformController!, api);
+      _home = ShiftController(
+        _controller,
+        _platformController!,
+        api,
+        self: true,
+      );
       _employees = EmployeeController(_controller, _platformController!, api);
       _templates = TaskTemplateController(
         _controller,
@@ -55,6 +64,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
   @override
   void dispose() {
     _controller.removeListener(_closeDialogsOnSessionEnd);
+    _shifts?.dispose();
+    _home?.dispose();
     _templates?.dispose();
     _employees?.dispose();
     _platformController?.dispose();
@@ -101,6 +112,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       platform: _platformController!,
                       employees: _employees!,
                       templates: _templates!,
+                      shifts: _shifts,
+                      home: _home,
                       baseUri: widget.baseUri,
                     )
             : LoginScreen(controller: _controller, baseUri: widget.baseUri),

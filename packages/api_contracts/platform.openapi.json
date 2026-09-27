@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "StoreOS platform, employee and task template API",
+    "title": "StoreOS platform and employee workflow API",
     "version": "1.0.0",
-    "description": "Single company and writer. P1 platform, P1b.1 employee identity and P1b.2 versioned local task templates. No shifts, task instances, execution, offline writes or managed plugin runtime."
+    "description": "Single company and writer. P1 platform, employee identity, published template revisions and P1b.3 atomic shift publication with read-only employee home. No task execution or offline writes."
   },
   "paths": {
     "/api/v1/platform/context": {
@@ -1598,6 +1598,374 @@
           }
         }
       }
+    },
+    "/api/v1/platform/shifts": {
+      "post": {
+        "operationId": "createShift",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location. State and audit share one transaction; no integration events. Published shifts and snapshots cannot be changed. Create ID is bound to actor, location and original normalized content; identical retries return current state. Publish retry with the original expectedVersion returns the same tasks after fresh authorization. Conflicting versions return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShift"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "adminShiftPage",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor; ordered by start and ID. Self view returns only shifts ending after server time."
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/shifts/{id}/edit": {
+      "post": {
+        "operationId": "editShift",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location. State and audit share one transaction; no integration events. Published shifts and snapshots cannot be changed. Create ID is bound to actor, location and original normalized content; identical retries return current state. Publish retry with the original expectedVersion returns the same tasks after fresh authorization. Conflicting versions return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditShift"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/shifts/{id}/publish": {
+      "post": {
+        "operationId": "publishShift",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location. State and audit share one transaction; no integration events. Published shifts and snapshots cannot be changed. Create ID is bound to actor, location and original normalized content; identical retries return current state. Publish retry with the original expectedVersion returns the same tasks after fresh authorization. Conflicting versions return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishShift"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/shifts/{id}": {
+      "get": {
+        "operationId": "adminShiftDetail",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/shifts/{id}/tasks/{taskId}": {
+      "get": {
+        "operationId": "adminTaskInstanceDetail",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInstanceDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/employee-home/shifts": {
+      "get": {
+        "operationId": "ownShiftPage",
+        "description": "Requires workforce.shifts.self.read and tasks.instances.self.read, an active account/employee link, own employee and matching location. Only published shifts.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor; ordered by start and ID. Self view returns only shifts ending after server time."
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}": {
+      "get": {
+        "operationId": "ownShiftDetail",
+        "description": "Requires workforce.shifts.self.read and tasks.instances.self.read, an active account/employee link, own employee and matching location. Only published shifts.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}": {
+      "get": {
+        "operationId": "ownTaskInstanceDetail",
+        "description": "Requires workforce.shifts.self.read and tasks.instances.self.read, an active account/employee link, own employee and matching location. Only published shifts.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInstanceDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3032,6 +3400,359 @@
           "expectedVersion": {
             "type": "integer",
             "minimum": 1
+          }
+        }
+      },
+      "ShiftSelection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "templateId",
+          "revisionId"
+        ],
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CreateShift": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locationId",
+          "employeeId",
+          "startsAt",
+          "endsAt",
+          "selections"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC."
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC."
+          },
+          "selections": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/ShiftSelection"
+            },
+            "description": "Ordered, unique template IDs; every selected revision must be published at the same location. Publication requires at least one selection."
+          }
+        }
+      },
+      "EditShift": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "employeeId",
+          "startsAt",
+          "endsAt",
+          "selections"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC."
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC."
+          },
+          "selections": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/ShiftSelection"
+            },
+            "description": "Ordered, unique template IDs; every selected revision must be published at the same location. Publication requires at least one selection."
+          }
+        }
+      },
+      "PublishShift": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "Shift": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "locationId",
+          "employeeId",
+          "startsAt",
+          "endsAt",
+          "selections",
+          "status",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "publishedAt",
+          "publicationVersion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC."
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC."
+          },
+          "selections": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/ShiftSelection"
+            },
+            "description": "Ordered, unique template IDs; every selected revision must be published at the same location. Publication requires at least one selection."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC."
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC."
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "publicationVersion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        }
+      },
+      "TaskInstanceSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "shiftId",
+          "employeeId",
+          "templateId",
+          "revisionId",
+          "title",
+          "position",
+          "status",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "shiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          },
+          "status": {
+            "const": "open"
+          },
+          "version": {
+            "const": 1
+          }
+        }
+      },
+      "TaskInstanceDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "shiftId",
+          "employeeId",
+          "templateId",
+          "revisionId",
+          "title",
+          "position",
+          "status",
+          "version",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "shiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          },
+          "status": {
+            "const": "open"
+          },
+          "version": {
+            "const": 1
+          },
+          "content": {
+            "$ref": "#/components/schemas/TaskTemplateContent"
+          }
+        }
+      },
+      "ShiftDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "shift",
+          "tasks"
+        ],
+        "properties": {
+          "shift": {
+            "$ref": "#/components/schemas/Shift"
+          },
+          "tasks": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/TaskInstanceSummary"
+            }
+          }
+        }
+      },
+      "ShiftPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ShiftDetail"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }

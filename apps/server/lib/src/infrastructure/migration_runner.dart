@@ -157,6 +157,23 @@ class MigrationRunner {
             'FROM $role',
           );
         }
+        if (known.containsKey('0006_shifts_and_task_instances')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.shifts, $_schema.shift_template_selections, $_schema.task_instances TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (employee_id, starts_at, ends_at, status, version, updated_at, published_at, published_by, publication_version) ON $_schema.shifts TO $role',
+          );
+          await tx.execute(
+            'GRANT DELETE ON $_schema.shift_template_selections TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.task_instances FROM $role',
+          );
+          await tx.execute(
+            'REVOKE DELETE, TRUNCATE ON $_schema.shifts FROM $role',
+          );
+        }
         if (known.containsKey('0005_task_templates')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.task_templates, $_schema.task_template_revisions TO $role',

@@ -16,6 +16,28 @@ class TaskTemplateRepository {
   String get _revisionColumns =>
       'id::text, template_id::text, revision_number, status, title, created_at, published_at, published_by::text';
   Map<String, dynamic> get _scope => {'company': companyId};
+
+  /// Fetch pinned published revisions in one scoped query, never "latest".
+  Future<Map<String, TemplateRevisionDto>> publishedSelections(
+    TxSession tx,
+    String locationId,
+    List<String> revisionIds,
+  ) async {
+    if (revisionIds.isEmpty) return {};
+    final rows = await tx.execute(
+      Sql.named(
+        'SELECT $_revisionColumns, content FROM $schema.task_template_revisions '
+        'WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) '
+        "AND status='published' AND id=ANY(CAST(@ids AS uuid[]))",
+      ),
+      parameters: {..._scope, 'location': locationId, 'ids': revisionIds},
+    );
+    return {
+      for (final row in rows)
+        (row.toColumnMap()['id'] as String): _revision(row.toColumnMap()),
+    };
+  }
+
   Future<TaskTemplateDto?> find(TxSession tx, String id) async {
     final rows = await tx.execute(
       Sql.named(

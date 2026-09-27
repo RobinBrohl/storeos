@@ -1,6 +1,8 @@
 /// Public, JSON-serializable API v1 contracts. No database or domain models.
 library;
 
+export 'src/shifts.dart';
+
 export 'src/platform_identity.dart';
 export 'src/employees.dart';
 export 'src/task_templates.dart';

@@ -43,6 +43,10 @@ class AuditRepository {
       'accountId',
       'employeeId',
       'revisionId',
+      'revisionIds',
+      'shiftId',
+      'startsAt',
+      'endsAt',
       'revisionNumber',
       'changedFields',
     };

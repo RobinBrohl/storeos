@@ -2,7 +2,7 @@
 
 StoreOS ist ein langfristig angelegtes, quelloffenes Betriebssystem für standortgebundene Unternehmen. Es soll tägliche Arbeit, Wissen und betriebliche Daten in einer selbst betriebenen Plattform verbinden. Der erste fachliche Schwerpunkt ist die geführte Arbeit von Mitarbeitenden.
 
-**Projektstand:** Plattformverwaltung und P1b.1 – Mitarbeiteridentität. Neben Company, Location, Benutzern, Rollen, Audit, Event Bus und begrenzter Plugin-API gibt es operative Mitarbeiterprofile, eine feste Standortzuordnung, explizite Account-Verknüpfungen und eine Eigenansicht. Die vollständige Mitarbeiterreise ist noch nicht implementiert. Es gibt keine Workforce-, Warenwirtschafts-, HACCP-, POS- oder Accounting-Funktionen und keine Offline-Schreibfunktionen.
+**Projektstand:** Plattformverwaltung, P1b.1 – Mitarbeiteridentität und P1b.2 – versionierte Arbeitsvorlagen. Neben Company, Location, Benutzern, Rollen, Audit, Event Bus und begrenzter Plugin-API gibt es operative Mitarbeiterprofile, eine feste Standortzuordnung, explizite Account-Verknüpfungen und eine Eigenansicht. Administratoren können standortgebundene Vorlagen bearbeiten und unveränderliche Revisionen freigeben. Die vollständige Mitarbeiterreise ist noch nicht implementiert. Es gibt keine Workforce-, Warenwirtschafts-, HACCP-, POS- oder Accounting-Funktionen und keine Offline-Schreibfunktionen.
 
 ## Lokal starten
 
@@ -24,6 +24,10 @@ Im Repository-Hauptverzeichnis:
 **Upgrade von P0:** Server stoppen, `.env`, Secrets und Datenbank sichern, `./scripts/dev.ps1 migrate` ausführen und Server/Client neu starten. `bootstrap` nicht erneut aufrufen. Bestehende IDs und Passwort-Hashes bleiben erhalten; ausschließlich der ursprüngliche Bootstrap-Account erhält beim Upgrade die Administratorrolle. Angewendete Migrationsdateien niemals ändern.
 
 **Upgrade von P1 auf P1b.1:** Ebenso sichern, Server stoppen, migrieren und Server/Client neu starten. Migration `0004` ergänzt Mitarbeiter, Account-Verknüpfungen, die Rolle `employee` und Audit-Korrelation. Bestehende Accounts werden nicht automatisch verknüpft; Rollen bleiben erhalten. Historische Audit-Korrelation bleibt unbekannt (`null`). Bei einem statisch ausgelieferten Flutter-Build den Client neu bauen und den Browser neu laden.
+
+**Upgrade auf P1b.2:** Datenbank sichern, Server stoppen, `./scripts/dev.ps1 migrate` ausführen und Server/Client neu starten beziehungsweise den statischen Flutter-Build erneuern. Migration `0005` ergänzt ausschließlich Vorlagen und Revisionen mit Datenbankrechten und Schutz freigegebener Inhalte. Bestehende Daten und Rollen bleiben erhalten.
+
+**Arbeitsvorlagen verwenden:** Als Administrator unter „Arbeitsvorlagen“ einen Titel und eingerichteten Standort wählen. Anleitungsschritte ergänzen, Entwurf speichern und Revision freigeben. Für Änderungen eine neue Revision aus der letzten Freigabe anlegen; alte Revisionen bleiben lesbar. Freigabe benötigt mindestens einen vollständigen Bestätigungsschritt. Die Eingaben definieren Anleitungen, keine Aufgabenausführung. Bei Konflikten lokale Eingaben mit dem angezeigten Serverstand vergleichen und diesen ausdrücklich übernehmen. Ohne Verbindung zum lokalen Server sind Speichern und Freigabe nicht möglich. [Umfang und Grenzen](docs/development/phase-1b-templates.md).
 
 **Mitarbeiterprofil verwenden:** Als Administrator zuerst Organisation und Standort einrichten, unter „Mitarbeiter“ ein Profil anlegen und einen vorhandenen aktiven Account desselben Standorts verknüpfen. Die Account-Rolle wird separat in der Benutzerverwaltung vergeben; `employee` darf nur die eigene Organisation und das eigene verknüpfte Profil lesen. Verknüpfen, Entziehen und Profildeaktivierung widerrufen betroffene Sitzungen. Nach erneuter Anmeldung erscheint „Mein Mitarbeiterprofil“. Das ist eine Profilansicht ohne Schichten oder Aufgaben. [Rechte, Grenzen und API](docs/development/phase-1b-employee.md).
 
@@ -65,7 +69,9 @@ Weitere Implementierungsgrenzen und Abnahmekriterien: [Phase-0-Grundlage](docs/d
 
 ## Einstieg
 
-Der aktuelle [P1b.1-Prüfnachweis](docs/development/phase-1b-verification.md) dokumentiert Tests, Upgrade, Browser-Smoke und Restore der Mitarbeiteridentität.
+Der [P1b.1-Prüfnachweis](docs/development/phase-1b-verification.md) dokumentiert Tests, Upgrade, Browser-Smoke und Restore der Mitarbeiteridentität.
+
+Der [P1b.2-Prüfnachweis](docs/development/phase-1b-templates-verification.md) dokumentiert die Arbeitsvorlagen-Abnahme.
 
 - [Vision](docs/vision.md) und [Produktprinzipien](docs/product-principles.md)
 - [Architektur](docs/architecture/overview.md), [kritische Prüfung](docs/risks-and-open-questions.md) und [ADRs](docs/adr/)

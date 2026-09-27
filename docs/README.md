@@ -15,4 +15,9 @@ Diese Dokumente verdichten die vom Projektgründer bereitgestellte StoreOS-Produ
 - [P1b.1-Prüfnachweis](development/phase-1b-verification.md) – Tests, Upgrade, Browser-Smoke, Restore und geänderte Dateien
 - [Review des P1b.1-Entwicklungszyklus](development/phase-1b-review-2026-09-27.md) – konkrete Befunde, Korrekturen, Regressionstests und verbleibende Grenzen
 
+- [P1b.2 – Arbeitsvorlagen](development/phase-1b-templates.md) – verbindlicher Scope, Modell, API, Rechte und Audit
+- [P1b.2-Prüfnachweis](development/phase-1b-templates-verification.md) – Tests, Smoke, Wiederherstellung und geänderte Dateien
+
+- [Review des P1b.2-Zyklus](development/phase-1b-templates-review-2026-09-27.md) – drei behobene Befunde, Regressionstests und finale Prüfung
+
 Änderungen an Verhalten, Eigentümerschaft von Daten oder Modulgrenzen aktualisieren die betroffenen Dokumente im selben Arbeitsschritt. Eine verworfene ADR wird durch eine neue ersetzt und im alten Dokument als überholt markiert.

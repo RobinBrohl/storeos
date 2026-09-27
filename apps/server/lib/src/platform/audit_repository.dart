@@ -42,6 +42,8 @@ class AuditRepository {
       'version',
       'accountId',
       'employeeId',
+      'revisionId',
+      'revisionNumber',
       'changedFields',
     };
     for (final entry in changes.entries) {

@@ -1,0 +1,234 @@
+import 'dart:convert';
+
+/// Versioned instruction content, not execution results or a workflow engine.
+class TaskTemplateContent {
+  TaskTemplateContent({required this.title, required List<TemplateStep> steps})
+    : steps = List.unmodifiable(steps);
+  final String title;
+  final List<TemplateStep> steps;
+  factory TaskTemplateContent.fromJson(Map<String, dynamic> json) {
+    _keys(json, {'schemaVersion', 'title', 'steps'});
+    if (json['schemaVersion'] is! int ||
+        json['schemaVersion'] != 1 ||
+        json['steps'] is! List) {
+      throw const FormatException('Ungültiges Inhaltsschema.');
+    }
+    final title = _text(json, 'title').trim();
+    if (title.isEmpty ||
+        title.runes.length > 120 ||
+        _controls.hasMatch(title)) {
+      throw const FormatException(
+        'Der Titel benötigt 1 bis 120 Zeichen ohne Steuerzeichen.',
+      );
+    }
+    final steps = (json['steps'] as List)
+        .map((raw) => TemplateStep.fromJson(_object(raw)))
+        .toList();
+    if (steps.length > 20 ||
+        steps.map((s) => s.id).toSet().length != steps.length) {
+      throw const FormatException(
+        'Maximal 20 Schritte mit eindeutigen IDs sind erlaubt.',
+      );
+    }
+    final value = TaskTemplateContent(title: title, steps: steps);
+    if (utf8.encode(jsonEncode(value.toJson())).length > 8192) {
+      throw const FormatException(
+        'Der gesamte Vorlageninhalt darf 8 KiB nicht überschreiten.',
+      );
+    }
+    return value;
+  }
+  Map<String, dynamic> toJson() => {
+    'schemaVersion': 1,
+    'title': title,
+    'steps': steps.map((s) => s.toJson()).toList(),
+  };
+}
+
+final _uuid = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+);
+final _controls = RegExp(r'[\x00-\x1f\x7f]');
+final _instructionControls = RegExp(r'[\x00-\x08\x0b-\x1f\x7f]');
+
+class TemplateStep {
+  const TemplateStep({required this.id, required this.instruction});
+  final String id, instruction;
+  factory TemplateStep.fromJson(Map<String, dynamic> json) {
+    _keys(json, {'id', 'type', 'instruction'});
+    final id = _text(json, 'id').toLowerCase();
+    final instruction = _text(
+      json,
+      'instruction',
+    ).replaceAll('\r\n', '\n').trim();
+    if (!_uuid.hasMatch(id) ||
+        json['type'] != 'confirmation' ||
+        instruction.isEmpty ||
+        instruction.runes.length > 1000 ||
+        _instructionControls.hasMatch(instruction)) {
+      throw const FormatException(
+        'Ein Schritt benötigt eine gültige ID und 1 bis 1.000 Zeichen Anleitungstext.',
+      );
+    }
+    return TemplateStep(id: id, instruction: instruction);
+  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'type': 'confirmation',
+    'instruction': instruction,
+  };
+}
+
+class TaskTemplateDto {
+  const TaskTemplateDto({
+    required this.id,
+    required this.companyId,
+    required this.locationId,
+    required this.version,
+    required this.title,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.draftId,
+    required this.publishedId,
+  });
+  final String id, companyId, locationId, title;
+  final int version;
+  final DateTime createdAt, updatedAt;
+  final String? draftId, publishedId;
+  factory TaskTemplateDto.fromJson(Map<String, dynamic> json) =>
+      TaskTemplateDto(
+        id: _id(json, 'id'),
+        companyId: _id(json, 'companyId'),
+        locationId: _id(json, 'locationId'),
+        version: _positive(json, 'version'),
+        title: _text(json, 'title'),
+        createdAt: _time(json, 'createdAt'),
+        updatedAt: _time(json, 'updatedAt'),
+        draftId: json['draftId'] == null ? null : _id(json, 'draftId'),
+        publishedId: json['publishedId'] == null
+            ? null
+            : _id(json, 'publishedId'),
+      );
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'companyId': companyId,
+    'locationId': locationId,
+    'version': version,
+    'title': title,
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'updatedAt': updatedAt.toUtc().toIso8601String(),
+    'draftId': draftId,
+    'publishedId': publishedId,
+  };
+}
+
+class TemplateRevisionDto {
+  const TemplateRevisionDto({
+    required this.id,
+    required this.templateId,
+    required this.number,
+    required this.status,
+    required this.title,
+    required this.createdAt,
+    required this.publishedAt,
+    required this.publishedBy,
+    this.content,
+  });
+  final String id, templateId, status, title;
+  final int number;
+  final DateTime createdAt;
+  final DateTime? publishedAt;
+  final String? publishedBy;
+  final TaskTemplateContent? content;
+  bool get isDraft => status == 'draft';
+  factory TemplateRevisionDto.fromJson(Map<String, dynamic> json) {
+    final status = _text(json, 'status');
+    final time = json['publishedAt'] == null
+        ? null
+        : _time(json, 'publishedAt');
+    final by = json['publishedBy'] == null ? null : _id(json, 'publishedBy');
+    if (!{'draft', 'published'}.contains(status) ||
+        (status == 'draft'
+            ? time != null || by != null
+            : time == null || by == null)) {
+      throw const FormatException('Ungültiger Revisionszustand.');
+    }
+    final content = json['content'] == null
+        ? null
+        : TaskTemplateContent.fromJson(_object(json['content']));
+    final title = _text(json, 'title');
+    if (content != null &&
+        (content.title != title ||
+            (status == 'published' && content.steps.isEmpty))) {
+      throw const FormatException('Inkonsistenter Revisionsinhalt.');
+    }
+    return TemplateRevisionDto(
+      id: _id(json, 'id'),
+      templateId: _id(json, 'templateId'),
+      number: _positive(json, 'number'),
+      status: status,
+      title: title,
+      createdAt: _time(json, 'createdAt'),
+      publishedAt: time,
+      publishedBy: by,
+      content: content,
+    );
+  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'templateId': templateId,
+    'number': number,
+    'status': status,
+    'title': title,
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'publishedAt': publishedAt?.toUtc().toIso8601String(),
+    'publishedBy': publishedBy,
+    if (content != null) 'content': content!.toJson(),
+  };
+}
+
+void _keys(Map<String, dynamic> value, Set<String> expected) {
+  if (value.length != expected.length ||
+      !value.keys.toSet().containsAll(expected)) {
+    throw const FormatException('Ungültige Inhaltsfelder.');
+  }
+}
+
+Map<String, dynamic> _object(Object? raw) {
+  if (raw is! Map<String, dynamic>) {
+    throw const FormatException('Objekt erwartet.');
+  }
+  return raw;
+}
+
+String _text(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is! String ||
+      value.isEmpty ||
+      value.runes.any((rune) => rune >= 0xd800 && rune <= 0xdfff)) {
+    throw FormatException('Ungültiges Feld: $key');
+  }
+  return value;
+}
+
+String _id(Map<String, dynamic> json, String key) {
+  final value = _text(json, key);
+  if (!_uuid.hasMatch(value)) throw FormatException('Ungültige ID: $key');
+  return value;
+}
+
+int _positive(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is! int || value < 1) {
+    throw FormatException('Ungültige Version: $key');
+  }
+  return value;
+}
+
+DateTime _time(Map<String, dynamic> json, String key) {
+  final value = DateTime.tryParse(_text(json, key));
+  if (value == null || !value.isUtc) {
+    throw FormatException('Ungültige UTC-Zeit: $key');
+  }
+  return value;
+}

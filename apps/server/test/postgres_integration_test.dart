@@ -151,6 +151,7 @@ void main() {
             '0002_platform_organization',
             '0003_platform_events_plugins',
             '0004_employee_identity_and_audit',
+            '0005_task_templates',
           ],
         );
         final account = await connection.execute(
@@ -562,7 +563,10 @@ void main() {
           runtimeDatabaseUser:
               Platform.environment['STOREOS_DB_USER'] ?? 'storeos',
         );
-        expect(await runner.apply(), ['0004_employee_identity_and_audit']);
+        expect(await runner.apply(), [
+          '0004_employee_identity_and_audit',
+          '0005_task_templates',
+        ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(
           'SELECT id::text, password_hash, role, version FROM "$schema".accounts',

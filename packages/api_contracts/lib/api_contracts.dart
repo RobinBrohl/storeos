@@ -3,6 +3,7 @@ library;
 
 export 'src/platform_identity.dart';
 export 'src/employees.dart';
+export 'src/task_templates.dart';
 export 'src/platform_plugins.dart';
 
 class HealthResponse {

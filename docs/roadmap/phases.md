@@ -22,6 +22,8 @@ Die ausdrückliche Freigabe vom 2026-09-27 zieht Company, Location, User/Authent
 
 Der freigegebene Teilslice [P1b.1 – Mitarbeiteridentität und Eigenansicht](../development/phase-1b-employee.md) implementiert Employee, eine feste Standortzuordnung, die explizite Account-Verknüpfung, administrative Verwaltung, das eigene Profil und Audit. Die folgende vollständige Mitarbeiterreise bleibt offen; P1b.1 ist keine Freigabe für Schichten oder Aufgaben.
 
+Der separat freigegebene Teilslice [P1b.2 – Arbeitsvorlagen](../development/phase-1b-templates.md) ergänzt standortgebundene Entwürfe, versionierte Freigaben, Historie und Audit. Er schafft die Vorlagenbasis für spätere Instanzen; Shift, TaskInstance und Guided Work bleiben offen. [Prüfnachweis](../development/phase-1b-templates-verification.md).
+
 **Verbindliche Ende-zu-Ende-Reise:**
 
 `Company → Location → Employee → Shift → TaskTemplate → TaskInstance → Employee Home → Guided Work → Completion → Audit Log`
@@ -84,4 +86,4 @@ Strukturierte Geschäftsdokumente, Rechnungen, E-Rechnungsformate und Buchhaltun
 
 Jeder Release benötigt dokumentierte Rechte, serverseitige Validierung, Migrationen, sinnvolle Tests, Fehlerbehandlung, Auditentscheidung, sichere Konfiguration, Export-/Backup-Auswirkung und verständliche Bedienung. Updates prüfen vorhandene Daten, laufende Guided-Work-Snapshots und unterstützte ältere Vertragsversionen; ein erfolgreicher Neuaufbau allein ist kein Migrationsnachweis. Zusätzliche regulatorische Gates stehen im [Compliance-Überblick](../compliance/overview.md). Die größten offenen Architekturfragen stehen in der [kritischen Prüfung](../risks-and-open-questions.md).
 
-**Aktueller Umsetzungsumfang:** P1b.1 gemäß [Teilslice und Abnahmekriterien](../development/phase-1b-employee.md). Weitere Teile der Mitarbeiterreise benötigen eine eigene Scope-Freigabe; sie werden nicht im Zuge dieses Teilslice begonnen.
+**Aktueller Umsetzungsumfang:** [P1b.1 – Mitarbeiteridentität](../development/phase-1b-employee.md) sowie [P1b.2 – Arbeitsvorlagen](../development/phase-1b-templates.md). Weitere Teile der Mitarbeiterreise benötigen eine eigene Scope-Freigabe; sie werden nicht im Zuge dieses Teilslice begonnen.

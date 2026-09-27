@@ -157,6 +157,20 @@ class MigrationRunner {
             'FROM $role',
           );
         }
+        if (known.containsKey('0005_task_templates')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.task_templates, $_schema.task_template_revisions TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (version, updated_at) ON $_schema.task_templates TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (content, status, published_at, published_by, publication_version) ON $_schema.task_template_revisions TO $role',
+          );
+          await tx.execute(
+            'REVOKE DELETE, TRUNCATE ON $_schema.task_templates, $_schema.task_template_revisions FROM $role',
+          );
+        }
         if (known.containsKey('0004_employee_identity_and_audit')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.employees, '

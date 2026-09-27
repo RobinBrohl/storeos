@@ -5,6 +5,8 @@ import '../application/platform_controller.dart';
 import '../application/session_controller.dart';
 import 'platform_sections.dart';
 import 'employee_section.dart';
+import 'task_template_section.dart';
+import '../application/task_template_controller.dart';
 import '../application/employee_controller.dart';
 import 'system_status_screen.dart';
 
@@ -17,6 +19,7 @@ enum _Section {
   plugins,
   people,
   profile,
+  templates,
 }
 
 class PlatformHomeScreen extends StatefulWidget {
@@ -24,6 +27,7 @@ class PlatformHomeScreen extends StatefulWidget {
     required this.session,
     required this.platform,
     required this.employees,
+    this.templates,
     required this.baseUri,
     super.key,
   });
@@ -31,6 +35,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final SessionController session;
   final PlatformController platform;
   final EmployeeController employees;
+  final TaskTemplateController? templates;
   final Uri baseUri;
 
   @override
@@ -42,6 +47,9 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   List<_Section> get _available => [
     _Section.status,
+    if (widget.templates != null &&
+        widget.platform.allows('tasks.templates.manage'))
+      _Section.templates,
     if (widget.platform.allows('people.self.read')) _Section.profile,
     if (widget.platform.allows('people.manage')) _Section.people,
     if (widget.platform.allows('organization.read')) _Section.organization,
@@ -52,6 +60,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   ];
 
   String _label(_Section section) => switch (section) {
+    _Section.templates => 'Arbeitsvorlagen',
     _Section.people => 'Mitarbeiter',
     _Section.profile => 'Mein Profil',
     _Section.status => 'Status',
@@ -63,6 +72,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   };
 
   IconData _icon(_Section section) => switch (section) {
+    _Section.templates => Icons.checklist_outlined,
     _Section.people => Icons.badge_outlined,
     _Section.profile => Icons.person_outline,
     _Section.status => Icons.monitor_heart_outlined,
@@ -76,6 +86,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   void _select(_Section section) {
     setState(() => _selected = section);
     switch (section) {
+      case _Section.templates:
       case _Section.people:
       case _Section.profile:
       case _Section.status:
@@ -97,6 +108,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   void _refresh(_Section section) {
     switch (section) {
+      case _Section.templates:
+        break;
       case _Section.people:
         widget.employees.loadEmployees();
       case _Section.profile:
@@ -117,6 +130,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   }
 
   Widget _body(_Section section) => switch (section) {
+    _Section.templates => TaskTemplateSection(controller: widget.templates!),
     _Section.people => EmployeeSection(
       key: const ValueKey('employees'),
       controller: widget.employees,
@@ -183,7 +197,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
               : null,
           title: Text('StoreOS · ${_label(section)}'),
           actions: [
-            if (section != _Section.status)
+            if (section != _Section.status && section != _Section.templates)
               IconButton(
                 key: const Key('platform-refresh'),
                 tooltip: 'Ansicht aktualisieren',

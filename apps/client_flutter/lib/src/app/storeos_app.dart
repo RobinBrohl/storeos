@@ -5,6 +5,7 @@ import 'package:storeos_design_system/storeos_design_system.dart';
 import '../application/session_controller.dart';
 import '../application/platform_controller.dart';
 import '../application/employee_controller.dart';
+import '../application/task_template_controller.dart';
 import '../data/platform_api.dart';
 import '../data/store_api.dart';
 import '../ui/login_screen.dart';
@@ -31,6 +32,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   late final SessionController _controller;
   PlatformController? _platformController;
   EmployeeController? _employees;
+  TaskTemplateController? _templates;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _wasAuthenticated = false;
 
@@ -42,12 +44,18 @@ class _StoreOsAppState extends State<StoreOsApp> {
     if (widget.platformApi case final api?) {
       _platformController = PlatformController(_controller, api);
       _employees = EmployeeController(_controller, _platformController!, api);
+      _templates = TaskTemplateController(
+        _controller,
+        _platformController!,
+        api,
+      );
     }
   }
 
   @override
   void dispose() {
     _controller.removeListener(_closeDialogsOnSessionEnd);
+    _templates?.dispose();
     _employees?.dispose();
     _platformController?.dispose();
     _controller.dispose();
@@ -92,6 +100,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       session: _controller,
                       platform: _platformController!,
                       employees: _employees!,
+                      templates: _templates!,
                       baseUri: widget.baseUri,
                     )
             : LoginScreen(controller: _controller, baseUri: widget.baseUri),

@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dart:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: storeos_test
+          POSTGRES_USER: storeos_owner
+          POSTGRES_PASSWORD: ci_storeos_owner_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U storeos_owner -d storeos_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      STOREOS_DB_HOST: 127.0.0.1
+      STOREOS_DB_PORT: '5432'
+      STOREOS_DB_NAME: storeos_test
+      STOREOS_DB_USER: storeos
+      STOREOS_DB_MIGRATION_USER: storeos_owner
+      STOREOS_HOST: 127.0.0.1
+      STOREOS_PORT: '8080'
+      STOREOS_COMPANY_ID: 11111111-1111-4111-8111-111111111111
+      STOREOS_LOCATION_ID: 22222222-2222-4222-8222-222222222222
+      STOREOS_ALLOWED_ORIGINS: http://127.0.0.1:8080
+      STOREOS_SESSION_TTL_SECONDS: '28800'
+      STOREOS_BOOTSTRAP_USERNAME: ci_admin
+      STOREOS_TEST_DATABASE: postgres://storeos_owner:ci_storeos_owner_only@127.0.0.1:5432/storeos_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.4
+      - name: Create isolated test credentials and runtime role
+        shell: bash
+        run: |
+          printf '%s' 'ci_storeos_runtime_only' > "$RUNNER_TEMP/storeos-db-password"
+          printf '%s' 'ci_storeos_owner_only' > "$RUNNER_TEMP/storeos-owner-password"
+          printf '%s' 'ci_bootstrap_password_only' > "$RUNNER_TEMP/storeos-bootstrap-password"
+          mkdir -p .local/secrets
+          cp "$RUNNER_TEMP/storeos-db-password" .local/secrets/db_password.txt
+          cp "$RUNNER_TEMP/storeos-owner-password" .local/secrets/db_owner_password.txt
+          cp "$RUNNER_TEMP/storeos-bootstrap-password" .local/secrets/bootstrap_password.txt
+          head -c 32 /dev/urandom > .local/secrets/backup_key.bin
+          echo "STOREOS_DB_PASSWORD_FILE=$RUNNER_TEMP/storeos-db-password" >> "$GITHUB_ENV"
+          echo "STOREOS_DB_MIGRATION_PASSWORD_FILE=$RUNNER_TEMP/storeos-owner-password" >> "$GITHUB_ENV"
+          echo "STOREOS_BOOTSTRAP_PASSWORD_FILE=$RUNNER_TEMP/storeos-bootstrap-password" >> "$GITHUB_ENV"
+          docker exec "${{ job.services.postgres.id }}" psql -U storeos_owner -d storeos_test -v ON_ERROR_STOP=1 \
+            -c "CREATE ROLE storeos LOGIN PASSWORD 'ci_storeos_runtime_only'; GRANT CONNECT ON DATABASE storeos_test TO storeos;"
+      - name: Validate Compose configuration
+        run: docker compose -f compose.yaml config --quiet
+      - name: Check encrypted backup format
+        shell: pwsh
+        run: ./infra/backup/Test-BackupCrypto.ps1
+      - name: Check local development setup
+        shell: pwsh
+        run: ./scripts/Test-DevSetup.ps1
+      - name: Check API contracts
+        working-directory: packages/api_contracts
+        run: |
+          dart pub get --enforce-lockfile
+          dart format --output=none --set-exit-if-changed .
+          dart analyze
+          dart test
+      - name: Check server and real PostgreSQL migrations
+        working-directory: apps/server
+        run: |
+          dart pub get --enforce-lockfile
+          dart format --output=none --set-exit-if-changed .
+          dart analyze
+          dart run bin/migrate.dart
+          dart run bin/bootstrap.dart
+          dart test
+      - name: HTTP readiness and login smoke
+        working-directory: apps/server
+        shell: bash
+        run: |
+          dart run bin/server.dart > "$RUNNER_TEMP/storeos-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:8080/ready > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --silent --show-error --fail http://127.0.0.1:8080/ready > /dev/null
+          curl --silent --show-error --fail \
+            -H 'Origin: http://127.0.0.1:8080' \
+            -H 'Content-Type: application/json' \
+            --data '{"username":"ci_admin","password":"ci_bootstrap_password_only"}' \
+            http://127.0.0.1:8080/api/v1/auth/login > /dev/null
+
+  flutter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+      - name: Check design system
+        working-directory: packages/design_system
+        run: |
+          flutter pub get --enforce-lockfile
+          dart format --output=none --set-exit-if-changed .
+          flutter analyze
+          flutter test
+      - name: Check Flutter client and web build
+        working-directory: apps/client_flutter
+        run: |
+          flutter pub get --enforce-lockfile
+          dart format --output=none --set-exit-if-changed .
+          flutter analyze
+          flutter test
+          flutter build web --release --no-web-resources-cdn

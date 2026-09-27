@@ -1,6 +1,6 @@
 # Architekturüberblick
 
-Status: Zielarchitektur und Grenzen für die ersten Entwicklungsphasen. Die Dokumentation beschreibt Entscheidungen; sie behauptet keine bereits vorhandene Implementierung.
+Status: Zielarchitektur und Grenzen für die ersten Entwicklungsphasen. Der tatsächlich implementierte Umfang ist in der [Phase-0-Grundlage](../development/phase-0.md) abgegrenzt; spätere Fähigkeiten dieses Zielbilds sind noch nicht vorhanden.
 
 ## Ausgangspunkt
 

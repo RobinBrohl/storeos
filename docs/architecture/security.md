@@ -10,6 +10,8 @@ Fehlende Freigabe bedeutet verweigerten Zugriff. Vom Client, Plugin oder Event �
 
 Für eine leere Installation ist die Erstanlage ausdrücklich geregelt: Ein lokal eingerichteter, installationsgebundener Setup-Akteur darf ausschließlich den ersten Administrator und die erste Company samt Rechtezuordnung anlegen. Der Zugang verwendet ein einmaliges lokal erzeugtes Secret und wird danach deaktiviert. Es gibt weder ein gemeinsames Standardpasswort noch eine öffentlich frei beanspruchbare Setup-Rolle; anschließend gelten normale Mandantenrechte. Damit erfordert die erste Company keine bereits bestehende Company-Berechtigung.
 
+P0 konkretisiert vorerst nur die technische Ersteinrichtung: Ein lokal aufgerufenes CLI mit separaten Datenbank-Owner-Rechten legt einen Account in stabilen, konfigurierten Company-/Location-Scopes an. Ein persistierter Marker verhindert die Wiederholung. Es gibt keine öffentliche Setup-Route und noch keine Company-Datensätze oder Fachrollenverwaltung; die oben beschriebene erste Company folgt in P1. Details stehen in der [Phase-0-Grundlage](../development/phase-0.md).
+
 ## Technische Mindestkontrollen
 
 - Passwörter werden mit einem aktuellen, langsam berechneten Passwort-Hash und individuellen Salts gespeichert. Sitzungen haben sichere Cookies beziehungsweise kurzlebige Tokens, Ablauf, Rotation und Widerruf; privilegierte Konten sollen Mehrfaktor-Authentifizierung erhalten.

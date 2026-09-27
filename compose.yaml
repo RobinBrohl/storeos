@@ -1,0 +1,125 @@
+name: storeos
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${STOREOS_DB_NAME:-storeos}
+      POSTGRES_USER: storeos_owner
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_owner_password
+    secrets:
+      - db_owner_password
+      - db_password
+    ports:
+      - "127.0.0.1:${STOREOS_DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/initdb/01-create-runtime-user.sh:/docker-entrypoint-initdb.d/01-create-runtime-user.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  app:
+    profiles: [app, tls]
+    image: storeos-server:local
+    build:
+      context: .
+      dockerfile: infra/docker/server.Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      STOREOS_DB_HOST: db
+      STOREOS_DB_PORT: "5432"
+      STOREOS_DB_NAME: ${STOREOS_DB_NAME:-storeos}
+      STOREOS_DB_USER: storeos
+      STOREOS_DB_PASSWORD_FILE: /run/secrets/db_password
+      STOREOS_HOST: 0.0.0.0
+      STOREOS_PORT: "8080"
+      STOREOS_COMPANY_ID: ${STOREOS_COMPANY_ID:-}
+      STOREOS_LOCATION_ID: ${STOREOS_LOCATION_ID:-}
+      STOREOS_ALLOWED_ORIGINS: ${STOREOS_ALLOWED_ORIGINS:-}
+      STOREOS_SESSION_TTL_SECONDS: ${STOREOS_SESSION_TTL_SECONDS:-3600}
+    secrets:
+      - db_password
+    ports:
+      - "127.0.0.1:${STOREOS_PORT:-8080}:8080"
+    restart: unless-stopped
+
+  migrator:
+    profiles: [migrate]
+    image: storeos-server:local
+    build:
+      context: .
+      dockerfile: infra/docker/server.Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      STOREOS_DB_HOST: db
+      STOREOS_DB_PORT: "5432"
+      STOREOS_DB_NAME: ${STOREOS_DB_NAME:-storeos}
+      STOREOS_DB_USER: storeos
+      STOREOS_DB_MIGRATION_USER: storeos_owner
+      STOREOS_DB_MIGRATION_PASSWORD_FILE: /run/secrets/db_owner_password
+    secrets:
+      - db_owner_password
+    command: ["dart", "run", "bin/migrate.dart"]
+
+  bootstrap:
+    profiles: [bootstrap]
+    image: storeos-server:local
+    build:
+      context: .
+      dockerfile: infra/docker/server.Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      STOREOS_DB_HOST: db
+      STOREOS_DB_PORT: "5432"
+      STOREOS_DB_NAME: ${STOREOS_DB_NAME:-storeos}
+      STOREOS_DB_USER: storeos
+      STOREOS_DB_MIGRATION_USER: storeos_owner
+      STOREOS_DB_MIGRATION_PASSWORD_FILE: /run/secrets/db_owner_password
+      STOREOS_COMPANY_ID: ${STOREOS_COMPANY_ID:-}
+      STOREOS_LOCATION_ID: ${STOREOS_LOCATION_ID:-}
+      STOREOS_BOOTSTRAP_USERNAME: ${STOREOS_BOOTSTRAP_USERNAME:-admin}
+      STOREOS_BOOTSTRAP_PASSWORD_FILE: /run/secrets/bootstrap_password
+    secrets:
+      - db_owner_password
+      - bootstrap_password
+    command: ["dart", "run", "bin/bootstrap.dart"]
+
+  proxy:
+    profiles: [tls]
+    image: caddy:2-alpine
+    depends_on:
+      - app
+    environment:
+      STOREOS_TLS_SITE: ${STOREOS_TLS_SITE:-localhost}
+    ports:
+      - "${STOREOS_TLS_BIND:-127.0.0.1}:${STOREOS_TLS_PORT:-8443}:443"
+    volumes:
+      - ./infra/reverse_proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./apps/client_flutter/build/web:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+secrets:
+  db_owner_password:
+    file: ./.local/secrets/db_owner_password.txt
+  db_password:
+    file: ./.local/secrets/db_password.txt
+  bootstrap_password:
+    file: ./.local/secrets/bootstrap_password.txt
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

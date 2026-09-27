@@ -1,0 +1,11 @@
+{
+    "name": "StoreOS Standortclient",
+    "short_name": "StoreOS",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FFFFFF",
+    "theme_color": "#0B6863",
+    "description": "Lokaler Standortclient für StoreOS.",
+    "prefer_related_applications": false,
+    "icons": []
+}

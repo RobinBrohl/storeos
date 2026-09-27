@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: StoreOS technical API
+  version: 1.0.0
+  description: P0 platform only. No business modules or offline writes.
+servers:
+  - url: http://127.0.0.1:8080
+    description: Loopback development; use HTTPS for LAN deployments.
+paths:
+  /health:
+    get:
+      operationId: liveness
+      summary: HTTP process is serving requests; does not promise database readiness.
+      responses:
+        '200':
+          description: Process alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /ready:
+    get:
+      operationId: readiness
+      summary: Database and required schema are available.
+      responses:
+        '200':
+          description: Ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Database or schema unavailable; no internal diagnostics disclosed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: An expiring, revocable session; never log this response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '413':
+          $ref: '#/components/responses/Error'
+        '415':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      security:
+        - session: []
+      responses:
+        '204':
+          description: Session revoked.
+        '401':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /api/v1/locations/{locationId}/system/status:
+    get:
+      operationId: getSystemStatus
+      security:
+        - session: []
+      parameters:
+        - name: locationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Real database status in the authenticated account's company and location scope.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStatusResponse'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+components:
+  securitySchemes:
+    session:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+  responses:
+    Error:
+      description: Safe error code and message, with no credentials or internal diagnostics.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok, unavailable]
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+          writeOnly: true
+    SessionUser:
+      type: object
+      required: [id, username, companyId, locationId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        companyId:
+          type: string
+          format: uuid
+        locationId:
+          type: string
+          format: uuid
+    SessionResponse:
+      type: object
+      required: [token, expiresAt, user]
+      properties:
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+          description: UTC instant with timezone.
+        user:
+          $ref: '#/components/schemas/SessionUser'
+    SystemStatusResponse:
+      type: object
+      required: [service, apiVersion, companyId, locationId, database]
+      properties:
+        service:
+          type: string
+          const: storeos
+        apiVersion:
+          type: integer
+          const: 1
+        companyId:
+          type: string
+          format: uuid
+        locationId:
+          type: string
+          format: uuid
+        database:
+          type: string
+          enum: [reachable]
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string

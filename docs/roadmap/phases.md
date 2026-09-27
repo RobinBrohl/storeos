@@ -2,13 +2,15 @@
 
 Status: Reihenfolge und Abnahmekriterien, keine Zeit- oder Lieferzusage. Die Produktvision beschreibt viele mögliche Domänen; jedes Feld wird erst nach Domainmodell, Use Cases, Berechtigungen, Events, Auditbedarf, Tests und gegebenenfalls Compliance-Prüfung begonnen. Eine Phase kann in kleine Releases zerfallen. Änderungen der Reihenfolge brauchen eine dokumentierte Begründung und dürfen die Abnahme-Gates nicht umgehen.
 
-## D0 – Dokumentation und Repository-Grundlage (jetzt)
+## D0 – Dokumentation und Repository-Grundlage
 
 Vision, Prinzipien, Architektur, ADRs, Risiko- und Compliance-Überblick, Monorepo-Skelett und dieser Fahrplan. **Abnahme:** Alle benannten Dokumente sind im Repository, Entscheidungen und offene Punkte sind auffindbar, der erste fachliche Slice ist definiert. In D0 entstehen keine Anwendungen oder Fachmodule.
 
-## P0 – Dünne technische Grundlage (spätere Entwicklungsaufgabe)
+## P0 – Dünne technische Grundlage
 
 Dart-Serverstart, PostgreSQL-Migrationen, Flutter-App-Grundgerüst, lokale Konfiguration und Secret-Verwaltung, authentifizierte API mit standortbezogener Autorisierung, strukturierte lokale Logs, CI und Testwerkzeuge. Installation auf einem Standortserver, lokales TLS, Backup und nachgewiesener Restore werden von Anfang an mitgedacht. Gemeinsame API-Verträge und ein kleines Design-System entstehen nur für den ersten Use Case. **Abnahme:** Eine frische selbst gehostete Installation startet reproduzierbar, migriert die Datenbank, authentifiziert einen Benutzer und lässt sich aus einem Backup wiederherstellen; keine externe Cloud ist nötig. Eine allgemeine Plugin-Runtime, Unternehmensserver-Sync und umfangreiche Admin-Oberflächen sind hier nicht nötig.
+
+Die implementierte Einzelstandort-Grundlage und ihre Grenzen sind in [Phase 0](../development/phase-0.md) dokumentiert. Der aktuelle Clientdurchstich verwendet Flutter Web; native Runner benötigen eine gesonderte Geräteabnahme. [Prüfnachweise](../development/phase-0-verification.md) halten den getesteten Stand fest. Fachmodule beginnen erst mit P1.
 
 ## P1 – Erster fachlicher Vertical Slice
 
@@ -74,4 +76,4 @@ Strukturierte Geschäftsdokumente, Rechnungen, E-Rechnungsformate und Buchhaltun
 
 Jeder Release benötigt dokumentierte Rechte, serverseitige Validierung, Migrationen, sinnvolle Tests, Fehlerbehandlung, Auditentscheidung, sichere Konfiguration, Export-/Backup-Auswirkung und verständliche Bedienung. Updates prüfen vorhandene Daten, laufende Guided-Work-Snapshots und unterstützte ältere Vertragsversionen; ein erfolgreicher Neuaufbau allein ist kein Migrationsnachweis. Zusätzliche regulatorische Gates stehen im [Compliance-Überblick](../compliance/overview.md). Die größten offenen Architekturfragen stehen in der [kritischen Prüfung](../risks-and-open-questions.md).
 
-**Nächste konkrete Entwicklungsaufgabe nach D0:** Ein kleines Umsetzungsdesign für P0/P1 festziehen: Verantwortlichkeit von Company/Location/Employee/Shift/TaskTemplate/TaskInstance, API-Kommandos, Berechtigungsmatrix, Zustandsmaschinen, Auditfelder und Ende-zu-Ende-Abnahmetests. Danach die minimale P0-Grundlage und den P1-Slice bauen.
+**Nächste konkrete Entwicklungsaufgabe nach P0:** Das Umsetzungsdesign für P1 festziehen: Verantwortlichkeit von Company/Location/Employee/Shift/TaskTemplate/TaskInstance, Übernahme der bestehenden Scope-IDs, API-Kommandos, Berechtigungsmatrix, Zustandsmaschinen, Auditfelder und Ende-zu-Ende-Abnahmetests. Danach den ausdrücklich freigegebenen P1-Slice bauen.

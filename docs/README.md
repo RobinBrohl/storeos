@@ -1,6 +1,6 @@
 # Dokumentationsindex
 
-Diese Dokumente verdichten die vom Projektgründer bereitgestellte StoreOS-Produktvision. Sie beschreiben Zielbild und geplante Architektur, nicht bereits implementierte Funktionen. Bei Konflikten gilt: konkrete ADR für eine Architekturentscheidung, [Produktprinzipien](product-principles.md) für Wertkonflikte, [Fahrplan](roadmap/phases.md) für die Reihenfolge.
+Diese Dokumente verdichten die vom Projektgründer bereitgestellte StoreOS-Produktvision. Die Architektur beschreibt überwiegend das Zielbild; der tatsächliche Implementierungsumfang steht in der [Phase-0-Grundlage](development/phase-0.md) und der [Startanleitung](../README.md). Bei Konflikten gilt: konkrete ADR für eine Architekturentscheidung, [Produktprinzipien](product-principles.md) für Wertkonflikte, [Fahrplan](roadmap/phases.md) für die Reihenfolge.
 
 - [Vision](vision.md) – Problem, Nutzen, Zielbild und bewusste Grenzen
 - [Produktprinzipien](product-principles.md) – dauerhafte Prioritäten

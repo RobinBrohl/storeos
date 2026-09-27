@@ -1,0 +1,169 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:crypto/crypto.dart';
+import 'package:postgres/postgres.dart';
+
+import 'auth_store.dart';
+
+class MigrationException implements Exception {
+  MigrationException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'MigrationException: $message';
+}
+
+class MigrationRunner {
+  MigrationRunner({
+    required this.connection,
+    required this.migrationsDirectory,
+    this.schemaName = 'storeos_platform',
+    this.runtimeDatabaseUser,
+  }) : _schema = quotedSchema(schemaName);
+
+  final Connection connection;
+  final Directory migrationsDirectory;
+  final String schemaName;
+  final String? runtimeDatabaseUser;
+  final String _schema;
+
+  Future<List<String>> apply() async {
+    final migrations = _loadMigrations();
+    final applied = <String>[];
+    await connection.runTx((tx) async {
+      await tx.execute(
+        Sql.named('SELECT pg_advisory_xact_lock(hashtext(@lockKey))'),
+        parameters: {'lockKey': 'storeos_migrations:$schemaName'},
+      );
+      await tx.execute('CREATE SCHEMA IF NOT EXISTS $_schema');
+      await tx.execute(
+        'CREATE TABLE IF NOT EXISTS $_schema.schema_migrations ('
+        'version text PRIMARY KEY, '
+        'checksum char(64) NOT NULL, '
+        'applied_at timestamptz NOT NULL DEFAULT now())',
+      );
+      final records = await tx.execute(
+        'SELECT version, checksum FROM $_schema.schema_migrations '
+        'ORDER BY version',
+      );
+      final checksums = <String, String>{};
+      for (final record in records) {
+        final columns = record.toColumnMap();
+        checksums[columns['version']! as String] =
+            (columns['checksum']! as String).trim();
+      }
+      final known = {
+        for (final migration in migrations) migration.version: migration,
+      };
+      for (final entry in checksums.entries) {
+        final migration = known[entry.key];
+        if (migration == null) {
+          throw MigrationException('Unknown applied migration: ${entry.key}.');
+        }
+        if (migration.checksum != entry.value) {
+          throw MigrationException('Checksum changed: ${entry.key}.');
+        }
+      }
+      final orderedApplied = migrations
+          .where((migration) => checksums.containsKey(migration.version))
+          .map((migration) => migration.version)
+          .toList();
+      if (orderedApplied.length != checksums.length ||
+          !_isPrefix(
+            orderedApplied,
+            migrations.map((m) => m.version).toList(),
+          )) {
+        throw MigrationException('Applied migrations are not a known prefix.');
+      }
+      for (final migration in migrations) {
+        if (checksums.containsKey(migration.version)) continue;
+        final sql = migration.sql.replaceAll('{{schema}}', _schema);
+        await tx.execute(sql, queryMode: QueryMode.simple, ignoreRows: true);
+        await tx.execute(
+          Sql.named(
+            'INSERT INTO $_schema.schema_migrations (version, checksum) '
+            'VALUES (@version, @checksum)',
+          ),
+          parameters: {
+            'version': migration.version,
+            'checksum': migration.checksum,
+          },
+        );
+        applied.add(migration.version);
+      }
+      final runtimeUser = runtimeDatabaseUser;
+      if (runtimeUser != null && runtimeUser.isNotEmpty) {
+        final role = '"${runtimeUser.replaceAll('"', '""')}"';
+        await tx.execute('GRANT USAGE ON SCHEMA $_schema TO $role');
+        await tx.execute('GRANT SELECT ON $_schema.schema_migrations TO $role');
+        await tx.execute('GRANT SELECT ON $_schema.accounts TO $role');
+        await tx.execute(
+          'GRANT SELECT, INSERT, DELETE ON $_schema.auth_sessions TO $role',
+        );
+        await tx.execute(
+          'GRANT UPDATE (revoked_at) ON $_schema.auth_sessions TO $role',
+        );
+      }
+    });
+    return applied;
+  }
+
+  List<_Migration> _loadMigrations() {
+    if (!migrationsDirectory.existsSync()) {
+      throw MigrationException('Migrations directory is missing.');
+    }
+    final files =
+        migrationsDirectory
+            .listSync(followLinks: false)
+            .whereType<File>()
+            .where((file) => file.path.endsWith('.sql'))
+            .toList()
+          ..sort((a, b) => a.path.compareTo(b.path));
+    if (files.isEmpty) {
+      throw MigrationException('No SQL migrations found.');
+    }
+    final migrations = <_Migration>[];
+    final versionPattern = RegExp(r'^\d{4}_[a-z0-9_]+$');
+    for (final file in files) {
+      final fileName = file.uri.pathSegments.last;
+      final version = fileName.substring(0, fileName.length - '.sql'.length);
+      if (!versionPattern.hasMatch(version)) {
+        throw MigrationException('Invalid migration filename: $fileName.');
+      }
+      final sql = file.readAsStringSync();
+      if (sql.trim().isEmpty) {
+        throw MigrationException('Empty migration: $fileName.');
+      }
+      migrations.add(
+        _Migration(
+          version: version,
+          sql: sql,
+          checksum: sha256.convert(utf8.encode(sql)).toString(),
+        ),
+      );
+    }
+    return migrations;
+  }
+
+  bool _isPrefix(List<String> applied, List<String> known) {
+    if (applied.length > known.length) return false;
+    for (var i = 0; i < applied.length; i++) {
+      if (applied[i] != known[i]) return false;
+    }
+    return true;
+  }
+}
+
+class _Migration {
+  const _Migration({
+    required this.version,
+    required this.sql,
+    required this.checksum,
+  });
+
+  final String version;
+  final String sql;
+  final String checksum;
+}

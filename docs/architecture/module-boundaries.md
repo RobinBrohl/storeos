@@ -1,6 +1,6 @@
 # Modulgrenzen und Monorepo
 
-Status: geplanter Zuschnitt. Verzeichnisse können zunächst nur dokumentiert sein. Fachmodule werden erst mit ihrem jeweiligen Vertical Slice implementiert.
+Status: fachlich geplanter Zuschnitt. P0 implementiert Server, Flutter-Client, API-Verträge und Designsystem. Weitere Verzeichnisse sind zunächst nur dokumentiert; Fachmodule werden erst mit ihrem jeweiligen Vertical Slice implementiert.
 
 ## Repo-Zuschnitt
 
@@ -64,4 +64,4 @@ Employee Home ist ein zusammengesetztes Lesemodell: Ein Application-Query im Ser
 
 Der erste Slice benötigt nur `organization`, `people`, `workforce`, `tasks` und `audit` sowie minimale Plattformdienste. Manager-Dashboard, Skills, Abwesenheiten, Optimierung, Training und HACCP sind eigene spätere Änderungen. Beim Hinzufügen eines Moduls müssen Domainmodell, Anwendungsfälle, Berechtigungen, Ereignisse, Auditbedarf und Tests vor dem Code feststehen. [Workforce Orchestration](workforce-orchestration.md) erläutert die Vorschlagslogik; [Guided Work](guided-work.md) die Ausführung.
 
-Offen bleibt, ob Authentifizierung und Autorisierung später eigene Pakete oder interne Serverkomponenten werden. Ebenso ist die konkrete technische Grenze zwischen `people` und einem künftig stärker getrennten HR-Modul erst nach Datenschutz- und Berechtigungsmodell verbindlich zu ziehen.
+P0 setzt Authentifizierung und standortbezogene Autorisierung als interne Serverkomponenten um; eigene Pakete sind dafür noch nicht erforderlich. Die konkrete technische Grenze zwischen `people` und einem künftig stärker getrennten HR-Modul ist erst nach Datenschutz- und Berechtigungsmodell verbindlich zu ziehen.

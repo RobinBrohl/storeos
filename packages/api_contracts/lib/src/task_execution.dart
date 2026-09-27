@@ -1,19 +1,27 @@
 import 'shifts.dart';
 
 class TaskStepResultDto {
-  const TaskStepResultDto(this.stepId, this.confirmedAt, this.confirmedBy);
+  const TaskStepResultDto(
+    this.stepId,
+    this.confirmedAt,
+    this.confirmedBy, {
+    this.acceptedVersion,
+  });
   final String stepId, confirmedBy;
   final DateTime confirmedAt;
+  final int? acceptedVersion;
   factory TaskStepResultDto.fromJson(Map<String, dynamic> j) =>
       TaskStepResultDto(
         shiftUuid(j['stepId']),
         shiftInstant(j['confirmedAt']),
         shiftUuid(j['confirmedBy']),
+        acceptedVersion: j['acceptedVersion'] as int?,
       );
   Map<String, dynamic> toJson() => {
     'stepId': stepId,
     'confirmedAt': confirmedAt.toUtc().toIso8601String(),
     'confirmedBy': confirmedBy,
+    if (acceptedVersion != null) 'acceptedVersion': acceptedVersion,
   };
 }
 
@@ -28,11 +36,12 @@ class TaskExecutionDto {
     this.startedBy,
     this.completedAt,
     this.completedBy,
+    this.activeBlockingId,
   }) : results = List.unmodifiable(results);
   final String instanceId, status;
   final int version;
   final DateTime? startedAt, completedAt;
-  final String? startedBy, completedBy;
+  final String? startedBy, completedBy, activeBlockingId;
   final List<TaskStepResultDto> results;
   factory TaskExecutionDto.fromJson(Map<String, dynamic> j) {
     final status = j['status'];
@@ -46,7 +55,11 @@ class TaskExecutionDto {
         : shiftInstant(j['completedAt']);
     final startBy = j['startedBy'] == null ? null : shiftUuid(j['startedBy']);
     final endBy = j['completedBy'] == null ? null : shiftUuid(j['completedBy']);
-    if (!{'open', 'in_progress', 'completed'}.contains(status) ||
+    final blocking = j['activeBlockingId'] == null
+        ? null
+        : shiftUuid(j['activeBlockingId']);
+    if (!{'open', 'in_progress', 'blocked', 'completed'}.contains(status) ||
+        (status == 'blocked') != (blocking != null) ||
         version is! int ||
         version < 1 ||
         results.length > 20 ||
@@ -60,12 +73,30 @@ class TaskExecutionDto {
                   endBy != null
             : start == null ||
                   startBy == null ||
-                  version != results.length + (status == 'completed' ? 3 : 2) ||
+                  version <
+                      results.length +
+                          (status == 'completed'
+                              ? 3
+                              : status == 'blocked'
+                              ? 3
+                              : 2) ||
                   results.any((r) => r.confirmedAt.isBefore(start)) ||
                   (status == 'completed'
                       ? end == null || endBy == null || end.isBefore(start)
                       : end != null || endBy != null))) {
       throw const FormatException('Ungültiger Ausführungsstand.');
+    }
+    var priorVersion = 2;
+    for (final result in results) {
+      final accepted = result.acceptedVersion;
+      if (accepted != null) {
+        if (accepted <= priorVersion ||
+            accepted > version ||
+            (status != 'in_progress' && accepted == version)) {
+          throw const FormatException('Ungültige Bestätigungsversion.');
+        }
+        priorVersion = accepted;
+      }
     }
     return TaskExecutionDto(
       instanceId: shiftUuid(j['instanceId']),
@@ -76,6 +107,7 @@ class TaskExecutionDto {
       startedBy: startBy,
       completedAt: end,
       completedBy: endBy,
+      activeBlockingId: blocking,
     );
   }
   Map<String, dynamic> toJson() => {
@@ -86,6 +118,89 @@ class TaskExecutionDto {
     'startedBy': startedBy,
     'completedAt': completedAt?.toUtc().toIso8601String(),
     'completedBy': completedBy,
+    if (activeBlockingId != null) 'activeBlockingId': activeBlockingId,
     'results': results.map((r) => r.toJson()).toList(),
+  };
+}
+
+/// Bounded plain text shared by both reporting and resolution commands.
+String blockingReason(Object? value) {
+  if (value is! String) throw const FormatException('Begründung erforderlich.');
+  final normalized = value.replaceAll('\r\n', '\n').trim();
+  if (normalized.isEmpty ||
+      normalized.runes.length > 500 ||
+      RegExp(r'[\x00-\x08\x0b-\x1f\x7f]').hasMatch(normalized)) {
+    throw const FormatException(
+      'Begründung: 1 bis 500 Zeichen ohne Steuerzeichen.',
+    );
+  }
+  return normalized;
+}
+
+class TaskBlockingDto {
+  const TaskBlockingDto({
+    required this.id,
+    required this.instanceId,
+    this.stepId,
+    required this.reason,
+    required this.reportedAt,
+    required this.reportedBy,
+    required this.reportedVersion,
+    this.resolution,
+    this.resolvedAt,
+    this.resolvedBy,
+    this.resolvedVersion,
+  });
+  final String id, instanceId, reason, reportedBy;
+  final String? stepId, resolution, resolvedBy;
+  final DateTime reportedAt;
+  final DateTime? resolvedAt;
+  final int reportedVersion;
+  final int? resolvedVersion;
+  factory TaskBlockingDto.fromJson(Map<String, dynamic> j) {
+    final reported = j['reportedVersion'], resolved = j['resolvedVersion'];
+    final at = shiftInstant(j['reportedAt']);
+    final end = j['resolvedAt'] == null ? null : shiftInstant(j['resolvedAt']);
+    if (reported is! int ||
+        reported < 3 ||
+        (end == null
+            ? j['resolution'] != null ||
+                  j['resolvedBy'] != null ||
+                  resolved != null
+            : resolved is! int ||
+                  resolved <= reported ||
+                  end.isBefore(at) ||
+                  j['resolvedBy'] == null ||
+                  j['resolution'] == null)) {
+      throw const FormatException('Ungültige Blockierung.');
+    }
+    return TaskBlockingDto(
+      id: shiftUuid(j['id']),
+      instanceId: shiftUuid(j['instanceId']),
+      stepId: j['stepId'] == null ? null : shiftUuid(j['stepId']),
+      reason: blockingReason(j['reason']),
+      reportedAt: at,
+      reportedBy: shiftUuid(j['reportedBy']),
+      reportedVersion: reported,
+      resolution: j['resolution'] == null
+          ? null
+          : blockingReason(j['resolution']),
+      resolvedAt: end,
+      resolvedBy: j['resolvedBy'] == null ? null : shiftUuid(j['resolvedBy']),
+      resolvedVersion: resolved as int?,
+    );
+  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'instanceId': instanceId,
+    'stepId': stepId,
+    'reason': reason,
+    'reportedAt': reportedAt.toUtc().toIso8601String(),
+    'reportedBy': reportedBy,
+    'reportedVersion': reportedVersion,
+    'resolution': resolution,
+    'resolvedAt': resolvedAt?.toUtc().toIso8601String(),
+    'resolvedBy': resolvedBy,
+    'resolvedVersion': resolvedVersion,
   };
 }

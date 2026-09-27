@@ -29,3 +29,8 @@ Diese Dokumente verdichten die vom Projektgründer bereitgestellte StoreOS-Produ
 - [P1b.4 – Guided Work und Completion](development/phase-1b-execution.md) – bestätigte Schritte, Rechte, Wiederholungen und Grenzen
 - [P1b.4-Prüfnachweis](development/phase-1b-execution-verification.md) – Tests, Browser-Smoke und Restore
 - [Review des P1b.4-Zyklus](development/phase-1b-execution-review-2026-09-27.md) – zwei behobene Fehler beim Fortschrittsabgleich und finale Prüfung
+
+- [P1b.5 – Blockierung und Klärung](development/phase-1b-blocking.md) – Scope, Rechte, Historie und Migration
+
+- [P1b.5-Prüfnachweis](development/phase-1b-blocking-verification.md) – Tests, Zwei-Benutzer-Smoke, Upgrade, Restore und geänderte Dateien
+- [Review des P1b.5-Zyklus](development/phase-1b-blocking-review-2026-09-27.md) – zwei behobene UI-Zustandsfehler und finale Prüfung

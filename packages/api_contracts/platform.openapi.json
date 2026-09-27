@@ -2271,6 +2271,298 @@
           }
         }
       }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}/block": {
+      "post": {
+        "operationId": "blockOwnTask",
+        "description": "Requires tasks.instances.self.execute and active own assignment. Only in_progress to blocked. Reason required. No step is confirmed. Atomic audit and operation receipt. Replay rechecks permissions; changed input or stale version: 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskBlockingCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/shifts/{id}/tasks/{taskId}/resume": {
+      "post": {
+        "operationId": "resumeTask",
+        "description": "Requires tasks.instances.resolve, same company/configured location and currently valid employee assignment. Only blocked to in_progress. Resolution required. No proxy completion. Atomic audit and operation receipt. Replay rechecks permissions; changed input or stale version: 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskBlockingCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}/blockings": {
+      "get": {
+        "operationId": "ownBlockingHistory",
+        "description": "Blocking history, newest reported version first. Maximum 50 per page. Same company and configured location. Requires tasks.instances.self.read and current own assignment.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskBlockingPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/shifts/{id}/tasks/{taskId}/blockings": {
+      "get": {
+        "operationId": "adminBlockingHistory",
+        "description": "Blocking history, newest reported version first. Maximum 50 per page. Same company and configured location. Requires tasks.instances.read.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskBlockingPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/employee-home/blocked-tasks": {
+      "get": {
+        "operationId": "ownBlockedTasks",
+        "description": "Blocked task metadata including ended shifts; maximum 50, ordered by ID. Same company/configured location. Requires tasks.instances.self.read and active own assignment.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current blocked tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockedTaskPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/platform/blocked-tasks": {
+      "get": {
+        "operationId": "adminBlockedTasks",
+        "description": "Blocked task metadata including ended shifts; maximum 50, ordered by ID. Same company/configured location. Requires tasks.instances.read.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current blocked tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockedTaskPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3962,7 +4254,8 @@
             "enum": [
               "open",
               "in_progress",
-              "completed"
+              "completed",
+              "blocked"
             ]
           },
           "version": {
@@ -4099,6 +4392,11 @@
           "confirmedBy": {
             "type": "string",
             "format": "uuid"
+          },
+          "acceptedVersion": {
+            "type": "integer",
+            "minimum": 3,
+            "description": "Aggregate version at acceptance. Absent in legacy stored receipts."
           }
         }
       },
@@ -4125,7 +4423,8 @@
             "enum": [
               "open",
               "in_progress",
-              "completed"
+              "completed",
+              "blocked"
             ]
           },
           "version": {
@@ -4166,6 +4465,11 @@
             "items": {
               "$ref": "#/components/schemas/TaskStepResult"
             }
+          },
+          "activeBlockingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Present only while blocked; history is fetched separately."
           }
         }
       },
@@ -4188,6 +4492,150 @@
         }
       },
       "RunningTaskPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/TaskInstanceSummary"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "TaskBlockingCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion",
+          "reason"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "CRLF normalized to LF and trimmed; Unicode codepoints; only tab/newline control characters allowed."
+          }
+        }
+      },
+      "TaskBlocking": {
+        "type": "object",
+        "required": [
+          "id",
+          "instanceId",
+          "reason",
+          "reportedAt",
+          "reportedBy",
+          "reportedVersion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "instanceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stepId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "reportedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reportedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reportedVersion": {
+            "type": "integer",
+            "minimum": 3
+          },
+          "resolution": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "resolvedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "resolvedBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "resolvedVersion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 4
+          }
+        }
+      },
+      "TaskBlockingPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/TaskBlocking"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "BlockedTaskPage": {
         "type": "object",
         "additionalProperties": false,
         "required": [

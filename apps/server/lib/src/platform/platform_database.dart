@@ -48,6 +48,7 @@ const _permissions = <String>[
   'workforce.shifts.manage',
   'workforce.shifts.self.read',
   'tasks.instances.read',
+  'tasks.instances.resolve',
   'tasks.instances.self.read',
   'tasks.instances.self.execute',
   'people.self.read',

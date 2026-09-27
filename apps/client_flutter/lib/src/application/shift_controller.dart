@@ -31,10 +31,29 @@ class ShiftController extends ChangeNotifier {
   TaskInstanceDto? task;
   TaskExecutionDto? execution;
   List<TaskInstanceDto> running = [];
+  List<TaskInstanceDto>? blocked;
+  List<TaskBlockingDto> blockings = [];
+  String? blockedCursor, blockingCursor;
+  String reason = '';
+  bool get canBlock => canExecute && execution!.status == 'in_progress';
+  bool get canResume =>
+      !self &&
+      platform.allows('tasks.instances.resolve') &&
+      !busy &&
+      !executionUnconfirmed &&
+      !executionConflict &&
+      execution?.status == 'blocked';
+  bool get canEditReason =>
+      !busy && !executionUnconfirmed && !executionConflict;
+  void setReason(String value) {
+    if (canEditReason) reason = value;
+  }
+
   String? runningCursor;
   String? _executionRoute;
   Map<String, dynamic>? _executionBody;
   bool executionConflict = false;
+  int executionGeneration = 0;
   bool get executionUnconfirmed => _executionBody != null;
   bool get canExecute =>
       self &&
@@ -65,10 +84,15 @@ class ShiftController extends ChangeNotifier {
     'open' => 'Offen',
     'in_progress' => 'In Bearbeitung',
     'completed' => 'Abgeschlossen',
+    'blocked' => 'Blockiert',
     _ => 'Unbekannt',
   };
   void _clearExecution() {
+    executionGeneration++;
     execution = null;
+    blockings = [];
+    blockingCursor = null;
+    reason = '';
     _executionRoute = null;
     _executionBody = null;
     executionConflict = false;
@@ -147,6 +171,8 @@ class ShiftController extends ChangeNotifier {
     cursor = null;
     running = [];
     runningCursor = null;
+    blocked = null;
+    blockedCursor = null;
     _clearExecution();
     employees = [];
     templates = [];
@@ -210,6 +236,7 @@ class ShiftController extends ChangeNotifier {
     items = [if (more) ...?items, ...loaded];
     cursor = raw['nextCursor'] as String?;
     if (self && !more) await _loadRunning(e);
+    if (!more) await _loadBlocked(e);
   });
   void _check(ShiftDto shift) {
     if (shift.companyId != session.user?.companyId) {
@@ -257,6 +284,9 @@ class ShiftController extends ChangeNotifier {
     execution = TaskExecutionDto.fromJson(
       await _get(e, '$root/${selected!.id}/tasks/$id/execution'),
     );
+    executionConflict = true;
+    await _loadBlockings(e);
+    executionConflict = false;
   });
   Future<void> _loadRunning(int e, {bool more = false}) async {
     final raw = await _get(
@@ -285,23 +315,67 @@ class ShiftController extends ChangeNotifier {
   }
 
   Future<void> executeTask(String command) {
-    if (!(command == 'start'
-        ? canStart
-        : command == 'confirm'
-        ? canConfirm
-        : command == 'complete' && canComplete)) {
-      return Future.value();
-    }
-    final suffix = command == 'confirm'
-        ? 'steps/${nextStep!.id}/confirm'
-        : command;
-    _executionRoute = '$root/${selected!.id}/tasks/${task!.id}/$suffix';
-    _executionBody = {
-      'operationId': _uuid(),
-      'expectedVersion': execution!.version,
+    final permitted = switch (command) {
+      'start' => canStart,
+      'confirm' => canConfirm,
+      'complete' => canComplete,
+      'block' => canBlock,
+      'resume' => canResume,
+      _ => false,
     };
-    return _run(_sendExecution);
+    if (!permitted) return Future.value();
+    return _run((e) async {
+      final exceptional = command == 'block' || command == 'resume';
+      final validated = exceptional ? blockingReason(reason) : null;
+      final suffix = command == 'confirm'
+          ? 'steps/${nextStep!.id}/confirm'
+          : command;
+      _executionRoute = '$root/${selected!.id}/tasks/${task!.id}/$suffix';
+      _executionBody = {
+        'operationId': _uuid(),
+        'expectedVersion': execution!.version,
+        'reason': ?validated,
+      };
+      await _sendExecution(e);
+    });
   }
+
+  Future<void> _loadBlocked(int e, {bool more = false}) async {
+    final raw = await _get(
+      e,
+      self ? '/employee-home/blocked-tasks' : '/blocked-tasks',
+      after: more ? blockedCursor : null,
+    );
+    blocked = [
+      if (more) ...?blocked,
+      ...(raw['items'] as List).map(
+        (v) => TaskInstanceDto.fromJson(v as Map<String, dynamic>),
+      ),
+    ];
+    blockedCursor = raw['nextCursor'] as String?;
+  }
+
+  Future<void> loadBlocked({bool more = false}) => _run((e) async {
+    if (!more || blockedCursor != null) await _loadBlocked(e, more: more);
+  });
+  Future<void> _loadBlockings(int e, {bool more = false}) async {
+    final raw = await _get(
+      e,
+      '$root/${selected!.id}/tasks/${task!.id}/blockings',
+      after: more ? blockingCursor : null,
+    );
+    blockings = [
+      if (more) ...blockings,
+      ...(raw['items'] as List).map(
+        (v) => TaskBlockingDto.fromJson(v as Map<String, dynamic>),
+      ),
+    ];
+    blockingCursor = raw['nextCursor'] as String?;
+  }
+
+  Future<void> loadBlockings({bool more = false}) => _run((e) async {
+    if (!more || blockingCursor != null) await _loadBlockings(e, more: more);
+  });
 
   Future<void> retryExecution() => _run((e) async {
     if (executionUnconfirmed && !executionConflict) await _sendExecution(e);
@@ -326,6 +400,7 @@ class ShiftController extends ChangeNotifier {
       _executionBody = null;
       _executionRoute = null;
       notice = 'Vorgang vom Server bestätigt.';
+      reason = '';
     } catch (f) {
       if (!_current(e)) return;
       if (f is StoreApiException &&
@@ -364,6 +439,8 @@ class ShiftController extends ChangeNotifier {
       ];
     }
     if (self) await _loadRunning(e);
+    await _loadBlocked(e);
+    await _loadBlockings(e);
   }
 
   Future<void> loadChoices({bool more = false}) => _run((e) async {
@@ -412,6 +489,7 @@ class ShiftController extends ChangeNotifier {
   });
   void newDraft() {
     if (self || busy || unconfirmed) return;
+    _clearExecution();
     selected = null;
     tasks = [];
     task = null;
@@ -605,6 +683,10 @@ class ShiftController extends ChangeNotifier {
     FormatException(:final message) when message.isNotEmpty => message,
     StoreApiException(code: 'employee_unavailable') =>
       'Kein aktives Mitarbeiterprofil oder keine gültige Standortzuordnung verfügbar.',
+    StoreApiException(code: 'invalid_reason') =>
+      'Begründung: 1 bis 500 Zeichen erforderlich.',
+    StoreApiException(code: 'operation_conflict') =>
+      'Operations-ID bereits verwendet. Bitte Serverstand laden.',
     StoreApiException(code: 'outside_shift') =>
       'Start nur während der veröffentlichten Schicht möglich.',
     StoreApiException(code: 'invalid_execution') =>

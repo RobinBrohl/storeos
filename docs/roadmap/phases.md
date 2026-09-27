@@ -28,6 +28,8 @@ Der separat freigegebene [P1b.3-Slice](../development/phase-1b-shifts.md) ergän
 
 Der freigegebene [P1b.4-Teilslice](../development/phase-1b-execution.md) ergänzt Start, geordnete Bestätigungsschritte, Wiederaufnahme und Abschluss eigener Aufgaben. Zahlen-/Grenzwertschritte, Abweichungen und blocked-Auflösung fehlen weiterhin; P1b ist deshalb noch nicht vollständig abgeschlossen.
 
+Der freigegebene [P1b.5-Teilslice](../development/phase-1b-blocking.md) ergänzt manuelles Blockieren eigener laufender Aufgaben und administrative Klärung mit Wiederaufnahme. Zahlen-/Grenzwertschritte und Stornierung fehlen weiterhin; P1b bleibt teilweise implementiert.
+
 **Verbindliche Ende-zu-Ende-Reise:**
 
 `Company → Location → Employee → Shift → TaskTemplate → TaskInstance → Employee Home → Guided Work → Completion → Audit Log`
@@ -90,4 +92,4 @@ Strukturierte Geschäftsdokumente, Rechnungen, E-Rechnungsformate und Buchhaltun
 
 Jeder Release benötigt dokumentierte Rechte, serverseitige Validierung, Migrationen, sinnvolle Tests, Fehlerbehandlung, Auditentscheidung, sichere Konfiguration, Export-/Backup-Auswirkung und verständliche Bedienung. Updates prüfen vorhandene Daten, laufende Guided-Work-Snapshots und unterstützte ältere Vertragsversionen; ein erfolgreicher Neuaufbau allein ist kein Migrationsnachweis. Zusätzliche regulatorische Gates stehen im [Compliance-Überblick](../compliance/overview.md). Die größten offenen Architekturfragen stehen in der [kritischen Prüfung](../risks-and-open-questions.md).
 
-**Aktueller Umsetzungsumfang:** [P1b.1 – Mitarbeiteridentität](../development/phase-1b-employee.md) [P1b.2 – Arbeitsvorlagen](../development/phase-1b-templates.md) sowie [P1b.3 – Schichten und Employee Home](../development/phase-1b-shifts.md). Weitere Teile der Mitarbeiterreise benötigen eine eigene Scope-Freigabe; sie werden nicht im Zuge dieses Teilslice begonnen.
+**Aktueller Umsetzungsumfang:** [P1b.1 – Mitarbeiteridentität](../development/phase-1b-employee.md) [P1b.2 – Arbeitsvorlagen](../development/phase-1b-templates.md) sowie [P1b.3 – Schichten und Employee Home](../development/phase-1b-shifts.md), [P1b.4 – Ausführung](../development/phase-1b-execution.md) und [P1b.5 – Blockierung](../development/phase-1b-blocking.md). Weitere Teile der Mitarbeiterreise benötigen eine eigene Scope-Freigabe; sie werden nicht im Zuge dieses Teilslice begonnen.

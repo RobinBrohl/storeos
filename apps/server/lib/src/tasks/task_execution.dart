@@ -20,11 +20,16 @@ class TaskExecution {
     DateTime endsAt,
   ) {
     if (expectedVersion != state.version) throw ExecutionConflict();
+    if (command == 'resume') {
+      if (state.status != 'blocked') throw ExecutionConflict();
+      return;
+    }
     if (command == 'start') {
       if (state.status != 'open') throw ExecutionConflict();
       if (now.isBefore(startsAt) || !now.isBefore(endsAt)) throw OutsideShift();
     } else {
       if (state.status != 'in_progress') throw ExecutionConflict();
+      if (command == 'block') return;
       if (command == 'confirm') {
         if (state.results.length >= content.steps.length ||
             content.steps[state.results.length].id != stepId) {

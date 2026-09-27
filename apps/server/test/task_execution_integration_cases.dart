@@ -208,7 +208,10 @@ void executionTests() {
           schemaName: f.schema,
           runtimeDatabaseUser: f.runtimeUser,
         );
-        expect(await runner.apply(), ['0007_task_execution']);
+        expect(await runner.apply(), [
+          '0007_task_execution',
+          '0008_task_blocking',
+        ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
         final token = await _linkedAccount(f, p.employee, 'upgrade_executor');

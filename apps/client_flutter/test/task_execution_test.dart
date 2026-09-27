@@ -107,9 +107,11 @@ class ExecutionApi extends base.Api {
   }
 }
 
-Future<({base.Fixture admin, ShiftController home, ExecutionApi api})>
-fixture() async {
-  final api = ExecutionApi(), session = SessionController(base.Session());
+Future<({base.Fixture admin, ShiftController home, ExecutionApi api})> fixture({
+  ExecutionApi? client,
+}) async {
+  final api = client ?? ExecutionApi(),
+      session = SessionController(base.Session());
   final platform = PlatformController(session, api),
       adminController = ShiftController(session, platform, api);
   final admin = base.Fixture(session, platform, adminController, api);
@@ -257,12 +259,18 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.byKey(const Key('start-task')), 300);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('start-task')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(find.byKey(const Key('start-task')));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byKey(const Key('confirm-step')),
         300,
+
+        scrollable: find.byType(Scrollable).first,
       );
       expect(find.text('1. Check equipment'), findsOneWidget);
       await tester.tap(find.byKey(const Key('confirm-step')));
@@ -270,6 +278,8 @@ void main() {
       await tester.scrollUntilVisible(
         find.byKey(const Key('complete-task')),
         300,
+
+        scrollable: find.byType(Scrollable).first,
       );
       await tester.tap(find.byKey(const Key('complete-task')));
       await tester.pumpAndSettle();

@@ -112,3 +112,16 @@ Neuladen und erneute Anmeldung. Admins sehen den Fortschritt in **Schichten** un
 Änderungen im Audit. Bei Antwortverlust den unbestätigten Befehl ausdrücklich erneut
 senden oder den Serverstand laden; ohne Standortserver gibt es keinen bestätigten
 Abschluss. Keine Messwerte, Ausnahmen, stellvertretenden Abschlüsse oder Offlinequeue.
+
+## P1b.5: Blockierungen und Wiederaufnahme
+
+Mitarbeitende können eigene laufende Aufgaben mit Begründung blockieren. Unter
+„Blockierte Aufgaben am Standort“ kann ein Administrator die Klärung dokumentieren
+und die Wiederaufnahme freigeben. Der Mitarbeiter bestätigt anschließend selbst
+alle verbleibenden Schritte und den Abschluss. Blockierungen bleiben nach
+Schichtende sichtbar; die Historie wird nicht überschrieben.
+
+Vor dem Start `./scripts/dev.ps1 migrate` ausführen: Migration 0008 erhält bestehende
+Aufgaben und Befehlsnachweise. Backend und Flutter-Webclient gemeinsam aktualisieren
+und neu starten; alte Clients verstehen blocked nicht. Keine Messwerte, Stornierung,
+Stellvertretung oder Offline-Schreibqueue. [Scope und Rechte](docs/development/phase-1b-blocking.md).

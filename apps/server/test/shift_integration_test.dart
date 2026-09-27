@@ -18,6 +18,7 @@ import 'package:storeos_server/src/platform/plugin_service.dart';
 import 'package:test/test.dart';
 
 part 'task_execution_integration_cases.dart';
+part 'task_blocking_integration_cases.dart';
 
 const _company = '11111111-1111-4111-8111-111111111111';
 const _home = '22222222-2222-4222-8222-222222222222';
@@ -27,6 +28,7 @@ final _url = Platform.environment['STOREOS_TEST_DATABASE'];
 
 void main() {
   executionTests();
+  blockingTests();
   test(
     'pinned selections reject mismatched templates and published foreign-location revisions without writes',
     () => _withFixture((f) async {
@@ -165,6 +167,18 @@ void main() {
       });
       final token = grant['token'] as String;
       await plugins.organization(token);
+      for (final route in [
+        '/employee-home/shifts/${newUuid()}/tasks/${newUuid()}/block',
+        '/shifts/${newUuid()}/tasks/${newUuid()}/resume',
+      ]) {
+        await f.call(
+          'POST',
+          route,
+          body: _reasonCommand(2),
+          token: token,
+          expected: 401,
+        );
+      }
       final p = await _plan(f);
       await f.call(
         'POST',
@@ -173,7 +187,13 @@ void main() {
         token: token,
         expected: 401,
       );
-      for (final route in ['/shifts', '/employee-home/shifts']) {
+      for (final route in [
+        '/shifts',
+        '/employee-home/shifts',
+        '/blocked-tasks',
+        '/employee-home/blocked-tasks',
+        '/shifts/${p.id}/tasks/${newUuid()}/blockings',
+      ]) {
         await f.call('GET', route, token: token, expected: 401);
       }
       await f.call(
@@ -773,6 +793,7 @@ void main() {
       expect(await runner.apply(), [
         '0006_shifts_and_task_instances',
         '0007_task_execution',
+        '0008_task_blocking',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);

@@ -71,3 +71,11 @@ Einzelschichten unterstützen `draft → published`; TaskInstance enthält einen
 ## Implementierter P1b.4-Teilslice
 
 TaskInstance führt `open → in_progress → completed` aus. Ausführungskopf, append-only StepResults und Tasks-eigene Befehlsnachweise teilen ihre Transaktions-/Versionsgrenze. Snapshot und Zuordnung bleiben unveränderlich. Bestätigungsschritte sind die einzige Schrittart; keine Ausnahmen oder Messwertregeln. [Vertrag](../development/phase-1b-execution.md).
+
+## Implementierter P1b.5-Teilslice
+
+Tasks besitzt task_blockings mit unveränderlicher Meldung und einmaliger Klärung.
+`in_progress → blocked → in_progress` verändert keine bestätigten Schritte.
+Die Instanzversion zählt alle Mutationen; accepted_version der Schrittresultate
+hält ihre Annahmeversion fest. Blockierung, Status, Audit und Befehlsnachweis
+teilen dieselbe Transaktion. Historien sind paginiert; keine neuen Integrations-Events.

@@ -51,7 +51,7 @@ class ShiftRoutes {
     );
     const executionRoot =
         '/api/v1/platform/employee-home/shifts/<id>/tasks/<task>';
-    for (final command in ['start', 'complete']) {
+    for (final command in ['start', 'complete', 'block']) {
       router.post(
         '$executionRoot/$command',
         (Request r, String id, String task) async => jsonResponse(
@@ -80,8 +80,47 @@ class ShiftRoutes {
         ),
       ),
     );
+    router.post(
+      '$root/<id>/tasks/<task>/resume',
+      (Request r, String id, String task) async => jsonResponse(
+        200,
+        await app.execute(
+          await auth.authenticate(bearerToken(r)),
+          id,
+          task,
+          'resume',
+          await readJson(r),
+        ),
+      ),
+    );
     for (final self in [false, true]) {
       final path = self ? '/api/v1/platform/employee-home/shifts' : root;
+      router.get(
+        self
+            ? '/api/v1/platform/employee-home/blocked-tasks'
+            : '/api/v1/platform/blocked-tasks',
+        (Request r) async => jsonResponse(
+          200,
+          await app.blocked(
+            await auth.authenticate(bearerToken(r)),
+            self: self,
+            after: r.url.queryParameters['after'],
+          ),
+        ),
+      );
+      router.get(
+        '$path/<id>/tasks/<task>/blockings',
+        (Request r, String id, String task) async => jsonResponse(
+          200,
+          await app.blockings(
+            await auth.authenticate(bearerToken(r)),
+            id,
+            task,
+            self: self,
+            after: r.url.queryParameters['after'],
+          ),
+        ),
+      );
       router.get(
         path,
         (Request r) async => jsonResponse(

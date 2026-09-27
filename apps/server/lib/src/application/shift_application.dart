@@ -281,6 +281,60 @@ class ShiftApplication {
     );
   }
 
+  void _blockingScope(PlatformActor actor, String location) {
+    if (actor.locationId != database.locationId ||
+        location != actor.locationId) {
+      throw const PlatformFailure(404, 'not_found', 'Task not found.');
+    }
+  }
+
+  Future<Map<String, dynamic>> blocked(
+    SessionPrincipal p, {
+    bool self = true,
+    String? after,
+  }) {
+    final cursor = after == null ? null : requireUuid({'id': after}, 'id');
+    return _run(
+      p,
+      self ? 'tasks.instances.self.read' : 'tasks.instances.read',
+      (tx, actor) async {
+        _blockingScope(actor, database.locationId);
+        final employee = self ? await _self(tx, actor) : null;
+        return _execution.blocked(tx, employee, actor.locationId, cursor);
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> blockings(
+    SessionPrincipal p,
+    String shiftId,
+    String taskId, {
+    bool self = true,
+    String? after,
+  }) {
+    shiftId = requireUuid({'id': shiftId}, 'id');
+    taskId = requireUuid({'id': taskId}, 'id');
+    final before = after == null ? null : int.tryParse(after);
+    if (after != null &&
+        (before == null || before < 3 || before > 9007199254740991)) {
+      throw const PlatformFailure(
+        400,
+        'invalid_cursor',
+        'Invalid history cursor.',
+      );
+    }
+    return _run(
+      p,
+      self ? 'tasks.instances.self.read' : 'tasks.instances.read',
+      (tx, actor) async {
+        final shift = await _visible(tx, actor, shiftId, self);
+        _blockingScope(actor, shift.locationId);
+        await _tasks.detail(tx, shiftId, taskId);
+        return _execution.history(tx, taskId, before);
+      },
+    );
+  }
+
   Future<Map<String, dynamic>> execute(
     SessionPrincipal p,
     String shiftId,
@@ -292,28 +346,69 @@ class ShiftApplication {
     shiftId = requireUuid({'id': shiftId}, 'id');
     taskId = requireUuid({'id': taskId}, 'id');
     if (stepId != null) stepId = requireUuid({'id': stepId}, 'id');
-    requireFields(input, required: {'operationId', 'expectedVersion'});
+    final exceptional = command == 'block' || command == 'resume';
+    requireFields(
+      input,
+      required: {'operationId', 'expectedVersion', if (exceptional) 'reason'},
+    );
+    String? reason;
+    if (exceptional) {
+      try {
+        reason = blockingReason(input['reason']);
+      } on FormatException {
+        throw const PlatformFailure(
+          400,
+          'invalid_reason',
+          'A reason of 1 to 500 characters is required.',
+        );
+      }
+    }
     final operation = requireUuid(input, 'operationId'),
         version = requireVersion(input),
         step = stepId;
-    return _run(p, 'tasks.instances.self.execute', (tx, actor) async {
-      final shift = await _visible(tx, actor, shiftId, true);
-      final task = await _tasks.detail(tx, shiftId, taskId);
-      final now =
-          (await tx.execute('SELECT clock_timestamp()')).single.first
-              as DateTime;
-      return (await _execution.execute(
-        tx,
-        actor,
-        task,
-        shift,
-        command,
-        operation,
-        version,
-        step,
-        now,
-      )).toJson();
-    });
+    return _run(
+      p,
+      command == 'resume'
+          ? 'tasks.instances.resolve'
+          : 'tasks.instances.self.execute',
+      (tx, actor) async {
+        final shift = await _visible(tx, actor, shiftId, command != 'resume');
+        if (exceptional) _blockingScope(actor, shift.locationId);
+        final task = await _tasks.detail(tx, shiftId, taskId);
+        final now =
+            (await tx.execute('SELECT clock_timestamp()')).single.first
+                as DateTime;
+        return (await _execution.execute(
+          tx,
+          actor,
+          task,
+          shift,
+          command,
+          operation,
+          version,
+          step,
+          now,
+          reason: reason,
+          checkResume: () async {
+            final person = await _people.get(tx, shift.draft.employeeId);
+            final at =
+                (await tx.execute('SELECT clock_timestamp()')).single.first
+                    as DateTime;
+            if (!person.isActive ||
+                person.locationId != shift.locationId ||
+                person.assignedFrom.isAfter(at) ||
+                (person.assignedUntil != null &&
+                    !at.isBefore(person.assignedUntil!))) {
+              throw const PlatformFailure(
+                422,
+                'employee_unavailable',
+                'Employee assignment is not currently valid.',
+              );
+            }
+          },
+        )).toJson();
+      },
+    );
   }
 
   Future<Map<String, dynamic>> list(

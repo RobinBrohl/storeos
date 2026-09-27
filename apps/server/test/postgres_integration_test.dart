@@ -154,6 +154,7 @@ void main() {
             '0005_task_templates',
             '0006_shifts_and_task_instances',
             '0007_task_execution',
+            '0008_task_blocking',
           ],
         );
         final account = await connection.execute(
@@ -570,6 +571,7 @@ void main() {
           '0005_task_templates',
           '0006_shifts_and_task_instances',
           '0007_task_execution',
+          '0008_task_blocking',
         ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(

@@ -85,4 +85,45 @@ void main() {
       );
     }
   });
+  test(
+    'blocking and resuming require correct states and never bypass confirmations',
+    () {
+      task(
+        status: 'in_progress',
+        version: 8,
+        count: 1,
+      ).validate('block', 8, null, end, start, end);
+      task(
+        status: 'blocked',
+        version: 9,
+        count: 1,
+      ).validate('resume', 9, null, end, start, end);
+      for (final command in ['start', 'confirm', 'complete', 'block']) {
+        expect(
+          () => task(
+            status: 'blocked',
+            version: 9,
+            count: 1,
+          ).validate(command, 9, 'two', end, start, end),
+          throwsA(isA<ExecutionConflict>()),
+        );
+      }
+      expect(
+        () => task(
+          status: 'in_progress',
+          version: 10,
+          count: 1,
+        ).validate('complete', 10, null, end, start, end),
+        throwsA(isA<InvalidExecution>()),
+      );
+      expect(
+        () => task(
+          status: 'completed',
+          version: 12,
+          count: 2,
+        ).validate('resume', 12, null, end, start, end),
+        throwsA(isA<ExecutionConflict>()),
+      );
+    },
+  );
 }

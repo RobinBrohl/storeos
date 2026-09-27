@@ -37,6 +37,39 @@ class TaskExecutionService {
     };
   }
 
+  Future<Map<String, dynamic>> blocked(
+    TxSession tx,
+    String? employee,
+    String location,
+    String? after,
+  ) async {
+    final ids = await _repository.blocked(tx, employee, location, after),
+        page = <String>[];
+    page.addAll(ids.take(50));
+    return {
+      'items': (await _instances.byIds(
+        tx,
+        page,
+      )).map((v) => v.toJson()).toList(),
+      'nextCursor': ids.length > 50 ? page.last : null,
+    };
+  }
+
+  Future<Map<String, dynamic>> history(
+    TxSession tx,
+    String instance,
+    int? before,
+  ) async {
+    final rows = await _repository.history(tx, instance, before),
+        page = rows.take(50).toList();
+    return {
+      'items': page.map((v) => v.toJson()).toList(),
+      'nextCursor': rows.length > 50
+          ? page.last.reportedVersion.toString()
+          : null,
+    };
+  }
+
   Future<TaskExecutionDto> execute(
     TxSession tx,
     PlatformActor actor,
@@ -46,12 +79,15 @@ class TaskExecutionService {
     String operation,
     int expectedVersion,
     String? stepId,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    String? reason,
+    Future<void> Function()? checkResume,
+  }) async {
     final input = jsonEncode({
       'command': command,
       'expectedVersion': expectedVersion,
       'stepId': stepId,
+      'reason': ?reason,
     });
     final receipt = await _repository.receipt(tx, operation);
     if (receipt != null) {
@@ -98,6 +134,27 @@ class TaskExecutionService {
         'Start is only allowed during the published shift.',
       );
     }
+    String? blockingId;
+    if (command == 'block') {
+      blockingId = newUuid();
+      stepId = current.results.length < task.content!.steps.length
+          ? task.content!.steps[current.results.length].id
+          : null;
+      await _repository.block(
+        tx,
+        current,
+        blockingId,
+        stepId,
+        reason!,
+        actor.id,
+        shift.locationId,
+        now,
+      );
+    } else if (command == 'resume') {
+      await checkResume!();
+      blockingId = current.activeBlockingId;
+      await _repository.resume(tx, current, reason!, actor.id, now);
+    }
     await _repository.apply(
       tx,
       current,
@@ -111,6 +168,8 @@ class TaskExecutionService {
     final action = switch (command) {
       'start' => 'tasks.instance.started',
       'confirm' => 'tasks.step.confirmed',
+      'block' => 'tasks.instance.blocked',
+      'resume' => 'tasks.instance.resumed',
       _ => 'tasks.instance.completed',
     };
     await database.audit(
@@ -127,6 +186,7 @@ class TaskExecutionService {
         'oldStatus': current.status,
         'status': result.status,
         'stepId': ?stepId,
+        'blockingId': ?blockingId,
       },
     );
     await _repository.remember(

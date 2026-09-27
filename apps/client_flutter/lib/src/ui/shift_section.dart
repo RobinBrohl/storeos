@@ -41,7 +41,10 @@ class _ShiftSectionState extends State<ShiftSection> {
       ) ??
       false;
   Future<bool> _discard() async =>
-      !(c.dirty || c.unconfirmed || c.executionUnconfirmed) ||
+      !(c.dirty ||
+          c.unconfirmed ||
+          c.executionUnconfirmed ||
+          c.reason.isNotEmpty) ||
       await _confirm(
         'Lokale Eingaben verwerfen?',
         'Der bestätigte Serverstand ersetzt die lokalen Eingaben.',
@@ -121,7 +124,9 @@ class _ShiftSectionState extends State<ShiftSection> {
               subtitle: Text('${t.confirmedSteps}/${t.totalSteps} bestätigt'),
               onTap: c.busy || c.executionUnconfirmed
                   ? null
-                  : () => c.openRunning(t),
+                  : () async {
+                      if (await _discard() && mounted) await c.openRunning(t);
+                    },
             ),
           if (c.runningCursor != null)
             TextButton(
@@ -129,6 +134,32 @@ class _ShiftSectionState extends State<ShiftSection> {
               child: const Text('Weitere laufende Aufgaben'),
             ),
         ],
+        const Divider(),
+        Text(
+          c.self
+              ? 'Meine blockierten Aufgaben'
+              : 'Blockierte Aufgaben am Standort',
+        ),
+        if (c.blocked == null) const Text('Blockierungen noch nicht geladen.'),
+        if (c.blocked?.isEmpty == true)
+          const Text('Keine blockierten Aufgaben.'),
+        for (final t in c.blocked ?? <TaskInstanceDto>[])
+          ListTile(
+            title: Text(t.title),
+            subtitle: Text(
+              'Blockiert · ${t.confirmedSteps}/${t.totalSteps} bestätigt',
+            ),
+            onTap: c.busy || c.executionUnconfirmed
+                ? null
+                : () async {
+                    if (await _discard() && mounted) await c.openRunning(t);
+                  },
+          ),
+        if (c.blockedCursor != null)
+          TextButton(
+            onPressed: c.busy ? null : () => c.loadBlocked(more: true),
+            child: const Text('Weitere blockierte Aufgaben'),
+          ),
         if (c.selected != null || c.editingNew) ...[
           const Divider(),
           Text(
@@ -198,7 +229,11 @@ class _ShiftSectionState extends State<ShiftSection> {
               ),
               onTap: c.busy || c.executionUnconfirmed
                   ? null
-                  : () => c.openTask(task.id),
+                  : () async {
+                      if (await _discard() && mounted) {
+                        await c.openTask(task.id);
+                      }
+                    },
             ),
           if (c.task?.content != null) ...[
             const Divider(),
@@ -227,7 +262,55 @@ class _ShiftSectionState extends State<ShiftSection> {
                 ),
             if (c.self)
               const Text(
-                'Nur tatsächlich erledigte Schritte bestätigen. Nicht ausführbare Schritte bleiben offen. Keine Arbeitszeiterfassung.',
+                'Nur tatsächlich erledigte Schritte bestätigen. Hindernisse mit Begründung melden. Keine Arbeitszeiterfassung.',
+              ),
+            if (c.execution?.status == 'blocked')
+              const Text(
+                'Blockiert – weitere Bestätigungen und Abschluss sind bis zur Freigabe gesperrt.',
+              ),
+            if (c.canBlock || c.canResume || c.reason.isNotEmpty) ...[
+              TextFormField(
+                key: ValueKey(
+                  'blocking-reason-${c.task!.id}-${c.execution?.version}-${c.executionGeneration}',
+                ),
+                initialValue: c.reason,
+                enabled: c.canEditReason,
+                minLines: 2,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  labelText: c.self
+                      ? 'Hindernis begründen'
+                      : 'Klärung und Freigabe begründen',
+                  helperText:
+                      '1–500 Zeichen. Nur sachlich nötige Angaben, keine sensiblen Personendaten.',
+                ),
+                onChanged: c.setReason,
+              ),
+              if (c.canBlock)
+                FilledButton(
+                  key: const Key('block-task'),
+                  onPressed: () => c.executeTask('block'),
+                  child: const Text('Aufgabe blockieren'),
+                ),
+              if (c.canResume)
+                FilledButton(
+                  key: const Key('resume-task'),
+                  onPressed: () => c.executeTask('resume'),
+                  child: const Text('Wiederaufnahme freigeben'),
+                ),
+            ],
+            if (c.blockings.isNotEmpty) const Text('Blockierungshistorie'),
+            for (final b in c.blockings)
+              ListTile(
+                title: Text(b.reason),
+                subtitle: Text(
+                  'Gemeldet ${b.reportedAt.toIso8601String()} · ${b.reportedBy}\n${b.resolution == null ? "Noch ungeklärt" : "Klärung: ${b.resolution}\nFreigegeben ${b.resolvedAt!.toIso8601String()} · ${b.resolvedBy}"}',
+                ),
+              ),
+            if (c.blockingCursor != null)
+              TextButton(
+                onPressed: c.busy ? null : () => c.loadBlockings(more: true),
+                child: const Text('Ältere Blockierungen'),
               ),
             if (c.canStart)
               FilledButton(
@@ -259,7 +342,7 @@ class _ShiftSectionState extends State<ShiftSection> {
               onPressed: c.busy
                   ? null
                   : () async {
-                      if (!c.executionUnconfirmed ||
+                      if ((!c.executionUnconfirmed && c.reason.isEmpty) ||
                           await _confirm(
                             'Serverstand laden?',
                             'Der unbestätigte Befehl wird nicht erneut gesendet. Der Serverstand ersetzt die lokale Ansicht.',

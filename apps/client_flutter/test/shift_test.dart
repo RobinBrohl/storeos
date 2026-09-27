@@ -392,6 +392,9 @@ class Api implements PlatformApi {
         statusCode: 404,
       );
     }
+    if (route.endsWith('/blockings') || route.endsWith('/blocked-tasks')) {
+      return {'items': <Map<String, dynamic>>[], 'nextCursor': null};
+    }
     if (route == '/employee-home/running-tasks') {
       return {'items': <Map<String, dynamic>>[], 'nextCursor': null};
     }

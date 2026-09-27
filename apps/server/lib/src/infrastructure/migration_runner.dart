@@ -185,6 +185,17 @@ class MigrationRunner {
             'GRANT UPDATE (status, version, started_at, started_by, completed_at, completed_by) ON $_schema.task_instances TO $role',
           );
         }
+        if (known.containsKey('0008_task_blocking')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.task_blockings TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.task_blockings FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (resolution, resolved_at, resolved_by, resolved_version) ON $_schema.task_blockings TO $role',
+          );
+        }
         if (known.containsKey('0005_task_templates')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.task_templates, $_schema.task_template_revisions TO $role',

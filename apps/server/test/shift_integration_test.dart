@@ -19,6 +19,7 @@ import 'package:test/test.dart';
 
 part 'task_execution_integration_cases.dart';
 part 'task_blocking_integration_cases.dart';
+part 'task_cancellation_integration_cases.dart';
 
 const _company = '11111111-1111-4111-8111-111111111111';
 const _home = '22222222-2222-4222-8222-222222222222';
@@ -29,6 +30,7 @@ final _url = Platform.environment['STOREOS_TEST_DATABASE'];
 void main() {
   executionTests();
   blockingTests();
+  cancellationTests();
   test(
     'pinned selections reject mismatched templates and published foreign-location revisions without writes',
     () => _withFixture((f) async {
@@ -170,6 +172,7 @@ void main() {
       for (final route in [
         '/employee-home/shifts/${newUuid()}/tasks/${newUuid()}/block',
         '/shifts/${newUuid()}/tasks/${newUuid()}/resume',
+        '/shifts/${newUuid()}/tasks/${newUuid()}/cancel',
       ]) {
         await f.call(
           'POST',
@@ -192,6 +195,8 @@ void main() {
         '/employee-home/shifts',
         '/blocked-tasks',
         '/employee-home/blocked-tasks',
+        '/cancelled-tasks',
+        '/employee-home/cancelled-tasks',
         '/shifts/${p.id}/tasks/${newUuid()}/blockings',
       ]) {
         await f.call('GET', route, token: token, expected: 401);
@@ -794,6 +799,7 @@ void main() {
         '0006_shifts_and_task_instances',
         '0007_task_execution',
         '0008_task_blocking',
+        '0009_task_cancellation',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);

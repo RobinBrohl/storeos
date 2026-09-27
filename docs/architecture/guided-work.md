@@ -1,6 +1,6 @@
 # Guided Work
 
-Status: Zielkonzept. [P1b.4](../development/phase-1b-execution.md) implementiert ausschließlich geordnete Bestätigungsschritte, Start, Wiederaufnahme und Abschluss. [P1b.5](../development/phase-1b-blocking.md) ergänzt manuelle Blockierungen und administrative Freigabe zur Wiederaufnahme. Zahleneingaben, automatische Grenzprüfung und Stornierung bleiben offen.
+Status: Zielkonzept. [P1b.4](../development/phase-1b-execution.md) implementiert ausschließlich geordnete Bestätigungsschritte, Start, Wiederaufnahme und Abschluss. [P1b.5](../development/phase-1b-blocking.md) ergänzt manuelle Blockierungen und administrative Freigabe zur Wiederaufnahme. [P1b.6](../development/phase-1b-cancellation.md) ergänzt die begründete Stornierung blockierter Aufgaben. Zahleneingaben und automatische Grenzprüfung bleiben offen.
 
 ## Ziel und fachlicher Vertrag
 

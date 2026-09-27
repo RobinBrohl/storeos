@@ -160,6 +160,33 @@ class _ShiftSectionState extends State<ShiftSection> {
             onPressed: c.busy ? null : () => c.loadBlocked(more: true),
             child: const Text('Weitere blockierte Aufgaben'),
           ),
+        TextButton(
+          onPressed: c.busy ? null : () => c.loadCancelled(),
+          child: Text(
+            c.cancelled == null
+                ? 'Stornierte Aufgaben anzeigen'
+                : 'Stornierte Aufgaben aktualisieren',
+          ),
+        ),
+        if (c.cancelled?.isEmpty == true)
+          const Text('Keine stornierten Aufgaben.'),
+        for (final t in c.cancelled ?? <TaskInstanceDto>[])
+          ListTile(
+            title: Text(t.title),
+            subtitle: Text(
+              'Storniert · ${t.confirmedSteps}/${t.totalSteps} bestätigt',
+            ),
+            onTap: c.busy || c.executionUnconfirmed
+                ? null
+                : () async {
+                    if (await _discard() && mounted) await c.openRunning(t);
+                  },
+          ),
+        if (c.cancelledCursor != null)
+          TextButton(
+            onPressed: c.busy ? null : () => c.loadCancelled(more: true),
+            child: const Text('Weitere stornierte Aufgaben'),
+          ),
         if (c.selected != null || c.editingNew) ...[
           const Divider(),
           Text(
@@ -268,7 +295,14 @@ class _ShiftSectionState extends State<ShiftSection> {
               const Text(
                 'Blockiert – weitere Bestätigungen und Abschluss sind bis zur Freigabe gesperrt.',
               ),
-            if (c.canBlock || c.canResume || c.reason.isNotEmpty) ...[
+            if (c.execution?.status == 'cancelled')
+              const Text(
+                'Storniert – die Bearbeitung ist endgültig beendet. Die Aufgabe wurde nicht erfolgreich abgeschlossen.',
+              ),
+            if (c.canBlock ||
+                c.canResume ||
+                c.canCancel ||
+                c.reason.isNotEmpty) ...[
               TextFormField(
                 key: ValueKey(
                   'blocking-reason-${c.task!.id}-${c.execution?.version}-${c.executionGeneration}',
@@ -280,7 +314,7 @@ class _ShiftSectionState extends State<ShiftSection> {
                 decoration: InputDecoration(
                   labelText: c.self
                       ? 'Hindernis begründen'
-                      : 'Klärung und Freigabe begründen',
+                      : 'Klärung oder Stornierung begründen',
                   helperText:
                       '1–500 Zeichen. Nur sachlich nötige Angaben, keine sensiblen Personendaten.',
                 ),
@@ -298,13 +332,27 @@ class _ShiftSectionState extends State<ShiftSection> {
                   onPressed: () => c.executeTask('resume'),
                   child: const Text('Wiederaufnahme freigeben'),
                 ),
+              if (c.canCancel)
+                OutlinedButton(
+                  key: const Key('cancel-task'),
+                  onPressed: () async {
+                    if (await _confirm(
+                          'Aufgabe endgültig stornieren?',
+                          'Die Aufgabe kann danach nicht fortgesetzt werden. Vorhandene Nachweise bleiben erhalten. Eine Stornierung bestätigt keine Erledigung.',
+                        ) &&
+                        mounted) {
+                      await c.executeTask('cancel');
+                    }
+                  },
+                  child: const Text('Aufgabe stornieren'),
+                ),
             ],
             if (c.blockings.isNotEmpty) const Text('Blockierungshistorie'),
             for (final b in c.blockings)
               ListTile(
                 title: Text(b.reason),
                 subtitle: Text(
-                  'Gemeldet ${b.reportedAt.toIso8601String()} · ${b.reportedBy}\n${b.resolution == null ? "Noch ungeklärt" : "Klärung: ${b.resolution}\nFreigegeben ${b.resolvedAt!.toIso8601String()} · ${b.resolvedBy}"}',
+                  'Gemeldet ${b.reportedAt.toIso8601String()} · ${b.reportedBy}\n${b.resolution == null ? "Noch ungeklärt" : "${b.resolutionKind == 'cancelled' ? 'Stornierungsgrund' : 'Klärung'}: ${b.resolution}\n${b.resolutionKind == 'cancelled' ? 'Storniert' : 'Freigegeben'} ${b.resolvedAt!.toIso8601String()} · ${b.resolvedBy}"}',
                 ),
               ),
             if (c.blockingCursor != null)

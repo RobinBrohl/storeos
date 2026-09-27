@@ -8,9 +8,11 @@ class TaskExecutionRepository {
   Future<TaskExecutionDto?> get(TxSession tx, String id) async {
     final rows = await tx.execute(
       Sql.named(
-        '''SELECT id::text, status, version, started_at, started_by::text, completed_at, completed_by::text,
+        '''SELECT t.id::text, t.status, t.version, t.started_at, t.started_by::text, t.completed_at, t.completed_by::text,
+      c.id::text AS cancelled_blocking_id, c.resolved_at AS cancelled_at, c.resolved_by::text AS cancelled_by,
       (SELECT b.id::text FROM $schema.task_blockings b WHERE b.instance_id=t.id AND b.resolved_at IS NULL) AS blocking_id
-      FROM $schema.task_instances t WHERE company_id=CAST(@company AS uuid) AND id=CAST(@id AS uuid)''',
+      FROM $schema.task_instances t LEFT JOIN $schema.task_blockings c ON c.instance_id=t.id AND c.resolution_kind='cancelled'
+      WHERE t.company_id=CAST(@company AS uuid) AND t.id=CAST(@id AS uuid)''',
       ),
       parameters: {'company': companyId, 'id': id},
     );
@@ -32,6 +34,9 @@ class TaskExecutionRepository {
       completedAt: r['completed_at'] as DateTime?,
       completedBy: r['completed_by'] as String?,
       activeBlockingId: r['blocking_id'] as String?,
+      cancelledBlockingId: r['cancelled_blocking_id'] as String?,
+      cancelledAt: r['cancelled_at'] as DateTime?,
+      cancelledBy: r['cancelled_by'] as String?,
       results: steps.map((row) {
         final s = row.toColumnMap();
         return TaskStepResultDto(
@@ -113,6 +118,7 @@ class TaskExecutionRepository {
         ",status='completed',completed_at=@now,completed_by=CAST(@actor AS uuid)",
       'block' => ",status='blocked'",
       'resume' => ",status='in_progress'",
+      'cancel' => ",status='cancelled'",
       _ => '',
     };
     final updated = await tx.execute(
@@ -178,21 +184,23 @@ class TaskExecutionRepository {
     );
   }
 
-  Future<void> resume(
+  Future<void> resolve(
     TxSession tx,
     TaskExecutionDto current,
     String reason,
     String actor,
     DateTime now,
+    String kind,
   ) async {
     final changed = await tx.execute(
       Sql.named(
-        '''UPDATE $schema.task_blockings SET resolution=@reason,
+        '''UPDATE $schema.task_blockings SET resolution=@reason,resolution_kind=@kind,
       resolved_at=@now,resolved_by=CAST(@actor AS uuid),resolved_version=@version
       WHERE id=CAST(@id AS uuid) AND company_id=CAST(@company AS uuid) AND instance_id=CAST(@instance AS uuid) AND resolved_at IS NULL''',
       ),
       parameters: {
         'reason': reason,
+        'kind': kind,
         'now': now,
         'actor': actor,
         'version': current.version + 1,
@@ -206,15 +214,16 @@ class TaskExecutionRepository {
     }
   }
 
-  Future<List<String>> blocked(
+  Future<List<String>> exceptions(
     TxSession tx,
     String? employee,
     String location,
     String? after,
+    String status,
   ) async => (await tx.execute(
     Sql.named(
       '''SELECT id::text FROM $schema.task_instances
-      WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) AND status='blocked'
+      WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) AND status=@status
       AND (CAST(@employee AS uuid) IS NULL OR employee_id=CAST(@employee AS uuid))
       AND (CAST(@after AS uuid) IS NULL OR id>CAST(@after AS uuid)) ORDER BY id LIMIT 51''',
     ),
@@ -223,6 +232,7 @@ class TaskExecutionRepository {
       'location': location,
       'employee': employee,
       'after': after,
+      'status': status,
     },
   )).map((r) => r.first as String).toList();
   Future<List<TaskBlockingDto>> history(
@@ -233,7 +243,7 @@ class TaskExecutionRepository {
       (await tx.execute(
         Sql.named(
           '''SELECT id::text,instance_id::text,step_id::text,reason,reported_at,reported_by::text,
-      reported_version,resolution,resolved_at,resolved_by::text,resolved_version FROM $schema.task_blockings
+      reported_version,resolution_kind,resolution,resolved_at,resolved_by::text,resolved_version FROM $schema.task_blockings
       WHERE company_id=CAST(@company AS uuid) AND instance_id=CAST(@instance AS uuid)
       AND (CAST(@before AS bigint) IS NULL OR reported_version<@before) ORDER BY reported_version DESC LIMIT 51''',
         ),
@@ -253,6 +263,7 @@ class TaskExecutionRepository {
           reportedBy: r['reported_by'] as String,
           reportedVersion: r['reported_version'] as int,
           resolution: r['resolution'] as String?,
+          resolutionKind: r['resolution_kind'] as String?,
           resolvedAt: r['resolved_at'] as DateTime?,
           resolvedBy: r['resolved_by'] as String?,
           resolvedVersion: r['resolved_version'] as int?,

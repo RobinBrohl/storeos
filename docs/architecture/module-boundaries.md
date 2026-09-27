@@ -75,3 +75,5 @@ P1b.3 ergänzt Workforce unter `apps/server/lib/src/workforce/` und Instanzen im
 P1b.4 ergänzt den Tasks-Port `TaskExecutionService`. `ShiftApplication` prüft eigene Mitarbeiter-/Standortzuordnung und reicht den veröffentlichten Schichtkontext an Tasks weiter. Tasks entscheidet Schrittfolge und Abschluss; Workforce schreibt keine Ausführungsdaten. Die laufenden Eigenaufgaben werden paginiert über den Tasks-Port gelesen. Kein neues Modul und kein Ereignisverbraucher.
 
 P1b.5 erweitert denselben Tasks-Port um Blockierung, Klärung und Historie. Der Application-Koordinator prüft administrative Rechte, lokalen Standort und aktuelle People-Zuordnung; Tasks erhält diesen Check für neue Freigaben nach dem Replay-Abgleich. Kein neues Modul und kein Zugriff auf fremde Tabellen.
+
+P1b.6 ergänzt Stornierung im bestehenden Tasks-Port. ShiftApplication prüft Adminrecht und lokalen Scope; aktive People-Zuordnung ist nur für Freigaben erforderlich. Workforce-Daten bleiben unverändert.

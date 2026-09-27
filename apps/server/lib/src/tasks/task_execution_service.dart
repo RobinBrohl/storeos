@@ -37,13 +37,20 @@ class TaskExecutionService {
     };
   }
 
-  Future<Map<String, dynamic>> blocked(
+  Future<Map<String, dynamic>> exceptions(
     TxSession tx,
     String? employee,
     String location,
     String? after,
+    String status,
   ) async {
-    final ids = await _repository.blocked(tx, employee, location, after),
+    final ids = await _repository.exceptions(
+          tx,
+          employee,
+          location,
+          after,
+          status,
+        ),
         page = <String>[];
     page.addAll(ids.take(50));
     return {
@@ -150,10 +157,17 @@ class TaskExecutionService {
         shift.locationId,
         now,
       );
-    } else if (command == 'resume') {
-      await checkResume!();
+    } else if (command == 'resume' || command == 'cancel') {
+      if (command == 'resume') await checkResume!();
       blockingId = current.activeBlockingId;
-      await _repository.resume(tx, current, reason!, actor.id, now);
+      await _repository.resolve(
+        tx,
+        current,
+        reason!,
+        actor.id,
+        now,
+        command == 'cancel' ? 'cancelled' : 'resumed',
+      );
     }
     await _repository.apply(
       tx,
@@ -170,6 +184,7 @@ class TaskExecutionService {
       'confirm' => 'tasks.step.confirmed',
       'block' => 'tasks.instance.blocked',
       'resume' => 'tasks.instance.resumed',
+      'cancel' => 'tasks.instance.cancelled',
       _ => 'tasks.instance.completed',
     };
     await database.audit(

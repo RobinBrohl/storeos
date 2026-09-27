@@ -30,6 +30,8 @@ Der freigegebene [P1b.4-Teilslice](../development/phase-1b-execution.md) ergänz
 
 Der freigegebene [P1b.5-Teilslice](../development/phase-1b-blocking.md) ergänzt manuelles Blockieren eigener laufender Aufgaben und administrative Klärung mit Wiederaufnahme. Zahlen-/Grenzwertschritte und Stornierung fehlen weiterhin; P1b bleibt teilweise implementiert.
 
+Der freigegebene [P1b.6-Teilslice](../development/phase-1b-cancellation.md) ergänzt ausschließlich die administrative Stornierung blockierter Aufgaben, inklusive Historie und lesbaren Stornierungslisten. Zahlen-/Grenzwertschritte bleiben offen; P1b ist weiterhin teilweise implementiert.
+
 **Verbindliche Ende-zu-Ende-Reise:**
 
 `Company → Location → Employee → Shift → TaskTemplate → TaskInstance → Employee Home → Guided Work → Completion → Audit Log`

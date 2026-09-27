@@ -31,7 +31,8 @@ class ShiftController extends ChangeNotifier {
   TaskInstanceDto? task;
   TaskExecutionDto? execution;
   List<TaskInstanceDto> running = [];
-  List<TaskInstanceDto>? blocked;
+  List<TaskInstanceDto>? blocked, cancelled;
+  String? cancelledCursor;
   List<TaskBlockingDto> blockings = [];
   String? blockedCursor, blockingCursor;
   String reason = '';
@@ -39,6 +40,13 @@ class ShiftController extends ChangeNotifier {
   bool get canResume =>
       !self &&
       platform.allows('tasks.instances.resolve') &&
+      !busy &&
+      !executionUnconfirmed &&
+      !executionConflict &&
+      execution?.status == 'blocked';
+  bool get canCancel =>
+      !self &&
+      platform.allows('tasks.instances.cancel') &&
       !busy &&
       !executionUnconfirmed &&
       !executionConflict &&
@@ -85,6 +93,7 @@ class ShiftController extends ChangeNotifier {
     'in_progress' => 'In Bearbeitung',
     'completed' => 'Abgeschlossen',
     'blocked' => 'Blockiert',
+    'cancelled' => 'Storniert',
     _ => 'Unbekannt',
   };
   void _clearExecution() {
@@ -173,6 +182,8 @@ class ShiftController extends ChangeNotifier {
     runningCursor = null;
     blocked = null;
     blockedCursor = null;
+    cancelled = null;
+    cancelledCursor = null;
     _clearExecution();
     employees = [];
     templates = [];
@@ -236,7 +247,10 @@ class ShiftController extends ChangeNotifier {
     items = [if (more) ...?items, ...loaded];
     cursor = raw['nextCursor'] as String?;
     if (self && !more) await _loadRunning(e);
-    if (!more) await _loadBlocked(e);
+    if (!more) {
+      await _loadBlocked(e);
+      if (cancelled != null) await _loadCancelled(e);
+    }
   });
   void _check(ShiftDto shift) {
     if (shift.companyId != session.user?.companyId) {
@@ -321,11 +335,13 @@ class ShiftController extends ChangeNotifier {
       'complete' => canComplete,
       'block' => canBlock,
       'resume' => canResume,
+      'cancel' => canCancel,
       _ => false,
     };
     if (!permitted) return Future.value();
     return _run((e) async {
-      final exceptional = command == 'block' || command == 'resume';
+      final exceptional =
+          command == 'block' || command == 'resume' || command == 'cancel';
       final validated = exceptional ? blockingReason(reason) : null;
       final suffix = command == 'confirm'
           ? 'steps/${nextStep!.id}/confirm'
@@ -357,6 +373,24 @@ class ShiftController extends ChangeNotifier {
 
   Future<void> loadBlocked({bool more = false}) => _run((e) async {
     if (!more || blockedCursor != null) await _loadBlocked(e, more: more);
+  });
+  Future<void> _loadCancelled(int e, {bool more = false}) async {
+    final raw = await _get(
+      e,
+      self ? '/employee-home/cancelled-tasks' : '/cancelled-tasks',
+      after: more ? cancelledCursor : null,
+    );
+    cancelled = [
+      if (more) ...?cancelled,
+      ...(raw['items'] as List).map(
+        (v) => TaskInstanceDto.fromJson(v as Map<String, dynamic>),
+      ),
+    ];
+    cancelledCursor = raw['nextCursor'] as String?;
+  }
+
+  Future<void> loadCancelled({bool more = false}) => _run((e) async {
+    if (!more || cancelledCursor != null) await _loadCancelled(e, more: more);
   });
   Future<void> _loadBlockings(int e, {bool more = false}) async {
     final raw = await _get(
@@ -399,6 +433,10 @@ class ShiftController extends ChangeNotifier {
       execution = TaskExecutionDto.fromJson(raw);
       _executionBody = null;
       _executionRoute = null;
+      if (execution!.status == 'cancelled') {
+        blockings = [];
+        blockingCursor = null;
+      }
       notice = 'Vorgang vom Server bestätigt.';
       reason = '';
     } catch (f) {
@@ -428,6 +466,11 @@ class ShiftController extends ChangeNotifier {
   }
 
   Future<void> _refreshExecutionLists(int e) async {
+    // Never present an obsolete open blocking after an accepted cancellation.
+    // Load the evidence before optional lists, which can fail independently.
+    blockings = [];
+    blockingCursor = null;
+    await _loadBlockings(e);
     final detail = await _get(e, '$root/${selected!.id}');
     tasks = (detail['tasks'] as List)
         .map((v) => TaskInstanceDto.fromJson(v as Map<String, dynamic>))
@@ -440,7 +483,9 @@ class ShiftController extends ChangeNotifier {
     }
     if (self) await _loadRunning(e);
     await _loadBlocked(e);
-    await _loadBlockings(e);
+    if (cancelled != null || execution?.status == 'cancelled') {
+      await _loadCancelled(e);
+    }
   }
 
   Future<void> loadChoices({bool more = false}) => _run((e) async {

@@ -126,4 +126,36 @@ void main() {
       );
     },
   );
+  test('cancel only accepts blocked and all new commands reject cancelled', () {
+    task(
+      status: 'blocked',
+      version: 3,
+    ).validate('cancel', 3, null, end, start, end);
+    for (final status in ['open', 'in_progress', 'completed', 'cancelled']) {
+      expect(
+        () => task(
+          status: status,
+          version: 4,
+        ).validate('cancel', 4, null, end, start, end),
+        throwsA(isA<ExecutionConflict>()),
+      );
+    }
+    for (final command in [
+      'start',
+      'confirm',
+      'complete',
+      'block',
+      'resume',
+      'cancel',
+    ]) {
+      expect(
+        () => task(
+          status: 'cancelled',
+          version: 5,
+          count: 1,
+        ).validate(command, 5, 'two', end, start, end),
+        throwsA(isA<ExecutionConflict>()),
+      );
+    }
+  });
 }

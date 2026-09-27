@@ -211,6 +211,7 @@ void executionTests() {
         expect(await runner.apply(), [
           '0007_task_execution',
           '0008_task_blocking',
+          '0009_task_cancellation',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

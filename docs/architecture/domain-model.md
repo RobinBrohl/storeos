@@ -79,3 +79,7 @@ Tasks besitzt task_blockings mit unveränderlicher Meldung und einmaliger Kläru
 Die Instanzversion zählt alle Mutationen; accepted_version der Schrittresultate
 hält ihre Annahmeversion fest. Blockierung, Status, Audit und Befehlsnachweis
 teilen dieselbe Transaktion. Historien sind paginiert; keine neuen Integrations-Events.
+
+## Implementierter P1b.6-Teilslice
+
+`blocked → cancelled` ist eine administrative, begründete und terminale Entscheidung. Die aktuelle Blockierung erhält resolution_kind=cancelled; Zeitpunkt, Akteur und Grund stammen aus ihrem unveränderlichen Abschluss. Frühere Freigaben tragen resumed. Stornierung ist keine erfolgreiche Completion und kein Nachweis der Hindernisbeseitigung. Snapshot, Zuordnung und Resultate bleiben erhalten. [Vertrag](../development/phase-1b-cancellation.md).

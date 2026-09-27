@@ -20,7 +20,7 @@ class TaskExecution {
     DateTime endsAt,
   ) {
     if (expectedVersion != state.version) throw ExecutionConflict();
-    if (command == 'resume') {
+    if (command == 'resume' || command == 'cancel') {
       if (state.status != 'blocked') throw ExecutionConflict();
       return;
     }

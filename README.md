@@ -123,5 +123,9 @@ Schichtende sichtbar; die Historie wird nicht überschrieben.
 
 Vor dem Start `./scripts/dev.ps1 migrate` ausführen: Migration 0008 erhält bestehende
 Aufgaben und Befehlsnachweise. Backend und Flutter-Webclient gemeinsam aktualisieren
-und neu starten; alte Clients verstehen blocked nicht. Keine Messwerte, Stornierung,
+und neu starten; alte Clients verstehen blocked nicht. Keine Messwerte,
 Stellvertretung oder Offline-Schreibqueue. [Scope und Rechte](docs/development/phase-1b-blocking.md).
+
+### Blockierte Aufgaben stornieren (P1b.6)
+
+Administratoren können blockierte Aufgaben mit Pflichtgrund und ausdrücklicher Bestätigung endgültig stornieren. Stornierte Aufgaben bleiben über die gezielt ladbaren Listen für berechtigte Mitarbeiter und Administratoren erreichbar, auch nach Schichtende. Vorherige Nachweise bleiben erhalten; eine Stornierung ist kein erfolgreicher Abschluss. Migration 0009 und Client zusammen ausrollen; ältere Clients verstehen `cancelled` nicht. [Scope und Grenzen](docs/development/phase-1b-cancellation.md).

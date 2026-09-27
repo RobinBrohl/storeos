@@ -37,11 +37,18 @@ class TaskExecutionDto {
     this.completedAt,
     this.completedBy,
     this.activeBlockingId,
+    this.cancelledAt,
+    this.cancelledBy,
+    this.cancelledBlockingId,
   }) : results = List.unmodifiable(results);
   final String instanceId, status;
   final int version;
-  final DateTime? startedAt, completedAt;
-  final String? startedBy, completedBy, activeBlockingId;
+  final DateTime? startedAt, completedAt, cancelledAt;
+  final String? startedBy,
+      completedBy,
+      activeBlockingId,
+      cancelledBy,
+      cancelledBlockingId;
   final List<TaskStepResultDto> results;
   factory TaskExecutionDto.fromJson(Map<String, dynamic> j) {
     final status = j['status'];
@@ -58,7 +65,31 @@ class TaskExecutionDto {
     final blocking = j['activeBlockingId'] == null
         ? null
         : shiftUuid(j['activeBlockingId']);
-    if (!{'open', 'in_progress', 'blocked', 'completed'}.contains(status) ||
+    final cancelledAt = j['cancelledAt'] == null
+        ? null
+        : shiftInstant(j['cancelledAt']);
+    final cancelledBy = j['cancelledBy'] == null
+        ? null
+        : shiftUuid(j['cancelledBy']);
+    final cancelledBlockingId = j['cancelledBlockingId'] == null
+        ? null
+        : shiftUuid(j['cancelledBlockingId']);
+    if (!{
+          'open',
+          'in_progress',
+          'blocked',
+          'completed',
+          'cancelled',
+        }.contains(status) ||
+        (status == 'cancelled'
+            ? cancelledAt == null ||
+                  cancelledBy == null ||
+                  cancelledBlockingId == null ||
+                  start == null ||
+                  cancelledAt.isBefore(start)
+            : cancelledAt != null ||
+                  cancelledBy != null ||
+                  cancelledBlockingId != null) ||
         (status == 'blocked') != (blocking != null) ||
         version is! int ||
         version < 1 ||
@@ -75,7 +106,9 @@ class TaskExecutionDto {
                   startBy == null ||
                   version <
                       results.length +
-                          (status == 'completed'
+                          (status == 'cancelled'
+                              ? 4
+                              : status == 'completed'
                               ? 3
                               : status == 'blocked'
                               ? 3
@@ -108,6 +141,9 @@ class TaskExecutionDto {
       completedAt: end,
       completedBy: endBy,
       activeBlockingId: blocking,
+      cancelledAt: cancelledAt,
+      cancelledBy: cancelledBy,
+      cancelledBlockingId: cancelledBlockingId,
     );
   }
   Map<String, dynamic> toJson() => {
@@ -119,6 +155,10 @@ class TaskExecutionDto {
     'completedAt': completedAt?.toUtc().toIso8601String(),
     'completedBy': completedBy,
     if (activeBlockingId != null) 'activeBlockingId': activeBlockingId,
+    if (cancelledAt != null)
+      'cancelledAt': cancelledAt!.toUtc().toIso8601String(),
+    if (cancelledBy != null) 'cancelledBy': cancelledBy,
+    if (cancelledBlockingId != null) 'cancelledBlockingId': cancelledBlockingId,
     'results': results.map((r) => r.toJson()).toList(),
   };
 }
@@ -147,12 +187,13 @@ class TaskBlockingDto {
     required this.reportedBy,
     required this.reportedVersion,
     this.resolution,
+    this.resolutionKind,
     this.resolvedAt,
     this.resolvedBy,
     this.resolvedVersion,
   });
   final String id, instanceId, reason, reportedBy;
-  final String? stepId, resolution, resolvedBy;
+  final String? stepId, resolution, resolvedBy, resolutionKind;
   final DateTime reportedAt;
   final DateTime? resolvedAt;
   final int reportedVersion;
@@ -161,7 +202,11 @@ class TaskBlockingDto {
     final reported = j['reportedVersion'], resolved = j['resolvedVersion'];
     final at = shiftInstant(j['reportedAt']);
     final end = j['resolvedAt'] == null ? null : shiftInstant(j['resolvedAt']);
-    if (reported is! int ||
+    final kind = j['resolutionKind'] ?? (end == null ? null : 'resumed');
+    if ((end == null
+            ? kind != null
+            : !{'resumed', 'cancelled'}.contains(kind)) ||
+        reported is! int ||
         reported < 3 ||
         (end == null
             ? j['resolution'] != null ||
@@ -182,6 +227,7 @@ class TaskBlockingDto {
       reportedAt: at,
       reportedBy: shiftUuid(j['reportedBy']),
       reportedVersion: reported,
+      resolutionKind: kind as String?,
       resolution: j['resolution'] == null
           ? null
           : blockingReason(j['resolution']),
@@ -199,6 +245,7 @@ class TaskBlockingDto {
     'reportedBy': reportedBy,
     'reportedVersion': reportedVersion,
     'resolution': resolution,
+    if (resolutionKind != null) 'resolutionKind': resolutionKind,
     'resolvedAt': resolvedAt?.toUtc().toIso8601String(),
     'resolvedBy': resolvedBy,
     'resolvedVersion': resolvedVersion,

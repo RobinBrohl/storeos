@@ -93,6 +93,19 @@ class ShiftRoutes {
         ),
       ),
     );
+    router.post(
+      '$root/<id>/tasks/<task>/cancel',
+      (Request r, String id, String task) async => jsonResponse(
+        200,
+        await app.execute(
+          await auth.authenticate(bearerToken(r)),
+          id,
+          task,
+          'cancel',
+          await readJson(r),
+        ),
+      ),
+    );
     for (final self in [false, true]) {
       final path = self ? '/api/v1/platform/employee-home/shifts' : root;
       router.get(
@@ -104,6 +117,20 @@ class ShiftRoutes {
           await app.blocked(
             await auth.authenticate(bearerToken(r)),
             self: self,
+            after: r.url.queryParameters['after'],
+          ),
+        ),
+      );
+      router.get(
+        self
+            ? '/api/v1/platform/employee-home/cancelled-tasks'
+            : '/api/v1/platform/cancelled-tasks',
+        (Request r) async => jsonResponse(
+          200,
+          await app.blocked(
+            await auth.authenticate(bearerToken(r)),
+            self: self,
+            cancelled: true,
             after: r.url.queryParameters['after'],
           ),
         ),

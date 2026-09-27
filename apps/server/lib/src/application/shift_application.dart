@@ -291,6 +291,7 @@ class ShiftApplication {
   Future<Map<String, dynamic>> blocked(
     SessionPrincipal p, {
     bool self = true,
+    bool cancelled = false,
     String? after,
   }) {
     final cursor = after == null ? null : requireUuid({'id': after}, 'id');
@@ -300,7 +301,13 @@ class ShiftApplication {
       (tx, actor) async {
         _blockingScope(actor, database.locationId);
         final employee = self ? await _self(tx, actor) : null;
-        return _execution.blocked(tx, employee, actor.locationId, cursor);
+        return _execution.exceptions(
+          tx,
+          employee,
+          actor.locationId,
+          cursor,
+          cancelled ? 'cancelled' : 'blocked',
+        );
       },
     );
   }
@@ -346,7 +353,8 @@ class ShiftApplication {
     shiftId = requireUuid({'id': shiftId}, 'id');
     taskId = requireUuid({'id': taskId}, 'id');
     if (stepId != null) stepId = requireUuid({'id': stepId}, 'id');
-    final exceptional = command == 'block' || command == 'resume';
+    final exceptional =
+        command == 'block' || command == 'resume' || command == 'cancel';
     requireFields(
       input,
       required: {'operationId', 'expectedVersion', if (exceptional) 'reason'},
@@ -368,11 +376,18 @@ class ShiftApplication {
         step = stepId;
     return _run(
       p,
-      command == 'resume'
+      command == 'cancel'
+          ? 'tasks.instances.cancel'
+          : command == 'resume'
           ? 'tasks.instances.resolve'
           : 'tasks.instances.self.execute',
       (tx, actor) async {
-        final shift = await _visible(tx, actor, shiftId, command != 'resume');
+        final shift = await _visible(
+          tx,
+          actor,
+          shiftId,
+          command != 'resume' && command != 'cancel',
+        );
         if (exceptional) _blockingScope(actor, shift.locationId);
         final task = await _tasks.detail(tx, shiftId, taskId);
         final now =

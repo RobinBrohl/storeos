@@ -211,7 +211,7 @@ void blockingTests() {
         'task_execution_commands',
       ]) {
         final privilege = table == 'task_blockings'
-            ? 'UPDATE (resolution,resolved_at,resolved_by,resolved_version)'
+            ? 'UPDATE (resolution,resolved_at,resolved_by,resolved_version,resolution_kind)'
             : 'INSERT';
         await f.owner.execute(
           'REVOKE $privilege ON "${f.schema}".$table FROM "${f.runtimeUser}"',
@@ -622,7 +622,10 @@ void blockingTests() {
           schemaName: f.schema,
           runtimeDatabaseUser: f.runtimeUser,
         );
-        expect(await runner.apply(), ['0008_task_blocking']);
+        expect(await runner.apply(), [
+          '0008_task_blocking',
+          '0009_task_cancellation',
+        ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
         expect(

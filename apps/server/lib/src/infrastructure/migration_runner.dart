@@ -196,6 +196,11 @@ class MigrationRunner {
             'GRANT UPDATE (resolution, resolved_at, resolved_by, resolved_version) ON $_schema.task_blockings TO $role',
           );
         }
+        if (known.containsKey('0009_task_cancellation')) {
+          await tx.execute(
+            'GRANT UPDATE (resolution_kind) ON $_schema.task_blockings TO $role',
+          );
+        }
         if (known.containsKey('0005_task_templates')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.task_templates, $_schema.task_template_revisions TO $role',

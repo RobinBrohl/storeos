@@ -2563,6 +2563,134 @@
           }
         }
       }
+    },
+    "/api/v1/platform/shifts/{id}/tasks/{taskId}/cancel": {
+      "post": {
+        "operationId": "cancelTask",
+        "description": "Requires tasks.instances.cancel (admin), same company and configured location. Only blocked to terminal cancelled; mandatory reason, stable operationId and expectedVersion. Valid after shift end or employee deactivation/link revocation. No successful completion. Atomic history, audit and receipt. Replay rechecks current caller rights; conflicting input or version returns 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskBlockingCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/cancelled-tasks": {
+      "get": {
+        "operationId": "adminCancelledTasks",
+        "description": "Cancelled task metadata including ended shifts; maximum 50, ordered by ID. Same company/configured location. Requires tasks.instances.read. Terminal cancelled tasks remain visible after shift end, with existing read scope. 50 entries, ID cursor.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current cancelled tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelledTaskPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employee-home/cancelled-tasks": {
+      "get": {
+        "operationId": "ownCancelledTasks",
+        "description": "Cancelled task metadata including ended shifts; maximum 50, ordered by ID. Same company/configured location. Requires tasks.instances.self.read and active own assignment. Terminal cancelled tasks remain visible after shift end, with existing read scope. 50 entries, ID cursor.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current cancelled tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelledTaskPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4254,8 +4382,9 @@
             "enum": [
               "open",
               "in_progress",
+              "blocked",
               "completed",
-              "blocked"
+              "cancelled"
             ]
           },
           "version": {
@@ -4287,7 +4416,9 @@
           "position",
           "status",
           "version",
-          "content"
+          "content",
+          "confirmedSteps",
+          "totalSteps"
         ],
         "properties": {
           "id": {
@@ -4319,13 +4450,31 @@
             "maximum": 9
           },
           "status": {
-            "const": "open"
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "blocked",
+              "completed",
+              "cancelled"
+            ]
           },
           "version": {
-            "const": 1
+            "type": "integer",
+            "minimum": 1
           },
           "content": {
             "$ref": "#/components/schemas/TaskTemplateContent"
+          },
+          "confirmedSteps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "totalSteps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
           }
         }
       },
@@ -4423,8 +4572,9 @@
             "enum": [
               "open",
               "in_progress",
+              "blocked",
               "completed",
-              "blocked"
+              "cancelled"
             ]
           },
           "version": {
@@ -4470,6 +4620,21 @@
             "type": "string",
             "format": "uuid",
             "description": "Present only while blocked; history is fetched separately."
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Present only for cancelled tasks, derived from the terminal blocking disposition."
+          },
+          "cancelledBy": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Present only for cancelled tasks, derived from the terminal blocking disposition."
+          },
+          "cancelledBlockingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Present only for cancelled tasks, derived from the terminal blocking disposition."
           }
         }
       },
@@ -4610,6 +4775,18 @@
               "null"
             ],
             "minimum": 4
+          },
+          "resolutionKind": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "resumed",
+              "cancelled",
+              null
+            ],
+            "description": "Null for open blocking. Legacy resolved records without this property mean resumed. Cancellation does not assert remediation."
           }
         }
       },
@@ -4636,6 +4813,30 @@
         }
       },
       "BlockedTaskPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/TaskInstanceSummary"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "CancelledTaskPage": {
         "type": "object",
         "additionalProperties": false,
         "required": [

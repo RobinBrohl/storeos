@@ -1,6 +1,6 @@
 # Guided Work
 
-Status: Konzept für geführte Aufgabenausführung. Der erste Slice umfasst eine kleine, vollständig geprüfte Teilmenge.
+Status: Zielkonzept. [P1b.4](../development/phase-1b-execution.md) implementiert ausschließlich geordnete Bestätigungsschritte, Start, Wiederaufnahme und Abschluss. Zahleneingaben, blocked und Ausnahmeauflösung bleiben offen.
 
 ## Ziel und fachlicher Vertrag
 

@@ -34,17 +34,25 @@ class TaskInstanceRepository {
     );
   }
 
+  Future<List<TaskInstanceDto>> byIds(TxSession tx, List<String> ids) =>
+      _query(tx, ids, instances: true);
   Future<List<TaskInstanceDto>> forShifts(
     TxSession tx,
     List<String> ids, {
     String? detailId,
+  }) => _query(tx, ids, detailId: detailId);
+  Future<List<TaskInstanceDto>> _query(
+    TxSession tx,
+    List<String> ids, {
+    String? detailId,
+    bool instances = false,
   }) async {
     if (ids.isEmpty) return [];
     final rows = await tx.execute(
       Sql.named(
-        '''SELECT id::text,shift_id::text,employee_id::text,template_id::text,revision_id::text,title,position${detailId == null ? '' : ',content'}
-      FROM $schema.task_instances WHERE company_id=CAST(@company AS uuid) AND shift_id=ANY(CAST(@ids AS uuid[]))
-      AND (CAST(@detail AS uuid) IS NULL OR id=CAST(@detail AS uuid)) ORDER BY shift_id,position''',
+        '''SELECT id::text,shift_id::text,employee_id::text,template_id::text,revision_id::text,title,position,status,version,jsonb_array_length(content::jsonb->'steps') AS total_steps,(SELECT count(*) FROM $schema.task_step_results r WHERE r.instance_id=t.id) AS confirmed_steps${detailId == null ? '' : ',content'}
+      FROM $schema.task_instances t WHERE company_id=CAST(@company AS uuid) AND ${instances ? 'id' : 'shift_id'}=ANY(CAST(@ids AS uuid[]))
+      AND (CAST(@detail AS uuid) IS NULL OR id=CAST(@detail AS uuid)) ORDER BY ${instances ? 't.id' : 'shift_id,position'}''',
       ),
       parameters: {'company': companyId, 'ids': ids, 'detail': detailId},
     );
@@ -56,6 +64,10 @@ class TaskInstanceRepository {
         employeeId: v['employee_id'] as String,
         templateId: v['template_id'] as String,
         revisionId: v['revision_id'] as String,
+        status: v['status'] as String,
+        version: v['version'] as int,
+        confirmedSteps: v['confirmed_steps'] as int,
+        totalSteps: v['total_steps'] as int,
         title: v['title'] as String,
         position: v['position'] as int,
         content: detailId == null

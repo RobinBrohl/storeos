@@ -25,3 +25,7 @@ Diese Dokumente verdichten die vom Projektgründer bereitgestellte StoreOS-Produ
 - [P1b.3 – Schichten und Employee Home](development/phase-1b-shifts.md) – Scope, Rechte, Transaktion und API
 - [P1b.3-Prüfnachweis](development/phase-1b-shifts-verification.md) – Tests, Browser-Smoke und Restore
 - [Review des P1b.3-Zyklus](development/phase-1b-shifts-review-2026-09-27.md) – drei behobene Befunde und finale Prüfung
+
+- [P1b.4 – Guided Work und Completion](development/phase-1b-execution.md) – bestätigte Schritte, Rechte, Wiederholungen und Grenzen
+- [P1b.4-Prüfnachweis](development/phase-1b-execution-verification.md) – Tests, Browser-Smoke und Restore
+- [Review des P1b.4-Zyklus](development/phase-1b-execution-review-2026-09-27.md) – zwei behobene Fehler beim Fortschrittsabgleich und finale Prüfung

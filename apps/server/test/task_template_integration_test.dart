@@ -87,6 +87,7 @@ void main() {
       expect(await runner.apply(), [
         '0005_task_templates',
         '0006_shifts_and_task_instances',
+        '0007_task_execution',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);

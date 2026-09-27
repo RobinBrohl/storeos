@@ -8,6 +8,7 @@ import '../platform/organization_service.dart';
 import '../platform/platform_database.dart';
 import '../platform/platform_input.dart';
 import '../tasks/task_instance_service.dart';
+import '../tasks/task_execution_service.dart';
 import '../workforce/workforce_service.dart';
 
 /// Coordinates public ports, authorization and one shared local transaction.
@@ -15,12 +16,14 @@ class ShiftApplication {
   ShiftApplication(this.database)
     : _workforce = WorkforceService(database),
       _tasks = TaskInstanceService(database),
+      _execution = TaskExecutionService(database),
       _people = PeopleService(database),
       _links = EmployeeLinks(database),
       _organization = OrganizationService(database);
   final PlatformDatabase database;
   final WorkforceService _workforce;
   final TaskInstanceService _tasks;
+  final TaskExecutionService _execution;
   final PeopleService _people;
   final EmployeeLinks _links;
   final OrganizationService _organization;
@@ -80,7 +83,8 @@ class ShiftApplication {
 
   Future<String> _self(TxSession tx, PlatformActor actor) async {
     final link = await _links.forAccount(tx, actor.id);
-    if (link == null ||
+    if (actor.locationId != database.locationId ||
+        link == null ||
         link.companyId != actor.companyId ||
         link.locationId != actor.locationId) {
       throw const PlatformFailure(
@@ -90,7 +94,12 @@ class ShiftApplication {
       );
     }
     final person = await _people.get(tx, link.employeeId);
+    final now =
+        (await tx.execute('SELECT clock_timestamp()')).single.first as DateTime;
     if (!person.isActive ||
+        person.assignedFrom.isAfter(now) ||
+        (person.assignedUntil != null &&
+            !now.isBefore(person.assignedUntil!)) ||
         person.companyId != actor.companyId ||
         person.locationId != actor.locationId) {
       throw const PlatformFailure(
@@ -242,6 +251,69 @@ class ShiftApplication {
             : (await _tasks.detail(tx, id, detailId)).toJson();
       },
     );
+  }
+
+  Future<Map<String, dynamic>> running(SessionPrincipal p, {String? after}) {
+    if (after != null) after = requireUuid({'id': after}, 'id');
+    final cursor = after;
+    return _run(p, 'tasks.instances.self.read', (tx, actor) async {
+      final employee = await _self(tx, actor);
+      return _execution.running(tx, employee, actor.locationId, cursor);
+    });
+  }
+
+  Future<Map<String, dynamic>> execution(
+    SessionPrincipal p,
+    String shiftId,
+    String taskId, {
+    bool self = true,
+  }) {
+    shiftId = requireUuid({'id': shiftId}, 'id');
+    taskId = requireUuid({'id': taskId}, 'id');
+    return _run(
+      p,
+      self ? 'tasks.instances.self.read' : 'tasks.instances.read',
+      (tx, actor) async {
+        await _visible(tx, actor, shiftId, self);
+        await _tasks.detail(tx, shiftId, taskId);
+        return (await _execution.get(tx, taskId)).toJson();
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> execute(
+    SessionPrincipal p,
+    String shiftId,
+    String taskId,
+    String command,
+    Map<String, dynamic> input, {
+    String? stepId,
+  }) {
+    shiftId = requireUuid({'id': shiftId}, 'id');
+    taskId = requireUuid({'id': taskId}, 'id');
+    if (stepId != null) stepId = requireUuid({'id': stepId}, 'id');
+    requireFields(input, required: {'operationId', 'expectedVersion'});
+    final operation = requireUuid(input, 'operationId'),
+        version = requireVersion(input),
+        step = stepId;
+    return _run(p, 'tasks.instances.self.execute', (tx, actor) async {
+      final shift = await _visible(tx, actor, shiftId, true);
+      final task = await _tasks.detail(tx, shiftId, taskId);
+      final now =
+          (await tx.execute('SELECT clock_timestamp()')).single.first
+              as DateTime;
+      return (await _execution.execute(
+        tx,
+        actor,
+        task,
+        shift,
+        command,
+        operation,
+        version,
+        step,
+        now,
+      )).toJson();
+    });
   }
 
   Future<Map<String, dynamic>> list(

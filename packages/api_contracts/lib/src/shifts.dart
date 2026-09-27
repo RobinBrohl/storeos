@@ -165,7 +165,13 @@ class TaskInstanceDto {
     required this.title,
     required this.position,
     this.content,
+    this.status = 'open',
+    this.version = 1,
+    this.confirmedSteps = 0,
+    this.totalSteps = 0,
   });
+  final String status;
+  final int version, confirmedSteps, totalSteps;
   final String id, shiftId, employeeId, templateId, revisionId, title;
   final int position;
   final TaskTemplateContent? content;
@@ -175,6 +181,10 @@ class TaskInstanceDto {
     employeeId: shiftUuid(j['employeeId']),
     templateId: shiftUuid(j['templateId']),
     revisionId: shiftUuid(j['revisionId']),
+    status: j['status'] as String,
+    version: j['version'] as int,
+    confirmedSteps: j['confirmedSteps'] as int? ?? 0,
+    totalSteps: j['totalSteps'] as int? ?? 0,
     title: j['title'] as String,
     position: j['position'] as int,
     content: j['content'] == null
@@ -189,8 +199,10 @@ class TaskInstanceDto {
     'revisionId': revisionId,
     'title': title,
     'position': position,
-    'status': 'open',
-    'version': 1,
+    'status': status,
+    'version': version,
+    'confirmedSteps': confirmedSteps,
+    'totalSteps': totalSteps,
     if (content != null) 'content': content!.toJson(),
   };
 }

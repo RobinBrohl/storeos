@@ -26,6 +26,8 @@ Der separat freigegebene Teilslice [P1b.2 – Arbeitsvorlagen](../development/ph
 
 Der separat freigegebene [P1b.3-Slice](../development/phase-1b-shifts.md) ergänzt Einzelschichten, atomare Veröffentlichung mit Aufgaben-Snapshots und lesendes Employee Home. Guided Work, Completion und Änderungen veröffentlichter Schichten bleiben offen. [Prüfnachweis](../development/phase-1b-shifts-verification.md).
 
+Der freigegebene [P1b.4-Teilslice](../development/phase-1b-execution.md) ergänzt Start, geordnete Bestätigungsschritte, Wiederaufnahme und Abschluss eigener Aufgaben. Zahlen-/Grenzwertschritte, Abweichungen und blocked-Auflösung fehlen weiterhin; P1b ist deshalb noch nicht vollständig abgeschlossen.
+
 **Verbindliche Ende-zu-Ende-Reise:**
 
 `Company → Location → Employee → Shift → TaskTemplate → TaskInstance → Employee Home → Guided Work → Completion → Audit Log`

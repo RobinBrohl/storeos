@@ -29,6 +29,51 @@ class ShiftController extends ChangeNotifier {
   ShiftDto? selected;
   List<TaskInstanceDto> tasks = [];
   TaskInstanceDto? task;
+  TaskExecutionDto? execution;
+  List<TaskInstanceDto> running = [];
+  String? runningCursor;
+  String? _executionRoute;
+  Map<String, dynamic>? _executionBody;
+  bool executionConflict = false;
+  bool get executionUnconfirmed => _executionBody != null;
+  bool get canExecute =>
+      self &&
+      platform.allows('tasks.instances.self.execute') &&
+      !busy &&
+      !executionUnconfirmed &&
+      !executionConflict &&
+      execution != null;
+  bool get canStart => canExecute && execution!.status == 'open';
+  TemplateStep? get nextStep {
+    final steps = task?.content?.steps;
+    final count = execution?.results.length;
+    return execution?.status == 'in_progress' &&
+            steps != null &&
+            count != null &&
+            count < steps.length
+        ? steps[count]
+        : null;
+  }
+
+  bool get canConfirm => canExecute && nextStep != null;
+  bool get canComplete =>
+      canExecute &&
+      execution!.status == 'in_progress' &&
+      task?.content != null &&
+      execution!.results.length == task!.content!.steps.length;
+  String taskStatus(String status) => switch (status) {
+    'open' => 'Offen',
+    'in_progress' => 'In Bearbeitung',
+    'completed' => 'Abgeschlossen',
+    _ => 'Unbekannt',
+  };
+  void _clearExecution() {
+    execution = null;
+    _executionRoute = null;
+    _executionBody = null;
+    executionConflict = false;
+  }
+
   String? employeeId, locationId;
   String startsAt = '', endsAt = '';
   List<ShiftTemplateSelection> selections = [];
@@ -100,6 +145,9 @@ class ShiftController extends ChangeNotifier {
     _epoch++;
     items = null;
     cursor = null;
+    running = [];
+    runningCursor = null;
+    _clearExecution();
     employees = [];
     templates = [];
     revisions = [];
@@ -161,6 +209,7 @@ class ShiftController extends ChangeNotifier {
     }
     items = [if (more) ...?items, ...loaded];
     cursor = raw['nextCursor'] as String?;
+    if (self && !more) await _loadRunning(e);
   });
   void _check(ShiftDto shift) {
     if (shift.companyId != session.user?.companyId) {
@@ -181,6 +230,7 @@ class ShiftController extends ChangeNotifier {
     endsAt = shift.draft.endsAt.toIso8601String();
     selections = [...shift.draft.selections];
     task = null;
+    _clearExecution();
     _clearRevisionChoices();
     editingNew = conflict = unconfirmed = false;
     _pendingRoute = null;
@@ -199,10 +249,123 @@ class ShiftController extends ChangeNotifier {
     _accept(raw);
   });
   Future<void> openTask(String id) => _run((e) async {
+    if (executionUnconfirmed) return;
+    _clearExecution();
     task = null;
     final raw = await _get(e, '$root/${selected!.id}/tasks/$id');
     task = TaskInstanceDto.fromJson(raw);
+    execution = TaskExecutionDto.fromJson(
+      await _get(e, '$root/${selected!.id}/tasks/$id/execution'),
+    );
   });
+  Future<void> _loadRunning(int e, {bool more = false}) async {
+    final raw = await _get(
+      e,
+      '/employee-home/running-tasks',
+      after: more ? runningCursor : null,
+    );
+    running = [
+      if (more) ...running,
+      ...(raw['items'] as List).map(
+        (v) => TaskInstanceDto.fromJson(v as Map<String, dynamic>),
+      ),
+    ];
+    runningCursor = raw['nextCursor'] as String?;
+  }
+
+  Future<void> loadRunning({bool more = false}) => _run((e) async {
+    if (self && (!more || runningCursor != null)) {
+      await _loadRunning(e, more: more);
+    }
+  });
+  Future<void> openRunning(TaskInstanceDto value) async {
+    if (busy || executionUnconfirmed) return;
+    await open(value.shiftId);
+    if (selected?.id == value.shiftId) await openTask(value.id);
+  }
+
+  Future<void> executeTask(String command) {
+    if (!(command == 'start'
+        ? canStart
+        : command == 'confirm'
+        ? canConfirm
+        : command == 'complete' && canComplete)) {
+      return Future.value();
+    }
+    final suffix = command == 'confirm'
+        ? 'steps/${nextStep!.id}/confirm'
+        : command;
+    _executionRoute = '$root/${selected!.id}/tasks/${task!.id}/$suffix';
+    _executionBody = {
+      'operationId': _uuid(),
+      'expectedVersion': execution!.version,
+    };
+    return _run(_sendExecution);
+  }
+
+  Future<void> retryExecution() => _run((e) async {
+    if (executionUnconfirmed && !executionConflict) await _sendExecution(e);
+  });
+  Future<void> reloadExecution() => _run((e) async {
+    final current = TaskExecutionDto.fromJson(
+      await _get(e, '$root/${selected!.id}/tasks/${task!.id}/execution'),
+    );
+    _clearExecution();
+    execution = current;
+    executionConflict = true;
+    await _refreshExecutionLists(e);
+    executionConflict = false;
+  });
+  Future<void> _sendExecution(int e) async {
+    try {
+      final raw = await session.authorized(
+        (token) => api.post(token, _executionRoute!, _executionBody!),
+      );
+      if (!_current(e)) return;
+      execution = TaskExecutionDto.fromJson(raw);
+      _executionBody = null;
+      _executionRoute = null;
+      notice = 'Vorgang vom Server bestätigt.';
+    } catch (f) {
+      if (!_current(e)) return;
+      if (f is StoreApiException &&
+          f.statusCode != null &&
+          f.statusCode! < 500) {
+        executionConflict = f.statusCode == 409;
+        _executionBody = null;
+        _executionRoute = null;
+      }
+      if (executionUnconfirmed) {
+        throw const StoreApiException(
+          'unconfirmed',
+          'Ergebnis unbestätigt. Denselben Vorgang ausdrücklich erneut senden oder Serverstand laden.',
+        );
+      }
+      rethrow;
+    }
+    // A replay receipt may predate later accepted commands. Always fetch current state.
+    executionConflict = true;
+    execution = TaskExecutionDto.fromJson(
+      await _get(e, '$root/${selected!.id}/tasks/${task!.id}/execution'),
+    );
+    await _refreshExecutionLists(e);
+    executionConflict = false;
+  }
+
+  Future<void> _refreshExecutionLists(int e) async {
+    final detail = await _get(e, '$root/${selected!.id}');
+    tasks = (detail['tasks'] as List)
+        .map((v) => TaskInstanceDto.fromJson(v as Map<String, dynamic>))
+        .toList();
+    if (items != null) {
+      items = [
+        for (final item in items!)
+          if ((item['shift'] as Map)['id'] == selected!.id) detail else item,
+      ];
+    }
+    if (self) await _loadRunning(e);
+  }
+
   Future<void> loadChoices({bool more = false}) => _run((e) async {
     if (self) return;
     if (!more) {
@@ -442,6 +605,12 @@ class ShiftController extends ChangeNotifier {
     FormatException(:final message) when message.isNotEmpty => message,
     StoreApiException(code: 'employee_unavailable') =>
       'Kein aktives Mitarbeiterprofil oder keine gültige Standortzuordnung verfügbar.',
+    StoreApiException(code: 'outside_shift') =>
+      'Start nur während der veröffentlichten Schicht möglich.',
+    StoreApiException(code: 'invalid_execution') =>
+      'Bitte alle Schritte der Reihe nach bestätigen.',
+    StoreApiException(code: 'execution_conflict') =>
+      'Ausführungsstand geändert. Bitte ausdrücklich neu laden.',
     StoreApiException(code: 'shift_overlap') =>
       'Die Schicht überschneidet sich mit einer veröffentlichten Schicht.',
     StoreApiException(code: 'shift_not_publishable') =>

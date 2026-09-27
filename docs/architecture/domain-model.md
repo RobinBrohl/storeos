@@ -67,3 +67,7 @@ Eine Temperaturangabe im ersten Guided-Work-Beispiel ist daher nur eine Eingabe 
 ## Implementierter P1b.3-Teilslice
 
 Einzelschichten unterstützen `draft → published`; TaskInstance enthält einen unveränderlichen Snapshot und bleibt ausschließlich lesend `open`. Ausführung und Completion fehlen bewusst. Die Oberfläche verwendet explizites UTC; die konzeptionelle IANA-Standortzeitzone muss vor lokalen Kalender-/Serienregeln ergänzt werden. [Details und Grenzen](../development/phase-1b-shifts.md).
+
+## Implementierter P1b.4-Teilslice
+
+TaskInstance führt `open → in_progress → completed` aus. Ausführungskopf, append-only StepResults und Tasks-eigene Befehlsnachweise teilen ihre Transaktions-/Versionsgrenze. Snapshot und Zuordnung bleiben unveränderlich. Bestätigungsschritte sind die einzige Schrittart; keine Ausnahmen oder Messwertregeln. [Vertrag](../development/phase-1b-execution.md).

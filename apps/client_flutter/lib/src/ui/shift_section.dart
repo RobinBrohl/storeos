@@ -41,7 +41,7 @@ class _ShiftSectionState extends State<ShiftSection> {
       ) ??
       false;
   Future<bool> _discard() async =>
-      !(c.dirty || c.unconfirmed) ||
+      !(c.dirty || c.unconfirmed || c.executionUnconfirmed) ||
       await _confirm(
         'Lokale Eingaben verwerfen?',
         'Der bestätigte Serverstand ersetzt die lokalen Eingaben.',
@@ -112,6 +112,23 @@ class _ShiftSectionState extends State<ShiftSection> {
             onPressed: c.busy ? null : () => c.load(more: true),
             child: const Text('Weitere Schichten'),
           ),
+        if (c.self) ...[
+          const Text('Laufende Aufgaben – auch nach Schichtende'),
+          if (c.running.isEmpty) const Text('Keine laufenden Aufgaben.'),
+          for (final t in c.running)
+            ListTile(
+              title: Text(t.title),
+              subtitle: Text('${t.confirmedSteps}/${t.totalSteps} bestätigt'),
+              onTap: c.busy || c.executionUnconfirmed
+                  ? null
+                  : () => c.openRunning(t),
+            ),
+          if (c.runningCursor != null)
+            TextButton(
+              onPressed: c.busy ? null : () => c.loadRunning(more: true),
+              child: const Text('Weitere laufende Aufgaben'),
+            ),
+        ],
         if (c.selected != null || c.editingNew) ...[
           const Divider(),
           Text(
@@ -176,22 +193,82 @@ class _ShiftSectionState extends State<ShiftSection> {
           for (final task in c.tasks)
             ListTile(
               title: Text(task.title),
-              subtitle: const Text('Offen · Anleitung lesen'),
-              onTap: c.busy ? null : () => c.openTask(task.id),
+              subtitle: Text(
+                '${c.taskStatus(task.status)} · ${task.confirmedSteps}/${task.totalSteps} bestätigt',
+              ),
+              onTap: c.busy || c.executionUnconfirmed
+                  ? null
+                  : () => c.openTask(task.id),
             ),
           if (c.task?.content != null) ...[
             const Divider(),
             Text(c.task!.title, style: Theme.of(context).textTheme.titleLarge),
-            const Text(
-              'Anleitung – Ausführung und Abschluss sind noch nicht verfügbar.',
-            ),
-            for (var i = 0; i < c.task!.content!.steps.length; i++)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  '${i + 1}. ${c.task!.content!.steps[i].instruction}',
-                ),
+            if (c.execution != null)
+              Text(
+                '${c.taskStatus(c.execution!.status)} · ${c.execution!.results.length}/${c.task!.content!.steps.length} bestätigt',
+                key: const Key('execution-status'),
               ),
+            if (c.execution?.status == 'in_progress' &&
+                c.nextStep != null &&
+                c.self)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  '${c.execution!.results.length + 1}. ${c.nextStep!.instruction}',
+                ),
+              )
+            else
+              for (var i = 0; i < c.task!.content!.steps.length; i++)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    '${i + 1}. ${c.task!.content!.steps[i].instruction}',
+                  ),
+                ),
+            if (c.self)
+              const Text(
+                'Nur tatsächlich erledigte Schritte bestätigen. Nicht ausführbare Schritte bleiben offen. Keine Arbeitszeiterfassung.',
+              ),
+            if (c.canStart)
+              FilledButton(
+                key: const Key('start-task'),
+                onPressed: () => c.executeTask('start'),
+                child: const Text('Aufgabe starten'),
+              ),
+            if (c.canConfirm)
+              FilledButton(
+                key: const Key('confirm-step'),
+                onPressed: () => c.executeTask('confirm'),
+                child: const Text('Schritt erledigt – bestätigen'),
+              ),
+            if (c.canComplete)
+              FilledButton(
+                key: const Key('complete-task'),
+                onPressed: () => c.executeTask('complete'),
+                child: const Text('Aufgabe abschließen'),
+              ),
+            if (c.executionUnconfirmed)
+              TextButton(
+                key: const Key('retry-execution'),
+                onPressed: c.busy ? null : c.retryExecution,
+                child: const Text('Unbestätigten Vorgang erneut senden'),
+              ),
+            if (c.executionConflict)
+              const Text('Konflikt: Serverstand ausdrücklich neu laden.'),
+            TextButton(
+              onPressed: c.busy
+                  ? null
+                  : () async {
+                      if (!c.executionUnconfirmed ||
+                          await _confirm(
+                            'Serverstand laden?',
+                            'Der unbestätigte Befehl wird nicht erneut gesendet. Der Serverstand ersetzt die lokale Ansicht.',
+                          )) {
+                        if (mounted) await c.reloadExecution();
+                      }
+                    },
+              child: const Text('Aufgabenstand neu laden'),
+            ),
           ],
         ],
       ],

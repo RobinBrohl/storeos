@@ -17,6 +17,8 @@ import 'package:storeos_server/src/platform/platform_database.dart';
 import 'package:storeos_server/src/platform/plugin_service.dart';
 import 'package:test/test.dart';
 
+part 'task_execution_integration_cases.dart';
+
 const _company = '11111111-1111-4111-8111-111111111111';
 const _home = '22222222-2222-4222-8222-222222222222';
 const _other = '33333333-3333-4333-8333-333333333333';
@@ -24,6 +26,7 @@ const _password = 'employee-test-only-password-strong';
 final _url = Platform.environment['STOREOS_TEST_DATABASE'];
 
 void main() {
+  executionTests();
   test(
     'pinned selections reject mismatched templates and published foreign-location revisions without writes',
     () => _withFixture((f) async {
@@ -163,6 +166,13 @@ void main() {
       final token = grant['token'] as String;
       await plugins.organization(token);
       final p = await _plan(f);
+      await f.call(
+        'POST',
+        '/employee-home/shifts/${p.id}/tasks/${newUuid()}/start',
+        body: _command(1),
+        token: token,
+        expected: 401,
+      );
       for (final route in ['/shifts', '/employee-home/shifts']) {
         await f.call('GET', route, token: token, expected: 401);
       }
@@ -760,7 +770,10 @@ void main() {
         schemaName: f.schema,
         runtimeDatabaseUser: f.runtimeUser,
       );
-      expect(await runner.apply(), ['0006_shifts_and_task_instances']);
+      expect(await runner.apply(), [
+        '0006_shifts_and_task_instances',
+        '0007_task_execution',
+      ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);
       await f.call('POST', '/shifts', body: p.input, expected: 201);
@@ -785,8 +798,15 @@ class _Plan {
   String get id => input['id'] as String;
 }
 
-Future<_Plan> _plan(_Fixture f) async {
+Future<_Plan> _plan(_Fixture f, {int steps = 1}) async {
   final employee = await f.employee('Planned employee'), template = _input();
+  for (var i = 1; i < steps; i++) {
+    (template['content']['steps'] as List).add({
+      'id': newUuid(),
+      'type': 'confirmation',
+      'instruction': 'Step ${i + 1}',
+    });
+  }
   await f.call('POST', '/task-templates', body: template, expected: 201);
   await f.call(
     'POST',
@@ -974,6 +994,7 @@ class _Fixture {
 Future<void> _withFixture(
   Future<void> Function(_Fixture) action, {
   bool legacy = false,
+  String legacyBefore = '0006',
 }) async {
   final uri = Uri.parse(_url!);
   final split = uri.userInfo.indexOf(':');
@@ -1018,7 +1039,7 @@ Future<void> _withFixture(
       'storeos_shifts_legacy_',
     );
     for (final file in Directory('migrations').listSync().whereType<File>()) {
-      if (file.uri.pathSegments.last.compareTo('0006') < 0) {
+      if (file.uri.pathSegments.last.compareTo(legacyBefore) < 0) {
         await file.copy(
           '${legacyDirectory.path}/${file.uri.pathSegments.last}',
         );

@@ -392,6 +392,21 @@ class Api implements PlatformApi {
         statusCode: 404,
       );
     }
+    if (route == '/employee-home/running-tasks') {
+      return {'items': <Map<String, dynamic>>[], 'nextCursor': null};
+    }
+    if (route.endsWith('/execution')) {
+      return {
+        'instanceId': taskId,
+        'status': 'open',
+        'version': 1,
+        'results': <Map<String, dynamic>>[],
+        'startedAt': null,
+        'startedBy': null,
+        'completedAt': null,
+        'completedBy': null,
+      };
+    }
     if (after != null) cursors.add(after);
     if (route == '/employees') {
       return {
@@ -541,6 +556,10 @@ class Api implements PlatformApi {
             'revisionId': revision,
             'title': 'Opening',
             'position': 0,
+            'status': 'open',
+            'version': 1,
+            'totalSteps': 1,
+            'confirmedSteps': 0,
           },
         ];
       } else {

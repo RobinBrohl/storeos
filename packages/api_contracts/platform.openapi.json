@@ -3,7 +3,7 @@
   "info": {
     "title": "StoreOS platform and employee workflow API",
     "version": "1.0.0",
-    "description": "Single company and writer. P1 platform, employee identity, published template revisions and P1b.3 atomic shift publication with read-only employee home. No task execution or offline writes."
+    "description": "Single-company local writer. Platform, employee identity, immutable templates, atomic shift publication, and P1b.4 own confirmation-task execution. No measurement steps, offline writes or plugin task access."
   },
   "paths": {
     "/api/v1/platform/context": {
@@ -1966,6 +1966,311 @@
           }
         ]
       }
+    },
+    "/api/v1/platform/shifts/{id}/tasks/{taskId}/execution": {
+      "get": {
+        "operationId": "adminTaskExecution",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}/execution": {
+      "get": {
+        "operationId": "ownTaskExecution",
+        "description": "Requires workforce.shifts.self.read and tasks.instances.self.read, an active account/employee link, own employee and matching location. Only published shifts.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}/start": {
+      "post": {
+        "operationId": "startOwnTask",
+        "description": "Requires tasks.instances.self.execute and current own employee/location link. Atomic state, audit and operation receipt. Identical operationId+payload replay returns original result after current authorization. Different content or stale new version: 409; invalid sequence or start outside shift: 422. Start is inclusive at shift start and exclusive at end; running work may continue after shift end. No offline writes.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskExecutionCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}/steps/{stepId}/confirm": {
+      "post": {
+        "operationId": "confirmOwnTaskStep",
+        "description": "Requires tasks.instances.self.execute and current own employee/location link. Atomic state, audit and operation receipt. Identical operationId+payload replay returns original result after current authorization. Different content or stale new version: 409; invalid sequence or start outside shift: 422. Start is inclusive at shift start and exclusive at end; running work may continue after shift end. No offline writes.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "stepId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskExecutionCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}/complete": {
+      "post": {
+        "operationId": "completeOwnTask",
+        "description": "Requires tasks.instances.self.execute and current own employee/location link. Atomic state, audit and operation receipt. Identical operationId+payload replay returns original result after current authorization. Different content or stale new version: 409; invalid sequence or start outside shift: 422. Start is inclusive at shift start and exclusive at end; running work may continue after shift end. No offline writes.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskExecutionCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employee-home/running-tasks": {
+      "get": {
+        "operationId": "ownRunningTasks",
+        "description": "Own in_progress tasks, including ended shifts. Ordered by ID; maximum 50 metadata entries, no instruction bodies. Requires tasks.instances.self.read and current employee/location link.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current running tasks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningTaskPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3619,7 +3924,9 @@
           "title",
           "position",
           "status",
-          "version"
+          "version",
+          "confirmedSteps",
+          "totalSteps"
         ],
         "properties": {
           "id": {
@@ -3651,10 +3958,26 @@
             "maximum": 9
           },
           "status": {
-            "const": "open"
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "completed"
+            ]
           },
           "version": {
-            "const": 1
+            "type": "integer",
+            "minimum": 1
+          },
+          "confirmedSteps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "totalSteps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
           }
         }
       },
@@ -3753,6 +4076,138 @@
               "string",
               "null"
             ]
+          }
+        }
+      },
+      "TaskStepResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stepId",
+          "confirmedAt",
+          "confirmedBy"
+        ],
+        "properties": {
+          "stepId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "confirmedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmedBy": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "TaskExecution": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "instanceId",
+          "status",
+          "version",
+          "startedAt",
+          "startedBy",
+          "completedAt",
+          "completedBy",
+          "results"
+        ],
+        "properties": {
+          "instanceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "completed"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "startedBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "completedBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "results": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/TaskStepResult"
+            }
+          }
+        }
+      },
+      "TaskExecutionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "RunningTaskPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/TaskInstanceSummary"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
           }
         }
       }

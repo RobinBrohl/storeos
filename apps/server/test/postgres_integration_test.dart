@@ -153,6 +153,7 @@ void main() {
             '0004_employee_identity_and_audit',
             '0005_task_templates',
             '0006_shifts_and_task_instances',
+            '0007_task_execution',
           ],
         );
         final account = await connection.execute(
@@ -568,6 +569,7 @@ void main() {
           '0004_employee_identity_and_audit',
           '0005_task_templates',
           '0006_shifts_and_task_instances',
+          '0007_task_execution',
         ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(

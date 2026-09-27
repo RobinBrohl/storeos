@@ -174,6 +174,17 @@ class MigrationRunner {
             'REVOKE DELETE, TRUNCATE ON $_schema.shifts FROM $role',
           );
         }
+        if (known.containsKey('0007_task_execution')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.task_step_results, $_schema.task_execution_commands TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.task_step_results, $_schema.task_execution_commands FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status, version, started_at, started_by, completed_at, completed_by) ON $_schema.task_instances TO $role',
+          );
+        }
         if (known.containsKey('0005_task_templates')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.task_templates, $_schema.task_template_revisions TO $role',

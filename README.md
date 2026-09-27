@@ -97,3 +97,18 @@ Vier unabhängige Packages bilden das Monorepo: `apps/server`, `apps/client_flut
 ## Lizenz
 
 Der Repository-Quelltext steht unter der [GNU AGPLv3](LICENSE). Vor dem Einbringen fremder Komponenten oder proprietärer Integrationen sind deren Lizenzbedingungen gesondert zu prüfen.
+
+## P1b.4: Bestätigungsaufgaben ausführen
+
+[Scope und API](docs/development/phase-1b-execution.md), [Prüfnachweis](docs/development/phase-1b-execution-verification.md).
+Vor Upgrade Backup erstellen, Server stoppen, `./scripts/dev.ps1 migrate` ausführen
+und Server sowie Webclient gemeinsam aktualisieren. Migration 0007 erhält vorhandene
+Aufgaben und ergänzt die Ausführung; alte Clients stellen deren Status nicht zuverlässig dar.
+
+Ein verknüpfter Mitarbeiter öffnet **Meine Arbeit**, startet eine eigene Aufgabe
+während ihrer Schicht, bestätigt die Schritte und schließt separat ab. **Laufende
+Aufgaben** bleiben nach Schichtende erreichbar. Bestätigter Fortschritt überlebt
+Neuladen und erneute Anmeldung. Admins sehen den Fortschritt in **Schichten** und
+Änderungen im Audit. Bei Antwortverlust den unbestätigten Befehl ausdrücklich erneut
+senden oder den Serverstand laden; ohne Standortserver gibt es keinen bestätigten
+Abschluss. Keine Messwerte, Ausnahmen, stellvertretenden Abschlüsse oder Offlinequeue.

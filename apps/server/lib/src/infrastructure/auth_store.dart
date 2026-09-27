@@ -81,10 +81,11 @@ class PostgresAuthStore implements AuthStore {
       final migration = await pool.execute(
         'SELECT count(*)::int AS count FROM $_schema.schema_migrations '
         "WHERE version IN ('0001_platform_auth', "
-        "'0002_platform_organization', '0003_platform_events_plugins')",
+        "'0002_platform_organization', '0003_platform_events_plugins', '"
+        "0004_employee_identity_and_audit')",
         timeout: const Duration(seconds: 2),
       );
-      return migration.single.toColumnMap()['count'] == 3;
+      return migration.single.toColumnMap()['count'] == 4;
     } catch (_) {
       return false;
     }

@@ -70,7 +70,10 @@ String requirePassword(Map<String, dynamic> input) {
 
 String requireRole(Map<String, dynamic> input) {
   final value = input['role'];
-  if (value != 'admin' && value != 'auditor' && value != 'viewer') {
+  if (value != 'admin' &&
+      value != 'auditor' &&
+      value != 'viewer' &&
+      value != 'employee') {
     throw const PlatformFailure(400, 'invalid_request', 'Invalid role.');
   }
   return value as String;

@@ -15,5 +15,6 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0009](0009-audit-trail.md) | Audit Trail |
 | [0010](0010-offline-und-sync-strategie.md) | Offline- und Synchronisationsstrategie |
 | [0011](0011-atomare-schichtveroeffentlichung.md) | Atomare Schichtveröffentlichung im ersten Slice |
+| [0012](0012-phase-1-plattform-und-plugin-api.md) | Vorgezogene Plattformverwaltung und minimale Plugin-API |
 
 Neue ADRs verwenden „Kontext“, „Entscheidung“, „Alternativen“, „Konsequenzen“ und „Offene Prüfungen“ sowie einen Status wie „Vorgeschlagen“, „Beschlossen“ oder „Abgelöst durch ADR …“.

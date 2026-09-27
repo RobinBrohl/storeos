@@ -4,20 +4,33 @@ import 'package:storeos_design_system/storeos_design_system.dart';
 import '../application/platform_controller.dart';
 import '../application/session_controller.dart';
 import 'platform_sections.dart';
+import 'employee_section.dart';
+import '../application/employee_controller.dart';
 import 'system_status_screen.dart';
 
-enum _Section { status, organization, users, audit, events, plugins }
+enum _Section {
+  status,
+  organization,
+  users,
+  audit,
+  events,
+  plugins,
+  people,
+  profile,
+}
 
 class PlatformHomeScreen extends StatefulWidget {
   const PlatformHomeScreen({
     required this.session,
     required this.platform,
+    required this.employees,
     required this.baseUri,
     super.key,
   });
 
   final SessionController session;
   final PlatformController platform;
+  final EmployeeController employees;
   final Uri baseUri;
 
   @override
@@ -29,6 +42,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   List<_Section> get _available => [
     _Section.status,
+    if (widget.platform.allows('people.self.read')) _Section.profile,
+    if (widget.platform.allows('people.manage')) _Section.people,
     if (widget.platform.allows('organization.read')) _Section.organization,
     if (widget.platform.allows('identity.read')) _Section.users,
     if (widget.platform.allows('audit.read')) _Section.audit,
@@ -37,6 +52,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   ];
 
   String _label(_Section section) => switch (section) {
+    _Section.people => 'Mitarbeiter',
+    _Section.profile => 'Mein Profil',
     _Section.status => 'Status',
     _Section.organization => 'Organisation',
     _Section.users => 'Benutzer',
@@ -46,6 +63,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   };
 
   IconData _icon(_Section section) => switch (section) {
+    _Section.people => Icons.badge_outlined,
+    _Section.profile => Icons.person_outline,
     _Section.status => Icons.monitor_heart_outlined,
     _Section.organization => Icons.corporate_fare_outlined,
     _Section.users => Icons.people_outline,
@@ -57,6 +76,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   void _select(_Section section) {
     setState(() => _selected = section);
     switch (section) {
+      case _Section.people:
+      case _Section.profile:
       case _Section.status:
         break;
       case _Section.organization:
@@ -76,6 +97,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   void _refresh(_Section section) {
     switch (section) {
+      case _Section.people:
+        widget.employees.loadEmployees();
+      case _Section.profile:
+        widget.employees.loadSelf();
       case _Section.status:
         widget.session.refreshStatus();
       case _Section.organization:
@@ -92,6 +117,16 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   }
 
   Widget _body(_Section section) => switch (section) {
+    _Section.people => EmployeeSection(
+      key: const ValueKey('employees'),
+      controller: widget.employees,
+      self: false,
+    ),
+    _Section.profile => EmployeeSection(
+      key: const ValueKey('my-employee'),
+      controller: widget.employees,
+      self: true,
+    ),
     _Section.status => SystemStatusView(
       controller: widget.session,
       baseUri: widget.baseUri,
@@ -113,8 +148,39 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
           : _Section.status;
       final index = sections.indexOf(section);
       final wide = MediaQuery.sizeOf(context).width >= 900;
+      final useDrawer = !wide && sections.length > 5;
       return Scaffold(
+        drawer: useDrawer
+            ? Drawer(
+                child: SafeArea(
+                  child: ListView(
+                    children: [
+                      for (final item in sections)
+                        ListTile(
+                          leading: Icon(_icon(item)),
+                          title: Text(_label(item)),
+                          selected: item == section,
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            _select(item);
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              )
+            : null,
         appBar: AppBar(
+          leading: useDrawer
+              ? Builder(
+                  builder: (context) => IconButton(
+                    key: const Key('open-navigation'),
+                    tooltip: 'Navigation öffnen',
+                    icon: const Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                )
+              : null,
           title: Text('StoreOS · ${_label(section)}'),
           actions: [
             if (section != _Section.status)
@@ -195,7 +261,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
             ),
           ],
         ),
-        bottomNavigationBar: wide || sections.length < 2
+        bottomNavigationBar: wide || useDrawer || sections.length < 2
             ? null
             : NavigationBar(
                 selectedIndex: index,

@@ -147,7 +147,11 @@ void main() {
             migrationsDirectory: _sourceMigrations(),
             schemaName: schema,
           ).apply(),
-          ['0002_platform_organization', '0003_platform_events_plugins'],
+          [
+            '0002_platform_organization',
+            '0003_platform_events_plugins',
+            '0004_employee_identity_and_audit',
+          ],
         );
         final account = await connection.execute(
           'SELECT id::text AS id, password_hash, role, version '
@@ -495,6 +499,89 @@ void main() {
         expect(administrators.single.toColumnMap()['count'], 1);
       } finally {
         await pool.close();
+      }
+    }),
+    skip: _testDatabase == null ? 'STOREOS_TEST_DATABASE is not set' : false,
+  );
+
+  test(
+    'P1 upgrade preserves populated identity and audit history without inventing correlations',
+    () => _withSchema((connection, endpoint, schema) async {
+      final directory = await Directory.systemTemp.createTemp(
+        'storeos_p1_upgrade_',
+      );
+      try {
+        for (final name in [
+          '0001_platform_auth',
+          '0002_platform_organization',
+          '0003_platform_events_plugins',
+        ]) {
+          await File(
+            '${_sourceMigrations().path}/$name.sql',
+          ).copy('${directory.path}/$name.sql');
+        }
+        await MigrationRunner(
+          connection: connection,
+          migrationsDirectory: directory,
+          schemaName: schema,
+        ).apply();
+        final id = newUuid();
+        final hash = await PasswordHasher(
+          memoryKiB: 64,
+          iterations: 1,
+        ).hash('preserved-test-password');
+        await connection.execute(
+          'INSERT INTO "$schema".companies(id, name) VALUES (\'$_company\', \'Existing\')',
+        );
+        await connection.execute(
+          'INSERT INTO "$schema".locations(id, company_id, name) VALUES (\'$_location\', \'$_company\', \'Home\')',
+        );
+        await connection.execute(
+          Sql.named(
+            'INSERT INTO "$schema".accounts(id, username, username_key, password_hash, company_id, location_id, role) '
+            'VALUES (CAST(@id AS uuid), \'existing\', \'existing\', @hash, CAST(@company AS uuid), CAST(@location AS uuid), \'admin\')',
+          ),
+          parameters: {
+            'id': id,
+            'hash': hash,
+            'company': _company,
+            'location': _location,
+          },
+        );
+        await connection.execute(
+          'INSERT INTO "$schema".audit_entries(actor_kind, actor_id, company_id, location_id, action, entity_type, entity_id) '
+          'VALUES (\'user\', \'$id\', \'$_company\', \'$_location\', \'identity.user.created\', \'user\', \'$id\')',
+        );
+        final before = await connection.execute(
+          'SELECT occurred_at FROM "$schema".audit_entries',
+        );
+        final runner = MigrationRunner(
+          connection: connection,
+          migrationsDirectory: _sourceMigrations(),
+          schemaName: schema,
+          runtimeDatabaseUser:
+              Platform.environment['STOREOS_DB_USER'] ?? 'storeos',
+        );
+        expect(await runner.apply(), ['0004_employee_identity_and_audit']);
+        expect(await runner.apply(), isEmpty);
+        final account = (await connection.execute(
+          'SELECT id::text, password_hash, role, version FROM "$schema".accounts',
+        )).single.toColumnMap();
+        expect(account['id'], id);
+        expect(account['password_hash'], hash);
+        expect(account['role'], 'admin');
+        expect(account['version'], 1);
+        final audit = (await connection.execute(
+          'SELECT occurred_at, correlation_id, changes FROM "$schema".audit_entries',
+        )).single.toColumnMap();
+        expect(
+          audit['occurred_at'],
+          before.single.toColumnMap()['occurred_at'],
+        );
+        expect(audit['correlation_id'], isNull);
+        expect(audit['changes'], isEmpty);
+      } finally {
+        await directory.delete(recursive: true);
       }
     }),
     skip: _testDatabase == null ? 'STOREOS_TEST_DATABASE is not set' : false,

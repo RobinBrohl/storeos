@@ -90,7 +90,12 @@ class PlatformController extends ChangeNotifier {
       if (loadedContext.userId != user.id ||
           loadedContext.companyId != user.companyId ||
           loadedContext.locationId != user.locationId ||
-          !{'admin', 'auditor', 'viewer'}.contains(loadedContext.role)) {
+          !{
+            'admin',
+            'auditor',
+            'viewer',
+            'employee',
+          }.contains(loadedContext.role)) {
         _session.invalidateSession();
         return;
       }
@@ -258,7 +263,8 @@ class PlatformController extends ChangeNotifier {
         'Die Organisation passt nicht zur angemeldeten Sitzung.',
       );
     }
-    if (platformContext.role == 'viewer') {
+    if ((platformContext.role == 'viewer' ||
+        platformContext.role == 'employee')) {
       return OrganizationSnapshot(
         company: snapshot.company,
         locations: snapshot.locations
@@ -364,7 +370,7 @@ class PlatformController extends ChangeNotifier {
     final epoch = _epoch;
     if (username.trim().isEmpty ||
         password.isEmpty ||
-        !{'admin', 'auditor', 'viewer'}.contains(role) ||
+        !{'admin', 'auditor', 'viewer', 'employee'}.contains(role) ||
         !(organization?.locations.any(
               (location) => location.id == locationId,
             ) ??
@@ -405,7 +411,7 @@ class PlatformController extends ChangeNotifier {
   }
 
   Future<bool> updateUser(PlatformUser user, String role, bool isActive) {
-    if (!{'admin', 'auditor', 'viewer'}.contains(role)) {
+    if (!{'admin', 'auditor', 'viewer', 'employee'}.contains(role)) {
       return _invalid('Ungültige Rolle.');
     }
     return _write(

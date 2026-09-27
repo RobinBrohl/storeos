@@ -275,6 +275,7 @@ String _roleLabel(String role) => switch (role) {
   'admin' => 'Administrator',
   'auditor' => 'Auditor',
   'viewer' => 'Leser',
+  'employee' => 'Mitarbeiter',
   _ => role,
 };
 
@@ -527,6 +528,7 @@ Widget _roleDropdown(String value, ValueChanged<String> onChanged) =>
       decoration: const InputDecoration(labelText: 'Rolle'),
       items: const [
         DropdownMenuItem(value: 'viewer', child: Text('Leser')),
+        DropdownMenuItem(value: 'employee', child: Text('Mitarbeiter')),
         DropdownMenuItem(value: 'auditor', child: Text('Auditor')),
         DropdownMenuItem(value: 'admin', child: Text('Administrator')),
       ],

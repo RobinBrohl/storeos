@@ -157,6 +157,20 @@ class MigrationRunner {
             'FROM $role',
           );
         }
+        if (known.containsKey('0004_employee_identity_and_audit')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.employees, '
+            '$_schema.account_employee_links TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (display_name, is_active, version, '
+            'updated_at, assigned_until) ON $_schema.employees TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (version, revoked_at) '
+            'ON $_schema.account_employee_links TO $role',
+          );
+        }
       }
     });
     return applied;

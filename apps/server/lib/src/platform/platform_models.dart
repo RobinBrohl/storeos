@@ -10,6 +10,7 @@ class AuditEntry {
     required this.entityType,
     required this.entityId,
     required this.changes,
+    this.correlationId,
   });
 
   factory AuditEntry.fromRow(Map<String, dynamic> row) => AuditEntry(
@@ -23,6 +24,7 @@ class AuditEntry {
     entityType: row['entity_type'] as String,
     entityId: row['entity_id'] as String,
     changes: Map<String, dynamic>.from(row['changes'] as Map),
+    correlationId: row['correlation_id'] as String?,
   );
 
   final int id;
@@ -35,6 +37,7 @@ class AuditEntry {
   final String entityType;
   final String entityId;
   final Map<String, dynamic> changes;
+  final String? correlationId;
 
   Map<String, dynamic> toJson() => {
     'id': id.toString(),
@@ -47,6 +50,7 @@ class AuditEntry {
     'entityType': entityType,
     'entityId': entityId,
     'changes': changes,
+    'correlationId': correlationId,
   };
 }
 

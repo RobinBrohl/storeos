@@ -5,11 +5,14 @@ import '../platform/identity_service.dart';
 import '../platform/organization_service.dart';
 import '../platform/platform_database.dart';
 import 'platform_identity_routes.dart';
+import 'employee_routes.dart';
+import '../application/employee_application.dart';
 import 'platform_plugin_routes.dart';
 
 /// Composition only; authorization and mutations remain in application services.
 Handler createPlatformHandler(AuthService auth, PlatformDatabase database) =>
     Cascade()
+        .add(EmployeeRoutes(auth, EmployeeApplication(database)).router.call)
         .add(
           PlatformIdentityRoutes(
             auth: auth,

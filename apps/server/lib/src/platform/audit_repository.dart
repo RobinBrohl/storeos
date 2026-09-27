@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:postgres/postgres.dart';
 
 import 'platform_models.dart';
+import '../application/correlation.dart';
 
 /// Persists audit records in the caller's transaction and reads bounded pages.
 class AuditRepository {
@@ -39,6 +40,9 @@ class AuditRepository {
       'subscriptions',
       'status',
       'version',
+      'accountId',
+      'employeeId',
+      'changedFields',
     };
     for (final entry in changes.entries) {
       if (!allowedFields.contains(entry.key) || !_safeAuditValue(entry.value)) {
@@ -52,10 +56,10 @@ class AuditRepository {
       Sql.named(
         'INSERT INTO $schema.audit_entries '
         '(actor_kind, actor_id, company_id, location_id, action, '
-        'entity_type, entity_id, changes) '
+        'entity_type, entity_id, changes, correlation_id) '
         'VALUES (@actorKind, @actorId, CAST(@companyId AS uuid), '
         'CAST(@locationId AS uuid), @action, @entityType, @entityId, '
-        'CAST(@changes AS jsonb))',
+        'CAST(@changes AS jsonb), CAST(@correlationId AS uuid))',
       ),
       parameters: {
         'actorKind': actorKind,
@@ -66,6 +70,7 @@ class AuditRepository {
         'entityType': entityType,
         'entityId': entityId,
         'changes': jsonEncode(changes),
+        'correlationId': currentCorrelationId,
       },
     );
   }
@@ -81,7 +86,7 @@ class AuditRepository {
         'SELECT id, occurred_at, actor_kind, actor_id, '
         'company_id::text AS company_id, '
         'location_id::text AS location_id, action, entity_type, entity_id, '
-        'changes FROM $schema.audit_entries '
+        'changes, correlation_id::text AS correlation_id FROM $schema.audit_entries '
         'WHERE company_id = CAST(@companyId AS uuid) '
         'AND (CAST(@after AS bigint) IS NULL OR id < CAST(@after AS bigint)) '
         'ORDER BY id DESC LIMIT @limit',

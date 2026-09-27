@@ -10,7 +10,7 @@ Vision, Prinzipien, Architektur, ADRs, Risiko- und Compliance-Überblick, Monore
 
 Dart-Serverstart, PostgreSQL-Migrationen, Flutter-App-Grundgerüst, lokale Konfiguration und Secret-Verwaltung, authentifizierte API mit standortbezogener Autorisierung, strukturierte lokale Logs, CI und Testwerkzeuge. Installation auf einem Standortserver, lokales TLS, Backup und nachgewiesener Restore werden von Anfang an mitgedacht. Gemeinsame API-Verträge und ein kleines Design-System entstehen nur für den ersten Use Case. **Abnahme:** Eine frische selbst gehostete Installation startet reproduzierbar, migriert die Datenbank, authentifiziert einen Benutzer und lässt sich aus einem Backup wiederherstellen; keine externe Cloud ist nötig. Eine allgemeine Plugin-Runtime, Unternehmensserver-Sync und umfangreiche Admin-Oberflächen sind hier nicht nötig.
 
-Die implementierte Einzelstandort-Grundlage und ihre Grenzen sind in [Phase 0](../development/phase-0.md) dokumentiert. Der aktuelle Clientdurchstich verwendet Flutter Web; native Runner benötigen eine gesonderte Geräteabnahme. [Prüfnachweise](../development/phase-0-verification.md) halten den getesteten Stand fest. Fachmodule beginnen erst mit P1.
+Die implementierte Einzelstandort-Grundlage und ihre Grenzen sind in [Phase 0](../development/phase-0.md) dokumentiert. Der aktuelle Clientdurchstich verwendet Flutter Web; native Runner benötigen eine gesonderte Geräteabnahme. [Prüfnachweise](../development/phase-0-verification.md) halten den getesteten Stand fest. Fachmodule beginnen erst mit P1b.
 
 ## P1 – Plattformverwaltung
 
@@ -18,7 +18,9 @@ Die ausdrückliche Freigabe vom 2026-09-27 zieht Company, Location, User/Authent
 
 **Abnahme:** Bestehende P0-Daten werden ohne neue Identitäten migriert. Ein Administrator richtet Organisation und Benutzer ein; serverseitige Rechte, Versionskonflikte, letzter Administrator, Sitzungswiderruf und atomarer Audit werden mit echter Datenbank geprüft. Freigegebene externe API-Clients erhalten ausschließlich die genehmigten Organisationsdaten/Events; Deaktivierung widerruft Tokens und ausstehende Zustellungen. Formatter, Analyzer, Tests und Smoke-Test bestehen. Keine Plugin-Codeausführung und keine Standortreplikation.
 
-## P1b – Erster fachlicher Vertical Slice (noch nicht implementiert)
+## P1b – Erster fachlicher Vertical Slice (teilweise implementiert)
+
+Der freigegebene Teilslice [P1b.1 – Mitarbeiteridentität und Eigenansicht](../development/phase-1b-employee.md) implementiert Employee, eine feste Standortzuordnung, die explizite Account-Verknüpfung, administrative Verwaltung, das eigene Profil und Audit. Die folgende vollständige Mitarbeiterreise bleibt offen; P1b.1 ist keine Freigabe für Schichten oder Aufgaben.
 
 **Verbindliche Ende-zu-Ende-Reise:**
 
@@ -82,4 +84,4 @@ Strukturierte Geschäftsdokumente, Rechnungen, E-Rechnungsformate und Buchhaltun
 
 Jeder Release benötigt dokumentierte Rechte, serverseitige Validierung, Migrationen, sinnvolle Tests, Fehlerbehandlung, Auditentscheidung, sichere Konfiguration, Export-/Backup-Auswirkung und verständliche Bedienung. Updates prüfen vorhandene Daten, laufende Guided-Work-Snapshots und unterstützte ältere Vertragsversionen; ein erfolgreicher Neuaufbau allein ist kein Migrationsnachweis. Zusätzliche regulatorische Gates stehen im [Compliance-Überblick](../compliance/overview.md). Die größten offenen Architekturfragen stehen in der [kritischen Prüfung](../risks-and-open-questions.md).
 
-**Nächste konkrete Entwicklungsaufgabe nach der Plattformphase:** Das Umsetzungsdesign für P1b festziehen: Verantwortlichkeit von Employee/Shift/TaskTemplate/TaskInstance, API-Kommandos, Berechtigungsmatrix, Zustandsmaschinen, Auditfelder und Ende-zu-Ende-Abnahmetests. Implementierung erst nach ausdrücklicher Freigabe dieses fachlichen Slice.
+**Aktueller Umsetzungsumfang:** P1b.1 gemäß [Teilslice und Abnahmekriterien](../development/phase-1b-employee.md). Weitere Teile der Mitarbeiterreise benötigen eine eigene Scope-Freigabe; sie werden nicht im Zuge dieses Teilslice begonnen.

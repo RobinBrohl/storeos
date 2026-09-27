@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:postgres/postgres.dart';
 import 'package:shelf/shelf.dart';
@@ -13,6 +12,7 @@ import '../config.dart';
 import '../infrastructure/auth_store.dart';
 import '../platform/platform_database.dart';
 import 'json_logger.dart';
+import '../application/correlation.dart';
 
 class ServerApp {
   ServerApp({
@@ -35,13 +35,15 @@ class ServerApp {
   final Handler? platformHandler;
   final JsonLogger _logger;
   final Router _router = Router();
-  final Random _random = Random.secure();
 
   Handler get handler => _handle;
 
-  Future<Response> _handle(Request request) async {
+  Future<Response> _handle(Request request) =>
+      withCorrelation(() => _respond(request));
+
+  Future<Response> _respond(Request request) async {
     final started = DateTime.now();
-    final requestId = _random.nextInt(0x7fffffff).toRadixString(16);
+    final requestId = currentCorrelationId;
     Response response;
     try {
       final origin = _header(request, 'origin');

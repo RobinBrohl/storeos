@@ -1,4 +1,5 @@
-import 'dart:math';
+import '../application/correlation.dart';
+export '../application/correlation.dart' show newUuid;
 
 import 'package:postgres/postgres.dart';
 
@@ -42,6 +43,8 @@ const _permissions = <String>[
   'events.write',
   'plugins.read',
   'plugins.write',
+  'people.manage',
+  'people.self.read',
 ];
 
 List<String> permissionsForRole(String role) => switch (role) {
@@ -52,6 +55,7 @@ List<String> permissionsForRole(String role) => switch (role) {
     'audit.read',
     'events.read',
   ],
+  'employee' => const ['context.read', 'organization.read', 'people.self.read'],
   'viewer' => const ['context.read', 'organization.read'],
   _ => const [],
 };
@@ -79,63 +83,73 @@ class PlatformDatabase {
     if (principal.companyId != companyId) {
       throw const PlatformFailure(403, 'forbidden', 'Access denied.');
     }
-    return pool.runTx((tx) async {
-      // One company writer lock also protects the last-admin invariant. Re-read
-      // rights after acquiring it so role and account changes take effect now.
-      await tx.execute(
-        Sql.named('SELECT pg_advisory_xact_lock(hashtext(@key))'),
-        parameters: {'key': 'storeos_platform:$schemaName:$companyId'},
-      );
-      final found = await tx.execute(
-        Sql.named(
-          'SELECT id::text AS id, company_id::text AS company_id, '
-          'location_id::text AS location_id, role, is_active '
-          'FROM $schema.accounts WHERE id = CAST(@accountId AS uuid)',
-        ),
-        parameters: {'accountId': principal.id},
-      );
-      if (found.isEmpty) {
-        throw const PlatformFailure(401, 'unauthorized', 'Session is invalid.');
-      }
-      final account = found.single.toColumnMap();
-      if (account['is_active'] != true ||
-          account['company_id'] != companyId ||
-          account['company_id'] != principal.companyId ||
-          account['location_id'] != principal.locationId) {
-        throw const PlatformFailure(401, 'unauthorized', 'Session is invalid.');
-      }
-      final tokenHash = principal.tokenHash;
-      if (tokenHash != null) {
-        final currentSession = await tx.execute(
-          Sql.named(
-            'SELECT 1 FROM $schema.auth_sessions '
-            'WHERE token_hash = @tokenHash AND account_id = CAST(@accountId AS uuid) '
-            'AND revoked_at IS NULL AND expires_at > clock_timestamp()',
-          ),
-          parameters: {'tokenHash': tokenHash, 'accountId': principal.id},
+    return withCorrelation(
+      () => pool.runTx((tx) async {
+        // One company writer lock also protects the last-admin invariant. Re-read
+        // rights after acquiring it so role and account changes take effect now.
+        await tx.execute(
+          Sql.named('SELECT pg_advisory_xact_lock(hashtext(@key))'),
+          parameters: {'key': 'storeos_platform:$schemaName:$companyId'},
         );
-        if (currentSession.isEmpty) {
+        final found = await tx.execute(
+          Sql.named(
+            'SELECT id::text AS id, company_id::text AS company_id, '
+            'location_id::text AS location_id, role, is_active '
+            'FROM $schema.accounts WHERE id = CAST(@accountId AS uuid)',
+          ),
+          parameters: {'accountId': principal.id},
+        );
+        if (found.isEmpty) {
           throw const PlatformFailure(
             401,
             'unauthorized',
             'Session is invalid.',
           );
         }
-      }
-      final role = account['role']! as String;
-      if (!permissionsForRole(role).contains(permission)) {
-        throw const PlatformFailure(403, 'forbidden', 'Access denied.');
-      }
-      return action(
-        tx,
-        PlatformActor(
-          id: principal.id,
-          companyId: companyId,
-          locationId: account['location_id']! as String,
-          role: role,
-        ),
-      );
-    });
+        final account = found.single.toColumnMap();
+        if (account['is_active'] != true ||
+            account['company_id'] != companyId ||
+            account['company_id'] != principal.companyId ||
+            account['location_id'] != principal.locationId) {
+          throw const PlatformFailure(
+            401,
+            'unauthorized',
+            'Session is invalid.',
+          );
+        }
+        final tokenHash = principal.tokenHash;
+        if (tokenHash != null) {
+          final currentSession = await tx.execute(
+            Sql.named(
+              'SELECT 1 FROM $schema.auth_sessions '
+              'WHERE token_hash = @tokenHash AND account_id = CAST(@accountId AS uuid) '
+              'AND revoked_at IS NULL AND expires_at > clock_timestamp()',
+            ),
+            parameters: {'tokenHash': tokenHash, 'accountId': principal.id},
+          );
+          if (currentSession.isEmpty) {
+            throw const PlatformFailure(
+              401,
+              'unauthorized',
+              'Session is invalid.',
+            );
+          }
+        }
+        final role = account['role']! as String;
+        if (!permissionsForRole(role).contains(permission)) {
+          throw const PlatformFailure(403, 'forbidden', 'Access denied.');
+        }
+        return action(
+          tx,
+          PlatformActor(
+            id: principal.id,
+            companyId: companyId,
+            locationId: account['location_id']! as String,
+            role: role,
+          ),
+        );
+      }),
+    );
   }
 
   Future<void> audit(
@@ -178,20 +192,8 @@ class PlatformDatabase {
         aggregateVersion: aggregateVersion,
         payload: payload,
         locationId: locationId,
-        correlationId: correlationId ?? newUuid(),
+        correlationId: correlationId ?? currentCorrelationId,
         causationId: causationId,
         eventId: newUuid(),
       );
-}
-
-String newUuid() {
-  final random = Random.secure();
-  final bytes = List<int>.generate(16, (_) => random.nextInt(256));
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  final hex = bytes
-      .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
-      .join();
-  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
-      '${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
 }

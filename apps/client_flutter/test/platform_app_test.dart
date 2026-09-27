@@ -140,6 +140,8 @@ void main() {
       ),
     );
     await login(tester);
+    await tester.tap(find.byKey(const Key('open-navigation')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Plugins').first);
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('approve-sample.plugin')));

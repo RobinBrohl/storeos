@@ -2,6 +2,8 @@
 
 Status: fachlich geplanter Zuschnitt. P0 implementiert Server, Flutter-Client, API-Verträge und Designsystem. P1 ergänzt Organization, Identity, Audit, Events und Plugin-Registrierungen als logisch getrennte Komponenten unter `apps/server/lib/src/organization/`, `identity/` und `platform/`. Weitere Verzeichnisse sind zunächst nur dokumentiert; Fachmodule werden erst mit ihrem jeweiligen Vertical Slice implementiert.
 
+P1b.1 ergänzt `apps/server/lib/src/people/` als logische Modulgrenze für Employee. Der Application-Koordinator `EmployeeApplication` verwendet die öffentlichen Ports `PeopleService`, `EmployeeLinks` (Identity) und `OrganizationService.requireConfiguredLocation` in einer gemeinsamen autorisierten Transaktion. People besitzt Profile und Standortgültigkeit; Identity besitzt Account-Verknüpfungen und Sitzungen. Nur API-Projektionen verlassen People, interne Domain- und Repositorytypen bleiben privat. Ein eigenes Package oder Event zur synchronen Verknüpfung ist nicht erforderlich. Details: [P1b.1](../development/phase-1b-employee.md).
+
 ## Repo-Zuschnitt
 
 ```text

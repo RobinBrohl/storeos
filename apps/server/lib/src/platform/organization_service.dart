@@ -1,3 +1,4 @@
+import 'package:postgres/postgres.dart';
 import '../infrastructure/auth_store.dart';
 import '../organization/organization_repository.dart';
 import 'platform_database.dart';
@@ -6,6 +7,13 @@ import 'platform_input.dart';
 class OrganizationService {
   OrganizationService(this.database)
     : repository = OrganizationRepository(database);
+
+  /// Public organization port for authorized local coordinators.
+  Future<void> requireConfiguredLocation(TxSession tx, String id) async {
+    if ((await repository.location(tx, id))?.name == null) {
+      throw const PlatformFailure(404, 'not_found', 'Location not found.');
+    }
+  }
 
   final PlatformDatabase database;
   final OrganizationRepository repository;
@@ -22,7 +30,9 @@ class OrganizationService {
         }
         final locations = await repository.locations(
           tx,
-          onlyLocationId: actor.role == 'viewer' ? actor.locationId : null,
+          onlyLocationId: (actor.role == 'viewer' || actor.role == 'employee')
+              ? actor.locationId
+              : null,
         );
         if (locations.length > 200) {
           throw const PlatformFailure(
@@ -95,7 +105,6 @@ class OrganizationService {
         locationId: location.id,
         changes: {'name': locationName, 'version': location.version},
       );
-      final correlationId = newUuid();
       await database.publishOrganizationEvent(
         tx,
         actor,
@@ -104,7 +113,6 @@ class OrganizationService {
         company.id,
         company.version,
         company.toJson(),
-        correlationId: correlationId,
       );
       await database.publishOrganizationEvent(
         tx,
@@ -115,7 +123,6 @@ class OrganizationService {
         location.version,
         location.toJson(),
         locationId: location.id,
-        correlationId: correlationId,
       );
       return {
         'company': company.toJson(),

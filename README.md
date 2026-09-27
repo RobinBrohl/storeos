@@ -2,7 +2,7 @@
 
 StoreOS ist ein langfristig angelegtes, quelloffenes Betriebssystem für standortgebundene Unternehmen. Es soll tägliche Arbeit, Wissen und betriebliche Daten in einer selbst betriebenen Plattform verbinden. Der erste fachliche Schwerpunkt ist die geführte Arbeit von Mitarbeitenden.
 
-**Projektstand:** Phase 1 – Plattformverwaltung auf der technischen P0-Grundlage. Company, Location, Benutzer, rollenbasierte Rechte, Audit, lokaler Event Bus und eine begrenzte externe Plugin-API. Es gibt noch keine Workforce-, Warenwirtschafts-, HACCP-, POS- oder Accounting-Funktionen und keine Offline-Schreibfunktionen.
+**Projektstand:** Plattformverwaltung und P1b.1 – Mitarbeiteridentität. Neben Company, Location, Benutzern, Rollen, Audit, Event Bus und begrenzter Plugin-API gibt es operative Mitarbeiterprofile, eine feste Standortzuordnung, explizite Account-Verknüpfungen und eine Eigenansicht. Die vollständige Mitarbeiterreise ist noch nicht implementiert. Es gibt keine Workforce-, Warenwirtschafts-, HACCP-, POS- oder Accounting-Funktionen und keine Offline-Schreibfunktionen.
 
 ## Lokal starten
 
@@ -22,6 +22,10 @@ Im Repository-Hauptverzeichnis:
 `setup` erzeugt einmalig `.env`, stabile Company-/Location-IDs und zufällige Secrets in `.local/secrets/`. Es verändert eine vorhandene Installation nicht. `migrate` ist wiederholbar; `bootstrap` legt genau einen lokalen Administrator und die noch nicht benannten Company-/Location-Datensätze an. Nach Anmeldung werden die tatsächlichen Organisationsnamen eingerichtet. Der Bootstrap-Vorgang lässt sich nach erfolgreicher Anlage nicht wiederholen.
 
 **Upgrade von P0:** Server stoppen, `.env`, Secrets und Datenbank sichern, `./scripts/dev.ps1 migrate` ausführen und Server/Client neu starten. `bootstrap` nicht erneut aufrufen. Bestehende IDs und Passwort-Hashes bleiben erhalten; ausschließlich der ursprüngliche Bootstrap-Account erhält beim Upgrade die Administratorrolle. Angewendete Migrationsdateien niemals ändern.
+
+**Upgrade von P1 auf P1b.1:** Ebenso sichern, Server stoppen, migrieren und Server/Client neu starten. Migration `0004` ergänzt Mitarbeiter, Account-Verknüpfungen, die Rolle `employee` und Audit-Korrelation. Bestehende Accounts werden nicht automatisch verknüpft; Rollen bleiben erhalten. Historische Audit-Korrelation bleibt unbekannt (`null`). Bei einem statisch ausgelieferten Flutter-Build den Client neu bauen und den Browser neu laden.
+
+**Mitarbeiterprofil verwenden:** Als Administrator zuerst Organisation und Standort einrichten, unter „Mitarbeiter“ ein Profil anlegen und einen vorhandenen aktiven Account desselben Standorts verknüpfen. Die Account-Rolle wird separat in der Benutzerverwaltung vergeben; `employee` darf nur die eigene Organisation und das eigene verknüpfte Profil lesen. Verknüpfen, Entziehen und Profildeaktivierung widerrufen betroffene Sitzungen. Nach erneuter Anmeldung erscheint „Mein Mitarbeiterprofil“. Das ist eine Profilansicht ohne Schichten oder Aufgaben. [Rechte, Grenzen und API](docs/development/phase-1b-employee.md).
 
 In einem zweiten Terminal:
 
@@ -60,6 +64,8 @@ Die PostgreSQL-Integrationstests benötigen zusätzlich `STOREOS_TEST_DATABASE` 
 Weitere Implementierungsgrenzen und Abnahmekriterien: [Phase-0-Grundlage](docs/development/phase-0.md), [Phase-1-Plattform](docs/development/phase-1.md) und [Phase-1-Prüfnachweis](docs/development/phase-1-verification.md). Plugin-Registrierungen sind externe API-Clients mit ausdrücklicher Freigabe; StoreOS installiert oder startet keinen fremden Code. Der Client hält auch Plugin-Tokens nur zur einmaligen Anzeige im Arbeitsspeicher. Separate Standortserver und Unternehmenssynchronisation sind noch nicht implementiert.
 
 ## Einstieg
+
+Der aktuelle [P1b.1-Prüfnachweis](docs/development/phase-1b-verification.md) dokumentiert Tests, Upgrade, Browser-Smoke und Restore der Mitarbeiteridentität.
 
 - [Vision](docs/vision.md) und [Produktprinzipien](docs/product-principles.md)
 - [Architektur](docs/architecture/overview.md), [kritische Prüfung](docs/risks-and-open-questions.md) und [ADRs](docs/adr/)

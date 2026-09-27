@@ -12,6 +12,8 @@ Organization besitzt Company und Location. Identity besitzt Accounts, feste Roll
 
 Feste Rollen vermeiden vorerst einen allgemeinen Policy-Editor: `admin` verwaltet Company, Standorte, Benutzer und Plugins und liest Audit/Events; `auditor` liest Organization, Audit und Events; `viewer` liest Organization nur im eigenen Standortkontext. Alle Accounts gehören derselben Company und genau einem Heimatstandort. Nur der explizite Bootstrap-Account erhält beim Upgrade automatisch `admin`. Jede Anfrage prüft aktuelle Rechte; Benutzerdeaktivierung und sicherheitsrelevante Änderungen widerrufen Sitzungen. Der letzte aktive Administrator darf nicht entfernt werden. Plugin-Identitäten besitzen niemals eine Benutzerrolle.
 
+Die Erweiterung [P1b.1](phase-1b-employee.md) ergänzt die feste Rolle `employee` für Organisation am eigenen Standort und das eigene verknüpfte Mitarbeiterprofil. Admin erhält Mitarbeiterverwaltung und Eigenansicht. Eine Account-Verknüpfung erteilt keine Rolle; Plugin-Rechte bleiben unverändert.
+
 ## HTTP-Verträge
 
 Alle folgenden Benutzerrouten liegen unter `/api/v1/platform`; Bearer-Sitzung erforderlich. Fehler verwenden bestehende `ApiError`-Verträge. Listen sind begrenzt; Audit/Event-Seiten verwenden einen Cursor. Änderungen bestehender Stammdatensätze verlangen `expectedVersion`, Konflikte antworten mit HTTP 409. Neue Locations und User nutzen clientseitig erzeugte UUIDs; Plugins verwenden ihre eindeutige Manifest-ID als Slug. Wiederholung derselben Erstellung erzeugt keine zweite Entität, sondern meldet einen Konflikt. Der Client lädt nach unklarem Ausgang den aktuellen Stand, bevor ein Nutzer erneut schreibt.

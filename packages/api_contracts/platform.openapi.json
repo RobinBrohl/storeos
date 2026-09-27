@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "StoreOS Phase 1 platform API",
+    "title": "StoreOS platform and employee identity API",
     "version": "1.0.0",
-    "description": "Single company and writer. No workforce modules, device offline writes, or managed plugin runtime."
+    "description": "Single company and writer. P1 platform plus P1b.1 employee profiles and explicit account links. No shifts, tasks, device offline writes or managed plugin runtime."
   },
   "paths": {
     "/api/v1/platform/context": {
@@ -750,6 +750,433 @@
           }
         ]
       }
+    },
+    "/api/v1/platform/employees": {
+      "get": {
+        "operationId": "listEmployees",
+        "description": "Requires people.manage. Writes use current server authorization and atomic audit. Stale versions and repeated creation IDs return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createEmployee",
+        "description": "Requires people.manage. Writes use current server authorization and atomic audit. Stale versions and repeated creation IDs return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmployee"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employees/me": {
+      "get": {
+        "operationId": "myEmployee",
+        "description": "Requires people.self.read and an active matching account link.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employees/{id}": {
+      "get": {
+        "operationId": "readEmployee",
+        "description": "Requires people.manage. Writes use current server authorization and atomic audit. Stale versions and repeated creation IDs return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/employees/{id}/rename": {
+      "post": {
+        "operationId": "renameEmployee",
+        "description": "Requires people.manage. Writes use current server authorization and atomic audit. Stale versions and repeated creation IDs return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameEmployee"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employees/{id}/deactivate": {
+      "post": {
+        "operationId": "deactivateEmployee",
+        "description": "Requires people.manage. Writes use current server authorization and atomic audit. Stale versions and repeated creation IDs return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeVersion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employees/{id}/account-link": {
+      "get": {
+        "operationId": "employeeAccountLink",
+        "description": "Requires people.manage. Writes use current server authorization and atomic audit. Stale versions and repeated creation IDs return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentEmployeeLink"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "linkEmployeeAccount",
+        "description": "Requires people.manage. Writes use current server authorization and atomic audit. Stale versions and repeated creation IDs return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeLink"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkEmployee"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employee-links/{id}/revoke": {
+      "post": {
+        "operationId": "revokeEmployeeLink",
+        "description": "Requires people.manage. Writes use current server authorization and atomic audit. Stale versions and repeated creation IDs return 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server-generated operation correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeLink"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeVersion"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -874,7 +1301,8 @@
             "enum": [
               "admin",
               "auditor",
-              "viewer"
+              "viewer",
+              "employee"
             ]
           },
           "permissions": {
@@ -917,7 +1345,8 @@
             "enum": [
               "admin",
               "auditor",
-              "viewer"
+              "viewer",
+              "employee"
             ]
           },
           "isActive": {
@@ -1010,7 +1439,8 @@
             "enum": [
               "admin",
               "auditor",
-              "viewer"
+              "viewer",
+              "employee"
             ]
           }
         }
@@ -1028,7 +1458,8 @@
             "enum": [
               "admin",
               "auditor",
-              "viewer"
+              "viewer",
+              "employee"
             ]
           },
           "isActive": {
@@ -1327,6 +1758,14 @@
           "changes": {
             "type": "object",
             "additionalProperties": true
+          },
+          "correlationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Server operation correlation; null on historical records."
           }
         }
       },
@@ -1571,6 +2010,240 @@
             "anyOf": [
               {
                 "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Employee": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "locationId",
+          "displayName",
+          "isActive",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "assignedFrom",
+          "assignedUntil"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "assignedFrom": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "assignedUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "EmployeeLink": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "accountId",
+          "employeeId",
+          "companyId",
+          "locationId",
+          "version",
+          "linkedAt",
+          "revokedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "linkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revokedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateEmployee": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "displayName",
+          "locationId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "RenameEmployee": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "displayName",
+          "expectedVersion"
+        ],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "EmployeeVersion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "LinkEmployee": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "accountId",
+          "expectedEmployeeVersion",
+          "expectedAccountVersion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedEmployeeVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "expectedAccountVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "EmployeeList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "employees"
+        ],
+        "properties": {
+          "employees": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/Employee"
+            }
+          }
+        }
+      },
+      "CurrentEmployeeLink": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "link"
+        ],
+        "properties": {
+          "link": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmployeeLink"
               },
               {
                 "type": "null"

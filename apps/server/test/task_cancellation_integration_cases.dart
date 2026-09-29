@@ -566,7 +566,7 @@ void cancellationTests() {
             'task_blockings',
           ])
             (await f.owner.execute(
-                  'SELECT jsonb_agg(${table == 'task_blockings' ? "to_jsonb(t)-'resolution_kind'" : 'to_jsonb(t)'} ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
+                  'SELECT jsonb_agg(${table == 'task_blockings' ? "to_jsonb(t)-'resolution_kind'-'numeric_attempt_id'" : "to_jsonb(t)-'numeric_attempt_id'"} ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
                 )).single.first
                 as String,
         ];
@@ -577,7 +577,10 @@ void cancellationTests() {
           schemaName: f.schema,
           runtimeDatabaseUser: f.runtimeUser,
         );
-        expect(await runner.apply(), ['0009_task_cancellation']);
+        expect(await runner.apply(), [
+          '0009_task_cancellation',
+          '0010_task_numeric_steps',
+        ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
         final history = (await f.call(

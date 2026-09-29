@@ -4,8 +4,15 @@ Future<({String root, String task, String token, _Plan plan})> _executionPlan(
   _Fixture f, {
   Duration duration = const Duration(hours: 1),
   int steps = 1,
+  bool numeric = false,
+  int numericSteps = 1,
 }) async {
-  final p = await _plan(f, steps: steps);
+  final p = await _plan(
+    f,
+    steps: steps,
+    numeric: numeric,
+    numericSteps: numericSteps,
+  );
   p.input['startsAt'] = p.employee.assignedFrom.toIso8601String();
   p.input['endsAt'] = DateTime.now().toUtc().add(duration).toIso8601String();
   await f.call('POST', '/shifts', body: p.input, expected: 201);
@@ -212,6 +219,7 @@ void executionTests() {
           '0007_task_execution',
           '0008_task_blocking',
           '0009_task_cancellation',
+          '0010_task_numeric_steps',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

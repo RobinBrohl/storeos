@@ -77,6 +77,21 @@ class TaskExecutionService {
     };
   }
 
+  Future<Map<String, dynamic>> numbers(
+    TxSession tx,
+    String instance,
+    int? before,
+  ) async {
+    final rows = await _repository.numbers(tx, instance, before),
+        page = rows.take(50).toList();
+    return {
+      'items': page.map((v) => v.toJson()).toList(),
+      'nextCursor': rows.length > 50
+          ? page.last.acceptedVersion.toString()
+          : null,
+    };
+  }
+
   Future<TaskExecutionDto> execute(
     TxSession tx,
     PlatformActor actor,
@@ -88,6 +103,7 @@ class TaskExecutionService {
     String? stepId,
     DateTime now, {
     String? reason,
+    String? value,
     Future<void> Function()? checkResume,
   }) async {
     final input = jsonEncode({
@@ -95,6 +111,7 @@ class TaskExecutionService {
       'expectedVersion': expectedVersion,
       'stepId': stepId,
       'reason': ?reason,
+      'value': ?value,
     });
     final receipt = await _repository.receipt(tx, operation);
     if (receipt != null) {
@@ -141,6 +158,48 @@ class TaskExecutionService {
         'Start is only allowed during the published shift.',
       );
     }
+    String? attemptId;
+    bool? inRange;
+    if (command == 'record-number') {
+      final step = task.content!.steps[current.results.length];
+      inRange = TaskExecution(
+        current,
+        task.content!,
+      ).acceptsNumber(step, taskNumber(value));
+      attemptId = newUuid();
+      await _repository.recordNumber(
+        tx,
+        TaskNumericAttemptDto(
+          id: attemptId,
+          instanceId: task.id,
+          stepId: step.id,
+          value: value!,
+          inRange: inRange,
+          recordedAt: now,
+          recordedBy: actor.id,
+          acceptedVersion: current.version + 1,
+        ),
+        shift.locationId,
+      );
+      command = inRange ? 'confirm' : 'block';
+      if (!inRange) reason = 'Zahlenwert außerhalb der erlaubten Grenzen.';
+      await database.audit(
+        tx,
+        actor,
+        'tasks.step.number_recorded',
+        'task_instance',
+        task.id,
+        locationId: shift.locationId,
+        changes: {
+          'operationId': operation,
+          'attemptId': attemptId,
+          'stepId': step.id,
+          'revisionId': task.revisionId,
+          'version': current.version + 1,
+          'inRange': inRange,
+        },
+      );
+    }
     String? blockingId;
     if (command == 'block') {
       blockingId = newUuid();
@@ -156,6 +215,7 @@ class TaskExecutionService {
         actor.id,
         shift.locationId,
         now,
+        numericAttemptId: attemptId,
       );
     } else if (command == 'resume' || command == 'cancel') {
       if (command == 'resume') await checkResume!();
@@ -177,6 +237,7 @@ class TaskExecutionService {
       actor.id,
       shift.locationId,
       now,
+      numericAttemptId: attemptId,
     );
     final result = await get(tx, task.id);
     final action = switch (command) {
@@ -202,6 +263,8 @@ class TaskExecutionService {
         'status': result.status,
         'stepId': ?stepId,
         'blockingId': ?blockingId,
+        'attemptId': ?attemptId,
+        'inRange': ?inRange,
       },
     );
     await _repository.remember(

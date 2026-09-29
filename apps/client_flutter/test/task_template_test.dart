@@ -15,6 +15,43 @@ const location = '22222222-2222-4222-8222-222222222222';
 const account = '33333333-3333-4333-8333-333333333333';
 
 void main() {
+  test(
+    'numeric template editing validates bounds, publishes schema 2 and preserves immutable revisions',
+    () async {
+      final f = await _Fixture.create();
+      addTearDown(f.dispose);
+      await f.ready();
+      f.c.addStep(numeric: true);
+      final id = f.c.steps.last.id;
+      f.c.setInstruction(id, 'Record temperature');
+      f.c.setNumberRule(id, 'unit', 'C');
+      f.c.setNumberRule(id, 'minimum', '-2,125');
+      f.c.setNumberRule(id, 'maximum', '-3');
+      await f.c.save();
+      expect(f.c.error, isNotNull);
+      expect(f.c.steps.last.minimum, '-2,125');
+      f.c.setNumberRule(id, 'maximum', '4,5');
+      await f.c.save();
+      expect(f.c.error, isNull);
+      expect(f.c.revision!.content!.schemaVersion, 2);
+      expect(f.c.steps.last.minimum, '-2.125');
+      f.c.setInstruction(id, 'Read display');
+      await f.c.save();
+      expect(f.c.steps.last.type, 'number');
+      expect(f.c.steps.last.maximum, '4.5');
+      await f.c.publish();
+      final published = f.c.revision!.id;
+      await f.c.newDraft();
+      f.c.setNumberRule(id, 'maximum', '5');
+      await f.c.save();
+      expect(
+        f.api.records[published]!['content']['steps'][1]['maximum'],
+        '4.5',
+      );
+      expect(f.c.steps.last.maximum, '5');
+    },
+  );
+
   test('failed overview refresh preserves a confirmed creation', () async {
     final f = await _Fixture.create();
     addTearDown(f.dispose);
@@ -225,10 +262,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('template-dirty')), findsOneWidget);
       await tester.ensureVisible(find.byKey(const Key('save-template')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('save-template')));
       await tester.pumpAndSettle();
       expect(f.c.dirty, isFalse);
       await tester.ensureVisible(find.byKey(const Key('publish-template')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('publish-template')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Bestätigen'));

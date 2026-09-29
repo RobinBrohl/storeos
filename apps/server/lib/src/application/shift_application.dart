@@ -342,6 +342,36 @@ class ShiftApplication {
     );
   }
 
+  Future<Map<String, dynamic>> numbers(
+    SessionPrincipal p,
+    String shiftId,
+    String taskId, {
+    bool self = true,
+    String? after,
+  }) {
+    shiftId = requireUuid({'id': shiftId}, 'id');
+    taskId = requireUuid({'id': taskId}, 'id');
+    final before = after == null ? null : int.tryParse(after);
+    if (after != null &&
+        (before == null || before < 3 || before > 9007199254740991)) {
+      throw const PlatformFailure(
+        400,
+        'invalid_cursor',
+        'Invalid history cursor.',
+      );
+    }
+    return _run(
+      p,
+      self ? 'tasks.instances.self.read' : 'tasks.instances.read',
+      (tx, actor) async {
+        final shift = await _visible(tx, actor, shiftId, self);
+        _blockingScope(actor, shift.locationId);
+        await _tasks.detail(tx, shiftId, taskId);
+        return _execution.numbers(tx, taskId, before);
+      },
+    );
+  }
+
   Future<Map<String, dynamic>> execute(
     SessionPrincipal p,
     String shiftId,
@@ -357,8 +387,25 @@ class ShiftApplication {
         command == 'block' || command == 'resume' || command == 'cancel';
     requireFields(
       input,
-      required: {'operationId', 'expectedVersion', if (exceptional) 'reason'},
+      required: {
+        'operationId',
+        'expectedVersion',
+        if (exceptional) 'reason',
+        if (command == 'record-number') 'value',
+      },
     );
+    String? value;
+    if (command == 'record-number') {
+      try {
+        value = taskNumberText(taskNumber(input['value']));
+      } on FormatException {
+        throw const PlatformFailure(
+          400,
+          'invalid_number',
+          'Use a decimal string with at most 6 integer and 3 fractional digits.',
+        );
+      }
+    }
     String? reason;
     if (exceptional) {
       try {
@@ -404,6 +451,7 @@ class ShiftApplication {
           step,
           now,
           reason: reason,
+          value: value,
           checkResume: () async {
             final person = await _people.get(tx, shift.draft.employeeId);
             final at =

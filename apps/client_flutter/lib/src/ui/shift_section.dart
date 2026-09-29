@@ -250,6 +250,7 @@ class _ShiftSectionState extends State<ShiftSection> {
           ],
           for (final task in c.tasks)
             ListTile(
+              key: Key('task-${task.id}'),
               title: Text(task.title),
               subtitle: Text(
                 '${c.taskStatus(task.status)} · ${task.confirmedSteps}/${task.totalSteps} bestätigt',
@@ -366,6 +367,60 @@ class _ShiftSectionState extends State<ShiftSection> {
                 onPressed: () => c.executeTask('start'),
                 child: const Text('Aufgabe starten'),
               ),
+            if (c.nextStep?.type == 'number') ...[
+              Text(c.numberRule(c.nextStep!.id)),
+              if (c.self)
+                TextFormField(
+                  key: ValueKey(
+                    'number-${c.task!.id}-${c.nextStep!.id}-${c.executionGeneration}',
+                  ),
+                  initialValue: c.numberInput,
+                  readOnly: !c.canRecordNumber,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Zahlenwert (${c.nextStep!.unit})',
+                    helperText:
+                        'Bis zu 3 Nachkommastellen; keine Tausendertrennzeichen.',
+                  ),
+                  onChanged: c.setNumber,
+                ),
+              if (c.self)
+                FilledButton(
+                  key: const Key('record-number'),
+                  onPressed: c.canRecordNumber
+                      ? () => c.executeTask('record-number')
+                      : null,
+                  child: const Text('Zahlenwert erfassen'),
+                ),
+            ],
+            if (c.hasNumbers) ...[
+              const Text('Zahlenversuche'),
+              if (c.numberAttempts == null)
+                const Text('Versuchshistorie noch nicht bestätigt.'),
+              if (c.numberAttempts?.isEmpty == true)
+                const Text('Noch keine Zahlenwerte erfasst.'),
+              for (final a in c.numberAttempts ?? <TaskNumericAttemptDto>[])
+                ListTile(
+                  title: Text(
+                    '${a.value} · ${a.inRange ? 'Innerhalb der Grenzen' : 'Außerhalb der Grenzen – blockiert'}',
+                  ),
+                  subtitle: Text(
+                    '${c.numberRule(a.stepId)} · ${a.recordedAt.toLocal()} · Version ${a.acceptedVersion}',
+                  ),
+                ),
+              TextButton(
+                onPressed: c.busy ? null : () => c.loadNumbers(),
+                child: const Text('Zahlenversuche neu laden'),
+              ),
+              if (c.numberCursor != null)
+                TextButton(
+                  onPressed: c.busy ? null : () => c.loadNumbers(more: true),
+                  child: const Text('Weitere Zahlenversuche laden'),
+                ),
+            ],
             if (c.canConfirm)
               FilledButton(
                 key: const Key('confirm-step'),
@@ -408,6 +463,7 @@ class _ShiftSectionState extends State<ShiftSection> {
   Widget _shiftTile(Map<String, dynamic> item) {
     final shift = ShiftDto.fromJson(item['shift'] as Map<String, dynamic>);
     return ListTile(
+      key: Key('shift-${shift.id}'),
       title: Text(
         '${shift.draft.startsAt.toIso8601String()} – ${shift.draft.endsAt.toIso8601String()}',
       ),

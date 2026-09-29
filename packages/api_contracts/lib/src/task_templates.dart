@@ -1,15 +1,20 @@
 import 'dart:convert';
+import 'task_numbers.dart';
 
 /// Versioned instruction content, not execution results or a workflow engine.
 class TaskTemplateContent {
-  TaskTemplateContent({required this.title, required List<TemplateStep> steps})
-    : steps = List.unmodifiable(steps);
+  TaskTemplateContent({
+    required this.title,
+    required List<TemplateStep> steps,
+    this.schemaVersion = 1,
+  }) : steps = List.unmodifiable(steps);
+  final int schemaVersion;
   final String title;
   final List<TemplateStep> steps;
   factory TaskTemplateContent.fromJson(Map<String, dynamic> json) {
     _keys(json, {'schemaVersion', 'title', 'steps'});
     if (json['schemaVersion'] is! int ||
-        json['schemaVersion'] != 1 ||
+        !{1, 2}.contains(json['schemaVersion']) ||
         json['steps'] is! List) {
       throw const FormatException('Ungültiges Inhaltsschema.');
     }
@@ -30,7 +35,15 @@ class TaskTemplateContent {
         'Maximal 20 Schritte mit eindeutigen IDs sind erlaubt.',
       );
     }
-    final value = TaskTemplateContent(title: title, steps: steps);
+    if (json['schemaVersion'] == 1 &&
+        steps.any((s) => s.type != 'confirmation')) {
+      throw const FormatException('Zahlenschritte benötigen Schema 2.');
+    }
+    final value = TaskTemplateContent(
+      title: title,
+      steps: steps,
+      schemaVersion: json['schemaVersion'] as int,
+    );
     if (utf8.encode(jsonEncode(value.toJson())).length > 8192) {
       throw const FormatException(
         'Der gesamte Vorlageninhalt darf 8 KiB nicht überschreiten.',
@@ -39,7 +52,7 @@ class TaskTemplateContent {
     return value;
   }
   Map<String, dynamic> toJson() => {
-    'schemaVersion': 1,
+    'schemaVersion': schemaVersion,
     'title': title,
     'steps': steps.map((s) => s.toJson()).toList(),
   };
@@ -52,17 +65,32 @@ final _controls = RegExp(r'[\x00-\x1f\x7f]');
 final _instructionControls = RegExp(r'[\x00-\x08\x0b-\x1f\x7f]');
 
 class TemplateStep {
-  const TemplateStep({required this.id, required this.instruction});
+  const TemplateStep({
+    required this.id,
+    required this.instruction,
+    this.type = 'confirmation',
+    this.unit,
+    this.minimum,
+    this.maximum,
+  });
+  final String type;
+  final String? unit, minimum, maximum;
   final String id, instruction;
   factory TemplateStep.fromJson(Map<String, dynamic> json) {
-    _keys(json, {'id', 'type', 'instruction'});
+    final numeric = json['type'] == 'number';
+    _keys(json, {
+      'id',
+      'type',
+      'instruction',
+      if (numeric) ...{'unit', 'minimum', 'maximum'},
+    });
     final id = _text(json, 'id').toLowerCase();
     final instruction = _text(
       json,
       'instruction',
     ).replaceAll('\r\n', '\n').trim();
     if (!_uuid.hasMatch(id) ||
-        json['type'] != 'confirmation' ||
+        !{'confirmation', 'number'}.contains(json['type']) ||
         instruction.isEmpty ||
         instruction.runes.length > 1000 ||
         _instructionControls.hasMatch(instruction)) {
@@ -70,11 +98,34 @@ class TemplateStep {
         'Ein Schritt benötigt eine gültige ID und 1 bis 1.000 Zeichen Anleitungstext.',
       );
     }
-    return TemplateStep(id: id, instruction: instruction);
+    if (!numeric) return TemplateStep(id: id, instruction: instruction);
+    final unit = _text(json, 'unit').trim();
+    final low = taskNumber(json['minimum']), high = taskNumber(json['maximum']);
+    if (unit.isEmpty ||
+        unit.runes.length > 32 ||
+        _controls.hasMatch(unit) ||
+        low > high) {
+      throw const FormatException(
+        'Einheit (1–32 Zeichen) und gültige inklusive Grenzen erforderlich.',
+      );
+    }
+    return TemplateStep(
+      id: id,
+      instruction: instruction,
+      type: 'number',
+      unit: unit,
+      minimum: taskNumberText(low),
+      maximum: taskNumberText(high),
+    );
   }
   Map<String, dynamic> toJson() => {
     'id': id,
-    'type': 'confirmation',
+    'type': type,
+    if (type == 'number') ...{
+      'unit': unit,
+      'minimum': minimum,
+      'maximum': maximum,
+    },
     'instruction': instruction,
   };
 }

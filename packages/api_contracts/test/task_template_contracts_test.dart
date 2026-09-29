@@ -66,7 +66,7 @@ void main() {
     'content rejects malformed schemas, duplicates, controls and size overflows',
     () {
       for (final change in [
-        {'schemaVersion': 2},
+        {'schemaVersion': 3},
         {'schemaVersion': 1.0},
         {'extra': true},
         {'title': ' '},

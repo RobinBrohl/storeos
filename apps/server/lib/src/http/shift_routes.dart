@@ -81,6 +81,20 @@ class ShiftRoutes {
       ),
     );
     router.post(
+      '$executionRoot/steps/<step>/record-number',
+      (Request r, String id, String task, String step) async => jsonResponse(
+        200,
+        await app.execute(
+          await auth.authenticate(bearerToken(r)),
+          id,
+          task,
+          'record-number',
+          await readJson(r),
+          stepId: step,
+        ),
+      ),
+    );
+    router.post(
       '$root/<id>/tasks/<task>/resume',
       (Request r, String id, String task) async => jsonResponse(
         200,
@@ -140,6 +154,19 @@ class ShiftRoutes {
         (Request r, String id, String task) async => jsonResponse(
           200,
           await app.blockings(
+            await auth.authenticate(bearerToken(r)),
+            id,
+            task,
+            self: self,
+            after: r.url.queryParameters['after'],
+          ),
+        ),
+      );
+      router.get(
+        '$path/<id>/tasks/<task>/number-attempts',
+        (Request r, String id, String task) async => jsonResponse(
+          200,
+          await app.numbers(
             await auth.authenticate(bearerToken(r)),
             id,
             task,

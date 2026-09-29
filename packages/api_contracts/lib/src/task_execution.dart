@@ -6,8 +6,10 @@ class TaskStepResultDto {
     this.confirmedAt,
     this.confirmedBy, {
     this.acceptedVersion,
+    this.numericAttemptId,
   });
   final String stepId, confirmedBy;
+  final String? numericAttemptId;
   final DateTime confirmedAt;
   final int? acceptedVersion;
   factory TaskStepResultDto.fromJson(Map<String, dynamic> j) =>
@@ -16,9 +18,13 @@ class TaskStepResultDto {
         shiftInstant(j['confirmedAt']),
         shiftUuid(j['confirmedBy']),
         acceptedVersion: j['acceptedVersion'] as int?,
+        numericAttemptId: j['numericAttemptId'] == null
+            ? null
+            : shiftUuid(j['numericAttemptId']),
       );
   Map<String, dynamic> toJson() => {
     'stepId': stepId,
+    if (numericAttemptId != null) 'numericAttemptId': numericAttemptId,
     'confirmedAt': confirmedAt.toUtc().toIso8601String(),
     'confirmedBy': confirmedBy,
     if (acceptedVersion != null) 'acceptedVersion': acceptedVersion,
@@ -191,8 +197,10 @@ class TaskBlockingDto {
     this.resolvedAt,
     this.resolvedBy,
     this.resolvedVersion,
+    this.numericAttemptId,
   });
   final String id, instanceId, reason, reportedBy;
+  final String? numericAttemptId;
   final String? stepId, resolution, resolvedBy, resolutionKind;
   final DateTime reportedAt;
   final DateTime? resolvedAt;
@@ -227,6 +235,9 @@ class TaskBlockingDto {
       reportedAt: at,
       reportedBy: shiftUuid(j['reportedBy']),
       reportedVersion: reported,
+      numericAttemptId: j['numericAttemptId'] == null
+          ? null
+          : shiftUuid(j['numericAttemptId']),
       resolutionKind: kind as String?,
       resolution: j['resolution'] == null
           ? null
@@ -241,6 +252,7 @@ class TaskBlockingDto {
     'instanceId': instanceId,
     'stepId': stepId,
     'reason': reason,
+    if (numericAttemptId != null) 'numericAttemptId': numericAttemptId,
     'reportedAt': reportedAt.toUtc().toIso8601String(),
     'reportedBy': reportedBy,
     'reportedVersion': reportedVersion,

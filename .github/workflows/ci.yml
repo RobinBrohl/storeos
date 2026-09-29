@@ -124,3 +124,51 @@ jobs:
           flutter analyze
           flutter test
           flutter build web --release --no-web-resources-cdn
+
+  numeric-guided-work-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: storeos_e2e_test
+          POSTGRES_USER: storeos_owner
+          POSTGRES_PASSWORD: ci_storeos_e2e_owner_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U storeos_owner -d storeos_e2e_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      STOREOS_TEST_DATABASE: postgres://storeos_owner:ci_storeos_e2e_owner_only@127.0.0.1:5432/storeos_e2e_test
+      STOREOS_DB_USER: storeos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: 153.0.8010.36
+          install-chromedriver: true
+          install-dependencies: true
+      - name: Create isolated runtime role
+        shell: bash
+        run: |
+          runtime_password="$(openssl rand -hex 32)"
+          printf '%s' "$runtime_password" > "$RUNNER_TEMP/storeos-e2e-runtime-password"
+          chmod 600 "$RUNNER_TEMP/storeos-e2e-runtime-password"
+          echo "STOREOS_DB_PASSWORD_FILE=$RUNNER_TEMP/storeos-e2e-runtime-password" >> "$GITHUB_ENV"
+          docker exec "${{ job.services.postgres.id }}" psql -U storeos_owner -d storeos_e2e_test \
+            -v ON_ERROR_STOP=1 \
+            -c "CREATE ROLE storeos LOGIN PASSWORD '$runtime_password'; GRANT CONNECT ON DATABASE storeos_e2e_test TO storeos;"
+      - name: Run real Flutter, HTTP, and PostgreSQL guided-work journey
+        shell: pwsh
+        env:
+          CHROME_EXECUTABLE: ${{ steps.chrome.outputs.chrome-path }}
+        run: ./scripts/e2e/Run-NumericGuidedWork.ps1 -ChromeDriverPath '${{ steps.chrome.outputs.chromedriver-path }}'

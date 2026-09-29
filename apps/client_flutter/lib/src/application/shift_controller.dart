@@ -35,7 +35,23 @@ class ShiftController extends ChangeNotifier {
   String? cancelledCursor;
   List<TaskBlockingDto> blockings = [];
   String? blockedCursor, blockingCursor;
-  String reason = '';
+  String reason = '', numberInput = '';
+  List<TaskNumericAttemptDto>? numberAttempts;
+  String? numberCursor;
+  bool get hasNumbers =>
+      task?.content?.steps.any((s) => s.type == 'number') == true;
+  bool get canRecordNumber => canExecute && nextStep?.type == 'number';
+  void setNumber(String value) {
+    if (canEditReason) numberInput = value;
+  }
+
+  String numberRule(String stepId) {
+    final step = task?.content?.steps.where((s) => s.id == stepId).firstOrNull;
+    return step?.type == 'number'
+        ? '${step!.minimum} bis ${step.maximum} ${step.unit} (inklusive)'
+        : '';
+  }
+
   bool get canBlock => canExecute && execution!.status == 'in_progress';
   bool get canResume =>
       !self &&
@@ -82,7 +98,7 @@ class ShiftController extends ChangeNotifier {
         : null;
   }
 
-  bool get canConfirm => canExecute && nextStep != null;
+  bool get canConfirm => canExecute && nextStep?.type == 'confirmation';
   bool get canComplete =>
       canExecute &&
       execution!.status == 'in_progress' &&
@@ -101,7 +117,9 @@ class ShiftController extends ChangeNotifier {
     execution = null;
     blockings = [];
     blockingCursor = null;
-    reason = '';
+    reason = numberInput = '';
+    numberAttempts = null;
+    numberCursor = null;
     _executionRoute = null;
     _executionBody = null;
     executionConflict = false;
@@ -300,6 +318,7 @@ class ShiftController extends ChangeNotifier {
     );
     executionConflict = true;
     await _loadBlockings(e);
+    await _loadNumbers(e);
     executionConflict = false;
   });
   Future<void> _loadRunning(int e, {bool more = false}) async {
@@ -332,6 +351,7 @@ class ShiftController extends ChangeNotifier {
     final permitted = switch (command) {
       'start' => canStart,
       'confirm' => canConfirm,
+      'record-number' => canRecordNumber,
       'complete' => canComplete,
       'block' => canBlock,
       'resume' => canResume,
@@ -343,14 +363,18 @@ class ShiftController extends ChangeNotifier {
       final exceptional =
           command == 'block' || command == 'resume' || command == 'cancel';
       final validated = exceptional ? blockingReason(reason) : null;
-      final suffix = command == 'confirm'
-          ? 'steps/${nextStep!.id}/confirm'
+      final numeric = command == 'record-number'
+          ? taskNumberText(taskNumber(numberInput.trim().replaceAll(',', '.')))
+          : null;
+      final suffix = command == 'confirm' || command == 'record-number'
+          ? 'steps/${nextStep!.id}/$command'
           : command;
       _executionRoute = '$root/${selected!.id}/tasks/${task!.id}/$suffix';
       _executionBody = {
         'operationId': _uuid(),
         'expectedVersion': execution!.version,
         'reason': ?validated,
+        'value': ?numeric,
       };
       await _sendExecution(e);
     });
@@ -411,6 +435,33 @@ class ShiftController extends ChangeNotifier {
     if (!more || blockingCursor != null) await _loadBlockings(e, more: more);
   });
 
+  Future<void> _loadNumbers(int e, {bool more = false}) async {
+    if (!hasNumbers) return;
+    final raw = await _get(
+      e,
+      '$root/${selected!.id}/tasks/${task!.id}/number-attempts',
+      after: more ? numberCursor : null,
+    );
+    final loaded = (raw['items'] as List)
+        .map((v) => TaskNumericAttemptDto.fromJson(v as Map<String, dynamic>))
+        .toList();
+    if (loaded.any(
+      (a) =>
+          a.instanceId != task!.id ||
+          !task!.content!.steps.any(
+            (s) => s.id == a.stepId && s.type == 'number',
+          ),
+    )) {
+      throw const FormatException();
+    }
+    numberAttempts = [if (more) ...?numberAttempts, ...loaded];
+    numberCursor = raw['nextCursor'] as String?;
+  }
+
+  Future<void> loadNumbers({bool more = false}) => _run((e) async {
+    if (!more || numberCursor != null) await _loadNumbers(e, more: more);
+  });
+
   Future<void> retryExecution() => _run((e) async {
     if (executionUnconfirmed && !executionConflict) await _sendExecution(e);
   });
@@ -438,7 +489,8 @@ class ShiftController extends ChangeNotifier {
         blockingCursor = null;
       }
       notice = 'Vorgang vom Server bestätigt.';
-      reason = '';
+      reason = numberInput = '';
+      executionGeneration++;
     } catch (f) {
       if (!_current(e)) return;
       if (f is StoreApiException &&
@@ -470,7 +522,10 @@ class ShiftController extends ChangeNotifier {
     // Load the evidence before optional lists, which can fail independently.
     blockings = [];
     blockingCursor = null;
+    numberAttempts = null;
+    numberCursor = null;
     await _loadBlockings(e);
+    await _loadNumbers(e);
     final detail = await _get(e, '$root/${selected!.id}');
     tasks = (detail['tasks'] as List)
         .map((v) => TaskInstanceDto.fromJson(v as Map<String, dynamic>))

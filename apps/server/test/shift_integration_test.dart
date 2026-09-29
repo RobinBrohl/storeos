@@ -20,6 +20,7 @@ import 'package:test/test.dart';
 part 'task_execution_integration_cases.dart';
 part 'task_blocking_integration_cases.dart';
 part 'task_cancellation_integration_cases.dart';
+part 'task_numeric_integration_cases.dart';
 
 const _company = '11111111-1111-4111-8111-111111111111';
 const _home = '22222222-2222-4222-8222-222222222222';
@@ -31,6 +32,7 @@ void main() {
   executionTests();
   blockingTests();
   cancellationTests();
+  numericTests();
   test(
     'pinned selections reject mismatched templates and published foreign-location revisions without writes',
     () => _withFixture((f) async {
@@ -800,6 +802,7 @@ void main() {
         '0007_task_execution',
         '0008_task_blocking',
         '0009_task_cancellation',
+        '0010_task_numeric_steps',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);
@@ -825,7 +828,12 @@ class _Plan {
   String get id => input['id'] as String;
 }
 
-Future<_Plan> _plan(_Fixture f, {int steps = 1}) async {
+Future<_Plan> _plan(
+  _Fixture f, {
+  bool numeric = false,
+  int numericSteps = 1,
+  int steps = 1,
+}) async {
   final employee = await f.employee('Planned employee'), template = _input();
   for (var i = 1; i < steps; i++) {
     (template['content']['steps'] as List).add({
@@ -833,6 +841,17 @@ Future<_Plan> _plan(_Fixture f, {int steps = 1}) async {
       'type': 'confirmation',
       'instruction': 'Step ${i + 1}',
     });
+  }
+  if (numeric) {
+    template['content']['schemaVersion'] = 2;
+    for (var i = 0; i < numericSteps; i++) {
+      template['content']['steps'][i].addAll({
+        'type': 'number',
+        'unit': 'C',
+        'minimum': '-2.125',
+        'maximum': '4.5',
+      });
+    }
   }
   await f.call('POST', '/task-templates', body: template, expected: 201);
   await f.call(

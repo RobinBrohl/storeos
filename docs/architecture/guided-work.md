@@ -1,6 +1,6 @@
 # Guided Work
 
-Status: Zielkonzept. [P1b.4](../development/phase-1b-execution.md) implementiert ausschließlich geordnete Bestätigungsschritte, Start, Wiederaufnahme und Abschluss. [P1b.5](../development/phase-1b-blocking.md) ergänzt manuelle Blockierungen und administrative Freigabe zur Wiederaufnahme. [P1b.6](../development/phase-1b-cancellation.md) ergänzt die begründete Stornierung blockierter Aufgaben. Zahleneingaben und automatische Grenzprüfung bleiben offen.
+Status: Zielkonzept. [P1b.4](../development/phase-1b-execution.md) implementiert ausschließlich geordnete Bestätigungsschritte, Start, Wiederaufnahme und Abschluss. [P1b.5](../development/phase-1b-blocking.md) ergänzt manuelle Blockierungen und administrative Freigabe zur Wiederaufnahme. [P1b.6](../development/phase-1b-cancellation.md) ergänzt die begründete Stornierung blockierter Aufgaben. [P1b.7](../development/phase-1b-7-numeric-steps.md) ergänzt Zahleneingaben mit festen inklusiven Grenzen und automatischer Blockierung.
 
 ## Ziel und fachlicher Vertrag
 
@@ -37,3 +37,18 @@ Die Handheldführung nutzt kurze Anweisungen, große Aktionen, klare Fehler und 
 - Welche Schrittarten und Nachweise sind im ersten produktiven Einsatz tatsächlich nötig?
 - Wann ist eine Auslassung fachlich zulässig, und wer genehmigt sie?
 - Welche Offline-Schritte sind bei möglichem Risiko sicher zulässig?
+
+## Implementierte Zahlenbewertung (P1b.7)
+
+Schema 2 erlaubt `number` neben `confirmation`; Schema 1 bleibt ausführbar. Einheit
+und Grenzen gehören zum unveränderlichen Snapshot. API-Dezimalstrings werden als
+exakte Tausendstel gespeichert; mehr als drei Nachkommastellen werden abgewiesen.
+Tasks bewertet die Grenzen, ohne Float-Arithmetik, Einheitenumrechnung oder Regelengine.
+
+Jeder angenommene Versuch erhält Akteur, Serverzeit und Instanzversion. Erfolg erzeugt
+ein Schrittresultat mit Versuchreferenz; Abweichung erzeugt eine Blockierung mit
+Versuchreferenz. Fehlgeschlagene Versuche zählen nie als bestätigte Schritte. Resume
+behält denselben offenen Schritt; Cancel beendet die Aufgabe unter Erhalt der Historie.
+SQL-Invarianten verhindern Bestätigungen ohne passenden erfolgreichen Versuch sowie
+verwaiste Versuche. Audit und Receipt werden in derselben Transaktion geschrieben.
+Werte sind nur über die berechtigte Versuchshistorie verfügbar, nicht im Audit/Log.

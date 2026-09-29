@@ -38,3 +38,6 @@ Diese Dokumente verdichten die vom Projektgründer bereitgestellte StoreOS-Produ
 - [P1b.6 – Stornierung blockierter Aufgaben](development/phase-1b-cancellation.md) – Scope, Rechte, terminaler Zustand und Migration
 - [P1b.6-Prüfnachweis](development/phase-1b-cancellation-verification.md) – Tests, Browser-Smoke, Upgrade, Restore und geänderte Dateien
 - [Review des P1b.6-Zyklus](development/phase-1b-cancellation-review-2026-09-27.md) – korrigierte Fehlerzustände, API-Vertrag und finale Prüfung
+
+- [P1b.7 – Numerische Guided-Work-Schritte](development/phase-1b-7-numeric-steps.md) – verbindlicher Scope, Rechte, Audit und Abnahmekriterien
+- [P1b.7-Prüfnachweis](development/phase-1b-7-numeric-verification.md) – Tests, API-Smoke, automatisierter Browserablauf, Upgrade und Restore

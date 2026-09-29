@@ -2,9 +2,9 @@
 
 StoreOS ist ein langfristig angelegtes, quelloffenes Betriebssystem für standortgebundene Unternehmen. Es soll tägliche Arbeit, Wissen und betriebliche Daten in einer selbst betriebenen Plattform verbinden. Der erste fachliche Schwerpunkt ist die geführte Arbeit von Mitarbeitenden.
 
-**Projektstand:** P1-Plattform, P1b.1 Mitarbeiteridentität, P1b.2 Arbeitsvorlagen und [P1b.3 Schichten mit lesendem Employee Home](docs/development/phase-1b-shifts.md). Administratoren planen Einzelschichten und veröffentlichen ausgewählte Vorlagenrevisionen atomar als Aufgaben-Snapshots. Verknüpfte Mitarbeiter lesen ihre geplante Arbeit und Anleitungen. Guided Work, Completion, Änderungen veröffentlichter Schichten und Offline-Schreiben sind noch nicht implementiert. Warenwirtschaft, HACCP, POS und Accounting bleiben außerhalb des aktuellen Umfangs.
+**Projektstand:** P1-Plattform und die Teilslices P1b.1 bis [P1b.7 – Numerische Guided-Work-Schritte](docs/development/phase-1b-7-numeric-steps.md) sind implementiert. Administratoren planen Einzelschichten und veröffentlichen Vorlagenrevisionen atomar als Aufgaben-Snapshots. Verknüpfte Mitarbeiter starten eigene Aufgaben, bestätigen geordnete Schritte, schließen sie ab oder melden ein Hindernis. Administratoren können blockierte Aufgaben zur Wiederaufnahme freigeben oder begründet stornieren. Zahlenschritte prüfen feste inklusive Grenzen; Werte außerhalb der Grenzen bleiben gespeichert und blockieren die Aufgabe bis zur Klärung. P1b bleibt teilweise implementiert: Änderungen und Stornierungen veröffentlichter Schichten sowie Offline-Schreiben fehlen weiterhin. Warenwirtschaft, HACCP, POS und Accounting bleiben außerhalb des aktuellen Umfangs.
 
-**Upgrade auf P1b.3:** Datenbank sichern, Server stoppen, `./scripts/dev.ps1 migrate` ausführen und Server/Client neu starten. Migration `0006` ergänzt Schichten, Revisionszuordnungen und Aufgabeninstanzen; bestehende Daten bleiben erhalten. Unter **Schichten** einen aktiven Mitarbeiter und UTC-Zeiten wählen, veröffentlichte Revisionen zuordnen, speichern und veröffentlichen. Mitarbeiter öffnen anschließend **Meine Arbeit**. Eine Veröffentlichung kann derzeit nicht korrigiert oder storniert werden.
+**Upgrade auf P1b.7:** Datenbank sichern, Server stoppen, `./scripts/dev.ps1 migrate` ausführen und Server/Client gemeinsam aktualisieren und neu starten. Ausstehende Migrationen werden der Reihe nach angewendet; `0010` ergänzt Inhaltsschema 2 und unveränderliche Zahlenversuche; Schema-1-Snapshots und alte Receipts bleiben erhalten. Server und Client gemeinsam aktualisieren: alte Clients verstehen numerische Schritte nicht. Unter **Schichten** einen aktiven Mitarbeiter und UTC-Zeiten wählen, veröffentlichte Revisionen zuordnen, speichern und veröffentlichen. Mitarbeiter öffnen anschließend **Meine Arbeit**. Eine veröffentlichte Schicht kann weiterhin nicht korrigiert oder storniert werden; die neue Stornierung betrifft ausschließlich blockierte Aufgaben.
 
 ## Lokal starten
 
@@ -67,6 +67,36 @@ Die Compose-Referenz verwendet `storeos` als eingeschränkten Runtime-Datenbankn
 
 Die PostgreSQL-Integrationstests benötigen zusätzlich `STOREOS_TEST_DATABASE` als PostgreSQL-Verbindungs-URI zu einer ausdrücklich dafür vorgesehenen Testdatenbank (Details im [Server-README](apps/server/README.md)). Sie verwenden isolierte Schemas und prüfen echte Transaktionen. Ohne diese Variable werden sie sichtbar übersprungen; das ersetzt keine vollständige Abnahme. Die CI richtet eine eigene PostgreSQL-Testdatenbank ein. Der Smoke-Test prüft Liveness, Readiness, Anmeldung, stabile Organisations-IDs, Rechte, Audit-/Event-/Plugin-Abfragen, Standortgrenzen und Sitzungswiderruf ohne Ausgabe von Zugangsdaten. Er verwendet den ursprünglichen Bootstrap-Zugang; nach dessen Passwortänderung sind eigene aktuelle Testzugänge zu verwenden.
 
+### Numerischen Mitarbeiterablauf im Browser prüfen
+
+Für den automatisierten P1b.7-Ende-zu-Ende-Test werden ein laufender PostgreSQL-Server,
+Flutter 3.47.5, Chrome und ein zu Chrome passender ChromeDriver aus
+[Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) benötigt.
+`STOREOS_TEST_DATABASE` muss auf eine **eigene** PostgreSQL-Datenbank mit dem
+Namenssuffix `_test` zeigen. Der Datenbank-Owner braucht Rechte für Schemas und
+Migrationen. `STOREOS_DB_USER` und `STOREOS_DB_PASSWORD_FILE` bezeichnen einen
+eingeschränkten Runtime-Account mit Zugang zu dieser Testdatenbank. Diese
+drei Variablen müssen ausdrücklich gesetzt sein; das Testskript lädt die lokale
+`.env` nicht und verwendet keine Daten des regulären Standorts.
+
+Mit diesen Voraussetzungen genügt aus dem Repository-Hauptverzeichnis ein Aufruf:
+
+```powershell
+./scripts/e2e/Run-NumericGuidedWork.ps1 -ChromeDriverPath '<Pfad zum passenden chromedriver>'
+```
+
+Das Skript erstellt ein neues isoliertes Schema, migriert und richtet nur darin
+Testdaten ein. Es startet den echten Dart-Server, ChromeDriver und den
+Flutter-Webclient, führt den Mitarbeiter-/Administratorablauf aus und prüft
+nach dem Browserlauf die persistierten Ergebnisse. Ein fehlendes Werkzeug,
+ein Timeout, ein fehlgeschlagener Test oder fehlgeschlagenes Aufräumen führt zu
+einem Fehlerstatus. Nur selbst gestartete Prozesse und das selbst erzeugte
+Schema werden beendet. Das temporäre Manifest mit Testzugängen wird nach dem
+Lauf gelöscht; Prozesslogs liegen im ignorierten `.local/`. Der CI-Job
+`numeric-guided-work-e2e` führt denselben Aufruf
+mit einer eigenen Testdatenbank und fest gepaartem Chrome/ChromeDriver aus.
+[Prüfnachweis und verbleibende Grenzen](docs/development/phase-1b-7-numeric-verification.md).
+
 Weitere Implementierungsgrenzen und Abnahmekriterien: [Phase-0-Grundlage](docs/development/phase-0.md), [Phase-1-Plattform](docs/development/phase-1.md) und [Phase-1-Prüfnachweis](docs/development/phase-1-verification.md). Plugin-Registrierungen sind externe API-Clients mit ausdrücklicher Freigabe; StoreOS installiert oder startet keinen fremden Code. Der Client hält auch Plugin-Tokens nur zur einmaligen Anzeige im Arbeitsspeicher. Separate Standortserver und Unternehmenssynchronisation sind noch nicht implementiert.
 
 ## Einstieg
@@ -128,4 +158,19 @@ Stellvertretung oder Offline-Schreibqueue. [Scope und Rechte](docs/development/p
 
 ### Blockierte Aufgaben stornieren (P1b.6)
 
-Administratoren können blockierte Aufgaben mit Pflichtgrund und ausdrücklicher Bestätigung endgültig stornieren. Stornierte Aufgaben bleiben über die gezielt ladbaren Listen für berechtigte Mitarbeiter und Administratoren erreichbar, auch nach Schichtende. Vorherige Nachweise bleiben erhalten; eine Stornierung ist kein erfolgreicher Abschluss. Migration 0009 und Client zusammen ausrollen; ältere Clients verstehen `cancelled` nicht. [Scope und Grenzen](docs/development/phase-1b-cancellation.md).
+Administratoren können blockierte Aufgaben mit Pflichtgrund und ausdrücklicher Bestätigung endgültig stornieren. Stornierte Aufgaben bleiben über die gezielt ladbaren Listen für berechtigte Mitarbeiter und Administratoren erreichbar, auch nach Schichtende. Vorherige Nachweise bleiben erhalten; eine Stornierung ist kein erfolgreicher Abschluss. Migration 0009 und Client zusammen ausrollen; ältere Clients verstehen `cancelled` nicht. [Scope und Grenzen](docs/development/phase-1b-cancellation.md), [Abnahme](docs/development/phase-1b-cancellation-verification.md) und [Review mit finalen Testergebnissen](docs/development/phase-1b-cancellation-review-2026-09-27.md).
+
+### Zahlenwerte erfassen (P1b.7)
+
+Unter **Arbeitsvorlagen** einen Zahlenschritt mit Anleitung, Einheit und inklusiven
+Unter-/Obergrenzen hinzufügen, speichern und freigeben. Bestätigungs- und Zahlenschritte
+können kombiniert werden. Werte verwenden maximal drei Nachkommastellen im Bereich
+-999999.999 bis 999999.999; der Client erlaubt Komma oder Punkt, keine Tausendertrennung.
+Es wird nicht gerundet und nicht zwischen Einheiten umgerechnet.
+
+Ein Mitarbeiter erfasst im aktuellen Schritt einen Wert. Werte außerhalb der Grenzen
+werden als Versuch gespeichert und blockieren die Aufgabe ohne Schrittbestätigung.
+Nach administrativer Wiederaufnahme ist eine neue Eingabe erforderlich. Stornierung
+bewahrt sämtliche Versuche. **Zahlenversuche** zeigt die paginierte Historie; Messwerte
+stehen nicht im allgemeinen Audit-Log. Keine Sensorintegration oder HACCP-Zertifizierung.
+[Vertrag und Abnahme](docs/development/phase-1b-7-numeric-steps.md).

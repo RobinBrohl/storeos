@@ -2,6 +2,7 @@
 library;
 
 export 'src/task_execution.dart';
+export 'src/task_numbers.dart';
 
 export 'src/shifts.dart';
 

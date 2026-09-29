@@ -2691,6 +2691,182 @@
           }
         }
       }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}/steps/{stepId}/record-number": {
+      "post": {
+        "operationId": "recordTaskNumber",
+        "description": "Requires tasks.instances.self.execute and current employee assignment. A representable out-of-range value returns 200 with blocked execution and no step result. Atomic attempt, outcome, audit and receipt. Replay compares normalized decimal values and rechecks authorization.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskExecution"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "stepId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordTaskNumber"
+              }
+            }
+          }
+        },
+        "summary": "Record the current numeric step of an own task"
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{taskId}/number-attempts": {
+      "get": {
+        "operationId": "ownTaskNumericAttempts",
+        "description": "Requires tasks.instances.self.read with current own assignment, or tasks.instances.read in the current location. At most 50 entries; after is the exclusive accepted-version cursor. Unit and bounds are read from the immutable task snapshot.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskNumericAttemptPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ],
+        "summary": "Read immutable numeric attempts, newest accepted version first"
+      }
+    },
+    "/api/v1/platform/shifts/{id}/tasks/{taskId}/number-attempts": {
+      "get": {
+        "operationId": "taskNumericAttempts",
+        "description": "Requires tasks.instances.self.read with current own assignment, or tasks.instances.read in the current location. At most 50 entries; after is the exclusive accepted-version cursor. Unit and bounds are read from the immutable task snapshot.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskNumericAttemptPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ],
+        "summary": "Read immutable numeric attempts, newest accepted version first"
+      }
     }
   },
   "components": {
@@ -3767,28 +3943,14 @@
         }
       },
       "TemplateStep": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "type",
-          "instruction"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ConfirmationStep"
           },
-          "type": {
-            "const": "confirmation"
-          },
-          "instruction": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1000,
-            "description": "Plain text. LF/tab allowed; other control characters rejected. Trimmed on write."
+          {
+            "$ref": "#/components/schemas/NumericStep"
           }
-        }
+        ]
       },
       "TaskTemplateContent": {
         "type": "object",
@@ -3801,7 +3963,10 @@
         "properties": {
           "schemaVersion": {
             "type": "integer",
-            "const": 1
+            "enum": [
+              1,
+              2
+            ]
           },
           "title": {
             "type": "string",
@@ -3816,7 +3981,27 @@
             }
           }
         },
-        "description": "Text must contain valid Unicode scalar values; isolated UTF-16 surrogates are rejected. Normalized compact UTF-8 JSON is limited to 8192 bytes. Step IDs must be unique. Empty steps are allowed only in drafts; publication requires at least one step."
+        "description": "Text must contain valid Unicode scalar values; isolated UTF-16 surrogates are rejected. Normalized compact UTF-8 JSON is limited to 8192 bytes. Step IDs must be unique. Empty steps are allowed only in drafts; publication requires at least one step.",
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "schemaVersion": {
+                  "const": 1
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "steps": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConfirmationStep"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "TaskTemplate": {
         "type": "object",
@@ -4546,6 +4731,10 @@
             "type": "integer",
             "minimum": 3,
             "description": "Aggregate version at acceptance. Absent in legacy stored receipts."
+          },
+          "numericAttemptId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -4787,6 +4976,10 @@
               null
             ],
             "description": "Null for open blocking. Legacy resolved records without this property mean resumed. Cancellation does not assert remediation."
+          },
+          "numericAttemptId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -4857,6 +5050,164 @@
               "null"
             ],
             "format": "uuid"
+          }
+        }
+      },
+      "TaskDecimal": {
+        "type": "string",
+        "pattern": "^-?[0-9]{1,6}(\\.[0-9]{1,3})?$",
+        "description": "Exact decimal, no exponent, grouping or rounding; -999999.999 to 999999.999. Canonical responses remove leading/trailing zeros and negative zero."
+      },
+      "ConfirmationStep": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "instruction"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "const": "confirmation"
+          },
+          "instruction": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "Plain text. LF/tab allowed; other control characters rejected. Trimmed on write."
+          }
+        }
+      },
+      "NumericStep": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "instruction",
+          "unit",
+          "minimum",
+          "maximum"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "const": "number"
+          },
+          "instruction": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "Plain text. LF/tab allowed; other control characters rejected. Trimmed on write."
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "minimum": {
+            "$ref": "#/components/schemas/TaskDecimal"
+          },
+          "maximum": {
+            "$ref": "#/components/schemas/TaskDecimal"
+          }
+        },
+        "description": "Inclusive minimum <= maximum; display-only unit. Requires content schema 2."
+      },
+      "TaskNumericAttempt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "instanceId",
+          "stepId",
+          "value",
+          "inRange",
+          "recordedAt",
+          "recordedBy",
+          "acceptedVersion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "instanceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stepId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "value": {
+            "$ref": "#/components/schemas/TaskDecimal"
+          },
+          "inRange": {
+            "type": "boolean"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recordedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acceptedVersion": {
+            "type": "integer",
+            "minimum": 3
+          }
+        }
+      },
+      "TaskNumericAttemptPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/TaskNumericAttempt"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RecordTaskNumber": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion",
+          "value"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "value": {
+            "$ref": "#/components/schemas/TaskDecimal"
           }
         }
       }

@@ -50,6 +50,8 @@ class AuditRepository {
       'revisionNumber',
       'changedFields',
       'stepId',
+      'attemptId',
+      'inRange',
       'blockingId',
       'operationId',
       'oldVersion',

@@ -1,6 +1,6 @@
 # Domänenmodell
 
-Status: konzeptionelles Modell. Namen und Invarianten sind Orientierung für API und Datenbankschema; sie sind noch keine implementierten Tabellen.
+Status: konzeptionelles Zielmodell mit den unten ausdrücklich beschriebenen implementierten Teilslices P1b.3 bis P1b.6. Darüber hinausgehende Beziehungen und Eigenschaften sind keine Zusage bereits vorhandener Tabellen oder Funktionen.
 
 ## Identität, Zugehörigkeit und Standort
 
@@ -66,11 +66,11 @@ Eine Temperaturangabe im ersten Guided-Work-Beispiel ist daher nur eine Eingabe 
 
 ## Implementierter P1b.3-Teilslice
 
-Einzelschichten unterstützen `draft → published`; TaskInstance enthält einen unveränderlichen Snapshot und bleibt ausschließlich lesend `open`. Ausführung und Completion fehlen bewusst. Die Oberfläche verwendet explizites UTC; die konzeptionelle IANA-Standortzeitzone muss vor lokalen Kalender-/Serienregeln ergänzt werden. [Details und Grenzen](../development/phase-1b-shifts.md).
+Einzelschichten unterstützen `draft → published`; TaskInstance enthält einen unveränderlichen Snapshot und wird zunächst als `open` angelegt. P1b.4 bis P1b.6 ergänzen die unten beschriebenen Ausführungszustände. Die Oberfläche verwendet explizites UTC; die konzeptionelle IANA-Standortzeitzone muss vor lokalen Kalender-/Serienregeln ergänzt werden. [Details und Grenzen](../development/phase-1b-shifts.md).
 
 ## Implementierter P1b.4-Teilslice
 
-TaskInstance führt `open → in_progress → completed` aus. Ausführungskopf, append-only StepResults und Tasks-eigene Befehlsnachweise teilen ihre Transaktions-/Versionsgrenze. Snapshot und Zuordnung bleiben unveränderlich. Bestätigungsschritte sind die einzige Schrittart; keine Ausnahmen oder Messwertregeln. [Vertrag](../development/phase-1b-execution.md).
+TaskInstance führt `open → in_progress → completed` aus. Ausführungskopf, append-only StepResults und Tasks-eigene Befehlsnachweise teilen ihre Transaktions-/Versionsgrenze. Snapshot und Zuordnung bleiben unveränderlich. Dieser Teilslice beschränkt sich auf Bestätigungsschritte; P1b.5/P1b.6 ergänzen manuelle Ausnahmen und P1b.7 numerische Schritte. [Vertrag](../development/phase-1b-execution.md).
 
 ## Implementierter P1b.5-Teilslice
 
@@ -83,3 +83,13 @@ teilen dieselbe Transaktion. Historien sind paginiert; keine neuen Integrations-
 ## Implementierter P1b.6-Teilslice
 
 `blocked → cancelled` ist eine administrative, begründete und terminale Entscheidung. Die aktuelle Blockierung erhält resolution_kind=cancelled; Zeitpunkt, Akteur und Grund stammen aus ihrem unveränderlichen Abschluss. Frühere Freigaben tragen resumed. Stornierung ist keine erfolgreiche Completion und kein Nachweis der Hindernisbeseitigung. Snapshot, Zuordnung und Resultate bleiben erhalten. [Vertrag](../development/phase-1b-cancellation.md).
+
+## Implementierter P1b.7-Teilslice
+
+Tasks besitzt `task_numeric_attempts`: unveränderliche Versuche mit Scope,
+Instanz-/Schritt-ID, skaliertem Integerwert, Bewertung, Serverzeit, Akteur und
+Annahmeversion. Einheit und feste inklusive Grenzen stammen aus dem Instanz-Snapshot
+(Schema 2). Optionale Referenzen in StepResult und Blocking verbinden den Versuch
+mit genau seinem Ergebnis. Alte Schema-1-Daten und Receipts bleiben unverändert.
+Der Instanzzähler zählt Versuche und Klärungen; der Fortschritt zählt ausschließlich
+angenommene Schrittresultate. Keine neuen Workforce-Tabellen oder Domain Events.

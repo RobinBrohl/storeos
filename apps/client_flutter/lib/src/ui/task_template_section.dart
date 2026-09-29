@@ -226,7 +226,7 @@ class _TaskTemplateSectionState extends State<TaskTemplateSection> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Schritt ${index + 1} · Bestätigung erforderlich',
+                            'Schritt ${index + 1} · ${step.type == 'number' ? 'Zahlenwert erforderlich' : 'Bestätigung erforderlich'}',
                           ),
                           TextFormField(
                             key: ValueKey(
@@ -242,6 +242,29 @@ class _TaskTemplateSectionState extends State<TaskTemplateSection> {
                             onChanged: (value) =>
                                 c.setInstruction(step.id, value),
                           ),
+                          if (step.type == 'number') ...[
+                            for (final field in ['unit', 'minimum', 'maximum'])
+                              TextFormField(
+                                key: ValueKey(
+                                  '$field-${step.id}-${c.editorGeneration}',
+                                ),
+                                initialValue: switch (field) {
+                                  'unit' => step.unit,
+                                  'minimum' => step.minimum,
+                                  _ => step.maximum,
+                                },
+                                readOnly: !c.editable,
+                                decoration: InputDecoration(
+                                  labelText: switch (field) {
+                                    'unit' => 'Einheit',
+                                    'minimum' => 'Untergrenze (inklusive)',
+                                    _ => 'Obergrenze (inklusive)',
+                                  },
+                                ),
+                                onChanged: (value) =>
+                                    c.setNumberRule(step.id, field, value),
+                              ),
+                          ],
                           if (revision.isDraft)
                             Wrap(
                               children: [
@@ -280,6 +303,13 @@ class _TaskTemplateSectionState extends State<TaskTemplateSection> {
                         onPressed: c.canAddStep ? c.addStep : null,
                         icon: const Icon(Icons.add),
                         label: const Text('Schritt hinzufügen'),
+                      ),
+                      TextButton.icon(
+                        onPressed: c.canAddStep
+                            ? () => c.addStep(numeric: true)
+                            : null,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Zahlenschritt hinzufügen'),
                       ),
                       FilledButton(
                         key: const Key('save-template'),

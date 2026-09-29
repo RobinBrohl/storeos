@@ -90,6 +90,7 @@ void main() {
         '0007_task_execution',
         '0008_task_blocking',
         '0009_task_cancellation',
+        '0010_task_numeric_steps',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);
@@ -428,7 +429,7 @@ void main() {
         expected: 422,
       );
       for (final content in [
-        {..._content(), 'schemaVersion': 2},
+        {..._content(), 'schemaVersion': 3},
         {..._content(), 'title': ''},
         {..._content(), 'steps': 'wrong'},
       ]) {

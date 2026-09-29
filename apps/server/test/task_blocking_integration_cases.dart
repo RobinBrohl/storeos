@@ -625,6 +625,7 @@ void blockingTests() {
         expect(await runner.apply(), [
           '0008_task_blocking',
           '0009_task_cancellation',
+          '0010_task_numeric_steps',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

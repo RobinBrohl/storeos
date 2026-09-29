@@ -58,9 +58,21 @@ class TaskTemplateController extends ChangeNotifier {
       ? 'Zuerst unter Organisation einen Standort einrichten.'
       : null;
   Map<String, dynamic> _editorJson() => {
-    'schemaVersion': 1,
+    'schemaVersion': steps.any((s) => s.type == 'number')
+        ? 2
+        : revision?.content?.schemaVersion ?? 1,
     'title': title,
-    'steps': steps.map((s) => s.toJson()).toList(),
+    'steps': steps
+        .map(
+          (s) => {
+            ...s.toJson(),
+            if (s.type == 'number') ...{
+              'minimum': s.minimum?.trim().replaceAll(',', '.'),
+              'maximum': s.maximum?.trim().replaceAll(',', '.'),
+            },
+          },
+        )
+        .toList(),
   };
   void _notify() {
     if (!_disposed) notifyListeners();
@@ -271,15 +283,54 @@ class TaskTemplateController extends ChangeNotifier {
     if (!editable) return;
     steps = [
       for (final step in steps)
-        step.id == id ? TemplateStep(id: id, instruction: value) : step,
+        step.id == id
+            ? TemplateStep(
+                id: id,
+                instruction: value,
+                type: step.type,
+                unit: step.unit,
+                minimum: step.minimum,
+                maximum: step.maximum,
+              )
+            : step,
     ];
     notice = null;
     _notify();
   }
 
-  void addStep() {
+  void setNumberRule(String id, String field, String value) {
+    if (!editable || !{'unit', 'minimum', 'maximum'}.contains(field)) return;
+    steps = [
+      for (final step in steps)
+        if (step.id == id && step.type == 'number')
+          TemplateStep(
+            id: step.id,
+            instruction: step.instruction,
+            type: step.type,
+            unit: field == 'unit' ? value : step.unit,
+            minimum: field == 'minimum' ? value : step.minimum,
+            maximum: field == 'maximum' ? value : step.maximum,
+          )
+        else
+          step,
+    ];
+    notice = null;
+    _notify();
+  }
+
+  void addStep({bool numeric = false}) {
     if (!editable || steps.length >= 20) return;
-    steps = [...steps, TemplateStep(id: _uuid(), instruction: '')];
+    steps = [
+      ...steps,
+      TemplateStep(
+        id: _uuid(),
+        instruction: '',
+        type: numeric ? 'number' : 'confirmation',
+        unit: numeric ? '' : null,
+        minimum: numeric ? '' : null,
+        maximum: numeric ? '' : null,
+      ),
+    ];
     notice = null;
     _notify();
   }

@@ -9,9 +9,13 @@ class TaskExecutionRepository {
     final rows = await tx.execute(
       Sql.named(
         '''SELECT t.id::text, t.status, t.version, t.started_at, t.started_by::text, t.completed_at, t.completed_by::text,
+
       c.id::text AS cancelled_blocking_id, c.resolved_at AS cancelled_at, c.resolved_by::text AS cancelled_by,
+
       (SELECT b.id::text FROM $schema.task_blockings b WHERE b.instance_id=t.id AND b.resolved_at IS NULL) AS blocking_id
+
       FROM $schema.task_instances t LEFT JOIN $schema.task_blockings c ON c.instance_id=t.id AND c.resolution_kind='cancelled'
+
       WHERE t.company_id=CAST(@company AS uuid) AND t.id=CAST(@id AS uuid)''',
       ),
       parameters: {'company': companyId, 'id': id},
@@ -20,7 +24,8 @@ class TaskExecutionRepository {
     final r = rows.single.toColumnMap();
     final steps = await tx.execute(
       Sql.named(
-        '''SELECT step_id::text, confirmed_at, confirmed_by::text, accepted_version FROM $schema.task_step_results
+        '''SELECT step_id::text, confirmed_at, confirmed_by::text, accepted_version, numeric_attempt_id::text FROM $schema.task_step_results
+
       WHERE company_id=CAST(@company AS uuid) AND instance_id=CAST(@id AS uuid) ORDER BY position''',
       ),
       parameters: {'company': companyId, 'id': id},
@@ -44,6 +49,7 @@ class TaskExecutionRepository {
           s['confirmed_at'] as DateTime,
           s['confirmed_by'] as String,
           acceptedVersion: s['accepted_version'] as int,
+          numericAttemptId: s['numeric_attempt_id'] as String?,
         );
       }).toList(),
     );
@@ -71,6 +77,7 @@ class TaskExecutionRepository {
       .execute(
         Sql.named(
           '''INSERT INTO $schema.task_execution_commands(operation_id,company_id,location_id,instance_id,actor_id,input,result)
+
       VALUES(CAST(@op AS uuid),CAST(@company AS uuid),CAST(@location AS uuid),CAST(@id AS uuid),CAST(@actor AS uuid),@input,@result)''',
         ),
         parameters: {
@@ -91,13 +98,15 @@ class TaskExecutionRepository {
     String? step,
     String actor,
     String location,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    String? numericAttemptId,
+  }) async {
     if (command == 'confirm') {
       await tx.execute(
         Sql.named(
-          '''INSERT INTO $schema.task_step_results(instance_id,company_id,location_id,step_id,position,confirmed_at,confirmed_by,accepted_version)
-        VALUES(CAST(@id AS uuid),CAST(@company AS uuid),CAST(@location AS uuid),CAST(@step AS uuid),@position,@now,CAST(@actor AS uuid),@accepted)''',
+          '''INSERT INTO $schema.task_step_results(instance_id,company_id,location_id,step_id,position,confirmed_at,confirmed_by,accepted_version,numeric_attempt_id)
+
+        VALUES(CAST(@id AS uuid),CAST(@company AS uuid),CAST(@location AS uuid),CAST(@step AS uuid),@position,@now,CAST(@actor AS uuid),@accepted,CAST(@attempt AS uuid))''',
         ),
         parameters: {
           'id': current.instanceId,
@@ -106,6 +115,7 @@ class TaskExecutionRepository {
           'step': step,
           'position': current.results.length,
           'accepted': current.version + 1,
+          'attempt': numericAttemptId,
           'now': now,
           'actor': actor,
         },
@@ -146,6 +156,7 @@ class TaskExecutionRepository {
   ) async => (await tx.execute(
     Sql.named(
       '''SELECT id::text FROM $schema.task_instances WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid)
+
       AND employee_id=CAST(@employee AS uuid) AND status='in_progress' AND (CAST(@after AS uuid) IS NULL OR id>CAST(@after AS uuid)) ORDER BY id LIMIT 51''',
     ),
     parameters: {
@@ -163,13 +174,19 @@ class TaskExecutionRepository {
     String reason,
     String actor,
     String location,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    String? numericAttemptId,
+  }) async {
     await tx.execute(
-      Sql.named('''INSERT INTO $schema.task_blockings
-      (id,instance_id,company_id,location_id,step_id,reason,reported_at,reported_by,reported_version)
+      Sql.named(
+        '''INSERT INTO $schema.task_blockings
+
+      (id,instance_id,company_id,location_id,step_id,reason,reported_at,reported_by,reported_version,numeric_attempt_id)
+
       VALUES(CAST(@id AS uuid),CAST(@instance AS uuid),CAST(@company AS uuid),CAST(@location AS uuid),
-      CAST(@step AS uuid),@reason,@now,CAST(@actor AS uuid),@version)'''),
+
+      CAST(@step AS uuid),@reason,@now,CAST(@actor AS uuid),@version,CAST(@attempt AS uuid))''',
+      ),
       parameters: {
         'id': id,
         'instance': current.instanceId,
@@ -180,6 +197,7 @@ class TaskExecutionRepository {
         'now': now,
         'actor': actor,
         'version': current.version + 1,
+        'attempt': numericAttemptId,
       },
     );
   }
@@ -195,7 +213,9 @@ class TaskExecutionRepository {
     final changed = await tx.execute(
       Sql.named(
         '''UPDATE $schema.task_blockings SET resolution=@reason,resolution_kind=@kind,
+
       resolved_at=@now,resolved_by=CAST(@actor AS uuid),resolved_version=@version
+
       WHERE id=CAST(@id AS uuid) AND company_id=CAST(@company AS uuid) AND instance_id=CAST(@instance AS uuid) AND resolved_at IS NULL''',
       ),
       parameters: {
@@ -223,8 +243,11 @@ class TaskExecutionRepository {
   ) async => (await tx.execute(
     Sql.named(
       '''SELECT id::text FROM $schema.task_instances
+
       WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) AND status=@status
+
       AND (CAST(@employee AS uuid) IS NULL OR employee_id=CAST(@employee AS uuid))
+
       AND (CAST(@after AS uuid) IS NULL OR id>CAST(@after AS uuid)) ORDER BY id LIMIT 51''',
     ),
     parameters: {
@@ -243,8 +266,11 @@ class TaskExecutionRepository {
       (await tx.execute(
         Sql.named(
           '''SELECT id::text,instance_id::text,step_id::text,reason,reported_at,reported_by::text,
-      reported_version,resolution_kind,resolution,resolved_at,resolved_by::text,resolved_version FROM $schema.task_blockings
+
+      reported_version,numeric_attempt_id::text,resolution_kind,resolution,resolved_at,resolved_by::text,resolved_version FROM $schema.task_blockings
+
       WHERE company_id=CAST(@company AS uuid) AND instance_id=CAST(@instance AS uuid)
+
       AND (CAST(@before AS bigint) IS NULL OR reported_version<@before) ORDER BY reported_version DESC LIMIT 51''',
         ),
         parameters: {
@@ -262,11 +288,63 @@ class TaskExecutionRepository {
           reportedAt: r['reported_at'] as DateTime,
           reportedBy: r['reported_by'] as String,
           reportedVersion: r['reported_version'] as int,
+          numericAttemptId: r['numeric_attempt_id'] as String?,
           resolution: r['resolution'] as String?,
           resolutionKind: r['resolution_kind'] as String?,
           resolvedAt: r['resolved_at'] as DateTime?,
           resolvedBy: r['resolved_by'] as String?,
           resolvedVersion: r['resolved_version'] as int?,
+        );
+      }).toList();
+  Future<void> recordNumber(
+    TxSession tx,
+    TaskNumericAttemptDto attempt,
+    String location,
+  ) async {
+    await tx.execute(
+      Sql.named(
+        'INSERT INTO $schema.task_numeric_attempts(id,instance_id,company_id,location_id,step_id,value_scaled,in_range,recorded_at,recorded_by,accepted_version) VALUES(CAST(@id AS uuid),CAST(@instance AS uuid),CAST(@company AS uuid),CAST(@location AS uuid),CAST(@step AS uuid),@value,@valid,@at,CAST(@actor AS uuid),@version)',
+      ),
+      parameters: {
+        'id': attempt.id,
+        'instance': attempt.instanceId,
+        'company': companyId,
+        'location': location,
+        'step': attempt.stepId,
+        'value': taskNumber(attempt.value),
+        'valid': attempt.inRange,
+        'at': attempt.recordedAt,
+        'actor': attempt.recordedBy,
+        'version': attempt.acceptedVersion,
+      },
+    );
+  }
+
+  Future<List<TaskNumericAttemptDto>> numbers(
+    TxSession tx,
+    String instance,
+    int? before,
+  ) async =>
+      (await tx.execute(
+        Sql.named(
+          'SELECT id::text,instance_id::text,step_id::text,value_scaled,in_range,recorded_at,recorded_by::text,accepted_version FROM $schema.task_numeric_attempts WHERE company_id=CAST(@company AS uuid) AND instance_id=CAST(@instance AS uuid) AND (CAST(@before AS bigint) IS NULL OR accepted_version<@before) ORDER BY accepted_version DESC LIMIT 51',
+        ),
+        parameters: {
+          'company': companyId,
+          'instance': instance,
+          'before': before,
+        },
+      )).map((row) {
+        final r = row.toColumnMap();
+        return TaskNumericAttemptDto(
+          id: r['id'] as String,
+          instanceId: r['instance_id'] as String,
+          stepId: r['step_id'] as String,
+          value: taskNumberText(r['value_scaled'] as int),
+          inRange: r['in_range'] as bool,
+          recordedAt: r['recorded_at'] as DateTime,
+          recordedBy: r['recorded_by'] as String,
+          acceptedVersion: r['accepted_version'] as int,
         );
       }).toList();
 }

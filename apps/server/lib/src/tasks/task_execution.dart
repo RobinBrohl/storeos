@@ -11,6 +11,9 @@ class TaskExecution {
   TaskExecution(this.state, this.content);
   final TaskExecutionDto state;
   final TaskTemplateContent content;
+  bool acceptsNumber(TemplateStep step, int value) =>
+      value >= taskNumber(step.minimum) && value <= taskNumber(step.maximum);
+
   void validate(
     String command,
     int expectedVersion,
@@ -30,9 +33,11 @@ class TaskExecution {
     } else {
       if (state.status != 'in_progress') throw ExecutionConflict();
       if (command == 'block') return;
-      if (command == 'confirm') {
+      if (command == 'confirm' || command == 'record-number') {
         if (state.results.length >= content.steps.length ||
-            content.steps[state.results.length].id != stepId) {
+            content.steps[state.results.length].id != stepId ||
+            content.steps[state.results.length].type !=
+                (command == 'confirm' ? 'confirmation' : 'number')) {
           throw InvalidExecution();
         }
       } else if (command != 'complete' ||

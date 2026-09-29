@@ -3,6 +3,62 @@ import 'package:storeos_server/src/tasks/task_execution.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'numeric domain enforces exact inclusive bounds, type and current step',
+    () {
+      const step = TemplateStep(
+        id: 'number',
+        instruction: 'Read',
+        type: 'number',
+        unit: 'C',
+        minimum: '-2.125',
+        maximum: '4.5',
+      );
+      final content = TaskTemplateContent(
+        title: 'Check',
+        steps: [step],
+        schemaVersion: 2,
+      );
+      final state = TaskExecutionDto(
+        instanceId: 'task',
+        status: 'in_progress',
+        version: 2,
+        results: [],
+      );
+      final domain = TaskExecution(state, content), now = DateTime.utc(2030);
+      expect(domain.acceptsNumber(step, -2125), true);
+      expect(domain.acceptsNumber(step, 4500), true);
+      expect(domain.acceptsNumber(step, -2126), false);
+      expect(domain.acceptsNumber(step, 4501), false);
+      domain.validate('record-number', 2, 'number', now, now, now);
+      for (final command in ['confirm', 'complete']) {
+        expect(
+          () => domain.validate(command, 2, 'number', now, now, now),
+          throwsA(isA<InvalidExecution>()),
+        );
+      }
+      expect(
+        () => domain.validate('record-number', 2, 'other', now, now, now),
+        throwsA(isA<InvalidExecution>()),
+      );
+      for (final status in ['blocked', 'completed', 'cancelled']) {
+        final closed = TaskExecution(
+          TaskExecutionDto(
+            instanceId: 'task',
+            status: status,
+            version: 3,
+            results: [],
+          ),
+          content,
+        );
+        expect(
+          () => closed.validate('record-number', 3, 'number', now, now, now),
+          throwsA(isA<ExecutionConflict>()),
+        );
+      }
+    },
+  );
+
   final start = DateTime.utc(2030), end = DateTime.utc(2030, 1, 1, 8);
   final content = TaskTemplateContent(
     title: 'Work',

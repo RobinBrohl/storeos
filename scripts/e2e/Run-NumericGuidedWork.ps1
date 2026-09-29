@@ -5,6 +5,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'Write-E2EDiagnostics.ps1')
+$diagnosticSecrets = [Collections.Generic.List[string]]::new()
 $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $serverDirectory = Join-Path $repository 'apps/server'
 $clientDirectory = Join-Path $repository 'apps/client_flutter'
@@ -64,6 +66,10 @@ function Wait-ForFixture([Diagnostics.Process]$Process) {
         if ($Process.HasExited) { throw "E2E fixture exited before readiness (exit $($Process.ExitCode))." }
         if (Test-Path -LiteralPath $manifestPath) {
             $manifest = Get-Content -Raw -Encoding utf8 -LiteralPath $manifestPath | ConvertFrom-Json
+            foreach ($property in $manifest.PSObject.Properties) {
+                $diagnosticSecrets.Add([string]$property.Value)
+                $diagnosticSecrets.Add("$($property.Name)=$($property.Value)")
+            }
             foreach ($key in @(
                 'STOREOS_API_URL',
                 'STOREOS_E2E_ADMIN_USERNAME', 'STOREOS_E2E_ADMIN_PASSWORD',
@@ -119,6 +125,9 @@ try {
         throw 'Set STOREOS_DB_USER and STOREOS_DB_PASSWORD_FILE for the restricted test runtime role.'
     }
     $env:STOREOS_DB_PASSWORD_FILE = (Resolve-Path -LiteralPath $env:STOREOS_DB_PASSWORD_FILE).Path
+    $diagnosticSecrets.Add($env:STOREOS_TEST_DATABASE)
+    $diagnosticSecrets.Add([Uri]::UnescapeDataString($testDatabase.UserInfo.Split(':', 2)[-1]))
+    $diagnosticSecrets.Add([IO.File]::ReadAllText($env:STOREOS_DB_PASSWORD_FILE).Trim())
     $dartTool = Require-Tool 'dart'
     $flutterTool = Require-Tool 'flutter'
     if ([string]::IsNullOrWhiteSpace($ChromeDriverPath)) {
@@ -202,7 +211,7 @@ try {
                     throw 'E2E fixture did not stop and clean its isolated schema within 30 seconds.'
                 }
             }
-            if ($fixtureProcess.ExitCode -ne 0) { throw "E2E fixture cleanup failed (exit $($fixtureProcess.ExitCode))." }
+            if ($fixtureProcess.ExitCode -ne 0) { throw "E2E fixture outcome verification or cleanup failed (exit $($fixtureProcess.ExitCode))." }
         } catch { $cleanupFailure = $_ }
     }
     if ($driverProcess) {
@@ -225,6 +234,10 @@ try {
     }
 }
 
+if ($runFailure -or $cleanupFailure) {
+    try { Write-E2EDiagnostics -Directory $runDirectory -SensitiveValues $diagnosticSecrets.ToArray() }
+    catch { Write-Warning 'Could not read E2E process diagnostics; original failure is preserved.' }
+}
 if ($runFailure) {
     $logLocation = if (Test-Path -LiteralPath $runDirectory) { " Process logs: $runDirectory." } else { '' }
     Write-Error "E2E failed.$logLocation $($runFailure.Exception.Message)" -ErrorAction Continue

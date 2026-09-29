@@ -149,6 +149,10 @@ it as `flutter drive --chrome-binary` so WebDriver uses the browser matching the
 selected ChromeDriver instead of discovering a different system installation.
 On failure, inspect `flutter-drive.stderr.log`, `flutter-drive.stdout.log` and
 `fixture.stderr.log` in the reported `.local/e2e-numeric/<run-id>` directory.
+The runner prints the last 60 lines of each named process log on failure, masking
+known fixture/database credentials, encoded variants and bearer tokens. Raw logs
+and the fixture manifest are not uploaded. `scripts/e2e/Test-E2EDiagnostics.ps1`
+checks credential redaction and preservation of error details in CI.
 A fixture exit failure can mean the expected workflow outcome was not reached;
 it does not by itself prove that schema cleanup failed. Keep the fixture manifest
 and credentials private.

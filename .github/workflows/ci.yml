@@ -69,6 +69,9 @@ jobs:
       - name: Check local development setup
         shell: pwsh
         run: ./scripts/Test-DevSetup.ps1
+      - name: Check E2E diagnostic redaction
+        shell: pwsh
+        run: ./scripts/e2e/Test-E2EDiagnostics.ps1
       - name: Check API contracts
         working-directory: packages/api_contracts
         run: |

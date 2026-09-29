@@ -10,6 +10,14 @@ try {
     $files = @(Get-ChildItem -LiteralPath (Join-Path $testRoot '.local/secrets') -File)
     if ($files.Count -ne 4) { throw 'Fresh setup must create four secrets.' }
     $configPath = Join-Path $testRoot '.env'
+    # Unix dotfiles are hidden automatically; exercise the same case on Windows.
+    if ($IsWindows) {
+        [IO.File]::SetAttributes($configPath,
+            [IO.File]::GetAttributes($configPath) -bor [IO.FileAttributes]::Hidden)
+    }
+    if (([IO.File]::GetAttributes($configPath) -band [IO.FileAttributes]::Hidden) -eq 0) {
+        throw 'The setup regression fixture must contain a hidden configuration file.'
+    }
     $before = [IO.File]::ReadAllText($configPath)
     $hashes = @($files | Get-FileHash | Select-Object -ExpandProperty Hash)
     & (Join-Path $testRoot 'scripts/dev.ps1') setup

@@ -16,7 +16,8 @@ try {
     if ([IO.File]::ReadAllText($configPath) -ne $before) { throw 'Repeated setup changed scope IDs.' }
     $after = @($files | Get-FileHash | Select-Object -ExpandProperty Hash)
     if (Compare-Object $hashes $after) { throw 'Repeated setup changed secrets.' }
-    Remove-Item -LiteralPath $configPath
+    # On Unix, PowerShell treats dotfiles such as .env as hidden.
+    Remove-Item -LiteralPath $configPath -Force
     $refused = $false
     try { & (Join-Path $testRoot 'scripts/dev.ps1') setup }
     catch { $refused = $_.Exception.Message -like 'Secrets already exist*' }

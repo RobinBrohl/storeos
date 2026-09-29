@@ -54,9 +54,11 @@ jobs:
           cp "$RUNNER_TEMP/storeos-owner-password" .local/secrets/db_owner_password.txt
           cp "$RUNNER_TEMP/storeos-bootstrap-password" .local/secrets/bootstrap_password.txt
           head -c 32 /dev/urandom > .local/secrets/backup_key.bin
-          echo "STOREOS_DB_PASSWORD_FILE=$RUNNER_TEMP/storeos-db-password" >> "$GITHUB_ENV"
-          echo "STOREOS_DB_MIGRATION_PASSWORD_FILE=$RUNNER_TEMP/storeos-owner-password" >> "$GITHUB_ENV"
-          echo "STOREOS_BOOTSTRAP_PASSWORD_FILE=$RUNNER_TEMP/storeos-bootstrap-password" >> "$GITHUB_ENV"
+          {
+            echo "STOREOS_DB_PASSWORD_FILE=$RUNNER_TEMP/storeos-db-password"
+            echo "STOREOS_DB_MIGRATION_PASSWORD_FILE=$RUNNER_TEMP/storeos-owner-password"
+            echo "STOREOS_BOOTSTRAP_PASSWORD_FILE=$RUNNER_TEMP/storeos-bootstrap-password"
+          } >> "$GITHUB_ENV"
           docker exec "${{ job.services.postgres.id }}" psql -U storeos_owner -d storeos_test -v ON_ERROR_STOP=1 \
             -c "CREATE ROLE storeos LOGIN PASSWORD 'ci_storeos_runtime_only'; GRANT CONNECT ON DATABASE storeos_test TO storeos;"
       - name: Validate Compose configuration
@@ -90,7 +92,7 @@ jobs:
           dart run bin/server.dart > "$RUNNER_TEMP/storeos-server.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          for attempt in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if curl --silent --fail http://127.0.0.1:8080/ready > /dev/null; then break; fi
             sleep 1
           done

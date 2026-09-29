@@ -127,6 +127,13 @@ try {
         throw 'ChromeDriverPath does not point to a file.'
     }
     $ChromeDriverPath = (Resolve-Path -LiteralPath $ChromeDriverPath).Path
+    $chromeBinary = $env:CHROME_EXECUTABLE
+    if (![string]::IsNullOrWhiteSpace($chromeBinary)) {
+        if (!(Test-Path -LiteralPath $chromeBinary -PathType Leaf)) {
+            throw 'CHROME_EXECUTABLE does not point to a file.'
+        }
+        $chromeBinary = (Resolve-Path -LiteralPath $chromeBinary).Path
+    }
     if (Test-LoopbackPort 4444) { throw 'Port 4444 is already in use; stop that service before this isolated E2E run.' }
     if (Test-LoopbackPort 8095) { throw 'Port 8095 is already in use; stop that service before this isolated E2E run.' }
 
@@ -160,6 +167,11 @@ try {
         '--headless', '--no-web-resources-cdn',
         ('"--dart-define-from-file=' + $manifestPath + '"')
     )
+    # flutter drive's WebDriver capabilities require an explicit browser binary;
+    # CHROME_EXECUTABLE alone does not select it for the web-server device.
+    if (![string]::IsNullOrWhiteSpace($chromeBinary)) {
+        $driveArguments += ('"--chrome-binary=' + $chromeBinary + '"')
+    }
     $driveProcess = Start-LoggedProcess $flutterTool $driveArguments $clientDirectory 'flutter-drive'
     if (!$driveProcess.WaitForExit(600000)) {
         $driveProcess.Kill($true)

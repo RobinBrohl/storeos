@@ -143,6 +143,16 @@ is incomplete. E2E creates a new schema, uses real HTTP, verifies task/audit evi
 and cleans its own fixture. It remounts the app, but does not literally reload the
 browser or restart the backend process mid-journey.
 
+When using a separately installed Chrome (including CI's pinned Chrome), set
+`CHROME_EXECUTABLE` to that executable. The E2E runner validates the path and forwards
+it as `flutter drive --chrome-binary` so WebDriver uses the browser matching the
+selected ChromeDriver instead of discovering a different system installation.
+On failure, inspect `flutter-drive.stderr.log`, `flutter-drive.stdout.log` and
+`fixture.stderr.log` in the reported `.local/e2e-numeric/<run-id>` directory.
+A fixture exit failure can mean the expected workflow outcome was not reached;
+it does not by itself prove that schema cleanup failed. Keep the fixture manifest
+and credentials private.
+
 For reproducible resolution use `dart pub get --enforce-lockfile` in
 `packages/api_contracts` and `apps/server`, and `flutter pub get --enforce-lockfile`
 in `packages/design_system` and `apps/client_flutter`, as CI does. The convenience

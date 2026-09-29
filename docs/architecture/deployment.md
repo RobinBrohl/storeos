@@ -1,5 +1,7 @@
 # Bereitstellung und Betrieb
 
+Implementation boundary: one local Dart server, PostgreSQL, Flutter Web, optional Caddy TLS and database-only encrypted backup/isolated restore tooling. Attachment storage, enterprise connections, comprehensive operating dashboards and automatic replacement-server activation below are planned. See [actual status](../roadmap/status.md) and [handover commands](../HANDOVER.md#how-to-run-storeos).
+
 ## Topologie
 
 Jeder Standort betreibt zunächst einen Standortserver mit Dart-Backend, PostgreSQL und einem kontrollierten Speicher für Anhänge. Flutter-Clients verbinden sich über einen lokalen Reverse Proxy mit TLS. Der Server hat eine dauerhafte technische `nodeId`; Company und Location besitzen davon unabhängige fachliche IDs. Die Zuordnung des aktiven Schreibers kann kontrolliert wechseln, ohne Datensätze umzunummerieren. Eine Installation ohne Unternehmensserver ist ein unterstützter Betriebsmodus. Optional verbindet sich ein zentraler Unternehmensserver über einen verschlüsselten, authentifizierten Sync-Kanal mit mehreren Standorten; er muss für lokale Kernabläufe nicht erreichbar sein. Der zentrale Server ist keine öffentliche Verwaltungs-API.

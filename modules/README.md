@@ -1,5 +1,11 @@
-# Fachliche Module (geplant)
+# Logical domain modules
 
-Hier werden später die unabhängigen Fachbereiche des modularen Monolithen angelegt. Für den ersten Slice sind `organization`, `people`, `workforce`, `tasks` und `audit` als fachliche Eigentümer vorgesehen; konkrete Package-Verzeichnisse entstehen erst mit der Implementierung. Weitere Domänen folgen dem [Fahrplan](../docs/roadmap/phases.md).
+This directory reserves a possible future package layout. Current Organization,
+Identity, People, Workforce, Tasks and platform Audit/Events/Plugins are implemented
+as logical boundaries under `apps/server/lib/src/`. Do not move them here merely
+to match the target diagram or infer that they are absent because this directory is empty.
 
-Ein Modul besitzt seine Domain-, Application- und Infrastructure-Schicht, private Persistenz und dokumentierte öffentliche Kommandos/Abfragen/Events. Abhängigkeiten und erlaubte Datenflüsse stehen in den [Modulgrenzen](../docs/architecture/module-boundaries.md).
+Modules own their domain/application rules and persistence and expose documented
+ports or events. Separate packages are not required for the modular monolith.
+See [module boundaries](../docs/architecture/module-boundaries.md),
+[actual status](../docs/roadmap/status.md) and [roadmap](../docs/roadmap/phases.md).

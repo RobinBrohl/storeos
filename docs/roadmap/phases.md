@@ -1,5 +1,7 @@
 # Entwicklungsfahrplan
 
+For actual implementation and verification, use [status](status.md) and [HANDOVER](../HANDOVER.md). The phases below describe intended direction and acceptance gates, not a completion checklist.
+
 Status: Reihenfolge und Abnahmekriterien, keine Zeit- oder Lieferzusage. Die Produktvision beschreibt viele mögliche Domänen; jedes Feld wird erst nach Domainmodell, Use Cases, Berechtigungen, Events, Auditbedarf, Tests und gegebenenfalls Compliance-Prüfung begonnen. Eine Phase kann in kleine Releases zerfallen. Änderungen der Reihenfolge brauchen eine dokumentierte Begründung und dürfen die Abnahme-Gates nicht umgehen.
 
 ## D0 – Dokumentation und Repository-Grundlage

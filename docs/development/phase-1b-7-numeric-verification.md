@@ -130,6 +130,11 @@ noch nicht auf GitHub Actions ausgeführt worden.
 Der oben dokumentierte vollständige Paketlauf mit 233 Tests fand vor diesem
 Browser-Nachtrag statt; ein erneuter vollständiger Paketlauf steht noch aus.
 
+Handover follow-up (2026-09-29): the subsequent [handover verification](handover-verification.md)
+completed the full 233-test suite, all analyzers/format checks and two independent
+browser E2E runs. The historical outstanding package-check item above is resolved;
+the literal browser-reload limitation remains.
+
 ## Verbleibende Grenzen
 
 - Der automatisierte Test baut den Flutter-App-Baum neu auf und verlangt danach

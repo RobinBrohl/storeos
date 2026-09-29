@@ -1,5 +1,7 @@
 # Sicherheitsarchitektur
 
+Implementation boundary: local password authentication, in-memory client Bearer sessions, fixed roles, company/location/resource checks, revocation and audit exist. MFA, device management, central identity distribution and offline access expiry remain target controls. Read the [current status](../roadmap/status.md) and [P1 contract](../development/phase-1.md) before treating the target controls below as implemented.
+
 ## Schutzobjekte und Grundsatz
 
 StoreOS verarbeitet Personal-, Betriebs- und später möglicherweise Zahlungs-, Gesundheits- und Lebensmittelsicherheitsdaten. Ein lokales Netz ist keine Vertrauensgrenze. Jeder Client, Standortserver, Unternehmensserver und Plugin-Aufruf benötigt eine authentifizierte Identität. Jede Schreib- und Leseoperation wird serverseitig autorisiert; die Oberfläche blendet unzulässige Aktionen nur zusätzlich aus.

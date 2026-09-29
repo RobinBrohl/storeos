@@ -1,6 +1,6 @@
 # Workforce Orchestration
 
-Status: fachliche Regeln für die spätere Aufgabensteuerung. Der erste Slice implementiert nur die hier gekennzeichnete Minimalform.
+Status: target rules for future work recommendations. Current P1b provides explicit template selections, ordered task snapshots and scoped Employee Home queries through `ShiftApplication`; there is no priority/recommendation engine, attendance detection or task dependency graph. Deterministic prioritization described below remains planned. See [actual status](../roadmap/status.md).
 
 ## Zweck und Zuständigkeit
 

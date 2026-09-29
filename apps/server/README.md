@@ -1,9 +1,12 @@
 # StoreOS-Standortserver (P1)
 
-Dieser Dart-Prozess stellt die Plattform bereit: lokale Anmeldung, Organisation,
-Benutzer und Rollen, Audit, lokale Outbox und eingeschränkte externe Plugin-API.
-Fachmodule und der spätere Workforce-Slice sind hier noch nicht implementiert.
-Verträge, Rechte und Grenzen stehen in [Phase 1](../../docs/development/phase-1.md).
+This Dart modular monolith implements local authentication, organization, fixed
+roles, audit, organization outbox and a restricted external plugin API. It also
+contains People, Workforce and Tasks through P1b.7: employee/account links,
+templates, atomic shift publication and guided confirmation/numeric execution
+with blocking, resume, cancellation and completion. See [actual status](../../docs/roadmap/status.md),
+[handover](../../docs/HANDOVER.md), [P1 contracts](../../docs/development/phase-1.md)
+and [numeric scope](../../docs/development/phase-1b-7-numeric-steps.md).
 
 ## Start und Datenbankrollen
 
@@ -47,6 +50,11 @@ ist die direkte Variante desselben Secrets unzulässig. Der Server liest keine
 `.env`-Datei selbst; Docker Compose oder die lokale Shell stellen die Umgebung.
 
 ## HTTP-API v1
+
+The table below lists the original health/authentication surface. Platform and
+People/Workforce/Tasks routes are documented in the
+[API contract index](../../packages/api_contracts/README.md) and
+[platform OpenAPI](../../packages/api_contracts/platform.openapi.json).
 
 | Route | Verhalten |
 | --- | --- |

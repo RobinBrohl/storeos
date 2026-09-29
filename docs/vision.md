@@ -18,7 +18,9 @@ StoreOS soll selbst betrieben und ohne verpflichtenden Cloudaccount, Abonnement,
 
 `Company → Location → Employee → Shift → TaskTemplate → TaskInstance → Employee Home → Guided Work → Completion → Audit Log`
 
-Ein veröffentlichter Dienstplan erzeugt die passende konkrete Aufgabe genau einmal. Der Mitarbeiter sieht Schicht und nächsten Schritt, gibt erforderliche Werte ein und schließt die Aufgabe ab. Das System prüft Berechtigung und Eingaben serverseitig, speichert Ergebnis und Audit-Eintrag und zeigt der Führungskraft den fachlich nötigen Status. Eine Abweichung wird sichtbar und kann nicht durch einen normalen Abschluss verdeckt werden. Diese vollständige Reise ist noch nicht implementiert. Der aktuelle Stand umfasst Plattformverwaltung, Mitarbeiteridentität und Eigenansicht sowie versionierte Arbeitsvorlagen, Schichtveröffentlichung und geführte Bestätigungsaufgaben bis zum Abschluss; verbindlicher Umfang und offene Phasen stehen im [Fahrplan](roadmap/phases.md).
+Ein veröffentlichter Dienstplan erzeugt die passende konkrete Aufgabe genau einmal. Der Mitarbeiter sieht Schicht und nächsten Schritt, gibt erforderliche Werte ein und schließt die Aufgabe ab. Das System prüft Berechtigung und Eingaben serverseitig, speichert Ergebnis und Audit-Eintrag und zeigt der Führungskraft den fachlich nötigen Status. Eine Abweichung wird sichtbar und kann nicht durch einen normalen Abschluss verdeckt werden.
+
+Current implementation: the bounded single-site online journey exists through P1b.7, including confirmation/numeric steps, blocking, administrative resume/cancellation and audit. Automatic work recommendations, published-shift changes and device-offline writes are not implemented. The [actual status](roadmap/status.md) separates delivered subsets from the broader [roadmap](roadmap/phases.md).
 
 ## Bewusste Grenzen
 

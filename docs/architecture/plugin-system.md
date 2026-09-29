@@ -1,5 +1,7 @@
 # Plugin-System
 
+Implementation boundary: P1 external API-client registrations and scoped organization/event reads are implemented. `packages/plugin_sdk/` is documentation only; no managed plugin runtime or business-write capability exists. Example capabilities and runtime isolation below describe future contracts, not currently grantable rights. See [ADR 0012](../adr/0012-phase-1-plattform-und-plugin-api.md).
+
 ## Erweiterungspunkte und Vertrauensgrenze
 
 Plugins binden Geräte und Fremdsysteme an oder ergänzen begrenzte Funktionen. Sie sprechen ausschließlich mit versionierten APIs, Commands und freigegebenen Events. Direkter Datenbankzugriff, das Laden beliebigen Plugin-Codes in den Serverprozess und ein allgemeiner Zugriff auf interne Modulklassen sind ausgeschlossen. Das Plugin darf keine fachliche Validierung, Rechteprüfung oder Auditpflicht umgehen. Kritische Funktionen wie Kasse, Zahlungsabwicklung, TSE, Waagen und HACCP erfordern zusätzlich eigene fachliche und regulatorische Abnahmen.

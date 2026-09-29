@@ -1,6 +1,6 @@
 # Domänenmodell
 
-Status: konzeptionelles Zielmodell mit den unten ausdrücklich beschriebenen implementierten Teilslices P1b.3 bis P1b.6. Darüber hinausgehende Beziehungen und Eigenschaften sind keine Zusage bereits vorhandener Tabellen oder Funktionen.
+Status: conceptual target model with the implemented P1b subsets through P1b.7 identified below. Additional entities, relationships and properties are not claims of existing schema or functionality; see [actual status](../roadmap/status.md).
 
 ## Identität, Zugehörigkeit und Standort
 

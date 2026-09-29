@@ -1,6 +1,6 @@
 # Architekturüberblick
 
-Status: Zielarchitektur und Grenzen für die ersten Entwicklungsphasen. Der tatsächlich implementierte Umfang ist in der [Phase-0-Grundlage](../development/phase-0.md) abgegrenzt; spätere Fähigkeiten dieses Zielbilds sind noch nicht vorhanden.
+Status: target architecture. The implemented single-site/Web scope includes P0, P1 and P1b.1–P1b.7; see [actual status](../roadmap/status.md). Client offline queues, native runners, automatic work recommendations and enterprise synchronization described below are not implemented.
 
 ## Ausgangspunkt
 

@@ -1,6 +1,8 @@
 # Dokumentationsindex
 
-Diese Dokumente verdichten die vom Projektgründer bereitgestellte StoreOS-Produktvision. Die Architektur beschreibt überwiegend das Zielbild; der tatsächliche Implementierungsumfang steht in der [Phase-0-Grundlage](development/phase-0.md), [Phase-1-Plattform](development/phase-1.md) und der [Startanleitung](../README.md). Bei Konflikten gilt: konkrete ADR für eine Architekturentscheidung, [Produktprinzipien](product-principles.md) für Wertkonflikte, [Fahrplan](roadmap/phases.md) für die Reihenfolge.
+**Current entry points:** [HANDOVER](HANDOVER.md) is the starting point for a new coding agent; [actual status](roadmap/status.md) records implemented scope, [workflow](development/workflow.md) defines the English technical-language policy, and [handover verification](development/handover-verification.md) records the latest checks. Older phase reports are historical evidence; architecture documents also describe planned capabilities.
+
+These documents preserve the founder's StoreOS vision. Architecture describes the target and explicitly bounded implementations; [actual status](roadmap/status.md) records the current scope through P1b.7. For conflicts, use the relevant ADR for architecture decisions, [product principles](product-principles.md) for priorities and [roadmap](roadmap/phases.md) for sequencing.
 
 - [Vision](vision.md) – Problem, Nutzen, Zielbild und bewusste Grenzen
 - [Produktprinzipien](product-principles.md) – dauerhafte Prioritäten

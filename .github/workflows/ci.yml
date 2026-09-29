@@ -39,7 +39,7 @@ jobs:
       STOREOS_BOOTSTRAP_USERNAME: ci_admin
       STOREOS_TEST_DATABASE: postgres://storeos_owner:ci_storeos_owner_only@127.0.0.1:5432/storeos_test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: 3.13.4
@@ -106,7 +106,7 @@ jobs:
   flutter:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.47.5
@@ -148,7 +148,7 @@ jobs:
       STOREOS_TEST_DATABASE: postgres://storeos_owner:ci_storeos_e2e_owner_only@127.0.0.1:5432/storeos_e2e_test
       STOREOS_DB_USER: storeos
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.47.5

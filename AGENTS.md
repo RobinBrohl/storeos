@@ -7,6 +7,7 @@
 - Apply schema changes through new, tested migrations; never edit applied migration files. Preserve IDs, immutable snapshots and supported contracts.
 - Define one small vertical slice including permissions, audit/events and tests. Avoid adjacent features, unrelated refactors and speculative abstractions. Record genuine architectural decisions in an ADR.
 - Use English for new technical documentation, ADRs, necessary code comments, API/developer-facing text and commit guidance. Do not translate or rename existing material solely for consistency; see [workflow](docs/development/workflow.md).
-- Prefer pinned repository SDK/dependency/API versions over model memory. Inspect actual versions and current official documentation when APIs are version-sensitive; avoid unneeded upgrades.
+- Prefer repository code, lockfiles and test/analyzer evidence, then SDK tooling and reviewed official/package skills, then authoritative docs, Context7/search, and finally model memory. Match pinned versions; avoid unneeded upgrades.
+- Keep secrets out of agent context. Do not bypass authorization/audit through direct database writes. Pushes, destructive Git operations and changes outside the repository need explicit authorization; agent permissions are not an OS sandbox.
 - Run relevant formatters, analyzers, unit/integration/UI tests and smoke checks after changes. Never weaken or remove tests to make checks pass; report skipped or unverified checks explicitly.
 - Never present fake or placeholder features as complete. Completion needs persistence, validation, permissions, relevant audit/events/migrations, error handling, tests, UI and documentation. Personnel decisions remain with people.

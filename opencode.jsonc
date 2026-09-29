@@ -140,11 +140,6 @@
     // Documentation lookup is safe.
     "context7_*": "allow",
 
-    // Browser automation can perform real actions.
-    "playwright_*": "ask",
-
-    // Optional official Google documentation MCP.
-    "google-developer-knowledge_*": "allow"
   },
 
   "mcp": {
@@ -156,17 +151,6 @@
       ]
     },
 
-    // Enable only when performing browser/E2E work.
-    "playwright": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@playwright/mcp@latest"
-      ],
-      "enabled": false,
-      "timeout": 10000
-    },
     "context7": {
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",

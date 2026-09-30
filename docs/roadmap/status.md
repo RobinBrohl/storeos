@@ -26,8 +26,9 @@ See [handover verification](../development/handover-verification.md) for evidenc
 | Scope | Status | Remaining boundary |
 | --- | --- | --- |
 | P1b overall acceptance/pilot readiness | IN PROGRESS | Bounded online journey works; page and process recovery plus replay are automated and remotely verified. Broader pilot operating evidence and device/offline contracts remain separate checks; no recommendation engine or new shift lifecycle is implied. |
-| P2 operational resilience | IN PROGRESS | Backup encryption, isolated restore, readiness and a locally verified task-aware restore acceptance exist. Controlled recovery/update exercises, capacity limits and device/offline policies are not a complete operating model. |
-| P2 task-aware backup/restore acceptance | IN PROGRESS | Seeded active/blocked/completed tasks restore with equal counts, hashes and sequence state; sessions/plugin tokens revoked, runtime access denied; tampered backup rejected and cleanup proven. Locally verified; independent review and remote CI pending. |
+| P2 operational resilience | IN PROGRESS | Backup encryption, isolated restore, readiness, a remotely verified task-aware restore acceptance and a locally verified concurrent-work capacity measurement exist. Controlled recovery/update exercises and device/offline policies are not a complete operating model. |
+| P2 task-aware backup/restore acceptance | DONE | Seeded active/blocked/completed tasks restore with equal counts, hashes and sequence state; sessions/plugin tokens revoked, runtime access denied; tampered backup rejected and cleanup proven. Committed as `b94c8e0`; the remote CI job passed. |
+| P2 single-site capacity measurement | IN PROGRESS | Opt-in harness drives declared concurrent read/write workloads against a run-scoped database, observes lock contention and verifies task state, receipts and audit deltas independently. Smoke, two full runs and injected integrity/operational failures passed locally with proven cleanup; independent review and remote CI pending. |
 
 The highest completed foundation phase is **P1**. P1b.1–P1b.7 are delivered bounded
 sub-slices; wider P1b/P2 gates are not blanket completion claims. No known code defect

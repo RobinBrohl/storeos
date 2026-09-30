@@ -45,3 +45,4 @@ These documents preserve the founder's StoreOS vision. Architecture describes th
 - [P1b.7-Prüfnachweis](development/phase-1b-7-numeric-verification.md) – Tests, API-Smoke, automatisierter Browserablauf, Upgrade und Restore
 
 - [P2 – Aufgabenbezogene Backup-/Restore-Abnahme](development/phase-2-restore-acceptance.md) – lokaler Prüfnachweis, verschlüsselte Wiederherstellung der Aufgaben-Nachweise und verbleibende Grenzen
+- [P2 – Concurrent-work capacity measurement](development/phase-2-capacity-measurement.md) – measurement contract, profiles, integrity proof and local evidence; timings are environment-specific observations

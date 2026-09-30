@@ -75,6 +75,9 @@ jobs:
       - name: Check backup acceptance report redaction
         shell: pwsh
         run: ./scripts/backup/Test-BackupAcceptanceRedaction.ps1
+      - name: Check capacity measurement report redaction
+        shell: pwsh
+        run: ./scripts/capacity/Test-CapacityReportRedaction.ps1
       - name: Check API contracts
         working-directory: packages/api_contracts
         run: |

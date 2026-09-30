@@ -65,9 +65,10 @@ browser test runs the numeric journey across a replaced API process and a browse
 boundary, and the fixture replays recorded operation IDs against the restarted server;
 the merged slice was subsequently verified by the remote CI job.
 
-P1b acceptance/pilot hardening remains active; P2 has operating foundations and a
-locally verified task-aware backup/restore acceptance (pending independent review and
-remote CI) but no device-offline implementation. Only a Flutter Web runner is checked in. Published
+P1b acceptance/pilot hardening remains active; P2 has operating foundations, a
+remotely verified task-aware backup/restore acceptance and a locally verified
+concurrent-work capacity measurement (pending independent review and remote CI) but no
+device-offline implementation. Only a Flutter Web runner is checked in. Published
 shifts cannot be edited/cancelled; cancelling a blocked task is a different operation.
 There is no automatic priority engine, timezone-aware recurring calendar, timekeeping,
 stock ledger or HACCP module. See [status](roadmap/status.md) before claiming completion.
@@ -136,6 +137,9 @@ The runtime role needs access. See [server setup](../apps/server/README.md).
 ./scripts/backup/Test-BackupAcceptanceRedaction.ps1
 # Requires the healthy Compose database plus configured .env/secrets:
 ./scripts/backup/Run-BackupRestoreAcceptance.ps1
+./scripts/capacity/Run-CapacityMeasurement.ps1 -Profile smoke
+./scripts/capacity/Run-CapacityMeasurement.ps1 -Profile full
+./scripts/capacity/Test-CapacityReportRedaction.ps1
 # Requires the configured server/database and valid bootstrap credentials:
 ./scripts/dev.ps1 smoke
 # Requires explicit STOREOS_TEST_DATABASE, STOREOS_DB_USER,
@@ -213,9 +217,10 @@ screen or placeholder is not completion.
 
 ## Known Technical Debt
 
-- `runAuthorized` serializes company operations, including reads. No representative
-  site-capacity measurement exists. Do not relax it without re-proving last-admin,
-  authorization/revocation and command-race invariants.
+- `runAuthorized` serializes company operations, including reads. A bounded local
+  [capacity measurement](development/phase-2-capacity-measurement.md) exists but is not a
+  capacity guarantee; repeat it on target hardware before relaxing the lock, and re-prove
+  last-admin, authorization/revocation and command-race invariants.
 - P1 `PluginService` directly uses `OrganizationRepository` for scoped reads: a remaining
   public-port shortcut. Do not extend that pattern to business modules.
 - No automated audit/outbox/receipt retention job or employee deletion/export workflow.
@@ -270,10 +275,8 @@ Proposals only; implement one approved scope at a time.
   fail; source is unchanged; restored access remains fenced; reports contain no secrets.
 - **Required Tests:** real PostgreSQL backup/restore, existing crypto tamper tests,
   source-preservation/access checks and regression suites.
-- **Status (2026-09-30):** implemented and locally verified (two consecutive full runs,
-  one injected-failure cleanup run, corruption and redaction checks, 233 package tests,
-  numeric browser E2E). Changes are uncommitted and await independent review; remote CI
-  is not yet executed. See
+- **Status (2026-09-30):** implemented, independently reviewed, committed to `main` as
+  `b94c8e0` and verified by the remote CI job `backup-restore-acceptance`. See
   [P2 restore acceptance](development/phase-2-restore-acceptance.md).
 
 ### 3. Measure single-site concurrent-work capacity
@@ -288,3 +291,8 @@ Proposals only; implement one approved scope at a time.
   results are measurements, not flaky CI thresholds or promises for larger sites.
 - **Required Tests:** small harness smoke, concurrent real HTTP/DB integrity checks,
   existing authorization/race regressions and analyzer checks.
+- **Status (2026-09-30):** implemented and locally verified (smoke profile, two
+  consecutive full runs with identical integrity verdicts, injected integrity and
+  operational failure runs, real-PostgreSQL smoke test, report-redaction check). Changes
+  are uncommitted and await independent review; remote CI is not yet executed. See
+  [P2 capacity measurement](development/phase-2-capacity-measurement.md).

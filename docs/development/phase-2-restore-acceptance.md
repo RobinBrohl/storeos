@@ -1,7 +1,7 @@
 # P2: Task-aware encrypted backup/restore acceptance
 
-Status: implemented and locally verified; independent review and remote CI
-execution pending (changes uncommitted on `main`).
+Status: implemented, independently reviewed, committed to `main` (`b94c8e0`)
+and verified by the remote CI job `backup-restore-acceptance`.
 
 ## Verbindlicher Umfang
 
@@ -124,7 +124,8 @@ Locally verified:
 - existing StoreOS checks remain green;
 - CI job added.
 
-Pending: independent review and remote CI execution (`REMOTE CI PENDING`).
+Independent review and remote CI execution completed (`b94c8e0`); the
+`backup-restore-acceptance` CI job passed on the Linux runner.
 
 ## Verbleibende Grenzen
 
@@ -133,4 +134,4 @@ Pending: independent review and remote CI execution (`REMOTE CI PENDING`).
 - Post-backup account revocations/deletions are not re-applied automatically.
 - The acceptance depends on Docker Compose and the pinned Dart SDK; it is not a
   product runtime dependency.
-- Local Windows evidence; the Linux CI job is configured but not yet executed.
+- Local Windows evidence plus the executed Linux CI job.

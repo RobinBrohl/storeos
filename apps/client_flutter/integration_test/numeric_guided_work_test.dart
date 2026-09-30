@@ -122,11 +122,41 @@ Future<void> _selectSection(WidgetTester tester, String label) async {
 }
 
 Future<void> _openFixtureTask(WidgetTester tester) async {
-  await _waitFor(tester, find.byKey(Key('shift-$_shiftId')));
-  await _tapInList(tester, find.byKey(Key('shift-$_shiftId')));
-  await _waitFor(tester, find.text('Schicht · Veröffentlicht'));
+  await _tapWhenActionable(
+    tester,
+    find.byKey(Key('shift-$_shiftId')),
+    find.text('Schicht · Veröffentlicht'),
+  );
   await _tapInList(tester, find.byKey(Key('task-$_taskId')));
   await _waitFor(tester, find.byKey(const Key('execution-status')));
+}
+
+/// The shift section disables a tile while a controller operation is in
+/// flight. Tap only once the tile reports an active handler, and keep waiting
+/// for the observable outcome instead of assuming the tap was accepted.
+Future<void> _tapWhenActionable(
+  WidgetTester tester,
+  Finder target,
+  Finder outcome,
+) async {
+  final deadline = DateTime.now().add(const Duration(seconds: 30));
+  while (DateTime.now().isBefore(deadline)) {
+    await tester.pump(const Duration(milliseconds: 100));
+    if (outcome.evaluate().isNotEmpty) return;
+    if (_isActionable(tester, target)) {
+      await _tapInList(tester, target);
+      if (outcome.evaluate().isNotEmpty) return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+  }
+  fail('Timed out waiting for $target to open $outcome.');
+}
+
+bool _isActionable(WidgetTester tester, Finder target) {
+  final elements = target.evaluate();
+  if (elements.isEmpty) return false;
+  final widget = elements.first.widget;
+  return widget is ListTile && widget.onTap != null;
 }
 
 Future<void> _enterNumber(WidgetTester tester, String value) async {

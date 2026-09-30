@@ -43,3 +43,5 @@ These documents preserve the founder's StoreOS vision. Architecture describes th
 
 - [P1b.7 – Numerische Guided-Work-Schritte](development/phase-1b-7-numeric-steps.md) – verbindlicher Scope, Rechte, Audit und Abnahmekriterien
 - [P1b.7-Prüfnachweis](development/phase-1b-7-numeric-verification.md) – Tests, API-Smoke, automatisierter Browserablauf, Upgrade und Restore
+
+- [P2 – Aufgabenbezogene Backup-/Restore-Abnahme](development/phase-2-restore-acceptance.md) – lokaler Prüfnachweis, verschlüsselte Wiederherstellung der Aufgaben-Nachweise und verbleibende Grenzen

@@ -145,14 +145,15 @@ replays every recorded operation ID over the real HTTP API with its stored body,
 rejects a mismatched reuse with 409 and confirms no additional effects. Locally the
 full runner passed three consecutive times with no leftover schema, listeners or
 driver processes; an injected phase-A browser failure dropped the isolated schema
-through the cleanup fallback. Remote CI execution remains unverified until a push.
+through the cleanup fallback. The slice was merged into `main` as `898c2a1` and
+the remote CI job subsequently verified the same runner.
 
 ## Verbleibende Grenzen
 
 - Der automatisierte Ablauf umfasst inzwischen einen ersetzten HTTP-Prozess, zwei
   reine Seiten-/Browser-Grenzen, Receipt-Replay und einen Cleanup-Fallback nach
-  injiziertem Fehler; lokal sind drei aufeinanderfolgende Läufe bestanden. Ein
-  Remote-CI-Lauf steht bis zum Push weiterhin aus.
+  injiziertem Fehler; lokal sind drei aufeinanderfolgende Läufe bestanden und der
+  Remote-CI-Job hat den Lauf nach dem Merge bestätigt.
 - Schema 2 erfordert passende Client- und Serverversionen; alte Clients werden
   dadurch nicht nachträglich numerikfähig.
 - Kein Offline-Schreiben, Sync, Sensorzugriff, Einheitenumrechnung, Override

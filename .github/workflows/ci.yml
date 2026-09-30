@@ -72,6 +72,9 @@ jobs:
       - name: Check E2E diagnostic redaction
         shell: pwsh
         run: ./scripts/e2e/Test-E2EDiagnostics.ps1
+      - name: Check backup acceptance report redaction
+        shell: pwsh
+        run: ./scripts/backup/Test-BackupAcceptanceRedaction.ps1
       - name: Check API contracts
         working-directory: packages/api_contracts
         run: |
@@ -177,3 +180,32 @@ jobs:
         env:
           CHROME_EXECUTABLE: ${{ steps.chrome.outputs.chrome-path }}
         run: ./scripts/e2e/Run-NumericGuidedWork.ps1 -ChromeDriverPath '${{ steps.chrome.outputs.chromedriver-path }}'
+
+  backup-restore-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      STOREOS_DB_HOST: 127.0.0.1
+      STOREOS_DB_PORT: '5432'
+      STOREOS_DB_NAME: storeos
+      STOREOS_DB_USER: storeos
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.4
+      - name: Create isolated local secrets
+        shell: bash
+        run: |
+          mkdir -p .local/secrets
+          printf '%s' 'ci_backup_runtime_only' > .local/secrets/db_password.txt
+          printf '%s' 'ci_backup_owner_only' > .local/secrets/db_owner_password.txt
+          head -c 32 /dev/urandom > .local/secrets/backup_key.bin
+      - name: Start PostgreSQL (Docker Compose)
+        run: docker compose up -d --wait db
+      - name: Run task-aware backup/restore acceptance
+        shell: pwsh
+        run: ./scripts/backup/Run-BackupRestoreAcceptance.ps1
+      - name: Stop PostgreSQL (Docker Compose)
+        if: always()
+        run: docker compose down

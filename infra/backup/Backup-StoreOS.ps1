@@ -3,6 +3,7 @@
 param(
     [string] $BackupDirectory,
     [string] $KeyFile,
+    [string] $Database,
     [string] $DockerPath = 'docker'
 )
 
@@ -12,6 +13,12 @@ $ErrorActionPreference = 'Stop'
 $repo = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 if (-not $BackupDirectory) { $BackupDirectory = Join-Path $repo '.local/backups' }
 if (-not $KeyFile) { $KeyFile = Join-Path $repo '.local/secrets/backup_key.bin' }
+# Optional explicit dump source for isolated acceptance databases. Without it the
+# container's normal POSTGRES_DB is dumped exactly as before. The value is passed
+# as a positional shell argument and never interpolated into SQL.
+if ($Database -and $Database -cnotmatch '^[a-z][a-z0-9_]{0,62}$') {
+    throw 'Database must be a lowercase PostgreSQL identifier of at most 63 characters.'
+}
 $composeFile = Join-Path $repo 'compose.yaml'
 $docker = (Get-Command $DockerPath -ErrorAction Stop).Source
 
@@ -30,10 +37,14 @@ $startInfo.WorkingDirectory = $repo
 $startInfo.UseShellExecute = $false
 $startInfo.RedirectStandardOutput = $true
 $startInfo.RedirectStandardError = $true
-foreach ($argument in @(
-    'compose', '-f', $composeFile, 'exec', '-T', 'db', 'sh', '-ec',
-    'exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc'
-)) { [void] $startInfo.ArgumentList.Add($argument) }
+$dumpArguments = @('compose', '-f', $composeFile, 'exec', '-T', 'db', 'sh', '-ec')
+if ($Database) {
+    $dumpArguments += 'exec pg_dump -U "$POSTGRES_USER" -d "$1" -Fc'
+    $dumpArguments += @('sh', $Database)
+} else {
+    $dumpArguments += 'exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc'
+}
+foreach ($argument in $dumpArguments) { [void] $startInfo.ArgumentList.Add($argument) }
 
 $process = [System.Diagnostics.Process]::new()
 $process.StartInfo = $startInfo
@@ -62,6 +73,7 @@ try {
         databaseFormat = 'pg_dump-custom'
         contents = 'postgresql-only'
     }
+    if ($Database) { $manifest.sourceDatabase = $Database }
     [System.IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 3),
         [System.Text.UTF8Encoding]::new($false))
     Write-Output "Encrypted PostgreSQL backup: $backupPath"

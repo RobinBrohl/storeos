@@ -62,11 +62,12 @@ P0 and P1 are complete for their bounded single-site/Web scope. P1b.1–P1b.7 im
 employee identity, templates, atomic shift publication, Employee Home, confirmation/
 numeric steps, blocking, administrative resume/cancellation and completion. The real
 browser test runs the numeric journey across a replaced API process and a browser page
-boundary, and the fixture replays recorded operation IDs against the restarted server
-(local evidence; remote CI not asserted).
+boundary, and the fixture replays recorded operation IDs against the restarted server;
+the merged slice was subsequently verified by the remote CI job.
 
-P1b acceptance/pilot hardening remains active; P2 has operating foundations but no
-device-offline implementation. Only a Flutter Web runner is checked in. Published
+P1b acceptance/pilot hardening remains active; P2 has operating foundations and a
+locally verified task-aware backup/restore acceptance (pending independent review and
+remote CI) but no device-offline implementation. Only a Flutter Web runner is checked in. Published
 shifts cannot be edited/cancelled; cancelling a blocked task is a different operation.
 There is no automatic priority engine, timezone-aware recurring calendar, timekeeping,
 stock ledger or HACCP module. See [status](roadmap/status.md) before claiming completion.
@@ -85,7 +86,7 @@ stock ledger or HACCP module. See [status](roadmap/status.md) before claiming co
 | `packages/design_system/` | Small Flutter theme/components |
 | `modules/`, `packages/shared/`, `packages/plugin_sdk/`, `plugins/` | Reserved/documented boundaries, not implemented additional runtimes |
 | `infra/`, `compose.yaml` | PostgreSQL/container/TLS setup and encrypted backup/isolated restore |
-| `scripts/`, `.github/workflows/ci.yml` | Development, E2E wrapper and CI checks |
+| `scripts/`, `.github/workflows/ci.yml` | Development, E2E and backup-acceptance wrappers, CI checks |
 | `docs/` | Vision, implementation contracts, architecture, roadmap, ADRs and compliance |
 | `.local/`, `.env` | Ignored secrets, fixtures/logs/configuration; never commit |
 
@@ -132,6 +133,9 @@ The runtime role needs access. See [server setup](../apps/server/README.md).
 ./scripts/dev.ps1 check
 ./scripts/Test-DevSetup.ps1
 ./infra/backup/Test-BackupCrypto.ps1
+./scripts/backup/Test-BackupAcceptanceRedaction.ps1
+# Requires the healthy Compose database plus configured .env/secrets:
+./scripts/backup/Run-BackupRestoreAcceptance.ps1
 # Requires the configured server/database and valid bootstrap credentials:
 ./scripts/dev.ps1 smoke
 # Requires explicit STOREOS_TEST_DATABASE, STOREOS_DB_USER,
@@ -174,7 +178,8 @@ flutter build web --release --no-web-resources-cdn
 ```
 
 Use the [backup runbook](../infra/backup/README.md) for encrypted DB backup and isolated
-restore commands. Restore does not activate a replacement server, recover OS/TLS
+restore commands, and the [acceptance runbook](../infra/backup/acceptance.md) for the
+automated restore proof. Restore does not activate a replacement server, recover OS/TLS
 secrets or automatically reconcile post-backup account revocations.
 
 ## Development Workflow
@@ -233,7 +238,7 @@ and [verification limits](development/handover-verification.md).
 
 ## Next Recommended Work
 
-Proposals only; implement one approved scope at a time, starting with item 1.
+Proposals only; implement one approved scope at a time.
 
 ### 1. Durable P1b browser journey across reload and server restart
 
@@ -247,10 +252,10 @@ Proposals only; implement one approved scope at a time, starting with item 1.
   the run, two independent runs clean up their own resources.
 - **Required Tests:** real browser/HTTP/DB recovery E2E, replay and authorization
   regressions, existing analyzers and suites.
-- **Status (2026-09-30):** implemented on `slice/p1b-durable-e2e-recovery`. Three
-  consecutive local runs passed with verified cleanup; an injected phase-A failure
-  dropped the isolated schema through the cleanup fallback. Remote CI execution is not
-  asserted.
+- **Status (2026-09-30):** implemented on `slice/p1b-durable-e2e-recovery`, merged into
+  `main` as `898c2a1` and verified by the remote CI job
+  `numeric-guided-work-e2e`. Three consecutive local runs passed with verified cleanup;
+  an injected phase-A failure dropped the isolated schema through the cleanup fallback.
 
 ### 2. Automate task-aware backup/restore acceptance
 
@@ -265,6 +270,11 @@ Proposals only; implement one approved scope at a time, starting with item 1.
   fail; source is unchanged; restored access remains fenced; reports contain no secrets.
 - **Required Tests:** real PostgreSQL backup/restore, existing crypto tamper tests,
   source-preservation/access checks and regression suites.
+- **Status (2026-09-30):** implemented and locally verified (two consecutive full runs,
+  one injected-failure cleanup run, corruption and redaction checks, 233 package tests,
+  numeric browser E2E). Changes are uncommitted and await independent review; remote CI
+  is not yet executed. See
+  [P2 restore acceptance](development/phase-2-restore-acceptance.md).
 
 ### 3. Measure single-site concurrent-work capacity
 

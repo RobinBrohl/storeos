@@ -7,7 +7,9 @@ function Write-E2EDiagnostics {
     )
 
     # Read only named process logs, never the private fixture manifest.
-    foreach ($name in @('flutter-drive', 'chromedriver', 'fixture')) {
+    foreach ($name in @(
+            'flutter-drive-a', 'flutter-drive-b', 'flutter-drive-c', 'chromedriver',
+            'fixture-prepare', 'fixture-resume', 'fixture-cleanup')) {
         foreach ($stream in @('stdout', 'stderr')) {
             $file = Join-Path $Directory "$name.$stream.log"
             if (!(Test-Path -LiteralPath $file -PathType Leaf)) { continue }

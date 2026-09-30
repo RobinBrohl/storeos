@@ -135,11 +135,24 @@ completed the full 233-test suite, all analyzers/format checks and two independe
 browser E2E runs. The historical outstanding package-check item above is resolved;
 the literal browser-reload limitation remains.
 
+Durable boundary automation (2026-09-30): the isolated journey now runs in three
+browser phases. Phase A leaves the task blocked; the API process is then replaced
+and phase B verifies the blocked state and the rejected attempt in a fresh page
+before the admin resumes and the worker completes; a further fresh page (phase C)
+verifies the completed state and both attempts. The fixture verifies task,
+attempts, step results, audit actions and `task_execution_commands` receipts, then
+replays every recorded operation ID over the real HTTP API with its stored body,
+rejects a mismatched reuse with 409 and confirms no additional effects. Locally the
+full runner passed three consecutive times with no leftover schema, listeners or
+driver processes; an injected phase-A browser failure dropped the isolated schema
+through the cleanup fallback. Remote CI execution remains unverified until a push.
+
 ## Verbleibende Grenzen
 
-- Der automatisierte Test baut den Flutter-App-Baum neu auf und verlangt danach
-  eine neue Anmeldung. Einen wörtlichen Seiten-Reload des Browsers prüft er
-  derzeit nicht. Ein Remote-CI-Lauf steht bis zum Push noch aus.
+- Der automatisierte Ablauf umfasst inzwischen einen ersetzten HTTP-Prozess, zwei
+  reine Seiten-/Browser-Grenzen, Receipt-Replay und einen Cleanup-Fallback nach
+  injiziertem Fehler; lokal sind drei aufeinanderfolgende Läufe bestanden. Ein
+  Remote-CI-Lauf steht bis zum Push weiterhin aus.
 - Schema 2 erfordert passende Client- und Serverversionen; alte Clients werden
   dadurch nicht nachträglich numerikfähig.
 - Kein Offline-Schreiben, Sync, Sensorzugriff, Einheitenumrechnung, Override

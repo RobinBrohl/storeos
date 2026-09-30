@@ -9,87 +9,135 @@ const _workerUsername = String.fromEnvironment('STOREOS_E2E_WORKER_USERNAME');
 const _workerPassword = String.fromEnvironment('STOREOS_E2E_WORKER_PASSWORD');
 const _shiftId = String.fromEnvironment('STOREOS_E2E_SHIFT_ID');
 const _taskId = String.fromEnvironment('STOREOS_E2E_TASK_ID');
+const _phase = String.fromEnvironment('STOREOS_E2E_PHASE');
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('numeric guided work completes through the real web client', (
+  testWidgets('numeric guided work across durable boundaries ($_phase)', (
     tester,
   ) async {
-    for (final value in [
-      _adminUsername,
-      _adminPassword,
-      _workerUsername,
-      _workerPassword,
-      _shiftId,
-      _taskId,
-    ]) {
-      expect(value, isNotEmpty, reason: 'Missing E2E fixture dart-define.');
+    _requireDefines();
+    switch (_phase) {
+      case 'A':
+        await _phaseA(tester);
+      case 'B':
+        await _phaseB(tester);
+      case 'C':
+        await _phaseC(tester);
+      default:
+        fail('Unknown STOREOS_E2E_PHASE "$_phase".');
     }
-
-    app.main();
-    await _waitFor(tester, find.byKey(const Key('username-field')));
-    await _signIn(tester, _workerUsername, _workerPassword);
-    await _selectSection(tester, 'Meine Arbeit');
-    await _openFixtureTask(tester);
-    expect(_executionText(tester), 'Offen · 0/2 bestätigt');
-
-    await _tapInList(tester, find.byKey(const Key('start-task')));
-    await _enterNumber(tester, '5');
-    await _tapInList(tester, find.byKey(const Key('record-number')));
-    await _waitFor(tester, find.textContaining('Außerhalb der Grenzen'));
-    expect(_executionText(tester), 'Blockiert · 0/2 bestätigt');
-    expect(find.byKey(const Key('complete-task')), findsNothing);
-    expect(find.textContaining('5 · Außerhalb der Grenzen'), findsOneWidget);
-
-    await _signOut(tester);
-    await _signIn(tester, _adminUsername, _adminPassword);
-    await _selectSection(tester, 'Schichten');
-    await _openFixtureTask(tester);
-    expect(_executionText(tester), 'Blockiert · 0/2 bestätigt');
-    await _tapInList(
-      tester,
-      find.widgetWithText(TextFormField, 'Klärung oder Stornierung begründen'),
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Klärung oder Stornierung begründen'),
-      'Anzeige geprüft; neuen Wert erfassen.',
-    );
-    await _tapInList(tester, find.byKey(const Key('resume-task')));
-    expect(_executionText(tester), 'In Bearbeitung · 0/2 bestätigt');
-    expect(find.textContaining('5 · Außerhalb der Grenzen'), findsOneWidget);
-
-    await _signOut(tester);
-    await _signIn(tester, _workerUsername, _workerPassword);
-    await _selectSection(tester, 'Meine Arbeit');
-    await _openFixtureTask(tester);
-    expect(_executionText(tester), 'In Bearbeitung · 0/2 bestätigt');
-    await _enterNumber(tester, '4,5');
-    await _tapInList(tester, find.byKey(const Key('record-number')));
-    expect(_executionText(tester), 'In Bearbeitung · 1/2 bestätigt');
-    expect(find.textContaining('4.5 · Innerhalb der Grenzen'), findsOneWidget);
-    expect(find.textContaining('5 · Außerhalb der Grenzen'), findsOneWidget);
-    await _tapInList(tester, find.byKey(const Key('confirm-step')));
-    expect(_executionText(tester), 'In Bearbeitung · 2/2 bestätigt');
-    await _tapInList(tester, find.byKey(const Key('complete-task')));
-    await _waitFor(tester, find.byKey(const Key('execution-status')));
-    expect(_executionText(tester), 'Abgeschlossen · 2/2 bestätigt');
-    expect(find.byKey(const Key('complete-task')), findsNothing);
-
-    // Discard the entire app/controller tree, as a browser reload would, and
-    // create the production app again. No in-memory session or task is reused.
-    await tester.pumpWidget(const SizedBox.shrink());
-    app.main();
-    await _waitFor(tester, find.byKey(const Key('username-field')));
-    await _signIn(tester, _workerUsername, _workerPassword);
-    await _selectSection(tester, 'Meine Arbeit');
-    await _openFixtureTask(tester);
-    expect(_executionText(tester), 'Abgeschlossen · 2/2 bestätigt');
-    await _expectAttempt(tester, '4.5 · Innerhalb der Grenzen');
-    await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
-    expect(find.byKey(const Key('complete-task')), findsNothing);
-    await _signOut(tester);
   });
+}
+
+void _requireDefines() {
+  for (final value in [
+    _adminUsername,
+    _adminPassword,
+    _workerUsername,
+    _workerPassword,
+    _shiftId,
+    _taskId,
+    _phase,
+  ]) {
+    expect(value, isNotEmpty, reason: 'Missing E2E fixture dart-define.');
+  }
+}
+
+/// Starts the worker task and records an out-of-range value, leaving the task
+/// blocked for the following process-restart phase.
+Future<void> _phaseA(WidgetTester tester) async {
+  app.main();
+  await _waitFor(tester, find.byKey(const Key('username-field')));
+  await _signIn(tester, _workerUsername, _workerPassword);
+  await _selectSection(tester, 'Meine Arbeit');
+  await _openFixtureTask(tester);
+  expect(_executionText(tester), 'Offen · 0/2 bestätigt');
+
+  await _tapInList(tester, find.byKey(const Key('start-task')));
+  await _enterNumber(tester, '5');
+  await _tapInList(tester, find.byKey(const Key('record-number')));
+  await _waitFor(tester, find.textContaining('Außerhalb der Grenzen'));
+  expect(_executionText(tester), 'Blockiert · 0/2 bestätigt');
+  expect(find.byKey(const Key('complete-task')), findsNothing);
+  await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
+  await _signOut(tester);
+}
+
+/// Runs after the API process was replaced: verifies the blocked state and the
+/// rejected attempt survived, resolves it as admin and completes the task.
+Future<void> _phaseB(WidgetTester tester) async {
+  app.main();
+  await _waitFor(tester, find.byKey(const Key('username-field')));
+  await _signIn(tester, _workerUsername, _workerPassword);
+  await _selectSection(tester, 'Meine Arbeit');
+  await _openFixtureTask(tester);
+  expect(_executionText(tester), 'Blockiert · 0/2 bestätigt');
+  await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
+
+  await _signOut(tester);
+  await _signIn(tester, _adminUsername, _adminPassword);
+  await _selectSection(tester, 'Schichten');
+  await _openFixtureTask(tester);
+  expect(_executionText(tester), 'Blockiert · 0/2 bestätigt');
+  await _tapInList(
+    tester,
+    find.widgetWithText(TextFormField, 'Klärung oder Stornierung begründen'),
+  );
+  await tester.enterText(
+    find.widgetWithText(TextFormField, 'Klärung oder Stornierung begründen'),
+    'Anzeige geprüft; neuen Wert erfassen.',
+  );
+  await _tapInList(tester, find.byKey(const Key('resume-task')));
+  expect(_executionText(tester), 'In Bearbeitung · 0/2 bestätigt');
+  await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
+
+  await _signOut(tester);
+  await _signIn(tester, _workerUsername, _workerPassword);
+  await _selectSection(tester, 'Meine Arbeit');
+  await _openFixtureTask(tester);
+  expect(_executionText(tester), 'In Bearbeitung · 0/2 bestätigt');
+  await _enterNumber(tester, '4,5');
+  await _tapInList(tester, find.byKey(const Key('record-number')));
+  expect(_executionText(tester), 'In Bearbeitung · 1/2 bestätigt');
+  await _expectAttempt(tester, '4.5 · Innerhalb der Grenzen');
+  await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
+  await _tapInList(tester, find.byKey(const Key('confirm-step')));
+  expect(_executionText(tester), 'In Bearbeitung · 2/2 bestätigt');
+  await _tapInList(tester, find.byKey(const Key('complete-task')));
+  await _waitFor(tester, find.byKey(const Key('execution-status')));
+  expect(_executionText(tester), 'Abgeschlossen · 2/2 bestätigt');
+  expect(find.byKey(const Key('complete-task')), findsNothing);
+  await _signOut(tester);
+}
+
+/// Runs after a browser-only boundary: the completed state, both attempts and
+/// the absence of further actions must be visible without an API restart.
+Future<void> _phaseC(WidgetTester tester) async {
+  app.main();
+  await _waitFor(tester, find.byKey(const Key('username-field')));
+  await _signIn(tester, _workerUsername, _workerPassword);
+  await _selectSection(tester, 'Meine Arbeit');
+  await _openFixtureTask(tester);
+  expect(_executionText(tester), 'Abgeschlossen · 2/2 bestätigt');
+  await _expectAttempt(tester, '4.5 · Innerhalb der Grenzen');
+  await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
+  expect(find.byKey(const Key('complete-task')), findsNothing);
+
+  // Discard the entire app/controller tree, as a browser reload would, and
+  // create the production app again. No in-memory session or task is reused.
+  await tester.pumpWidget(const SizedBox.shrink());
+  app.main();
+  await _waitFor(tester, find.byKey(const Key('username-field')));
+  await _signIn(tester, _workerUsername, _workerPassword);
+  await _selectSection(tester, 'Meine Arbeit');
+  await _openFixtureTask(tester);
+  expect(_executionText(tester), 'Abgeschlossen · 2/2 bestätigt');
+  await _expectAttempt(tester, '4.5 · Innerhalb der Grenzen');
+  await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
+  expect(find.byKey(const Key('complete-task')), findsNothing);
+  await _signOut(tester);
 }
 
 Future<void> _signIn(

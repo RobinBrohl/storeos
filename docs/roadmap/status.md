@@ -19,13 +19,13 @@ See [handover verification](../development/handover-verification.md) for evidenc
 | P1b.5 blocking/resolution | DONE | Employee blocking, reason/history, administrative resume and audit. |
 | P1b.6 blocked-task cancellation | DONE | Reasoned terminal cancellation, history and scoped cancelled-task lists. |
 | P1b.7 numeric steps | DONE | Schema 2, exact thousandths, inclusive bounds, immutable attempts, automatic blocking, mixed-step completion, migration 0010 and regressions. |
-| Numeric browser E2E | DONE | Real Flutter/HTTP/PostgreSQL journey and evidence/audit checks; app remount/re-login tested. CI job exists; remote execution not asserted. |
+| Numeric browser E2E | DONE | Real Flutter/HTTP/PostgreSQL journey and evidence/audit/receipt checks; crosses a replaced API process and browser page boundaries and replays recorded operation IDs locally. CI job exists; remote execution not asserted. |
 
 ## Partially implemented / active
 
 | Scope | Status | Remaining boundary |
 | --- | --- | --- |
-| P1b overall acceptance/pilot readiness | IN PROGRESS | Bounded online journey works. Literal browser reload/backend-process restart acceptance and broader pilot operating evidence remain separate checks; no recommendation engine or new shift lifecycle is implied. |
+| P1b overall acceptance/pilot readiness | IN PROGRESS | Bounded online journey works; page and process recovery plus replay are automated locally. Remote CI, broader pilot operating evidence and device/offline contracts remain separate checks; no recommendation engine or new shift lifecycle is implied. |
 | P2 operational resilience | IN PROGRESS | Backup encryption, isolated restore and readiness exist. Controlled recovery/update exercises, capacity limits and device/offline policies are not a complete operating model. |
 
 The highest completed foundation phase is **P1**. P1b.1–P1b.7 are delivered bounded

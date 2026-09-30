@@ -60,8 +60,10 @@ The authoritative priority order is in [product principles](product-principles.m
 
 P0 and P1 are complete for their bounded single-site/Web scope. P1b.1–P1b.7 implement
 employee identity, templates, atomic shift publication, Employee Home, confirmation/
-numeric steps, blocking, administrative resume/cancellation and completion. A real
-browser test covers the numeric journey.
+numeric steps, blocking, administrative resume/cancellation and completion. The real
+browser test runs the numeric journey across a replaced API process and a browser page
+boundary, and the fixture replays recorded operation IDs against the restarted server
+(local evidence; remote CI not asserted).
 
 P1b acceptance/pilot hardening remains active; P2 has operating foundations but no
 device-offline implementation. Only a Flutter Web runner is checked in. Published
@@ -139,16 +141,19 @@ The runtime role needs access. See [server setup](../apps/server/README.md).
 
 `check` runs all four packages' format checks, analyzers and tests, plus Compose
 validation. Without test-database configuration, DB tests are skipped and acceptance
-is incomplete. E2E creates a new schema, uses real HTTP, verifies task/audit evidence
-and cleans its own fixture. It remounts the app, but does not literally reload the
-browser or restart the backend process mid-journey.
+is incomplete. E2E creates a new schema, uses real HTTP, verifies task/audit/receipt
+evidence and cleans its own fixture. It runs three browser phases: the worker blocks a
+task, the API process is replaced, a fresh page resolves and completes the work, and a
+further fresh page verifies the completed state; the fixture then replays the recorded
+operation IDs through real HTTP, rejects mismatched reuse and drops the schema.
 
 When using a separately installed Chrome (including CI's pinned Chrome), set
 `CHROME_EXECUTABLE` to that executable. The E2E runner validates the path and forwards
 it as `flutter drive --chrome-binary` so WebDriver uses the browser matching the
 selected ChromeDriver instead of discovering a different system installation.
-On failure, inspect `flutter-drive.stderr.log`, `flutter-drive.stdout.log` and
-`fixture.stderr.log` in the reported `.local/e2e-numeric/<run-id>` directory.
+On failure, inspect `flutter-drive-a/b/c`, `fixture-prepare`, `fixture-resume` and
+`chromedriver` `.stdout.log`/`.stderr.log` in the reported
+`.local/e2e-numeric/<run-id>` directory.
 The runner prints the last 60 lines of each named process log on failure, masking
 known fixture/database credentials, encoded variants and bearer tokens. Raw logs
 and the fixture manifest are not uploaded. `scripts/e2e/Test-E2EDiagnostics.ps1`
@@ -242,6 +247,10 @@ Proposals only; implement one approved scope at a time, starting with item 1.
   the run, two independent runs clean up their own resources.
 - **Required Tests:** real browser/HTTP/DB recovery E2E, replay and authorization
   regressions, existing analyzers and suites.
+- **Status (2026-09-30):** implemented on `slice/p1b-durable-e2e-recovery`. Three
+  consecutive local runs passed with verified cleanup; an injected phase-A failure
+  dropped the isolated schema through the cleanup fallback. Remote CI execution is not
+  asserted.
 
 ### 2. Automate task-aware backup/restore acceptance
 

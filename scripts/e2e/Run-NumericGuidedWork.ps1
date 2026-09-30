@@ -12,14 +12,18 @@ $serverDirectory = Join-Path $repository 'apps/server'
 $clientDirectory = Join-Path $repository 'apps/client_flutter'
 $runDirectory = Join-Path $repository ".local/e2e-numeric/$([guid]::NewGuid().ToString('N'))"
 $manifestPath = Join-Path $runDirectory 'flutter-defines.json'
-$stopPath = Join-Path $runDirectory 'stop'
-$fixtureProcess = $null
+$prepareStopPath = Join-Path $runDirectory 'stop-prepare'
+$resumeStopPath = Join-Path $runDirectory 'stop-resume'
+$apiPort = 8096
+$prepareProcess = $null
+$resumeProcess = $null
 $driverProcess = $null
 $driveProcess = $null
 $runFailure = $null
 $cleanupFailure = $null
+$runVerified = $false
 $previousEnvironment = @{}
-foreach ($name in @('STOREOS_DB_PASSWORD_FILE', 'STOREOS_E2E_MANIFEST', 'STOREOS_E2E_STOP_FILE', 'STOREOS_E2E_ALLOWED_ORIGIN')) {
+foreach ($name in @('STOREOS_DB_PASSWORD_FILE', 'STOREOS_E2E_MANIFEST', 'STOREOS_E2E_STOP_FILE', 'STOREOS_E2E_ALLOWED_ORIGIN', 'STOREOS_E2E_MODE', 'STOREOS_E2E_API_PORT')) {
     $previousEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
 }
 
@@ -106,6 +110,88 @@ function Wait-ForDriver([Diagnostics.Process]$Process) {
     throw 'ChromeDriver did not become ready within 30 seconds.'
 }
 
+function Wait-ForPortFree([int]$Port) {
+    $deadline = [DateTime]::UtcNow.AddSeconds(30)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        if (!(Test-LoopbackPort $Port)) { return }
+        Start-Sleep -Milliseconds 250
+    }
+    throw "Loopback port $Port did not become free."
+}
+
+function Assert-FixtureMarker([string]$LogName, [string]$Marker) {
+    $file = Join-Path $runDirectory "$LogName.stdout.log"
+    $deadline = [DateTime]::UtcNow.AddSeconds(15)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        if (Test-Path -LiteralPath $file -PathType Leaf) {
+            if ([IO.File]::ReadAllText($file).Contains($Marker)) { return }
+        }
+        Start-Sleep -Milliseconds 250
+    }
+    throw "E2E fixture log $LogName does not contain $Marker."
+}
+
+function Start-Fixture([string]$Mode, [string]$StopPath, [string]$LogName) {
+    $env:STOREOS_E2E_MODE = $Mode
+    $env:STOREOS_E2E_STOP_FILE = $StopPath
+    return Start-LoggedProcess $dartTool @('run', 'tool/numeric_e2e_fixture.dart') $serverDirectory $LogName
+}
+
+function Stop-Fixture(
+    [Diagnostics.Process]$Process,
+    [string]$StopPath,
+    [string]$LogName,
+    [string]$Marker,
+    [int]$TimeoutSeconds = 120
+) {
+    if (!$Process.HasExited) {
+        [IO.File]::WriteAllText($StopPath, '', [Text.UTF8Encoding]::new($false))
+        if (!$Process.WaitForExit($TimeoutSeconds * 1000)) {
+            $Process.Kill($true)
+            $Process.WaitForExit()
+            throw "E2E fixture $LogName did not stop within $TimeoutSeconds seconds."
+        }
+    }
+    if ($Process.ExitCode -ne 0) { throw "E2E fixture $LogName failed (exit $($Process.ExitCode))." }
+    Assert-FixtureMarker $LogName $Marker
+}
+
+function Invoke-Drive([string]$Phase, [string]$LogName) {
+    $driveArguments = @(
+        'drive', '--driver=test_driver/integration_test.dart',
+        '--target=integration_test/numeric_guided_work_test.dart',
+        '-d', 'web-server', '--web-hostname=127.0.0.1', '--web-port=8095',
+        '--headless', '--no-web-resources-cdn',
+        ('"--dart-define-from-file=' + $manifestPath + '"'),
+        ('"--dart-define=STOREOS_E2E_PHASE=' + $Phase + '"')
+    )
+    # flutter drive's WebDriver capabilities require an explicit browser binary;
+    # CHROME_EXECUTABLE alone does not select it for the web-server device.
+    if (![string]::IsNullOrWhiteSpace($chromeBinary)) {
+        $driveArguments += ('"--chrome-binary=' + $chromeBinary + '"')
+    }
+    $script:driveProcess = Start-LoggedProcess $flutterTool $driveArguments $clientDirectory $LogName
+    if (!$script:driveProcess.WaitForExit(600000)) {
+        $script:driveProcess.Kill($true)
+        $script:driveProcess.WaitForExit()
+        throw "Flutter browser E2E phase $Phase exceeded the ten-minute timeout."
+    }
+    if ($script:driveProcess.ExitCode -ne 0) { throw "Flutter browser E2E phase $Phase failed (exit $($script:driveProcess.ExitCode))." }
+    $script:driveProcess = $null
+}
+
+function Invoke-FixtureCleanup {
+    if (!(Test-Path -LiteralPath $manifestPath -PathType Leaf)) { return }
+    $env:STOREOS_E2E_MODE = 'cleanup'
+    $process = Start-LoggedProcess $dartTool @('run', 'tool/numeric_e2e_fixture.dart') $serverDirectory 'fixture-cleanup'
+    if (!$process.WaitForExit(120000)) {
+        $process.Kill($true)
+        $process.WaitForExit()
+        throw 'E2E cleanup fixture timed out.'
+    }
+    if ($process.ExitCode -ne 0) { throw "E2E cleanup fixture failed (exit $($process.ExitCode))." }
+}
+
 try {
     if ([string]::IsNullOrWhiteSpace($env:STOREOS_TEST_DATABASE)) {
         throw 'Set STOREOS_TEST_DATABASE to a dedicated PostgreSQL *_test database.'
@@ -145,11 +231,12 @@ try {
     }
     if (Test-LoopbackPort 4444) { throw 'Port 4444 is already in use; stop that service before this isolated E2E run.' }
     if (Test-LoopbackPort 8095) { throw 'Port 8095 is already in use; stop that service before this isolated E2E run.' }
+    if (Test-LoopbackPort $apiPort) { throw "Port $apiPort is already in use; stop that service before this isolated E2E run." }
 
     New-Item -ItemType Directory -Path $runDirectory -Force | Out-Null
     $env:STOREOS_E2E_MANIFEST = $manifestPath
-    $env:STOREOS_E2E_STOP_FILE = $stopPath
     $env:STOREOS_E2E_ALLOWED_ORIGIN = 'http://127.0.0.1:8095'
+    $env:STOREOS_E2E_API_PORT = "$apiPort"
 
     Push-Location $serverDirectory
     try {
@@ -162,32 +249,25 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Flutter package resolution failed.' }
     } finally { Pop-Location }
 
-    $fixtureProcess = Start-LoggedProcess $dartTool @('run', 'tool/numeric_e2e_fixture.dart') $serverDirectory 'fixture'
-    Wait-ForFixture $fixtureProcess
+    # Phase A: prepare the installation and let the worker block the task.
+    $prepareProcess = Start-Fixture 'prepare' $prepareStopPath 'fixture-prepare'
+    Wait-ForFixture $prepareProcess
     # ChromeDriver's default accepts local connections only.
     $driverProcess = Start-LoggedProcess $ChromeDriverPath @('--port=4444') $repository 'chromedriver'
     Wait-ForDriver $driverProcess
+    Invoke-Drive 'A' 'flutter-drive-a'
+    Stop-Fixture $prepareProcess $prepareStopPath 'fixture-prepare' 'numeric_e2e_fixture_handover'
+    $prepareProcess = $null
+    Wait-ForPortFree $apiPort
 
-    # Start-Process bounds Flutter's execution and keeps credentials out of command output.
-    $driveArguments = @(
-        'drive', '--driver=test_driver/integration_test.dart',
-        '--target=integration_test/numeric_guided_work_test.dart',
-        '-d', 'web-server', '--web-hostname=127.0.0.1', '--web-port=8095',
-        '--headless', '--no-web-resources-cdn',
-        ('"--dart-define-from-file=' + $manifestPath + '"')
-    )
-    # flutter drive's WebDriver capabilities require an explicit browser binary;
-    # CHROME_EXECUTABLE alone does not select it for the web-server device.
-    if (![string]::IsNullOrWhiteSpace($chromeBinary)) {
-        $driveArguments += ('"--chrome-binary=' + $chromeBinary + '"')
-    }
-    $driveProcess = Start-LoggedProcess $flutterTool $driveArguments $clientDirectory 'flutter-drive'
-    if (!$driveProcess.WaitForExit(600000)) {
-        $driveProcess.Kill($true)
-        $driveProcess.WaitForExit()
-        throw 'Flutter browser E2E exceeded the ten-minute timeout.'
-    }
-    if ($driveProcess.ExitCode -ne 0) { throw "Flutter browser E2E failed (exit $($driveProcess.ExitCode))." }
+    # Phase B and C: serve the handed-over schema from a new API process.
+    $resumeProcess = Start-Fixture 'resume' $resumeStopPath 'fixture-resume'
+    Wait-ForFixture $resumeProcess
+    Invoke-Drive 'B' 'flutter-drive-b'
+    Invoke-Drive 'C' 'flutter-drive-c'
+    Stop-Fixture $resumeProcess $resumeStopPath 'fixture-resume' 'numeric_e2e_fixture_verified'
+    $resumeProcess = $null
+    $runVerified = $true
 } catch {
     $runFailure = $_
 } finally {
@@ -200,19 +280,22 @@ try {
         } catch {
             if (!$cleanupFailure) { $cleanupFailure = $_ }
         }
+        $driveProcess = $null
     }
-    if ($fixtureProcess) {
+    if ($prepareProcess) {
         try {
-            if (!$fixtureProcess.HasExited) {
-                [IO.File]::WriteAllText($stopPath, '', [Text.UTF8Encoding]::new($false))
-                if (!$fixtureProcess.WaitForExit(30000)) {
-                    $fixtureProcess.Kill($true)
-                    $fixtureProcess.WaitForExit()
-                    throw 'E2E fixture did not stop and clean its isolated schema within 30 seconds.'
-                }
-            }
-            if ($fixtureProcess.ExitCode -ne 0) { throw "E2E fixture outcome verification or cleanup failed (exit $($fixtureProcess.ExitCode))." }
-        } catch { $cleanupFailure = $_ }
+            Stop-Fixture $prepareProcess $prepareStopPath 'fixture-prepare' 'numeric_e2e_fixture_handover'
+        } catch { if (!$cleanupFailure) { $cleanupFailure = $_ } }
+        $prepareProcess = $null
+    }
+    if ($resumeProcess) {
+        try {
+            Stop-Fixture $resumeProcess $resumeStopPath 'fixture-resume' 'numeric_e2e_fixture_verified'
+        } catch { if (!$cleanupFailure) { $cleanupFailure = $_ } }
+        $resumeProcess = $null
+    }
+    if (!$runVerified) {
+        try { Invoke-FixtureCleanup } catch { if (!$cleanupFailure) { $cleanupFailure = $_ } }
     }
     if ($driverProcess) {
         try {

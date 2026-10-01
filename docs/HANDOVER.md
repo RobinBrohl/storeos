@@ -1,6 +1,6 @@
 # StoreOS handover
 
-Start here after [AGENTS.md](../AGENTS.md). Baseline: `da2c9e8`, assessed 2026-09-29.
+Start here after [AGENTS.md](../AGENTS.md). Baseline: `8a58226`, assessed 2026-09-30.
 The incoming tree was clean. This handover does not authorize the next feature.
 [Actual status](roadmap/status.md) and [verification](development/handover-verification.md)
 distinguish current evidence from plans.
@@ -58,18 +58,19 @@ The authoritative priority order is in [product principles](product-principles.m
 
 ## Current Implementation State
 
-P0 and P1 are complete for their bounded single-site/Web scope. P1b.1–P1b.7 implement
+P0 and P1 are complete for their bounded single-site/Web scope. P1b.1–P1b.8 implement
 employee identity, templates, atomic shift publication, Employee Home, confirmation/
-numeric steps, blocking, administrative resume/cancellation and completion. The real
+numeric steps, blocking, administrative resume/cancellation and completion, and
+pre-execution published-shift cancellation. The real
 browser test runs the numeric journey across a replaced API process and a browser page
 boundary, and the fixture replays recorded operation IDs against the restarted server;
 the merged slice was subsequently verified by the remote CI job.
 
 P1b acceptance/pilot hardening remains active; P2 has operating foundations, a
-remotely verified task-aware backup/restore acceptance and a locally verified
-concurrent-work capacity measurement (pending independent review and remote CI) but no
-device-offline implementation. Only a Flutter Web runner is checked in. Published
-shifts cannot be edited/cancelled; cancelling a blocked task is a different operation.
+remotely verified task-aware backup/restore acceptance and a remotely verified
+concurrent-work capacity measurement but no device-offline implementation. Only a Flutter Web runner is checked in. Published
+shifts can be cancelled while every task instance is still open; editing/cancelling
+started shifts and cancelling a blocked task are different operations.
 There is no automatic priority engine, timezone-aware recurring calendar, timekeeping,
 stock ledger or HACCP module. See [status](roadmap/status.md) before claiming completion.
 
@@ -79,7 +80,7 @@ stock ledger or HACCP module. See [status](roadmap/status.md) before claiming co
 | --- | --- |
 | `apps/server/bin/` | Explicit server, migration and bootstrap entry points |
 | `apps/server/lib/src/` | HTTP/configuration, application coordinators, identity/organization/people/workforce/tasks and platform persistence |
-| `apps/server/migrations/` | Append-only SQL history 0001–0010; `MigrationRunner` also applies runtime grants |
+| `apps/server/migrations/` | Append-only SQL history 0001–0011; `MigrationRunner` also applies runtime grants |
 | `apps/server/test/`, `tool/` | Unit and real PostgreSQL/HTTP tests; isolated browser fixtures |
 | `apps/client_flutter/lib/src/` | App composition, controllers, API adapters, UI |
 | `apps/client_flutter/test/`, `integration_test/`, `test_driver/` | Unit/widget tests and Web E2E |
@@ -291,8 +292,30 @@ Proposals only; implement one approved scope at a time.
   results are measurements, not flaky CI thresholds or promises for larger sites.
 - **Required Tests:** small harness smoke, concurrent real HTTP/DB integrity checks,
   existing authorization/race regressions and analyzer checks.
-- **Status (2026-09-30):** implemented and locally verified (smoke profile, two
-  consecutive full runs with identical integrity verdicts, injected integrity and
-  operational failure runs, real-PostgreSQL smoke test, report-redaction check). Changes
-  are uncommitted and await independent review; remote CI is not yet executed. See
+- **Status (2026-09-30):** implemented, independently reviewed, committed to `main` as
+  `8a58226` and verified by the remote CI run (including the capacity report redaction
+  check). Local evidence: smoke profile, two consecutive full runs with identical
+  integrity verdicts, injected integrity and operational failure runs, real-PostgreSQL
+  smoke test and report-redaction check. See
   [P2 capacity measurement](development/phase-2-capacity-measurement.md).
+
+### 4. Cancel a published shift before execution starts
+
+- **Goal:** let an administrator retract a wrongly published shift while no work has
+  started, without reconciling started work.
+- **Exact Scope:** one authorized transaction cancelling the shift and every still-open
+  instance with reason, cancellation evidence, audit and strict version-based retry;
+  Employee Home exclusion and admin cancelled-state display.
+- **Out of Scope:** editing published shifts, partial/per-task cancellation, in-flight
+  reconciliation, series, notifications, offline behavior, new capabilities or events.
+- **Acceptance Criteria:** every task must still be open or the whole request is refused
+  with no writes; state, evidence and audit commit atomically; interval is freed;
+  exact retries are side-effect free; other scopes are denied server-side.
+- **Required Tests:** real PostgreSQL migration upgrade, success/refusal matrix,
+  idempotency, authorization, overlap, concurrency and rollback injection; contract,
+  controller/widget and numeric E2E regressions.
+- **Status (2026-10-01):** implemented and locally verified (contract/server/Flutter
+  suites, migration upgrade, rollback and lock-contention races, unchanged numeric
+  browser E2E). Independent review and remote CI pending. See
+  [P1b.8 shift cancellation](development/phase-1b-8-shift-cancellation.md) and
+  [ADR 0013](adr/0013-published-shift-cancellation.md).

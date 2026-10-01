@@ -204,6 +204,16 @@ class MigrationRunner {
             'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.task_numeric_attempts FROM $role',
           );
         }
+        if (known.containsKey('0011_published_shift_cancellation')) {
+          await tx.execute(
+            'GRANT UPDATE (cancelled_at, cancelled_by, cancellation_reason, '
+            'cancellation_version) ON $_schema.shifts TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (cancelled_at, cancelled_by) '
+            'ON $_schema.task_instances TO $role',
+          );
+        }
         if (known.containsKey('0009_task_cancellation')) {
           await tx.execute(
             'GRANT UPDATE (resolution_kind) ON $_schema.task_blockings TO $role',

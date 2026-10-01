@@ -10,7 +10,7 @@ class ShiftRepository {
   String get _select =>
       '''SELECT s.id::text, s.company_id::text, s.location_id::text, s.employee_id::text,
     s.starts_at, s.ends_at, s.status, s.version, s.created_at, s.updated_at, s.published_at, s.publication_version,
-    s.created_by::text, s.creation_input,
+    s.created_by::text, s.creation_input, s.cancelled_at, s.cancelled_by::text, s.cancellation_reason, s.cancellation_version,
     COALESCE((SELECT jsonb_agg(jsonb_build_object('templateId',template_id::text,'revisionId',revision_id::text) ORDER BY position)
       FROM $schema.shift_template_selections WHERE shift_id=s.id),'[]'::jsonb) AS selections
     FROM $schema.shifts s WHERE s.company_id=CAST(@company AS uuid)''';
@@ -37,6 +37,10 @@ class ShiftRepository {
       updatedAt: r['updated_at'] as DateTime,
       publishedAt: r['published_at'] as DateTime?,
       publicationVersion: r['publication_version'] as int?,
+      cancelledAt: r['cancelled_at'] as DateTime?,
+      cancelledBy: r['cancelled_by'] as String?,
+      cancellationReason: r['cancellation_reason'] as String?,
+      cancellationVersion: r['cancellation_version'] as int?,
     ),
     r['creation_input'] as String,
     r['created_by'] as String,
@@ -171,6 +175,31 @@ class ShiftRepository {
         'id': current.view.id,
         'actor': actorId,
         'version': current.view.version,
+      },
+    );
+    if (result.affectedRows != 1) throw ShiftConflict();
+  }
+
+  Future<void> cancel(
+    TxSession tx,
+    Shift current,
+    String actorId,
+    String reason,
+    DateTime now,
+  ) async {
+    final result = await tx.execute(
+      Sql.named(
+        '''UPDATE $schema.shifts SET status='cancelled',version=version+1,updated_at=clock_timestamp(),
+      cancelled_at=@now,cancelled_by=CAST(@actor AS uuid),cancellation_reason=@reason,cancellation_version=@version
+      WHERE id=CAST(@id AS uuid) AND company_id=CAST(@company AS uuid) AND version=@version AND status='published' ''',
+      ),
+      parameters: {
+        ..._scope,
+        'id': current.view.id,
+        'actor': actorId,
+        'reason': reason,
+        'version': current.view.version,
+        'now': now,
       },
     );
     if (result.affectedRows != 1) throw ShiftConflict();

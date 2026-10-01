@@ -79,6 +79,67 @@ void main() {
       throwsFormatException,
     );
   });
+  test('shift-origin unstarted cancellation has its own strict shape', () {
+    final unstarted = TaskExecutionDto(
+      instanceId: id,
+      status: 'cancelled',
+      version: 2,
+      results: [],
+      cancelledAt: time,
+      cancelledBy: id,
+    );
+    final json = unstarted.toJson();
+    expect(json['startedAt'], isNull);
+    expect(json.containsKey('cancelledBlockingId'), isFalse);
+    final parsed = TaskExecutionDto.fromJson(json);
+    expect(parsed.status, 'cancelled');
+    expect(parsed.cancelledAt, time);
+    expect(parsed.cancelledBy, id);
+    expect(parsed.cancelledBlockingId, isNull);
+    for (final invalid in [
+      {...json, 'startedAt': time.toIso8601String(), 'startedBy': id},
+      {...json, 'cancelledBlockingId': id},
+      {...json, 'version': 3},
+      {...json, 'cancelledAt': null},
+      {...json, 'cancelledBy': null},
+      {
+        ...json,
+        'results': [TaskStepResultDto(id, time, id).toJson()],
+      },
+    ]) {
+      expect(() => TaskExecutionDto.fromJson(invalid), throwsFormatException);
+    }
+    expect(
+      () => TaskExecutionDto.fromJson({
+        ...cancelled,
+        'cancelledBlockingId': null,
+      }),
+      throwsFormatException,
+    );
+    expect(
+      () => TaskExecutionDto.fromJson({
+        ...cancelled,
+        'startedAt': null,
+        'startedBy': null,
+      }),
+      throwsFormatException,
+    );
+  });
+  test(
+    'reason normalization keeps Unicode retry identity stable and strict',
+    () {
+      final astralBoundary = '${'😀' * 250}${'x' * 250}';
+      expect(astralBoundary.runes.length, 500);
+      expect(astralBoundary.length, greaterThan(512));
+      expect(blockingReason('  $astralBoundary  '), astralBoundary);
+      expect(blockingReason('$astralBoundary\r\n'), astralBoundary);
+      expect(
+        blockingReason('${'😀' * 250}${'x' * 249}y'),
+        isNot(astralBoundary),
+      );
+      expect(() => blockingReason('$astralBoundary😀'), throwsFormatException);
+    },
+  );
   test(
     'history distinguishes cancellation from resumed and reads legacy closure',
     () {

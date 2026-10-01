@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:storeos_api_contracts/api_contracts.dart';
 import 'package:test/test.dart';
 
@@ -76,6 +78,162 @@ void main() {
         'selections': [...ten, ten.first],
       }),
       throwsFormatException,
+    );
+  });
+  test(
+    'shift cancellation evidence is present exactly for cancelled shifts',
+    () {
+      const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+      final base = {
+        'id': id,
+        'companyId': id,
+        'locationId': id,
+        'employeeId': id,
+        'startsAt': '2030-01-01T08:00:00Z',
+        'endsAt': '2030-01-01T10:00:00Z',
+        'selections': [
+          {'templateId': id, 'revisionId': id},
+        ],
+        'status': 'published',
+        'version': 3,
+        'createdAt': '2030-01-01T07:00:00Z',
+        'updatedAt': '2030-01-01T07:00:00Z',
+        'publishedAt': '2030-01-01T07:00:00Z',
+        'publicationVersion': 2,
+      };
+      final cancelled = {
+        ...base,
+        'status': 'cancelled',
+        'cancelledAt': '2030-01-01T07:30:00Z',
+        'cancelledBy': id,
+        'cancellationReason': 'Wrong employee planned',
+        'cancellationVersion': 2,
+      };
+      final dto = ShiftDto.fromJson(cancelled);
+      expect(dto.status, 'cancelled');
+      expect(dto.cancelledAt, DateTime.utc(2030, 1, 1, 7, 30));
+      expect(dto.cancelledBy, id);
+      expect(dto.cancellationReason, 'Wrong employee planned');
+      expect(dto.cancellationVersion, 2);
+      expect(
+        ShiftDto.fromJson(dto.toJson()).cancellationReason,
+        'Wrong employee planned',
+      );
+      for (final key in [
+        'cancelledAt',
+        'cancelledBy',
+        'cancellationReason',
+        'cancellationVersion',
+      ]) {
+        expect(
+          () => ShiftDto.fromJson({...cancelled, key: null}),
+          throwsFormatException,
+        );
+        expect(
+          () => ShiftDto.fromJson({...base, key: cancelled[key]}),
+          throwsFormatException,
+        );
+      }
+      expect(
+        () => ShiftDto.fromJson({...cancelled, 'cancellationReason': ''}),
+        throwsFormatException,
+      );
+      expect(
+        () => ShiftDto.fromJson({...cancelled, 'cancellationVersion': 0}),
+        throwsFormatException,
+      );
+      expect(
+        () => ShiftDto.fromJson({...cancelled, 'status': 'unknown'}),
+        throwsFormatException,
+      );
+    },
+  );
+  test(
+    'cancellation reason boundary counts Unicode code points, not UTF-16 units',
+    () {
+      const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+      final cancelled = {
+        'id': id,
+        'companyId': id,
+        'locationId': id,
+        'employeeId': id,
+        'startsAt': '2030-01-01T08:00:00Z',
+        'endsAt': '2030-01-01T10:00:00Z',
+        'selections': [
+          {'templateId': id, 'revisionId': id},
+        ],
+        'status': 'cancelled',
+        'version': 3,
+        'createdAt': '2030-01-01T07:00:00Z',
+        'updatedAt': '2030-01-01T07:00:00Z',
+        'publishedAt': '2030-01-01T07:00:00Z',
+        'publicationVersion': 2,
+        'cancelledAt': '2030-01-01T07:30:00Z',
+        'cancelledBy': id,
+        'cancellationVersion': 2,
+      };
+      final asciiBoundary = 'a' * 500;
+      expect(
+        ShiftDto.fromJson({
+          ...cancelled,
+          'cancellationReason': asciiBoundary,
+        }).cancellationReason,
+        asciiBoundary,
+      );
+      expect(
+        () =>
+            ShiftDto.fromJson({...cancelled, 'cancellationReason': 'a' * 501}),
+        throwsFormatException,
+      );
+      final astralBoundary = '${'😀' * 250}${'x' * 250}';
+      expect(astralBoundary.runes.length, 500);
+      expect(astralBoundary.length, greaterThan(500));
+      final dto = ShiftDto.fromJson({
+        ...cancelled,
+        'cancellationReason': astralBoundary,
+      });
+      expect(dto.cancellationReason, astralBoundary);
+      expect(dto.toJson()['cancellationReason'], astralBoundary);
+      expect(
+        () => ShiftDto.fromJson({
+          ...cancelled,
+          'cancellationReason': '$astralBoundary😀',
+        }),
+        throwsFormatException,
+      );
+    },
+  );
+  test('OpenAPI documents pre-execution shift cancellation', () {
+    final document = jsonDecode(
+      File('platform.openapi.json').readAsStringSync(),
+    );
+    final operation =
+        document['paths']['/api/v1/platform/shifts/{id}/cancel']['post'] as Map;
+    final schemas = document['components']['schemas'] as Map;
+    final body = schemas['CancelShift'] as Map;
+    final properties = body['properties'] as Map;
+    expect(body['required'], containsAll(['expectedVersion', 'reason']));
+    expect(properties['reason']['maxLength'], 500);
+    expect(
+      operation['responses']['200']['content']['application/json']['schema']['\$ref'],
+      '#/components/schemas/ShiftDetail',
+    );
+    expect(
+      operation['requestBody']['content']['application/json']['schema']['\$ref'],
+      '#/components/schemas/CancelShift',
+    );
+    expect(
+      schemas['Shift']['properties']['status']['enum'],
+      contains('cancelled'),
+    );
+    expect(
+      (schemas['Shift']['properties'] as Map).keys,
+      containsAll([
+        'cancelledAt',
+        'cancelledBy',
+        'cancellationReason',
+        'cancellationVersion',
+      ]),
     );
   });
 }

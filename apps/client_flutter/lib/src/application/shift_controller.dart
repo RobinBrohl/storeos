@@ -171,6 +171,15 @@ class ShiftController extends ChangeNotifier {
 
   bool get canPublish =>
       editable && !editingNew && !dirty && selections.isNotEmpty;
+  bool get canCancelShift =>
+      !self &&
+      platform.allows('workforce.shifts.manage') &&
+      !busy &&
+      !conflict &&
+      !unconfirmed &&
+      selected?.status == 'published' &&
+      tasks.isNotEmpty &&
+      tasks.every((t) => t.status == 'open');
   bool canAddRevision(TemplateRevisionDto revision) =>
       editable &&
       !revision.isDraft &&
@@ -678,6 +687,55 @@ class ShiftController extends ChangeNotifier {
     });
   }
 
+  Future<void> cancelShift(String reason) {
+    if (!canCancelShift) return Future.value();
+    return _run((e) async {
+      final normalized = blockingReason(reason);
+      _pendingRoute = '/shifts/${selected!.id}/cancel';
+      _pendingBody = {
+        'expectedVersion': selected!.version,
+        'reason': normalized,
+      };
+      await _send(e);
+    });
+  }
+
+  bool _matches(
+    String route,
+    Map<String, dynamic> body,
+    ShiftDto? prior,
+    ShiftDto actual,
+  ) {
+    final publish = route.endsWith('/publish');
+    final cancel = route.endsWith('/cancel');
+    final intended = publish || cancel
+        ? prior!.draft
+        : ShiftDraftInput.fromJson(body);
+    if (jsonEncode(actual.draft.toJson()) != jsonEncode(intended.toJson())) {
+      return false;
+    }
+    if (publish) {
+      return actual.status == 'published' &&
+          actual.publicationVersion == body['expectedVersion'];
+    }
+    if (cancel) {
+      return actual.status == 'cancelled' &&
+          actual.cancellationVersion == body['expectedVersion'] &&
+          actual.cancellationReason == body['reason'] &&
+          actual.cancelledBy == session.user?.id;
+    }
+    return actual.status == 'draft' &&
+        actual.version ==
+            (body.containsKey('expectedVersion')
+                ? (body['expectedVersion'] as int) +
+                      (prior != null &&
+                              jsonEncode(prior.draft.toJson()) ==
+                                  jsonEncode(intended.toJson())
+                          ? 0
+                          : 1)
+                : 1);
+  }
+
   Future<void> retry() => _run((e) async {
     if (_pendingRoute != null && !conflict) await _send(e);
   });
@@ -691,10 +749,7 @@ class ShiftController extends ChangeNotifier {
       );
       if (!_current(e)) return;
       final actual = ShiftDto.fromJson(raw['shift'] as Map<String, dynamic>);
-      final intended = route.endsWith('/publish')
-          ? prior!.draft
-          : ShiftDraftInput.fromJson(body);
-      if (jsonEncode(actual.draft.toJson()) != jsonEncode(intended.toJson())) {
+      if (!_matches(route, body, prior, actual)) {
         throw const StoreApiException(
           'shift_conflict',
           'Abweichender Serverstand. Bitte ausdrücklich neu laden.',
@@ -725,25 +780,7 @@ class ShiftController extends ChangeNotifier {
       try {
         final raw = await _get(e, '/shifts/$id');
         final actual = ShiftDto.fromJson(raw['shift'] as Map<String, dynamic>);
-        final intended = route.endsWith('/publish')
-            ? prior!.draft
-            : ShiftDraftInput.fromJson(body);
-        final matches =
-            jsonEncode(actual.draft.toJson()) == jsonEncode(intended.toJson());
-        final versionMatches = route.endsWith('/publish')
-            ? actual.status == 'published' &&
-                  actual.publicationVersion == body['expectedVersion']
-            : actual.status == 'draft' &&
-                  actual.version ==
-                      (body.containsKey('expectedVersion')
-                          ? (body['expectedVersion'] as int) +
-                                (prior != null &&
-                                        jsonEncode(prior.draft.toJson()) ==
-                                            jsonEncode(intended.toJson())
-                                    ? 0
-                                    : 1)
-                          : 1);
-        if (matches && versionMatches) {
+        if (_matches(route, body, prior, actual)) {
           _accept(raw);
           _newId = null;
           notice = 'Serverstand nach Antwortverlust bestätigt.';
@@ -797,6 +834,8 @@ class ShiftController extends ChangeNotifier {
       'Die Schicht überschneidet sich mit einer veröffentlichten Schicht.',
     StoreApiException(code: 'shift_not_publishable') =>
       'Mindestens eine Aufgabe und eine noch nicht beendete Schicht sind erforderlich.',
+    StoreApiException(code: 'shift_in_progress') =>
+      'Mindestens eine Aufgabe wurde bereits begonnen. Die Schicht kann nicht mehr storniert werden.',
     StoreApiException(code: 'invalid_selection') =>
       'Nur veröffentlichte Vorlagenrevisionen dieses Standorts sind erlaubt.',
     StoreApiException(:final message) => message,

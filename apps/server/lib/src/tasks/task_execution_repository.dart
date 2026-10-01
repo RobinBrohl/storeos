@@ -10,7 +10,9 @@ class TaskExecutionRepository {
       Sql.named(
         '''SELECT t.id::text, t.status, t.version, t.started_at, t.started_by::text, t.completed_at, t.completed_by::text,
 
-      c.id::text AS cancelled_blocking_id, c.resolved_at AS cancelled_at, c.resolved_by::text AS cancelled_by,
+      c.id::text AS cancelled_blocking_id,
+      COALESCE(c.resolved_at,t.cancelled_at) AS cancelled_at,
+      COALESCE(c.resolved_by::text,t.cancelled_by::text) AS cancelled_by,
 
       (SELECT b.id::text FROM $schema.task_blockings b WHERE b.instance_id=t.id AND b.resolved_at IS NULL) AS blocking_id
 

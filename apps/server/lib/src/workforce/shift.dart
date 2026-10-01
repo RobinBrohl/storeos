@@ -17,6 +17,12 @@ class Shift {
 
   bool repeatsPublication(int version) =>
       view.status == 'published' && view.publicationVersion == version;
+  void requireCancellable(int version) {
+    if (view.status != 'published' || view.version != version) {
+      throw ShiftConflict();
+    }
+  }
+
   void requirePublishable(DateTime now) {
     if (view.draft.selections.isEmpty || !view.draft.endsAt.isAfter(now)) {
       throw ShiftNotPublishable();

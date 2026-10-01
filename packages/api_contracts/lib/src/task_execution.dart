@@ -80,49 +80,70 @@ class TaskExecutionDto {
     final cancelledBlockingId = j['cancelledBlockingId'] == null
         ? null
         : shiftUuid(j['cancelledBlockingId']);
-    if (!{
-          'open',
-          'in_progress',
-          'blocked',
-          'completed',
-          'cancelled',
-        }.contains(status) ||
-        (status == 'cancelled'
-            ? cancelledAt == null ||
-                  cancelledBy == null ||
-                  cancelledBlockingId == null ||
-                  start == null ||
-                  cancelledAt.isBefore(start)
-            : cancelledAt != null ||
-                  cancelledBy != null ||
-                  cancelledBlockingId != null) ||
-        (status == 'blocked') != (blocking != null) ||
-        version is! int ||
-        version < 1 ||
-        results.length > 20 ||
-        results.map((r) => r.stepId).toSet().length != results.length ||
-        (status == 'open'
-            ? version != 1 ||
-                  results.isNotEmpty ||
-                  start != null ||
-                  startBy != null ||
-                  end != null ||
-                  endBy != null
-            : start == null ||
-                  startBy == null ||
-                  version <
+    const statuses = {
+      'open',
+      'in_progress',
+      'blocked',
+      'completed',
+      'cancelled',
+    };
+    final open = status == 'open';
+    final cancelled = status == 'cancelled';
+    final unstartedCancelled = cancelled && start == null;
+    final hasCancellationEvidence =
+        cancelledAt != null ||
+        cancelledBy != null ||
+        cancelledBlockingId != null;
+    final boundedResults =
+        results.length <= 20 &&
+        results.map((r) => r.stepId).toSet().length == results.length;
+    final valid =
+        statuses.contains(status) &&
+        version is int &&
+        version >= 1 &&
+        boundedResults &&
+        ((status == 'blocked') == (blocking != null)) &&
+        (open
+            ? !hasCancellationEvidence &&
+                  version == 1 &&
+                  results.isEmpty &&
+                  start == null &&
+                  startBy == null &&
+                  end == null &&
+                  endBy == null
+            : cancelled
+            ? unstartedCancelled
+                  ? cancelledAt != null &&
+                        cancelledBy != null &&
+                        cancelledBlockingId == null &&
+                        startBy == null &&
+                        end == null &&
+                        endBy == null &&
+                        results.isEmpty &&
+                        version == 2
+                  : cancelledAt != null &&
+                        cancelledBy != null &&
+                        cancelledBlockingId != null &&
+                        start != null &&
+                        startBy != null &&
+                        end == null &&
+                        endBy == null &&
+                        !cancelledAt.isBefore(start) &&
+                        version >= results.length + 4 &&
+                        !results.any((r) => r.confirmedAt.isBefore(start))
+            : start != null &&
+                  startBy != null &&
+                  !hasCancellationEvidence &&
+                  version >=
                       results.length +
-                          (status == 'cancelled'
-                              ? 4
-                              : status == 'completed'
+                          (status == 'completed' || status == 'blocked'
                               ? 3
-                              : status == 'blocked'
-                              ? 3
-                              : 2) ||
-                  results.any((r) => r.confirmedAt.isBefore(start)) ||
+                              : 2) &&
+                  !results.any((r) => r.confirmedAt.isBefore(start)) &&
                   (status == 'completed'
-                      ? end == null || endBy == null || end.isBefore(start)
-                      : end != null || endBy != null))) {
+                      ? end != null && endBy != null && !end.isBefore(start)
+                      : end == null && endBy == null));
+    if (!valid) {
       throw const FormatException('Ungültiger Ausführungsstand.');
     }
     var priorVersion = 2;

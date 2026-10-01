@@ -6,6 +6,7 @@ Future<({String root, String task, String token, _Plan plan})> _executionPlan(
   int steps = 1,
   bool numeric = false,
   int numericSteps = 1,
+  String accountName = 'executor',
 }) async {
   final p = await _plan(
     f,
@@ -25,7 +26,7 @@ Future<({String root, String task, String token, _Plan plan})> _executionPlan(
   return (
     root: '/employee-home/shifts/${p.id}/tasks/$id',
     task: id,
-    token: await _linkedAccount(f, p.employee, 'executor'),
+    token: await _linkedAccount(f, p.employee, accountName),
     plan: p,
   );
 }
@@ -205,7 +206,7 @@ void executionTests() {
         );
         Future<String> snapshot() async =>
             (await f.owner.execute(
-                  'SELECT (to_jsonb(t)-ARRAY[\'started_at\',\'started_by\',\'completed_at\',\'completed_by\'])::text FROM "${f.schema}".task_instances t',
+                  'SELECT (to_jsonb(t)-ARRAY[\'started_at\',\'started_by\',\'completed_at\',\'completed_by\',\'cancelled_at\',\'cancelled_by\'])::text FROM "${f.schema}".task_instances t',
                 )).single.first
                 as String;
         final before = await snapshot();
@@ -220,6 +221,7 @@ void executionTests() {
           '0008_task_blocking',
           '0009_task_cancellation',
           '0010_task_numeric_steps',
+          '0011_published_shift_cancellation',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

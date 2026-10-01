@@ -106,12 +106,44 @@ class WorkforceService {
     return result;
   }
 
+  Future<ShiftDto> cancel(
+    TxSession tx,
+    PlatformActor actor,
+    String id,
+    int expectedVersion,
+    String reason,
+    DateTime now,
+  ) async {
+    final current = await _get(tx, id);
+    if (current.view.status == 'cancelled') {
+      if (current.view.cancellationVersion == expectedVersion &&
+          current.view.cancelledBy == actor.id &&
+          current.view.cancellationReason == reason) {
+        return current.view;
+      }
+      throw ShiftConflict();
+    }
+    current.requireCancellable(expectedVersion);
+    await _repository.cancel(tx, current, actor.id, reason, now);
+    final result = await get(tx, id);
+    await _audit(
+      tx,
+      actor,
+      result,
+      'cancelled',
+      before: current.view,
+      reason: reason,
+    );
+    return result;
+  }
+
   Future<void> _audit(
     TxSession tx,
     PlatformActor actor,
     ShiftDto shift,
     String action, {
     ShiftDto? before,
+    String? reason,
   }) => database.audit(
     tx,
     actor,
@@ -126,6 +158,10 @@ class WorkforceService {
       'revisionIds': shift.draft.selections.map((s) => s.revisionId).toList(),
       'version': shift.version,
       'status': shift.status,
+      if (action == 'cancelled' && before != null) 'oldStatus': before.status,
+      if (action == 'cancelled' && before != null) 'oldVersion': before.version,
+      'reason': ?reason,
+      'cancellationVersion': ?shift.cancellationVersion,
       if (before != null)
         'changedFields': [
           if (before.draft.employeeId != shift.draft.employeeId) 'employeeId',

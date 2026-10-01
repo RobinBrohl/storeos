@@ -120,6 +120,10 @@ class ShiftDto {
     required this.updatedAt,
     this.publishedAt,
     this.publicationVersion,
+    this.cancelledAt,
+    this.cancelledBy,
+    this.cancellationReason,
+    this.cancellationVersion,
   });
   final String id, companyId, locationId, status;
   final int version;
@@ -127,20 +131,53 @@ class ShiftDto {
   final DateTime createdAt, updatedAt;
   final DateTime? publishedAt;
   final int? publicationVersion;
-  factory ShiftDto.fromJson(Map<String, dynamic> j) => ShiftDto(
-    id: shiftUuid(j['id']),
-    companyId: shiftUuid(j['companyId']),
-    locationId: shiftUuid(j['locationId']),
-    version: j['version'] as int,
-    status: j['status'] as String,
-    draft: ShiftDraftInput.fromJson(j),
-    createdAt: shiftInstant(j['createdAt']),
-    updatedAt: shiftInstant(j['updatedAt']),
-    publishedAt: j['publishedAt'] == null
+  final DateTime? cancelledAt;
+  final String? cancelledBy, cancellationReason;
+  final int? cancellationVersion;
+  factory ShiftDto.fromJson(Map<String, dynamic> j) {
+    final status = j['status'] as String;
+    final cancelledAt = j['cancelledAt'] == null
         ? null
-        : shiftInstant(j['publishedAt']),
-    publicationVersion: j['publicationVersion'] as int?,
-  );
+        : shiftInstant(j['cancelledAt']);
+    final cancelledBy = j['cancelledBy'] == null
+        ? null
+        : shiftUuid(j['cancelledBy']);
+    final cancellationReason = j['cancellationReason'];
+    final cancellationVersion = j['cancellationVersion'];
+    if (!{'draft', 'published', 'cancelled'}.contains(status) ||
+        (status == 'cancelled'
+            ? cancelledAt == null ||
+                  cancelledBy == null ||
+                  cancellationReason is! String ||
+                  cancellationReason.isEmpty ||
+                  cancellationReason.runes.length > 500 ||
+                  cancellationVersion is! int ||
+                  cancellationVersion < 1
+            : cancelledAt != null ||
+                  cancelledBy != null ||
+                  cancellationReason != null ||
+                  cancellationVersion != null)) {
+      throw const FormatException('Ungültiger Schichtstatus.');
+    }
+    return ShiftDto(
+      id: shiftUuid(j['id']),
+      companyId: shiftUuid(j['companyId']),
+      locationId: shiftUuid(j['locationId']),
+      version: j['version'] as int,
+      status: status,
+      draft: ShiftDraftInput.fromJson(j),
+      createdAt: shiftInstant(j['createdAt']),
+      updatedAt: shiftInstant(j['updatedAt']),
+      publishedAt: j['publishedAt'] == null
+          ? null
+          : shiftInstant(j['publishedAt']),
+      publicationVersion: j['publicationVersion'] as int?,
+      cancelledAt: cancelledAt,
+      cancelledBy: cancelledBy,
+      cancellationReason: cancellationReason as String?,
+      cancellationVersion: cancellationVersion as int?,
+    );
+  }
   Map<String, dynamic> toJson() => {
     'id': id,
     'companyId': companyId,
@@ -152,6 +189,11 @@ class ShiftDto {
     'updatedAt': updatedAt.toUtc().toIso8601String(),
     'publishedAt': publishedAt?.toUtc().toIso8601String(),
     'publicationVersion': publicationVersion,
+    if (cancelledAt != null)
+      'cancelledAt': cancelledAt!.toUtc().toIso8601String(),
+    if (cancelledBy != null) 'cancelledBy': cancelledBy,
+    if (cancellationReason != null) 'cancellationReason': cancellationReason,
+    if (cancellationVersion != null) 'cancellationVersion': cancellationVersion,
   };
 }
 

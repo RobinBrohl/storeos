@@ -211,6 +211,47 @@ class ShiftApplication {
     });
   }
 
+  Future<Map<String, dynamic>> cancel(
+    SessionPrincipal p,
+    String id,
+    Map<String, dynamic> input,
+  ) {
+    id = requireUuid({'id': id}, 'id');
+    requireFields(input, required: {'expectedVersion', 'reason'});
+    final version = requireVersion(input);
+    String reason;
+    try {
+      reason = blockingReason(input['reason']);
+    } on FormatException {
+      throw const PlatformFailure(
+        400,
+        'invalid_reason',
+        'A reason of 1 to 500 characters is required.',
+      );
+    }
+    return _run(p, 'workforce.shifts.manage', (tx, actor) async {
+      _require(actor, 'tasks.instances.read');
+      final shift = await _workforce.get(tx, id);
+      final now =
+          (await tx.execute('SELECT clock_timestamp()')).single.first
+              as DateTime;
+      if (shift.status == 'published') {
+        await _tasks.cancelForShift(
+          tx,
+          actor,
+          shiftId: id,
+          locationId: shift.locationId,
+          reason: reason,
+          now: now,
+        );
+      }
+      return _detail(
+        tx,
+        await _workforce.cancel(tx, actor, id, version, reason, now),
+      );
+    });
+  }
+
   Future<ShiftDto> _visible(
     TxSession tx,
     PlatformActor actor,

@@ -77,3 +77,5 @@ P1b.4 ergänzt den Tasks-Port `TaskExecutionService`. `ShiftApplication` prüft 
 P1b.5 erweitert denselben Tasks-Port um Blockierung, Klärung und Historie. Der Application-Koordinator prüft administrative Rechte, lokalen Standort und aktuelle People-Zuordnung; Tasks erhält diesen Check für neue Freigaben nach dem Replay-Abgleich. Kein neues Modul und kein Zugriff auf fremde Tabellen.
 
 P1b.6 ergänzt Stornierung im bestehenden Tasks-Port. ShiftApplication prüft Adminrecht und lokalen Scope; aktive People-Zuordnung ist nur für Freigaben erforderlich. Workforce-Daten bleiben unverändert.
+
+P1b.8 ergänzt die Stornierung veröffentlichter Schichten vor Ausführungsbeginn. `ShiftApplication` prüft Recht und Scope, lässt Tasks zuerst alle noch offenen Instanzen atomar stornieren (Tasks schreibt Zustand und Audit) und storniert danach die Schicht (Workforce schreibt Zustand und Audit) in derselben autorisierten Transaktion. Sind Instanzen bereits begonnen, blockiert, abgeschlossen oder storniert, lehnt der Tasks-Port den gesamten Vorgang mit 422 ab, ohne etwas zu schreiben. Kein neues Modul, kein Ereignis, keine fremden Tabellenzugriffe.

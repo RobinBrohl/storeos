@@ -46,3 +46,4 @@ These documents preserve the founder's StoreOS vision. Architecture describes th
 
 - [P2 – Aufgabenbezogene Backup-/Restore-Abnahme](development/phase-2-restore-acceptance.md) – lokaler Prüfnachweis, verschlüsselte Wiederherstellung der Aufgaben-Nachweise und verbleibende Grenzen
 - [P2 – Concurrent-work capacity measurement](development/phase-2-capacity-measurement.md) – measurement contract, profiles, integrity proof and local evidence; timings are environment-specific observations
+- [P1b.8 – Published-shift cancellation](development/phase-1b-8-shift-cancellation.md) – pre-execution cancellation contract, evidence, idempotency and verification scope; [ADR 0013](adr/0013-published-shift-cancellation.md)

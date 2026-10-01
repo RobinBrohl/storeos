@@ -39,6 +39,17 @@ class ShiftRoutes {
         ),
       ),
     );
+    router.post(
+      '$root/<id>/cancel',
+      (Request r, String id) async => jsonResponse(
+        200,
+        await app.cancel(
+          await auth.authenticate(bearerToken(r)),
+          id,
+          await readJson(r),
+        ),
+      ),
+    );
     router.get(
       '/api/v1/platform/employee-home/running-tasks',
       (Request r) async => jsonResponse(

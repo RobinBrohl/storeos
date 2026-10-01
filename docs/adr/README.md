@@ -16,5 +16,6 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0010](0010-offline-und-sync-strategie.md) | Offline- und Synchronisationsstrategie |
 | [0011](0011-atomare-schichtveroeffentlichung.md) | Atomare Schichtveröffentlichung im ersten Slice |
 | [0012](0012-phase-1-plattform-und-plugin-api.md) | Vorgezogene Plattformverwaltung und minimale Plugin-API |
+| [0013](0013-published-shift-cancellation.md) | Published-shift cancellation before execution starts |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).

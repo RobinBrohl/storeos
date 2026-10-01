@@ -491,7 +491,7 @@ void cancellationTests() {
     '0009 preserves populated blocking history, confirmations and old receipts',
     () => _withFixture(
       (f) async {
-        final p = await _executionPlan(f);
+        final p = await _legacyExecutionPlan(f);
         final id = p.task,
             actor = f.adminPrincipal.id,
             step = p.plan.template['content']['steps'][0]['id'];
@@ -566,7 +566,7 @@ void cancellationTests() {
             'task_blockings',
           ])
             (await f.owner.execute(
-                  'SELECT jsonb_agg(${table == 'task_blockings' ? "to_jsonb(t)-'resolution_kind'-'numeric_attempt_id'" : "to_jsonb(t)-'numeric_attempt_id'"} ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
+                  'SELECT jsonb_agg(${table == 'task_blockings' ? "to_jsonb(t)-'resolution_kind'-'numeric_attempt_id'" : "to_jsonb(t)-'numeric_attempt_id'-'cancelled_at'-'cancelled_by'"} ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
                 )).single.first
                 as String,
         ];
@@ -580,6 +580,7 @@ void cancellationTests() {
         expect(await runner.apply(), [
           '0009_task_cancellation',
           '0010_task_numeric_steps',
+          '0011_published_shift_cancellation',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

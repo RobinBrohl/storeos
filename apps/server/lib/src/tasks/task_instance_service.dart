@@ -76,6 +76,57 @@ class TaskInstanceService {
     }
   }
 
+  Future<void> cancelForShift(
+    TxSession tx,
+    PlatformActor actor, {
+    required String shiftId,
+    required String locationId,
+    required String reason,
+    required DateTime now,
+  }) async {
+    final tasks = await _instances.forShifts(tx, [shiftId]);
+    for (final task in tasks) {
+      if (task.status != 'open' || task.version != 1) {
+        throw PlatformFailure(
+          422,
+          'shift_in_progress',
+          'Task ${task.id} is no longer open; the shift cannot be cancelled.',
+        );
+      }
+    }
+    for (final task in tasks) {
+      if (!await _instances.cancelOpen(
+        tx,
+        id: task.id,
+        actorId: actor.id,
+        now: now,
+      )) {
+        throw const PlatformFailure(
+          409,
+          'shift_conflict',
+          'The shift changed. Reload before continuing.',
+        );
+      }
+      await database.audit(
+        tx,
+        actor,
+        'tasks.instance.cancelled',
+        'task_instance',
+        task.id,
+        locationId: locationId,
+        changes: {
+          'oldStatus': 'open',
+          'status': 'cancelled',
+          'oldVersion': 1,
+          'version': 2,
+          'origin': 'shift_cancellation',
+          'shiftId': shiftId,
+          'reason': reason,
+        },
+      );
+    }
+  }
+
   Future<List<TaskInstanceDto>> forShifts(TxSession tx, List<String> ids) =>
       _instances.forShifts(tx, ids);
   Future<TaskInstanceDto> detail(

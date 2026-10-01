@@ -56,6 +56,9 @@ class AuditRepository {
       'operationId',
       'oldVersion',
       'oldStatus',
+      'reason',
+      'origin',
+      'cancellationVersion',
     };
     for (final entry in changes.entries) {
       if (!allowedFields.contains(entry.key) || !_safeAuditValue(entry.value)) {
@@ -112,7 +115,7 @@ class AuditRepository {
 
 bool _safeAuditValue(Object? value) {
   if (value == null || value is bool || value is num) return true;
-  if (value is String) return value.length <= 256;
+  if (value is String) return value.runes.length <= 512;
   if (value is List && value.length <= 32) {
     return value.every((item) => item is String && item.length <= 128);
   }

@@ -1764,6 +1764,53 @@
         }
       }
     },
+    "/api/v1/platform/shifts/{id}/cancel": {
+      "post": {
+        "operationId": "cancelShift",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location. Terminally cancels a published shift only while every task instance is still pristine open. Any started, blocked, completed or already cancelled instance refuses the whole request with 422 shift_in_progress and no writes. State, cancellation evidence and audit share one transaction; no integration events. A retry with the original expectedVersion, same actor and same normalized reason returns the existing cancelled state without new effects; a mismatching retry identity or stale version returns 409.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelShift"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/platform/shifts/{id}": {
       "get": {
         "operationId": "adminShiftDetail",
@@ -4427,6 +4474,26 @@
           }
         }
       },
+      "CancelShift": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "reason"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Normalized cancellation reason; leading/trailing whitespace is trimmed and control characters are rejected."
+          }
+        }
+      },
       "Shift": {
         "type": "object",
         "additionalProperties": false,
@@ -4484,7 +4551,8 @@
             "type": "string",
             "enum": [
               "draft",
-              "published"
+              "published",
+              "cancelled"
             ]
           },
           "version": {
@@ -4514,6 +4582,27 @@
               "null"
             ],
             "minimum": 1
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Present exactly when status is cancelled; acknowledgement time of the terminal cancellation."
+          },
+          "cancelledBy": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Present exactly when status is cancelled; the cancelling account."
+          },
+          "cancellationReason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Present exactly when status is cancelled."
+          },
+          "cancellationVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Present exactly when status is cancelled; the request's original expectedVersion, used for lost-response retry recognition."
           }
         }
       },
@@ -4813,17 +4902,17 @@
           "cancelledAt": {
             "type": "string",
             "format": "date-time",
-            "description": "Present only for cancelled tasks, derived from the terminal blocking disposition."
+            "description": "Present only for cancelled tasks. Derived from the terminal blocking disposition, or from the shift cancellation for an instance cancelled while pristine open."
           },
           "cancelledBy": {
             "type": "string",
             "format": "uuid",
-            "description": "Present only for cancelled tasks, derived from the terminal blocking disposition."
+            "description": "Present only for cancelled tasks. Derived from the terminal blocking disposition, or from the shift cancellation for an instance cancelled while pristine open."
           },
           "cancelledBlockingId": {
             "type": "string",
             "format": "uuid",
-            "description": "Present only for cancelled tasks, derived from the terminal blocking disposition."
+            "description": "Present only for blocked-origin cancellation, derived from the terminal blocking disposition; absent for an instance cancelled while pristine open."
           }
         }
       },

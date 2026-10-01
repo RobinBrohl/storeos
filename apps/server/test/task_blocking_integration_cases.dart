@@ -541,14 +541,11 @@ void blockingTests() {
         for (var i = 0; i < 3; i++) {
           final p = await _plan(f);
           plans.add(p);
-          await f.call('POST', '/shifts', body: p.input, expected: 201);
-          final id =
-              (await f.call(
-                    'POST',
-                    '/shifts/${p.id}/publish',
-                    body: {'expectedVersion': 1},
-                  )).body['tasks'][0]['id']
-                  as String;
+          final id = await _seedPublishedShift(
+            f,
+            p,
+            start: DateTime.parse(p.input['startsAt'] as String),
+          );
           ids.add(id);
           if (i > 0) {
             await f.owner.execute(
@@ -611,7 +608,7 @@ void blockingTests() {
         Future<List<String>> snapshot() async => [
           for (final table in ['task_instances', 'task_execution_commands'])
             (await f.owner.execute(
-                  'SELECT jsonb_agg(to_jsonb(t) ORDER BY ${table == 'task_instances' ? 'id' : 'operation_id'})::text FROM "${f.schema}".$table t',
+                  'SELECT jsonb_agg(${table == 'task_instances' ? "to_jsonb(t)-ARRAY['cancelled_at','cancelled_by']" : 'to_jsonb(t)'} ORDER BY ${table == 'task_instances' ? 'id' : 'operation_id'})::text FROM "${f.schema}".$table t',
                 )).single.first
                 as String,
         ];
@@ -626,6 +623,7 @@ void blockingTests() {
           '0008_task_blocking',
           '0009_task_cancellation',
           '0010_task_numeric_steps',
+          '0011_published_shift_cancellation',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

@@ -47,7 +47,7 @@ void numericTests() {
     '0010 preserves populated schema-1 snapshots, results and receipts from 0009',
     () => _withFixture(
       (f) async {
-        final p = await _executionPlan(f);
+        final p = await _legacyExecutionPlan(f);
         final id = p.task,
             step = p.plan.template['content']['steps'][0]['id'],
             actor = f.adminPrincipal.id;
@@ -103,7 +103,7 @@ void numericTests() {
             'task_execution_commands',
           ])
             (await f.owner.execute(
-              'SELECT jsonb_agg(to_jsonb(t)-\'numeric_attempt_id\' ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
+              'SELECT jsonb_agg(${table == 'task_instances' ? "to_jsonb(t)-'numeric_attempt_id'-'cancelled_at'-'cancelled_by'" : "to_jsonb(t)-'numeric_attempt_id'"} ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
             )).single.first,
         ];
         final before = await snapshot();
@@ -113,7 +113,10 @@ void numericTests() {
           schemaName: f.schema,
           runtimeDatabaseUser: f.runtimeUser,
         );
-        expect(await runner.apply(), ['0010_task_numeric_steps']);
+        expect(await runner.apply(), [
+          '0010_task_numeric_steps',
+          '0011_published_shift_cancellation',
+        ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
         expect(

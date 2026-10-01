@@ -34,6 +34,27 @@ class TaskInstanceRepository {
     );
   }
 
+  Future<bool> cancelOpen(
+    TxSession tx, {
+    required String id,
+    required String actorId,
+    required DateTime now,
+  }) async {
+    final result = await tx.execute(
+      Sql.named(
+        '''UPDATE $schema.task_instances SET status='cancelled',version=version+1,cancelled_at=@now,cancelled_by=CAST(@actor AS uuid)
+      WHERE id=CAST(@id AS uuid) AND company_id=CAST(@company AS uuid) AND status='open' AND version=1''',
+      ),
+      parameters: {
+        'id': id,
+        'company': companyId,
+        'actor': actorId,
+        'now': now,
+      },
+    );
+    return result.affectedRows == 1;
+  }
+
   Future<List<TaskInstanceDto>> byIds(TxSession tx, List<String> ids) =>
       _query(tx, ids, instances: true);
   Future<List<TaskInstanceDto>> forShifts(

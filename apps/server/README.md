@@ -2,9 +2,10 @@
 
 This Dart modular monolith implements local authentication, organization, fixed
 roles, audit, organization outbox and a restricted external plugin API. It also
-contains People, Workforce and Tasks through P1b.7: employee/account links,
+contains People, Workforce and Tasks through P1b.8: employee/account links,
 templates, atomic shift publication and guided confirmation/numeric execution
-with blocking, resume, cancellation and completion. See [actual status](../../docs/roadmap/status.md),
+with blocking, resume, cancellation and completion, plus pre-execution
+cancellation of published shifts. See [actual status](../../docs/roadmap/status.md),
 [handover](../../docs/HANDOVER.md), [P1 contracts](../../docs/development/phase-1.md)
 and [numeric scope](../../docs/development/phase-1b-7-numeric-steps.md).
 

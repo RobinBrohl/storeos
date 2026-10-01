@@ -273,6 +273,182 @@ void main() {
     home.dispose();
     f.dispose();
   });
+  test('published shift cancellation is confirmed and read-only', () async {
+    final f = await Fixture.create();
+    addTearDown(f.dispose);
+    await f.prepare();
+    await f.c.save();
+    await f.c.publish();
+    expect(f.c.canCancelShift, isTrue);
+    await f.c.cancelShift('Wrong employee');
+    expect(f.c.error, isNull);
+    expect(f.c.selected!.status, 'cancelled');
+    expect(f.c.selected!.version, 3);
+    expect(f.c.selected!.cancellationVersion, 2);
+    expect(f.c.selected!.cancellationReason, 'Wrong employee');
+    expect(f.c.selected!.cancelledBy, account);
+    expect(f.c.tasks.single.status, 'cancelled');
+    expect(f.c.tasks.single.version, 2);
+    expect(f.c.canCancelShift, isFalse);
+  });
+  test('cancellation is not offered once a task left open', () async {
+    final f = await Fixture.create();
+    addTearDown(f.dispose);
+    await f.prepare();
+    await f.c.save();
+    await f.c.publish();
+    final id = f.c.selected!.id;
+    ((f.api.records[id]!['tasks'] as List).first as Map)['status'] =
+        'in_progress';
+    await f.c.open(id);
+    expect(f.c.canCancelShift, isFalse);
+  });
+  test(
+    'lost cancellation response confirms only exact cancellation evidence',
+    () async {
+      final f = await Fixture.create();
+      addTearDown(f.dispose);
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      f.api.lose = true;
+      await f.c.cancelShift('Duplicate publication');
+      expect(f.c.error, isNull);
+      expect(f.c.conflict, isFalse);
+      expect(f.c.unconfirmed, isFalse);
+      expect(f.c.notice, isNotNull);
+      expect(f.c.selected!.status, 'cancelled');
+      expect(f.c.selected!.cancellationReason, 'Duplicate publication');
+    },
+  );
+  test('a mismatching cancellation is never treated as success', () async {
+    final f = await Fixture.create();
+    addTearDown(f.dispose);
+    await f.prepare();
+    await f.c.save();
+    await f.c.publish();
+    f.api.cancelTamper = true;
+    f.api.lose = true;
+    await f.c.cancelShift('Duplicate publication');
+    expect(f.c.conflict, isTrue);
+    expect(f.c.notice, isNull);
+    expect(f.c.selected!.status, 'published');
+  });
+  test(
+    'server refusal keeps the shift published and shows the reason',
+    () async {
+      final f = await Fixture.create();
+      addTearDown(f.dispose);
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      f.api.cancelRefused = true;
+      await f.c.cancelShift('Too late');
+      expect(f.c.error, contains('begonnen'));
+      expect(f.c.selected!.status, 'published');
+      expect(f.c.canCancelShift, isTrue);
+      expect(f.c.unconfirmed, isFalse);
+    },
+  );
+  test(
+    'cancellation reason is required and bounded before any request',
+    () async {
+      final f = await Fixture.create();
+      addTearDown(f.dispose);
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      final requests = f.api.posts;
+      await f.c.cancelShift('   ');
+      expect(f.c.error, isNotNull);
+      expect(f.api.posts, requests);
+      await f.c.cancelShift('x' * 501);
+      expect(f.c.error, isNotNull);
+      expect(f.api.posts, requests);
+    },
+  );
+  testWidgets('published shift offers cancellation and renders it read-only', (
+    tester,
+  ) async {
+    final f = await Fixture.create();
+    await f.prepare();
+    await f.c.save();
+    await f.c.publish();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: ShiftSection(controller: f.c)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await f.c.open(f.c.selected!.id);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('cancel-shift')), 300);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<OutlinedButton>(find.byKey(const Key('cancel-shift')))
+          .onPressed,
+      isNotNull,
+    );
+    await tester.tap(find.byKey(const Key('cancel-shift')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('confirm-cancel-shift')));
+    await tester.pumpAndSettle();
+    expect(find.text('Begründung erforderlich.'), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const Key('cancel-shift-reason')),
+      'Wrong employee',
+    );
+    await tester.tap(find.byKey(const Key('confirm-cancel-shift')));
+    await tester.pumpAndSettle();
+    expect(f.c.selected!.status, 'cancelled');
+    expect(find.byKey(const Key('cancel-shift')), findsNothing);
+    expect(find.byKey(const Key('publish-shift')), findsNothing);
+    expect(find.byKey(const Key('shift-cancellation')), findsOneWidget);
+    expect(find.textContaining('Grund: Wrong employee'), findsOneWidget);
+    expect(find.byKey(const Key('shift-error')), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    f.dispose();
+  });
+  testWidgets(
+    'cancellation dialog counts Unicode code points, not UTF-16 units',
+    (tester) async {
+      final f = await Fixture.create();
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: ShiftSection(controller: f.c)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await f.c.open(f.c.selected!.id);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('cancel-shift')),
+        300,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('cancel-shift')));
+      await tester.pumpAndSettle();
+      final reason = '😀' * 300;
+      expect(reason.runes.length, 300);
+      expect(reason.length, greaterThan(500));
+      await tester.enterText(
+        find.byKey(const Key('cancel-shift-reason')),
+        reason,
+      );
+      await tester.tap(find.byKey(const Key('confirm-cancel-shift')));
+      await tester.pumpAndSettle();
+      expect(find.text('Maximal 500 Zeichen.'), findsNothing);
+      expect(f.c.selected!.status, 'cancelled');
+      expect(f.c.selected!.cancellationReason, reason);
+      expect(find.byKey(const Key('shift-cancellation')), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+      f.dispose();
+    },
+  );
 }
 
 class Fixture {
@@ -345,7 +521,9 @@ class Api implements PlatformApi {
       conflict = false,
       changeOnPublish = false,
       noProfile = false,
-      page = false;
+      page = false,
+      cancelRefused = false,
+      cancelTamper = false;
   int posts = 0;
   final cursors = <String>[];
   Completer<Map<String, dynamic>>? pending;
@@ -541,7 +719,27 @@ class Api implements PlatformApi {
       );
     } else {
       final shift = records[id]!['shift'] as Map<String, dynamic>;
-      if (route.endsWith('/publish')) {
+      if (route.endsWith('/cancel')) {
+        if (cancelRefused) {
+          throw const StoreApiException(
+            'shift_in_progress',
+            'Task started',
+            statusCode: 422,
+          );
+        }
+        shift['status'] = 'cancelled';
+        shift['cancelledAt'] = time;
+        shift['cancelledBy'] = account;
+        shift['cancellationReason'] = body['reason'];
+        shift['cancellationVersion'] = cancelTamper
+            ? 99
+            : body['expectedVersion'];
+        shift['version'] = (shift['version'] as int) + 1;
+        for (final task in records[id]!['tasks'] as List) {
+          (task as Map<String, dynamic>)['status'] = 'cancelled';
+          task['version'] = 2;
+        }
+      } else if (route.endsWith('/publish')) {
         shift['status'] = 'published';
         shift['publishedAt'] = time;
         shift['publicationVersion'] = body['expectedVersion'];

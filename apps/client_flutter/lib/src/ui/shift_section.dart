@@ -49,6 +49,14 @@ class _ShiftSectionState extends State<ShiftSection> {
         'Lokale Eingaben verwerfen?',
         'Der bestätigte Serverstand ersetzt die lokalen Eingaben.',
       );
+  Future<void> _cancelShift() async {
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (context) => const _CancelShiftDialog(),
+    );
+    if (reason != null && mounted) await c.cancelShift(reason);
+  }
+
   String _employee(String id) {
     if (c.self) return 'Eigene Schicht';
     for (final e in c.employees) {
@@ -230,7 +238,7 @@ class _ShiftSectionState extends State<ShiftSection> {
             ),
           if (!c.self && c.selected?.status == 'draft') ...[
             const Text(
-              'Nach Veröffentlichung sind Änderung, Stornierung und Neuzuordnung noch nicht möglich.',
+              'Nach Veröffentlichung sind Änderung und Neuzuordnung nicht möglich. Solange keine Aufgabe begonnen wurde, kann die Schicht storniert werden.',
             ),
             FilledButton(
               key: const Key('publish-shift'),
@@ -238,7 +246,7 @@ class _ShiftSectionState extends State<ShiftSection> {
                   ? () async {
                       if (await _confirm(
                             'Schicht verbindlich veröffentlichen?',
-                            'Die ausgewählten Aufgaben werden erzeugt. Eine spätere Änderung oder Stornierung ist in diesem Umfang noch nicht verfügbar.',
+                            'Die ausgewählten Aufgaben werden erzeugt. Eine spätere Änderung ist nicht möglich; solange keine Aufgabe begonnen wurde, kann die Schicht storniert werden.',
                           ) &&
                           mounted) {
                         await c.publish();
@@ -247,6 +255,23 @@ class _ShiftSectionState extends State<ShiftSection> {
                   : null,
               child: const Text('Schicht veröffentlichen'),
             ),
+          ],
+          if (!c.self && c.selected?.status == 'published') ...[
+            const Text(
+              'Solange keine Aufgabe begonnen wurde, kann die Schicht storniert werden. Begonnene Arbeit kann nicht storniert werden.',
+            ),
+            OutlinedButton(
+              key: const Key('cancel-shift'),
+              onPressed: c.canCancelShift ? _cancelShift : null,
+              child: const Text('Schicht stornieren'),
+            ),
+          ],
+          if (c.selected?.status == 'cancelled') ...[
+            Text(
+              'Storniert ${c.selected!.cancelledAt?.toIso8601String() ?? ''} · ${c.selected!.cancelledBy ?? ''}',
+              key: const Key('shift-cancellation'),
+            ),
+            Text('Grund: ${c.selected!.cancellationReason ?? ''}'),
           ],
           for (final task in c.tasks)
             ListTile(
@@ -478,8 +503,12 @@ class _ShiftSectionState extends State<ShiftSection> {
     );
   }
 
-  String _status(String value) =>
-      value == 'draft' ? 'Entwurf' : 'Veröffentlicht';
+  String _status(String value) => switch (value) {
+    'draft' => 'Entwurf',
+    'published' => 'Veröffentlicht',
+    'cancelled' => 'Storniert',
+    _ => value,
+  };
   List<Widget> _editor() => [
     DropdownButtonFormField<String>(
       key: ValueKey('employee-${c.generation}'),
@@ -580,4 +609,78 @@ class _ShiftSectionState extends State<ShiftSection> {
       child: const Text('Entwurf speichern'),
     ),
   ];
+}
+
+class _CancelShiftDialog extends StatefulWidget {
+  const _CancelShiftDialog();
+
+  @override
+  State<_CancelShiftDialog> createState() => _CancelShiftDialogState();
+}
+
+class _CancelShiftDialogState extends State<_CancelShiftDialog> {
+  final TextEditingController _reason = TextEditingController();
+  String? _validation;
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    final value = _reason.text.trim();
+    if (value.isEmpty) {
+      setState(() => _validation = 'Begründung erforderlich.');
+      return;
+    }
+    if (value.runes.length > 500) {
+      setState(() => _validation = 'Maximal 500 Zeichen.');
+      return;
+    }
+    Navigator.pop(context, value);
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Schicht endgültig stornieren?'),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Die Schicht und alle noch offenen Aufgaben werden storniert und '
+          'aus der Mitarbeiteransicht entfernt. Begonnene Arbeit kann nicht '
+          'storniert werden; vorhandene Nachweise bleiben erhalten.',
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          key: const Key('cancel-shift-reason'),
+          controller: _reason,
+          minLines: 2,
+          maxLines: 4,
+          maxLength: 500,
+          decoration: InputDecoration(
+            labelText: 'Stornierungsgrund',
+            errorText: _validation,
+            helperText: '1–500 Zeichen. Keine sensiblen Personendaten.',
+          ),
+          onChanged: (_) {
+            if (_validation != null) setState(() => _validation = null);
+          },
+        ),
+      ],
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Abbrechen'),
+      ),
+      FilledButton(
+        key: const Key('confirm-cancel-shift'),
+        onPressed: _confirm,
+        child: const Text('Endgültig stornieren'),
+      ),
+    ],
+  );
 }

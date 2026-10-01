@@ -1,7 +1,7 @@
 # P2: Single-site concurrent-work capacity measurement
 
-Status: implemented and locally verified; independent review and remote CI not
-yet performed.
+Status: implemented, independently reviewed, committed to `main` (`8a58226`) and
+verified by the remote CI run.
 
 This slice adds an opt-in, run-scoped harness that measures the existing
 single-site StoreOS stack under declared concurrent read and write workloads.
@@ -227,4 +227,5 @@ present, freed the API port and retained only `report.json`. No
 `storeos_capacity_*` database and no fixture process or listener remained
 afterwards.
 
-Remote CI status: not yet executed for this slice.
+Remote CI status: the remote run on `8a58226` passed, including the capacity
+report redaction check. Independent review completed before the commit.

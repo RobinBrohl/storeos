@@ -21,6 +21,7 @@ part 'task_execution_integration_cases.dart';
 part 'task_blocking_integration_cases.dart';
 part 'task_cancellation_integration_cases.dart';
 part 'task_numeric_integration_cases.dart';
+part 'shift_cancellation_integration_cases.dart';
 
 const _company = '11111111-1111-4111-8111-111111111111';
 const _home = '22222222-2222-4222-8222-222222222222';
@@ -33,6 +34,7 @@ void main() {
   blockingTests();
   cancellationTests();
   numericTests();
+  shiftCancellationTests();
   test(
     'pinned selections reject mismatched templates and published foreign-location revisions without writes',
     () => _withFixture((f) async {
@@ -803,6 +805,7 @@ void main() {
         '0008_task_blocking',
         '0009_task_cancellation',
         '0010_task_numeric_steps',
+        '0011_published_shift_cancellation',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);
@@ -890,6 +893,97 @@ Future<String> _linkedAccount(
     expected: 201,
   );
   return f.login(name);
+}
+
+Future<String> _seedPublishedShift(
+  _Fixture f,
+  _Plan p, {
+  required DateTime start,
+  Duration duration = const Duration(hours: 8),
+}) async {
+  final id = newUuid(), taskId = newUuid();
+  await f.owner.execute(
+    Sql.named(
+      'INSERT INTO "${f.schema}".shifts(id,company_id,location_id,employee_id,'
+      'starts_at,ends_at,status,version,created_by,creation_input) '
+      'VALUES(CAST(@id AS uuid),CAST(@company AS uuid),CAST(@location AS uuid),'
+      'CAST(@employee AS uuid),@start,@end,\'draft\',1,CAST(@admin AS uuid),@input)',
+    ),
+    parameters: {
+      'id': id,
+      'company': _company,
+      'location': _home,
+      'employee': p.employee.id,
+      'start': start,
+      'end': start.add(duration),
+      'admin': f.adminPrincipal.id,
+      'input': jsonEncode(Map<String, dynamic>.from(p.input)..remove('id')),
+    },
+  );
+  await f.owner.execute(
+    Sql.named(
+      'INSERT INTO "${f.schema}".shift_template_selections'
+      '(shift_id,company_id,location_id,template_id,revision_id,position) '
+      'VALUES(CAST(@shift AS uuid),CAST(@company AS uuid),CAST(@location AS uuid),'
+      'CAST(@template AS uuid),CAST(@revision AS uuid),0)',
+    ),
+    parameters: {
+      'shift': id,
+      'company': _company,
+      'location': _home,
+      'template': p.template['id'],
+      'revision': p.template['revisionId'],
+    },
+  );
+  await f.owner.execute(
+    Sql.named(
+      'INSERT INTO "${f.schema}".task_instances(id,company_id,location_id,'
+      'shift_id,employee_id,template_id,revision_id,position,content) '
+      'VALUES(CAST(@id AS uuid),CAST(@company AS uuid),CAST(@location AS uuid),'
+      'CAST(@shift AS uuid),CAST(@employee AS uuid),CAST(@template AS uuid),'
+      'CAST(@revision AS uuid),0,@content)',
+    ),
+    parameters: {
+      'id': taskId,
+      'company': _company,
+      'location': _home,
+      'shift': id,
+      'employee': p.employee.id,
+      'template': p.template['id'],
+      'revision': p.template['revisionId'],
+      'content': jsonEncode(p.template['content']),
+    },
+  );
+  p.input['id'] = id;
+  await f.owner.execute(
+    Sql.named(
+      'UPDATE "${f.schema}".shifts SET status=\'published\',version=2,'
+      'published_at=clock_timestamp(),published_by=CAST(@admin AS uuid),'
+      'publication_version=1 WHERE id=CAST(@id AS uuid)',
+    ),
+    parameters: {'id': id, 'admin': f.adminPrincipal.id},
+  );
+  return taskId;
+}
+
+Future<({String root, String task, String token, _Plan plan})>
+_legacyExecutionPlan(
+  _Fixture f, {
+  Duration duration = const Duration(hours: 1),
+}) async {
+  final p = await _plan(f);
+  final task = await _seedPublishedShift(
+    f,
+    p,
+    start: p.employee.assignedFrom,
+    duration: duration,
+  );
+  return (
+    root: '/employee-home/shifts/${p.id}/tasks/$task',
+    task: task,
+    token: await _linkedAccount(f, p.employee, 'executor'),
+    plan: p,
+  );
 }
 
 Map<String, dynamic> _content([String title = 'Opening']) => {

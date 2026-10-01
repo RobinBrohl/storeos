@@ -78,6 +78,9 @@ jobs:
       - name: Check capacity measurement report redaction
         shell: pwsh
         run: ./scripts/capacity/Test-CapacityReportRedaction.ps1
+      - name: Check update/recovery acceptance report redaction
+        shell: pwsh
+        run: ./scripts/update/Test-UpdateAcceptanceRedaction.ps1
       - name: Check API contracts
         working-directory: packages/api_contracts
         run: |
@@ -209,6 +212,35 @@ jobs:
       - name: Run task-aware backup/restore acceptance
         shell: pwsh
         run: ./scripts/backup/Run-BackupRestoreAcceptance.ps1
+      - name: Stop PostgreSQL (Docker Compose)
+        if: always()
+        run: docker compose down
+
+  update-recovery-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      STOREOS_DB_HOST: 127.0.0.1
+      STOREOS_DB_PORT: '5432'
+      STOREOS_DB_NAME: storeos
+      STOREOS_DB_USER: storeos
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.4
+      - name: Create isolated local secrets
+        shell: bash
+        run: |
+          mkdir -p .local/secrets
+          printf '%s' 'ci_update_runtime_only' > .local/secrets/db_password.txt
+          printf '%s' 'ci_update_owner_only' > .local/secrets/db_owner_password.txt
+          head -c 32 /dev/urandom > .local/secrets/backup_key.bin
+      - name: Start PostgreSQL (Docker Compose)
+        run: docker compose up -d --wait db
+      - name: Run controlled update/recovery acceptance
+        shell: pwsh
+        run: ./scripts/update/Run-UpdateRecoveryAcceptance.ps1
       - name: Stop PostgreSQL (Docker Compose)
         if: always()
         run: docker compose down

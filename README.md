@@ -4,9 +4,9 @@
 
 StoreOS ist ein langfristig angelegtes, quelloffenes Betriebssystem für standortgebundene Unternehmen. Es soll tägliche Arbeit, Wissen und betriebliche Daten in einer selbst betriebenen Plattform verbinden. Der erste fachliche Schwerpunkt ist die geführte Arbeit von Mitarbeitenden.
 
-**Projektstand:** P1-Plattform und die Teilslices P1b.1 bis [P1b.7 – Numerische Guided-Work-Schritte](docs/development/phase-1b-7-numeric-steps.md) sind implementiert. Administratoren planen Einzelschichten und veröffentlichen Vorlagenrevisionen atomar als Aufgaben-Snapshots. Verknüpfte Mitarbeiter starten eigene Aufgaben, bestätigen geordnete Schritte, schließen sie ab oder melden ein Hindernis. Administratoren können blockierte Aufgaben zur Wiederaufnahme freigeben oder begründet stornieren. Zahlenschritte prüfen feste inklusive Grenzen; Werte außerhalb der Grenzen bleiben gespeichert und blockieren die Aufgabe bis zur Klärung. P1b bleibt teilweise implementiert: Änderungen und Stornierungen veröffentlichter Schichten sowie Offline-Schreiben fehlen weiterhin. Warenwirtschaft, HACCP, POS und Accounting bleiben außerhalb des aktuellen Umfangs.
+**Projektstand:** P1-Plattform und die Teilslices P1b.1 bis [P1b.8 – Stornierung veröffentlichter Schichten](docs/development/phase-1b-8-shift-cancellation.md) sind implementiert. Administratoren planen Einzelschichten und veröffentlichen Vorlagenrevisionen atomar als Aufgaben-Snapshots. Verknüpfte Mitarbeiter starten eigene Aufgaben, bestätigen geordnete Schritte, schließen sie ab oder melden ein Hindernis. Administratoren können blockierte Aufgaben zur Wiederaufnahme freigeben oder begründet stornieren und eine veröffentlichte Schicht vor Ausführungsbeginn stornieren. Zahlenschritte prüfen feste inklusive Grenzen; Werte außerhalb der Grenzen bleiben gespeichert und blockieren die Aufgabe bis zur Klärung. P1b bleibt teilweise implementiert: Bearbeiten veröffentlichter Schichten und Offline-Schreiben fehlen weiterhin. Warenwirtschaft, HACCP, POS und Accounting bleiben außerhalb des aktuellen Umfangs.
 
-**Upgrade auf P1b.7:** Datenbank sichern, Server stoppen, `./scripts/dev.ps1 migrate` ausführen und Server/Client gemeinsam aktualisieren und neu starten. Ausstehende Migrationen werden der Reihe nach angewendet; `0010` ergänzt Inhaltsschema 2 und unveränderliche Zahlenversuche; Schema-1-Snapshots und alte Receipts bleiben erhalten. Server und Client gemeinsam aktualisieren: alte Clients verstehen numerische Schritte nicht. Unter **Schichten** einen aktiven Mitarbeiter und UTC-Zeiten wählen, veröffentlichte Revisionen zuordnen, speichern und veröffentlichen. Mitarbeiter öffnen anschließend **Meine Arbeit**. Eine veröffentlichte Schicht kann weiterhin nicht korrigiert oder storniert werden; die neue Stornierung betrifft ausschließlich blockierte Aufgaben.
+**Upgrade auf P1b.7:** Datenbank sichern, Server stoppen, `./scripts/dev.ps1 migrate` ausführen und Server/Client gemeinsam aktualisieren und neu starten. Ausstehende Migrationen werden der Reihe nach angewendet; `0010` ergänzt Inhaltsschema 2 und unveränderliche Zahlenversuche; Schema-1-Snapshots und alte Receipts bleiben erhalten. Server und Client gemeinsam aktualisieren: alte Clients verstehen numerische Schritte nicht. Unter **Schichten** einen aktiven Mitarbeiter und UTC-Zeiten wählen, veröffentlichte Revisionen zuordnen, speichern und veröffentlichen. Mitarbeiter öffnen anschließend **Meine Arbeit**. Eine veröffentlichte Schicht kann weiterhin nicht bearbeitet werden; P1b.8 ergänzt die begründete Stornierung vor Ausführungsbeginn, getrennt von der Stornierung blockierter Aufgaben.
 
 ## Lokal starten
 
@@ -98,6 +98,20 @@ Lauf gelöscht; Prozesslogs liegen im ignorierten `.local/`. Der CI-Job
 `numeric-guided-work-e2e` führt denselben Aufruf
 mit einer eigenen Testdatenbank und fest gepaartem Chrome/ChromeDriver aus.
 [Prüfnachweis und verbleibende Grenzen](docs/development/phase-1b-7-numeric-verification.md).
+
+### Kontrolliertes Update/Recovery abnehmen (P2)
+
+`./scripts/update/Run-UpdateRecoveryAcceptance.ps1` proves the supported
+single-site update contract on a run-scoped database: a real 0010 schema built
+from byte-identical migration copies, an encrypted pre-update restore point, the
+real 0011 migration through the production runner, preservation of pre-update
+evidence, a current-server HTTP smoke and isolated recovery into a fenced
+`storeos_restore_upd_*` target. It never touches the normal StoreOS database and
+always cleans up its own databases; only a sanitized report remains under
+`.local/update-recovery/<run-id>/`. "Recovery" is restore-point recovery, not a
+database or application downgrade; replacement activation and down migrations
+are not supported. Failure-path modes: `-InjectFailureAfter prepare|upgrade|recovery`.
+[Contract and evidence](docs/development/phase-2-update-recovery-acceptance.md).
 
 Weitere Implementierungsgrenzen und Abnahmekriterien: [Phase-0-Grundlage](docs/development/phase-0.md), [Phase-1-Plattform](docs/development/phase-1.md) und [Phase-1-Prüfnachweis](docs/development/phase-1-verification.md). Plugin-Registrierungen sind externe API-Clients mit ausdrücklicher Freigabe; StoreOS installiert oder startet keinen fremden Code. Der Client hält auch Plugin-Tokens nur zur einmaligen Anzeige im Arbeitsspeicher. Separate Standortserver und Unternehmenssynchronisation sind noch nicht implementiert.
 

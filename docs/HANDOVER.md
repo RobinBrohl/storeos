@@ -1,6 +1,6 @@
 # StoreOS handover
 
-Start here after [AGENTS.md](../AGENTS.md). Baseline: `8a58226`, assessed 2026-09-30.
+Start here after [AGENTS.md](../AGENTS.md). Baseline: `19151f6`, status updated 2026-10-01.
 The incoming tree was clean. This handover does not authorize the next feature.
 [Actual status](roadmap/status.md) and [verification](development/handover-verification.md)
 distinguish current evidence from plans.
@@ -67,8 +67,9 @@ boundary, and the fixture replays recorded operation IDs against the restarted s
 the merged slice was subsequently verified by the remote CI job.
 
 P1b acceptance/pilot hardening remains active; P2 has operating foundations, a
-remotely verified task-aware backup/restore acceptance and a remotely verified
-concurrent-work capacity measurement but no device-offline implementation. Only a Flutter Web runner is checked in. Published
+remotely verified task-aware backup/restore acceptance, a remotely verified
+concurrent-work capacity measurement and a locally verified controlled
+update/recovery acceptance, but no device-offline implementation. Only a Flutter Web runner is checked in. Published
 shifts can be cancelled while every task instance is still open; editing/cancelling
 started shifts and cancelling a blocked task are different operations.
 There is no automatic priority engine, timezone-aware recurring calendar, timekeeping,
@@ -141,6 +142,9 @@ The runtime role needs access. See [server setup](../apps/server/README.md).
 ./scripts/capacity/Run-CapacityMeasurement.ps1 -Profile smoke
 ./scripts/capacity/Run-CapacityMeasurement.ps1 -Profile full
 ./scripts/capacity/Test-CapacityReportRedaction.ps1
+# Requires the healthy Compose database plus configured .env/secrets:
+./scripts/update/Run-UpdateRecoveryAcceptance.ps1
+./scripts/update/Test-UpdateAcceptanceRedaction.ps1
 # Requires the configured server/database and valid bootstrap credentials:
 ./scripts/dev.ps1 smoke
 # Requires explicit STOREOS_TEST_DATABASE, STOREOS_DB_USER,
@@ -314,8 +318,9 @@ Proposals only; implement one approved scope at a time.
 - **Required Tests:** real PostgreSQL migration upgrade, success/refusal matrix,
   idempotency, authorization, overlap, concurrency and rollback injection; contract,
   controller/widget and numeric E2E regressions.
-- **Status (2026-10-01):** implemented and locally verified (contract/server/Flutter
-  suites, migration upgrade, rollback and lock-contention races, unchanged numeric
-  browser E2E). Independent review and remote CI pending. See
+- **Status (2026-10-01):** implemented, independently reviewed with fixed findings,
+  re-reviewed with APPROVE, committed to `main` as `19151f6` and verified by the
+  remote CI job. Local evidence: contract/server/Flutter suites, migration upgrade,
+  rollback and lock-contention races, unchanged numeric browser E2E. See
   [P1b.8 shift cancellation](development/phase-1b-8-shift-cancellation.md) and
   [ADR 0013](adr/0013-published-shift-cancellation.md).

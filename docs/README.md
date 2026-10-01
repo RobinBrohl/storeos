@@ -2,7 +2,7 @@
 
 **Current entry points:** [HANDOVER](HANDOVER.md) is the starting point for a new coding agent; [actual status](roadmap/status.md) records implemented scope, [workflow](development/workflow.md) defines the English technical-language policy, and [handover verification](development/handover-verification.md) records the latest checks. Older phase reports are historical evidence; architecture documents also describe planned capabilities.
 
-These documents preserve the founder's StoreOS vision. Architecture describes the target and explicitly bounded implementations; [actual status](roadmap/status.md) records the current scope through P1b.7. For conflicts, use the relevant ADR for architecture decisions, [product principles](product-principles.md) for priorities and [roadmap](roadmap/phases.md) for sequencing.
+These documents preserve the founder's StoreOS vision. Architecture describes the target and explicitly bounded implementations; [actual status](roadmap/status.md) records the current scope through P1b.8. For conflicts, use the relevant ADR for architecture decisions, [product principles](product-principles.md) for priorities and [roadmap](roadmap/phases.md) for sequencing.
 
 - [Vision](vision.md) – Problem, Nutzen, Zielbild und bewusste Grenzen
 - [Produktprinzipien](product-principles.md) – dauerhafte Prioritäten
@@ -46,4 +46,5 @@ These documents preserve the founder's StoreOS vision. Architecture describes th
 
 - [P2 – Aufgabenbezogene Backup-/Restore-Abnahme](development/phase-2-restore-acceptance.md) – lokaler Prüfnachweis, verschlüsselte Wiederherstellung der Aufgaben-Nachweise und verbleibende Grenzen
 - [P2 – Concurrent-work capacity measurement](development/phase-2-capacity-measurement.md) – measurement contract, profiles, integrity proof and local evidence; timings are environment-specific observations
+- [P2 – Controlled update/recovery acceptance](development/phase-2-update-recovery-acceptance.md) – forward-only 0010→0011 upgrade on populated data, encrypted restore point before migration, preservation, HTTP smoke and isolated recovery fencing; no downgrade or activation promise
 - [P1b.8 – Published-shift cancellation](development/phase-1b-8-shift-cancellation.md) – pre-execution cancellation contract, evidence, idempotency and verification scope; [ADR 0013](adr/0013-published-shift-cancellation.md)

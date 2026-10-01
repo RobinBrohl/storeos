@@ -1,6 +1,7 @@
 # P1b.8: Published-shift cancellation before execution starts
 
-Status: implemented and locally verified; independent review and remote CI pending.
+Status: implemented, independently reviewed with fixed findings, re-reviewed with
+APPROVE, committed to `main` as `19151f6` and verified by remote CI.
 Baseline: `8a58226`. Decision record: [ADR 0013](../adr/0013-published-shift-cancellation.md).
 
 ## Purpose
@@ -88,14 +89,16 @@ ChromeDriver.
 
 | Check | Result |
 | --- | --- |
-| `packages/api_contracts`: format, analyze, 34 contract tests | PASS |
-| `apps/server`: format, analyze, 114 tests with real PostgreSQL/HTTP (includes cancellation success/refusal matrix, strict retry, authorization, overlap, concurrency and rollback injection) | PASS |
+| `packages/api_contracts`: format, analyze, 36 contract tests | PASS |
+| `apps/server`: format, analyze, 116 tests with real PostgreSQL/HTTP (includes cancellation success/refusal matrix, strict retry, authorization, overlap, concurrency and rollback injection) | PASS |
 | Migration upgrade 0010 -> 0011 on populated data (published shift, pristine open task, blocked-origin cancelled task) with byte-level preservation and rejected mixed shapes | PASS |
 | `packages/design_system`: format, analyze, 2 tests | PASS |
-| `apps/client_flutter`: format, analyze, 115 tests, web build | PASS |
+| `apps/client_flutter`: format, analyze, 116 tests, web build | PASS |
 | `scripts/dev.ps1 check` with isolated `STOREOS_TEST_DATABASE` | PASS |
 | `scripts/Test-DevSetup.ps1` | PASS |
 | Existing numeric guided-work browser E2E unchanged | PASS |
 
-Independent review and remote CI remain pending; no behavior or contract was verified
-remotely for this slice yet.
+Independent review completed with fixed findings and a re-review APPROVE; the slice was
+committed to `main` as `19151f6` and verified by remote CI. Test counts above were
+re-confirmed against the committed baseline (36 contract tests, 116 server tests,
+2 design-system tests, 116 client tests).

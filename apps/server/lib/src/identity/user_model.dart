@@ -1,3 +1,10 @@
+class UserCredential {
+  const UserCredential({required this.passwordHash, required this.version});
+
+  final String passwordHash;
+  final int version;
+}
+
 class UserRecord {
   const UserRecord({
     required this.id,

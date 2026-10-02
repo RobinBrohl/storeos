@@ -99,13 +99,17 @@ void main() {
           String path, {
           String? token,
           Map<String, dynamic>? body,
+          String? raw,
           int expected = 200,
         }) async {
           final request = await client.openUrl(method, Uri.parse('$base$path'));
           if (token != null) {
             request.headers.set('authorization', 'Bearer $token');
           }
-          if (body != null) {
+          if (raw != null) {
+            request.headers.contentType = ContentType.json;
+            request.write(raw);
+          } else if (body != null) {
             request.headers.contentType = ContentType.json;
             request.write(jsonEncode(body));
           }
@@ -245,6 +249,16 @@ void main() {
         final pluginToken = approved['token']! as String;
         await call('GET', '$prefix/users', token: pluginToken, expected: 401);
         await call(
+          'POST',
+          '$prefix/profile/password',
+          token: pluginToken,
+          body: {
+            'currentPassword': _password,
+            'newPassword': 'plugin-token-must-not-work',
+          },
+          expected: 401,
+        );
+        await call(
           'GET',
           '/api/plugin/v1/organization',
           token: viewerToken,
@@ -339,6 +353,155 @@ void main() {
           },
         );
         await call('GET', '$prefix/context', token: viewerToken, expected: 401);
+
+        const selfOld = 'smoke-self-old-password-strong';
+        const selfNew = 'smoke-self-new-password-strong';
+        final selfId = newUuid();
+        await call(
+          'POST',
+          '$prefix/users',
+          token: token,
+          body: {
+            'id': selfId,
+            'username': 'smoke_self',
+            'password': selfOld,
+            'locationId': otherLocation,
+            'role': 'viewer',
+          },
+          expected: 201,
+        );
+        final selfSession = await call(
+          'POST',
+          '/api/v1/auth/login',
+          body: {'username': 'smoke_self', 'password': selfOld},
+        );
+        final selfToken = selfSession['token']! as String;
+        await call(
+          'POST',
+          '$prefix/profile/password',
+          token: selfToken,
+          expected: 415,
+        );
+        await call(
+          'POST',
+          '$prefix/profile/password',
+          token: selfToken,
+          raw: '[]',
+          expected: 400,
+        );
+        final invalid = await call(
+          'POST',
+          '$prefix/profile/password',
+          token: selfToken,
+          body: {'currentPassword': selfOld},
+          expected: 400,
+        );
+        expect(invalid['code'], 'invalid_request');
+        await call(
+          'POST',
+          '$prefix/profile/password',
+          token: selfToken,
+          body: {'currentPassword': selfOld, 'newPassword': selfOld},
+          expected: 400,
+        );
+        final wrongCurrent = await call(
+          'POST',
+          '$prefix/profile/password',
+          token: selfToken,
+          body: {
+            'currentPassword': 'wrong-current-password',
+            'newPassword': selfNew,
+          },
+          expected: 422,
+        );
+        expect(wrongCurrent['code'], 'invalid_current_password');
+        await call(
+          'POST',
+          '$prefix/profile/password',
+          body: {'currentPassword': selfOld, 'newPassword': selfNew},
+          expected: 401,
+        );
+        await call(
+          'POST',
+          '$prefix/profile/password',
+          token: selfToken,
+          body: {'currentPassword': selfOld, 'newPassword': selfNew},
+          expected: 204,
+        );
+        await call('GET', '$prefix/context', token: selfToken, expected: 401);
+        await call(
+          'POST',
+          '/api/v1/auth/login',
+          body: {'username': 'smoke_self', 'password': selfOld},
+          expected: 401,
+        );
+        final selfRelogin = await call(
+          'POST',
+          '/api/v1/auth/login',
+          body: {'username': 'smoke_self', 'password': selfNew},
+        );
+        expect((selfRelogin['user'] as Map)['username'], 'smoke_self');
+
+        const limitedOld = 'smoke-limited-old-password';
+        final limitedId = newUuid();
+        await call(
+          'POST',
+          '$prefix/users',
+          token: token,
+          body: {
+            'id': limitedId,
+            'username': 'smoke_limited',
+            'password': limitedOld,
+            'locationId': otherLocation,
+            'role': 'viewer',
+          },
+          expected: 201,
+        );
+        final limitedSession = await call(
+          'POST',
+          '/api/v1/auth/login',
+          body: {'username': 'smoke_limited', 'password': limitedOld},
+        );
+        final limitedToken = limitedSession['token']! as String;
+        for (var attempt = 0; attempt < 5; attempt++) {
+          await call(
+            'POST',
+            '$prefix/profile/password',
+            token: limitedToken,
+            body: {
+              'currentPassword': 'wrong-current-password',
+              'newPassword': 'smoke-limited-new-password',
+            },
+            expected: 422,
+          );
+        }
+        final throttled = await call(
+          'POST',
+          '$prefix/profile/password',
+          token: limitedToken,
+          body: {
+            'currentPassword': limitedOld,
+            'newPassword': 'smoke-limited-new-password',
+          },
+          expected: 429,
+        );
+        expect(throttled['code'], 'rate_limited');
+        await call(
+          'GET',
+          '$prefix/context',
+          token: limitedToken,
+          expected: 200,
+        );
+
+        final finalAudit = await call('GET', '$prefix/audit', token: token);
+        expect(
+          jsonEncode(finalAudit),
+          contains('identity.user.password_changed'),
+        );
+        expect(jsonEncode(finalAudit), isNot(contains(selfOld)));
+        expect(jsonEncode(finalAudit), isNot(contains(selfNew)));
+        expect(jsonEncode(finalAudit), isNot(contains(limitedOld)));
+
         await call('POST', '/api/v1/auth/logout', token: token, expected: 204);
         await call('GET', '$prefix/context', token: token, expected: 401);
       } finally {

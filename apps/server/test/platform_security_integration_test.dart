@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:postgres/postgres.dart';
+import 'package:storeos_api_contracts/api_contracts.dart';
 import 'package:storeos_server/src/application/auth_service.dart';
 import 'package:storeos_server/src/application/password_hasher.dart';
+import 'package:storeos_server/src/application/password_verification_limiter.dart';
 import 'package:storeos_server/src/infrastructure/auth_store.dart';
+import 'package:storeos_server/src/platform/identity_service.dart';
 import 'package:storeos_server/src/infrastructure/bootstrap_service.dart';
 import 'package:storeos_server/src/infrastructure/migration_runner.dart';
 import 'package:storeos_server/src/platform/audit_service.dart';
@@ -15,12 +19,15 @@ import 'package:storeos_server/src/platform/organization_service.dart';
 import 'package:storeos_server/src/platform/plugin_service.dart';
 import 'package:test/test.dart';
 
+part 'password_change_integration_cases.dart';
+
 const _company = '11111111-1111-4111-8111-111111111111';
 const _home = '22222222-2222-4222-8222-222222222222';
 const _other = '33333333-3333-4333-8333-333333333333';
 final _testDatabase = Platform.environment['STOREOS_TEST_DATABASE'];
 
 void main() {
+  passwordChangeTests();
   for (final operation in ['session', 'plugin', 'logout']) {
     test(
       '$operation rejects a credential that expires while waiting for the company lock',

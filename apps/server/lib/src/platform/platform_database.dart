@@ -38,6 +38,7 @@ const _permissions = <String>[
   'organization.write',
   'identity.read',
   'identity.write',
+  'identity.self.password',
   'audit.read',
   'events.read',
   'events.write',
@@ -60,18 +61,24 @@ List<String> permissionsForRole(String role) => switch (role) {
   'auditor' => const [
     'context.read',
     'organization.read',
+    'identity.self.password',
     'audit.read',
     'events.read',
   ],
   'employee' => const [
     'context.read',
     'organization.read',
+    'identity.self.password',
     'people.self.read',
     'workforce.shifts.self.read',
     'tasks.instances.self.read',
     'tasks.instances.self.execute',
   ],
-  'viewer' => const ['context.read', 'organization.read'],
+  'viewer' => const [
+    'context.read',
+    'organization.read',
+    'identity.self.password',
+  ],
   _ => const [],
 };
 

@@ -34,3 +34,16 @@ verfügbar. Seiten enthalten maximal 50 Einträge, absteigend nach `acceptedVers
 `numericAttemptId` verbindet Bestätigungen/Blockierungen mit ihrem Nachweis.
 Schema 2 ist nicht für ältere Clients lesbar; Schema 1 bleibt unverändert unterstützt.
 [Präzisions-, Rechte- und Auditvertrag](../../docs/development/phase-1b-7-numeric-steps.md).
+
+Selbstbedienung (P1) ergänzt unter `/api/v1/platform`:
+
+- `POST /profile/password`: `{currentPassword,newPassword}` für den eigenen Account
+  jeder angemeldeten Rolle (`identity.self.password`); es wird kein Account-, Benutzer-
+  oder Mitarbeiterbezeichner akzeptiert. `currentPassword` umfasst 1–1024, `newPassword`
+  12–1024 UTF-8-Bytes und muss sich vom aktuellen Passwort unterscheiden. Da die Regel
+  bytebasiert ist, werden `minLength`/`maxLength` im OpenAPI bewusst nicht verwendet;
+  `x-storeos-min-utf8-bytes`/`x-storeos-max-utf8-bytes` dokumentieren die exakten Grenzen.
+  Erfolg ist `204`; Hash-Aktualisierung, Audit `identity.user.password_changed` und der
+  Widerruf aller Sitzungen einschließlich der aufrufenden sind atomar. Falsches aktuelles
+  Passwort: `422 invalid_current_password`; mehr als fünf Fehlversuche pro Account in
+  15 Minuten: `429 rate_limited`. [Slice-Vertrag](../../docs/development/phase-1-self-service-password-change.md).

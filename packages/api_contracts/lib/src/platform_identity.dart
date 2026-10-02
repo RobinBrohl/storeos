@@ -1,6 +1,8 @@
 /// JSON contracts for the P1 organization and identity API.
 library;
 
+import 'dart:convert';
+
 class CompanyDto {
   const CompanyDto({
     required this.id,
@@ -160,6 +162,84 @@ class PlatformContextResponse {
     'locationId': locationId,
     'role': role,
     'permissions': permissions,
+  };
+}
+
+/// Minimum UTF-8 byte length of a new password accepted by StoreOS.
+const int passwordMinUtf8Bytes = 12;
+
+/// Maximum UTF-8 byte length accepted for current and new passwords.
+const int passwordMaxUtf8Bytes = 1024;
+
+/// Byte length of [value] under the password policy.
+///
+/// Deliberately counts UTF-8 bytes, not UTF-16 units, code points or
+/// grapheme clusters.
+int passwordUtf8ByteLength(String value) => utf8.encode(value).length;
+
+/// Returns a static, value-free problem description for a current password.
+String? currentPasswordProblem(String value) {
+  final bytes = passwordUtf8ByteLength(value);
+  if (bytes == 0 || bytes > passwordMaxUtf8Bytes) {
+    return 'Current password must be 1 to $passwordMaxUtf8Bytes UTF-8 bytes.';
+  }
+  return null;
+}
+
+/// Returns a static, value-free problem description for a new password.
+String? newPasswordProblem(String value) {
+  final bytes = passwordUtf8ByteLength(value);
+  if (bytes < passwordMinUtf8Bytes || bytes > passwordMaxUtf8Bytes) {
+    return 'New password must be $passwordMinUtf8Bytes to '
+        '$passwordMaxUtf8Bytes UTF-8 bytes.';
+  }
+  return null;
+}
+
+/// Returns a static, value-free problem description for a password change.
+String? changePasswordProblem(ChangePasswordRequest request) {
+  final current = currentPasswordProblem(request.currentPassword);
+  if (current != null) return current;
+  final replacement = newPasswordProblem(request.newPassword);
+  if (replacement != null) return replacement;
+  if (request.currentPassword == request.newPassword) {
+    return 'New password must differ from the current password.';
+  }
+  return null;
+}
+
+/// Self-service password-change request.
+///
+/// Accepts exactly `currentPassword` and `newPassword`; no account identifier
+/// or expected version is part of the contract. It intentionally has no
+/// `toString` override so plaintext is never rendered into logs or diagnostics.
+class ChangePasswordRequest {
+  const ChangePasswordRequest({
+    required this.currentPassword,
+    required this.newPassword,
+  });
+
+  factory ChangePasswordRequest.fromJson(Map<String, dynamic> json) {
+    if (json.keys.toSet().difference(const {
+          'currentPassword',
+          'newPassword',
+        }).isNotEmpty ||
+        !json.containsKey('currentPassword') ||
+        !json.containsKey('newPassword')) {
+      throw const FormatException('Unsupported change-password fields.');
+    }
+    return ChangePasswordRequest(
+      currentPassword: _string(json, 'currentPassword'),
+      newPassword: _string(json, 'newPassword'),
+    );
+  }
+
+  final String currentPassword;
+  final String newPassword;
+
+  Map<String, dynamic> toJson() => {
+    'currentPassword': currentPassword,
+    'newPassword': newPassword,
   };
 }
 

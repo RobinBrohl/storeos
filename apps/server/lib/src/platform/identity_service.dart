@@ -1,4 +1,7 @@
+import 'package:storeos_api_contracts/api_contracts.dart';
+
 import '../application/password_hasher.dart';
+import '../application/password_verification_limiter.dart';
 import '../identity/identity_repository.dart';
 import '../infrastructure/auth_store.dart';
 import '../organization/organization_repository.dart';
@@ -6,12 +9,17 @@ import 'platform_database.dart';
 import 'platform_input.dart';
 
 class IdentityService {
-  IdentityService(this.database, this.passwordHasher)
-    : repository = IdentityRepository(database),
-      organization = OrganizationRepository(database);
+  IdentityService(
+    this.database,
+    this.passwordHasher, {
+    PasswordVerificationLimiter? limiter,
+  }) : repository = IdentityRepository(database),
+       organization = OrganizationRepository(database),
+       limiter = limiter ?? PasswordVerificationLimiter();
 
   final PlatformDatabase database;
   final PasswordHasher passwordHasher;
+  final PasswordVerificationLimiter limiter;
   final IdentityRepository repository;
   final OrganizationRepository organization;
 
@@ -203,6 +211,74 @@ class IdentityService {
       );
       return updated.toJson();
     });
+  }
+
+  /// Changes the authenticated actor's own password after verifying the
+  /// current one. The target is always the session account; no request field
+  /// can select another account. Password update, all-session revocation and
+  /// audit commit in one company-locked transaction.
+  Future<void> changeOwnPassword(
+    SessionPrincipal principal,
+    Map<String, dynamic> input,
+  ) async {
+    late final ChangePasswordRequest request;
+    try {
+      request = ChangePasswordRequest.fromJson(input);
+    } on FormatException {
+      throw const PlatformFailure(
+        400,
+        'invalid_request',
+        'Invalid request fields.',
+      );
+    }
+    final problem = changePasswordProblem(request);
+    if (problem != null) {
+      throw PlatformFailure(400, 'invalid_request', problem);
+    }
+    await database.runAuthorized(principal, 'identity.self.password', (
+      tx,
+      actor,
+    ) async {
+      final credential = await repository.credential(tx, actor.id);
+      if (credential == null) {
+        throw const PlatformFailure(401, 'unauthorized', 'Session is invalid.');
+      }
+      if (!limiter.allows(actor.id)) {
+        throw const PlatformFailure(429, 'rate_limited', 'Try again later.');
+      }
+      final valid = await passwordHasher.verify(
+        request.currentPassword,
+        credential.passwordHash,
+      );
+      if (!valid) {
+        // The limiter is intentionally not transactional; this failure
+        // remains recorded even though the transaction below rolls back.
+        limiter.failure(actor.id);
+        throw const PlatformFailure(
+          422,
+          'invalid_current_password',
+          'Current password is incorrect.',
+        );
+      }
+      final hash = await passwordHasher.hash(request.newPassword);
+      final updated = await repository.setPassword(
+        tx,
+        userId: actor.id,
+        passwordHash: hash,
+        expectedVersion: credential.version,
+      );
+      await repository.revokeSessions(tx, actor.id);
+      await database.audit(
+        tx,
+        actor,
+        'identity.user.password_changed',
+        'user',
+        actor.id,
+        locationId: actor.locationId,
+        changes: {'version': updated.version},
+      );
+    });
+    limiter.success(principal.id);
   }
 }
 

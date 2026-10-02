@@ -62,6 +62,68 @@ void main() {
     expect(status.database, 'reachable');
   });
 
+  test('posts the password contract to the self-service route', () async {
+    final client = MockClient((request) async {
+      expect(request.url.path, '/api/v1/platform/profile/password');
+      expect(request.method, 'POST');
+      expect(request.headers['Authorization'], 'Bearer sensitive-token');
+      expect(jsonDecode(request.body), {
+        'currentPassword': 'old-password-123',
+        'newPassword': 'new-password-123',
+      });
+      return http.Response('', 204);
+    });
+    final api = HttpStoreApi(
+      baseUri: Uri.parse('http://127.0.0.1:8080'),
+      client: client,
+    );
+
+    await api.changePassword(
+      token: 'sensitive-token',
+      currentPassword: 'old-password-123',
+      newPassword: 'new-password-123',
+    );
+  });
+
+  test('maps password-change error codes to static messages', () async {
+    const cases = [
+      (
+        'invalid_current_password',
+        422,
+        'Das aktuelle Passwort ist nicht korrekt.',
+      ),
+      (
+        'rate_limited',
+        429,
+        'Zu viele Versuche. Bitte später erneut versuchen.',
+      ),
+    ];
+    for (final (code, status, expected) in cases) {
+      final api = HttpStoreApi(
+        baseUri: Uri.parse('http://127.0.0.1:8080'),
+        client: MockClient(
+          (_) async => http.Response(
+            jsonEncode(ApiError(code: code, message: 'server text').toJson()),
+            status,
+          ),
+        ),
+      );
+      await expectLater(
+        api.changePassword(
+          token: 'sensitive-token',
+          currentPassword: 'old-password-123',
+          newPassword: 'new-password-123',
+        ),
+        throwsA(
+          isA<StoreApiException>()
+              .having((error) => error.code, 'code', code)
+              .having((error) => error.message, 'message', expected)
+              .having((error) => error.statusCode, 'statusCode', status),
+        ),
+      );
+    }
+  });
+
   test('surfaces structured HTTP errors', () async {
     final api = HttpStoreApi(
       baseUri: Uri.parse('http://127.0.0.1:8080'),

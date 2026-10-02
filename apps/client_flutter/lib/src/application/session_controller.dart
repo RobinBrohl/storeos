@@ -17,6 +17,8 @@ class SessionController extends ChangeNotifier {
   DateTime? _checkedAt;
   String? _error;
   String? _notice;
+  String? _noticeTitle;
+  bool _noticePositive = false;
   Timer? _expiryTimer;
   bool _busy = false;
   bool _disposed = false;
@@ -28,6 +30,8 @@ class SessionController extends ChangeNotifier {
   DateTime? get checkedAt => _checkedAt;
   String? get error => _error;
   String? get notice => _notice;
+  String? get noticeTitle => _noticeTitle;
+  bool get noticePositive => _noticePositive;
 
   /// Grants a short-lived token only to an application-layer request callback.
   /// A result from an expired or replaced session is never returned to callers.
@@ -72,6 +76,104 @@ class SessionController extends ChangeNotifier {
     if (_session != null && !_disposed) _expireSession();
   }
 
+  /// Clears transient error and notice state, e.g. before opening the
+  /// password-change dialog.
+  void clearMessages() {
+    if (_disposed) return;
+    _error = null;
+    _notice = null;
+    _noticeTitle = null;
+    _noticePositive = false;
+    _notify();
+  }
+
+  /// Changes the authenticated account's own password after verifying the
+  /// current one. On success, and on an ambiguous transport outcome, the local
+  /// session is cleared because the server revokes all sessions on commit.
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (_busy) return false;
+    final session = _session;
+    if (_disposed || session == null || !session.expiresAt.isAfter(_now())) {
+      if (!_disposed && session != null) _expireSession();
+      return false;
+    }
+    final currentBytes = passwordUtf8ByteLength(currentPassword);
+    if (currentBytes == 0 || currentBytes > passwordMaxUtf8Bytes) {
+      _error = 'Aktuelles Passwort eingeben.';
+      _notice = null;
+      _notify();
+      return false;
+    }
+    final newBytes = passwordUtf8ByteLength(newPassword);
+    if (newBytes < passwordMinUtf8Bytes || newBytes > passwordMaxUtf8Bytes) {
+      _error =
+          'Das neue Passwort muss $passwordMinUtf8Bytes bis '
+          '$passwordMaxUtf8Bytes UTF-8-Bytes lang sein.';
+      _notice = null;
+      _notify();
+      return false;
+    }
+    if (newPassword == currentPassword) {
+      _error = 'Das neue Passwort muss sich vom aktuellen unterscheiden.';
+      _notice = null;
+      _notify();
+      return false;
+    }
+    _busy = true;
+    _error = null;
+    _notice = null;
+    _noticeTitle = null;
+    _noticePositive = false;
+    _notify();
+    try {
+      await _api.changePassword(
+        token: session.token,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      if (_disposed || !identical(_session, session)) return false;
+      _clearSession();
+      _noticeTitle = 'Passwort geändert';
+      _noticePositive = true;
+      _notice = 'Passwort geändert. Bitte mit dem neuen Passwort anmelden.';
+      return true;
+    } on StoreApiException catch (error) {
+      if (_disposed || !identical(_session, session)) return false;
+      if (error.statusCode == 401) {
+        _clearSession();
+        _noticeTitle = 'Passwortänderung';
+        _noticePositive = false;
+        _notice =
+            'Die Sitzung ist nicht mehr gültig. Bitte mit dem neuen Passwort '
+            'anmelden; falls die Änderung nicht gespeichert wurde, weiterhin '
+            'mit dem bisherigen Passwort.';
+        return false;
+      }
+      if (error.code == 'timeout' ||
+          error.code == 'network_unavailable' ||
+          error.code == 'stale_session') {
+        _clearSession();
+        _noticeTitle = 'Passwortänderung unklar';
+        _noticePositive = false;
+        _notice =
+            'Die Verbindung wurde unterbrochen. Bitte mit dem neuen Passwort '
+            'anmelden; falls die Änderung nicht gespeichert wurde, funktioniert '
+            'weiterhin das bisherige Passwort.';
+        return false;
+      }
+      _error = error.message;
+      return false;
+    } finally {
+      if (!_disposed) {
+        _busy = false;
+        _notify();
+      }
+    }
+  }
+
   Future<void> signIn({
     required String username,
     required String password,
@@ -80,6 +182,8 @@ class SessionController extends ChangeNotifier {
     _busy = true;
     _error = null;
     _notice = null;
+    _noticeTitle = null;
+    _noticePositive = false;
     _notify();
 
     try {
@@ -138,11 +242,15 @@ class SessionController extends ChangeNotifier {
     _clearSession();
     _error = null;
     _notice = null;
+    _noticeTitle = null;
+    _noticePositive = false;
     _notify();
     try {
       await _api.logout(token);
     } catch (_) {
       if (!_disposed) {
+        _noticeTitle = 'Abmeldung';
+        _noticePositive = false;
         _notice =
             'Lokale Sitzung beendet. Die Serverabmeldung konnte nicht bestätigt werden.';
       }

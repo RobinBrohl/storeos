@@ -125,6 +125,167 @@ void main() {
     expect(controller.status, isNull);
     expect(controller.error, contains('keine erreichbare Datenbank'));
   });
+
+  test(
+    'password change clears the session and announces the new login',
+    () async {
+      final api = FakeStoreApi(now);
+      final controller = SessionController(api, now: () => now);
+      addTearDown(controller.dispose);
+      await controller.signIn(username: 'robin', password: 'secret');
+
+      final changed = await controller.changePassword(
+        currentPassword: 'old-password-123',
+        newPassword: 'new-password-123',
+      );
+
+      expect(changed, isTrue);
+      expect(api.lastToken, 'test-token');
+      expect(api.lastCurrentPassword, 'old-password-123');
+      expect(api.lastNewPassword, 'new-password-123');
+      expect(controller.isAuthenticated, isFalse);
+      expect(controller.noticeTitle, 'Passwort geändert');
+      expect(controller.noticePositive, isTrue);
+      expect(controller.notice, contains('neuen Passwort'));
+    },
+  );
+
+  test(
+    'wrong current password keeps the session and shows the static error',
+    () async {
+      final api = FakeStoreApi(now)
+        ..changePasswordError = const StoreApiException(
+          'invalid_current_password',
+          'Das aktuelle Passwort ist nicht korrekt.',
+          statusCode: 422,
+        );
+      final controller = SessionController(api, now: () => now);
+      addTearDown(controller.dispose);
+      await controller.signIn(username: 'robin', password: 'secret');
+
+      final changed = await controller.changePassword(
+        currentPassword: 'old-password-123',
+        newPassword: 'new-password-123',
+      );
+
+      expect(changed, isFalse);
+      expect(controller.isAuthenticated, isTrue);
+      expect(controller.error, 'Das aktuelle Passwort ist nicht korrekt.');
+    },
+  );
+
+  test(
+    'rate limiting keeps the session and shows the throttling message',
+    () async {
+      final api = FakeStoreApi(now)
+        ..changePasswordError = const StoreApiException(
+          'rate_limited',
+          'Zu viele Versuche. Bitte später erneut versuchen.',
+          statusCode: 429,
+        );
+      final controller = SessionController(api, now: () => now);
+      addTearDown(controller.dispose);
+      await controller.signIn(username: 'robin', password: 'secret');
+
+      final changed = await controller.changePassword(
+        currentPassword: 'old-password-123',
+        newPassword: 'new-password-123',
+      );
+
+      expect(changed, isFalse);
+      expect(controller.isAuthenticated, isTrue);
+      expect(controller.error, contains('Zu viele Versuche'));
+    },
+  );
+
+  test(
+    'an ambiguous transport outcome clears the session with a warning',
+    () async {
+      final api = FakeStoreApi(now)
+        ..changePasswordError = const StoreApiException(
+          'timeout',
+          'Der Standortserver antwortet nicht rechtzeitig.',
+        );
+      final controller = SessionController(api, now: () => now);
+      addTearDown(controller.dispose);
+      await controller.signIn(username: 'robin', password: 'secret');
+
+      final changed = await controller.changePassword(
+        currentPassword: 'old-password-123',
+        newPassword: 'new-password-123',
+      );
+
+      expect(changed, isFalse);
+      expect(controller.isAuthenticated, isFalse);
+      expect(controller.noticeTitle, 'Passwortänderung unklar');
+      expect(controller.noticePositive, isFalse);
+      expect(controller.notice, contains('bisherige Passwort'));
+    },
+  );
+
+  test('an unauthorized password change expires the local session', () async {
+    final api = FakeStoreApi(now)
+      ..changePasswordError = const StoreApiException(
+        'unauthorized',
+        'Authentication required.',
+        statusCode: 401,
+      );
+    final controller = SessionController(api, now: () => now);
+    addTearDown(controller.dispose);
+    await controller.signIn(username: 'robin', password: 'secret');
+
+    await controller.changePassword(
+      currentPassword: 'old-password-123',
+      newPassword: 'new-password-123',
+    );
+
+    expect(controller.isAuthenticated, isFalse);
+    expect(controller.noticeTitle, 'Passwortänderung');
+    expect(controller.noticePositive, isFalse);
+  });
+
+  test('a second submit while busy is ignored', () async {
+    final api = FakeStoreApi(now)..pendingChangePassword = Completer<void>();
+    final controller = SessionController(api, now: () => now);
+    addTearDown(controller.dispose);
+    await controller.signIn(username: 'robin', password: 'secret');
+
+    final first = controller.changePassword(
+      currentPassword: 'old-password-123',
+      newPassword: 'new-password-123',
+    );
+    final second = await controller.changePassword(
+      currentPassword: 'old-password-123',
+      newPassword: 'new-password-123',
+    );
+
+    expect(second, isFalse);
+    expect(api.changePasswordCalls, 1);
+    api.pendingChangePassword!.complete();
+    expect(await first, isTrue);
+  });
+
+  test('client validation counts UTF-8 bytes, not characters', () async {
+    final api = FakeStoreApi(now);
+    final controller = SessionController(api, now: () => now);
+    addTearDown(controller.dispose);
+    await controller.signIn(username: 'robin', password: 'secret');
+
+    final tooShort = await controller.changePassword(
+      currentPassword: 'old-password-123',
+      newPassword: 'ä' * 5,
+    );
+    expect(tooShort, isFalse);
+    expect(api.changePasswordCalls, 0);
+    expect(controller.error, contains('UTF-8-Bytes'));
+
+    final byteValid = await controller.changePassword(
+      currentPassword: 'old-password-123',
+      newPassword: 'ä' * 6,
+    );
+    expect(byteValid, isTrue);
+    expect(api.changePasswordCalls, 1);
+  });
 }
 
 class FakeStoreApi implements StoreApi {
@@ -150,9 +311,15 @@ class FakeStoreApi implements StoreApi {
   Completer<SystemStatusResponse>? pendingStatus;
   StoreApiException? statusError;
   StoreApiException? logoutError;
+  StoreApiException? changePasswordError;
+  Completer<void>? pendingChangePassword;
   String? lastUsername;
   String? loggedOutToken;
+  String? lastToken;
+  String? lastCurrentPassword;
+  String? lastNewPassword;
   int statusCalls = 0;
+  int changePasswordCalls = 0;
 
   @override
   Future<SessionResponse> login(LoginRequest request) async {
@@ -168,6 +335,20 @@ class FakeStoreApi implements StoreApi {
     statusCalls++;
     if (statusError case final error?) throw error;
     return pendingStatus?.future ?? response;
+  }
+
+  @override
+  Future<void> changePassword({
+    required String token,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    changePasswordCalls++;
+    lastToken = token;
+    lastCurrentPassword = currentPassword;
+    lastNewPassword = newPassword;
+    if (changePasswordError case final error?) throw error;
+    await pendingChangePassword?.future;
   }
 
   @override

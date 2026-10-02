@@ -5,6 +5,7 @@ import 'package:storeos_design_system/storeos_design_system.dart';
 
 import '../application/platform_controller.dart';
 import '../application/session_controller.dart';
+import 'change_password_dialog.dart';
 import 'platform_sections.dart';
 import 'employee_section.dart';
 import 'task_template_section.dart';
@@ -237,6 +238,15 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
                     ? null
                     : () => _refresh(section),
                 icon: const Icon(Icons.refresh),
+              ),
+            if (widget.platform.allows('identity.self.password'))
+              IconButton(
+                key: const Key('change-password-button'),
+                tooltip: 'Passwort ändern',
+                onPressed: widget.session.isBusy
+                    ? null
+                    : () => showChangePasswordDialog(context, widget.session),
+                icon: const Icon(Icons.password_outlined),
               ),
             IconButton(
               key: const Key('logout-button'),

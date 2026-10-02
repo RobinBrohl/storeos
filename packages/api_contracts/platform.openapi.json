@@ -366,6 +366,115 @@
         ]
       }
     },
+    "/api/v1/platform/profile/password": {
+      "post": {
+        "operationId": "changeOwnPassword",
+        "description": "Changes the authenticated account's own password after verifying the current password. Requires identity.self.password (granted to admin, auditor, viewer and employee). The request accepts no account identifier; the target is always the session account. Current-password verification, Argon2id re-hash, audit identity.user.password_changed and revocation of all sessions of the account (including the calling session) commit atomically. On success the calling token is immediately invalid and must not be used for follow-up requests. The operation is not blindly idempotent: a lost 204 leaves the outcome unknown and is recovered by signing in with the new password if committed, otherwise with the old password.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Password changed; all sessions of the account, including the calling session, were revoked. No response body."
+          },
+          "400": {
+            "description": "invalid_request or invalid_json: missing or unknown properties, type mismatch, currentPassword empty or above 1024 UTF-8 bytes, newPassword outside 12 to 1024 UTF-8 bytes, or newPassword equal to currentPassword.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, malformed, revoked or expired session, or the account is disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: the authenticated role lacks identity.self.password or the account is outside the configured company.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: the request body exceeds 16384 bytes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: the request content type is not application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "invalid_current_password: the supplied current password does not match; no password, session or audit state changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited: the account exceeded five failed current-password verifications within a 15-minute window; no hash verification or state change occurred.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: infrastructure failure; no state changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        }
+      }
+    },
     "/api/v1/platform/audit": {
       "get": {
         "operationId": "readAudit",
@@ -3224,6 +3333,32 @@
           "expectedVersion": {
             "type": "integer",
             "minimum": 1
+          }
+        }
+      },
+      "ChangePassword": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true,
+            "description": "Non-empty and at most 1024 UTF-8 bytes. The StoreOS policy is byte-based, so minLength/maxLength (character counts) are deliberately not used; x-storeos-min-utf8-bytes and x-storeos-max-utf8-bytes carry the exact limits.",
+            "x-storeos-min-utf8-bytes": 1,
+            "x-storeos-max-utf8-bytes": 1024
+          },
+          "newPassword": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true,
+            "description": "12 to 1024 UTF-8 bytes and different from currentPassword. The StoreOS policy is byte-based, so minLength/maxLength (character counts) are deliberately not used; x-storeos-min-utf8-bytes and x-storeos-max-utf8-bytes carry the exact limits.",
+            "x-storeos-min-utf8-bytes": 12,
+            "x-storeos-max-utf8-bytes": 1024
           }
         }
       },

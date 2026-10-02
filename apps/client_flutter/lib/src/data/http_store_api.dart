@@ -49,6 +49,29 @@ class HttpStoreApi implements StoreApi {
   }
 
   @override
+  Future<void> changePassword({
+    required String token,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final request = ChangePasswordRequest(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+    final response = await _send(
+      () => _client.post(
+        _baseUri.resolve('/api/v1/platform/profile/password'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      ),
+    );
+    _requireStatus(response, 204);
+  }
+
+  @override
   Future<void> logout(String token) async {
     final response = await _send(
       () => _client.post(
@@ -107,6 +130,8 @@ class HttpStoreApi implements StoreApi {
     'invalid_token' || 'unauthorized' =>
       'Die Sitzung ist nicht mehr gültig. Bitte erneut anmelden.',
     'forbidden' => 'Für diesen Standort fehlt die Berechtigung.',
+    'invalid_current_password' => 'Das aktuelle Passwort ist nicht korrekt.',
+    'rate_limited' => 'Zu viele Versuche. Bitte später erneut versuchen.',
     'database_unavailable' ||
     'service_unavailable' => 'Der Standortserver ist derzeit nicht bereit.',
     _ => 'Der Standortserver hat einen Fehler gemeldet ($statusCode).',

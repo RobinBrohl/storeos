@@ -163,6 +163,107 @@ void main() {
     expect(find.byKey(const Key('login-button')), findsOneWidget);
     expect(find.byKey(const Key('plugin-token')), findsNothing);
   });
+
+  testWidgets('password change returns to login with a success notice', (
+    tester,
+  ) async {
+    desktop(tester);
+    final platform = _UiPlatformApi(role: 'viewer');
+    final api = _UiSessionApi();
+    await tester.pumpWidget(
+      StoreOsApp(
+        api: api,
+        platformApi: platform,
+        baseUri: Uri.parse('http://127.0.0.1:8080'),
+      ),
+    );
+    await login(tester);
+    await tester.tap(find.byKey(const Key('change-password-button')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('current-password-field')),
+      'old-password-123',
+    );
+    await tester.enterText(
+      find.byKey(const Key('new-password-field')),
+      'new-password-123',
+    );
+    await tester.enterText(
+      find.byKey(const Key('confirm-password-field')),
+      'different-password-123',
+    );
+    await tester.tap(find.byKey(const Key('change-password-submit')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('change-password-error')), findsOneWidget);
+    expect(api.changePasswordCalls, 0);
+
+    // Six two-byte characters are below 12 code points but exactly 12 UTF-8
+    // bytes and therefore pass the byte-based policy.
+    await tester.enterText(
+      find.byKey(const Key('new-password-field')),
+      'ä' * 6,
+    );
+    await tester.enterText(
+      find.byKey(const Key('confirm-password-field')),
+      'ä' * 6,
+    );
+    await tester.tap(find.byKey(const Key('change-password-submit')));
+    await tester.pumpAndSettle();
+
+    expect(api.changePasswordCalls, 1);
+    expect(api.lastCurrentPassword, 'old-password-123');
+    expect(api.lastNewPassword, 'ä' * 6);
+    expect(find.byKey(const Key('login-button')), findsOneWidget);
+    expect(find.text('Passwort geändert'), findsOneWidget);
+    expect(find.textContaining('neuen Passwort'), findsOneWidget);
+  });
+
+  testWidgets('wrong current password keeps the dialog open with an error', (
+    tester,
+  ) async {
+    desktop(tester);
+    final platform = _UiPlatformApi(role: 'viewer');
+    final api = _UiSessionApi()
+      ..changePasswordError = const StoreApiException(
+        'invalid_current_password',
+        'Das aktuelle Passwort ist nicht korrekt.',
+        statusCode: 422,
+      );
+    await tester.pumpWidget(
+      StoreOsApp(
+        api: api,
+        platformApi: platform,
+        baseUri: Uri.parse('http://127.0.0.1:8080'),
+      ),
+    );
+    await login(tester);
+    await tester.tap(find.byKey(const Key('change-password-button')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('current-password-field')),
+      'wrong-password-123',
+    );
+    await tester.enterText(
+      find.byKey(const Key('new-password-field')),
+      'new-password-123',
+    );
+    await tester.enterText(
+      find.byKey(const Key('confirm-password-field')),
+      'new-password-123',
+    );
+    await tester.tap(find.byKey(const Key('change-password-submit')));
+    await tester.pumpAndSettle();
+
+    expect(api.changePasswordCalls, 1);
+    expect(
+      find.text('Das aktuelle Passwort ist nicht korrekt.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('change-password-submit')), findsOneWidget);
+    expect(find.byKey(const Key('login-button')), findsNothing);
+  });
 }
 
 class _UiSessionApi implements StoreApi {
@@ -191,6 +292,23 @@ class _UiSessionApi implements StoreApi {
     locationId: 'location-1',
   );
 
+  StoreApiException? changePasswordError;
+  int changePasswordCalls = 0;
+  String? lastCurrentPassword;
+  String? lastNewPassword;
+
+  @override
+  Future<void> changePassword({
+    required String token,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    changePasswordCalls++;
+    lastCurrentPassword = currentPassword;
+    lastNewPassword = newPassword;
+    if (changePasswordError case final error?) throw error;
+  }
+
   @override
   Future<void> logout(String token) async {}
 }
@@ -216,13 +334,14 @@ class _UiPlatformApi implements PlatformApi {
             'organization.write',
             'identity.read',
             'identity.write',
+            'identity.self.password',
             'audit.read',
             'events.read',
             'events.write',
             'plugins.read',
             'plugins.write',
           ]
-        : ['organization.read'],
+        : ['organization.read', 'identity.self.password'],
   };
 
   @override

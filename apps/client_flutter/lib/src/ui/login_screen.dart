@@ -197,9 +197,11 @@ class _LoginScreenState extends State<LoginScreen> {
               if (widget.controller.notice case final notice?) ...[
                 const SizedBox(height: StoreSpacing.md),
                 StoreStatusPanel(
-                  title: 'Abmeldung',
+                  title: widget.controller.noticeTitle ?? 'Hinweis',
                   message: notice,
-                  tone: StoreStatusTone.warning,
+                  tone: widget.controller.noticePositive
+                      ? StoreStatusTone.positive
+                      : StoreStatusTone.warning,
                 ),
               ],
               const SizedBox(height: StoreSpacing.md),

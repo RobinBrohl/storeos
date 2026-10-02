@@ -503,6 +503,13 @@ class Session implements StoreApi {
     ),
   );
   @override
+  Future<void> changePassword({
+    required String token,
+    required String currentPassword,
+    required String newPassword,
+  }) async {}
+
+  @override
   Future<void> logout(String token) async {}
   @override
   Future<SystemStatusResponse> systemStatus({

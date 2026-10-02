@@ -8,6 +8,12 @@ abstract class StoreApi {
     required String locationId,
   });
 
+  Future<void> changePassword({
+    required String token,
+    required String currentPassword,
+    required String newPassword,
+  });
+
   Future<void> logout(String token);
 }
 

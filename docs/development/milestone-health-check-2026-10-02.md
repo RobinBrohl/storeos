@@ -1,11 +1,10 @@
 # Milestone health check 2026-10-02
 
-Status: milestone health check completed locally; independent review performed
-(returned CHANGES REQUIRED for report-text precision), corrections applied, and a
-targeted confirmation review performed which found two remaining report-text
-defects (a duplicated M3/M4 debt row and an uncorrected L4 sentence in section
-14). Both were corrected in this revision; final confirmation is pending. This
-report claims no APPROVE and no remote CI verification for itself.
+Status: milestone health check completed; independent review performed (returned
+CHANGES REQUIRED for report-text precision), corrections applied, and a final
+targeted confirmation review returned APPROVE. The report was committed to `main`
+as `0ddcd4f` and pushed; the operator confirms the remote CI run for that commit
+is green.
 
 This is a cross-cutting architecture, correctness, security and pilot-readiness
 review. It is not a feature implementation cycle and it fixed no finding.
@@ -1008,8 +1007,9 @@ differ (`_writeJson` plain vs `_writeJsonAtomic` without 0600).
 
 BLOCKING NOW: **none** - no debt item blocks the next feature or the bounded
 pilot subject to the listed operator decisions. The health check itself is not
-remaining debt; it is completed locally by this report (final confirmation
-pending).
+remaining debt; it is completed by this report, independently reviewed (CHANGES
+REQUIRED, corrected, targeted re-review APPROVE), committed as `0ddcd4f` and
+remote-CI verified.
 
 ## 27. Retention / real employee data
 
@@ -1366,11 +1366,10 @@ three files after this report was written:
 
 `docs/README.md`, `docs/architecture/deployment.md` and `docs/roadmap/phases.md`
 were verified current and left untouched. No production finding was fixed. This
-report records the health check as completed locally with an independent review
-performed (CHANGES REQUIRED for report-text precision), corrections applied, a
-targeted confirmation review performed which found two remaining report-text
-defects, and those defects corrected in this revision; final confirmation is
-pending. It does not claim approval or remote verification for itself.
+report records the health check as completed, independently reviewed (CHANGES
+REQUIRED for report-text precision), corrected, approved by a targeted
+confirmation review, committed to `main` as `0ddcd4f` and verified by the remote
+CI run for that commit.
 
 ## 33. Acceptance criteria of this health check
 
@@ -1382,6 +1381,6 @@ upgrade-path table, route/contract/OpenAPI comparison, Flutter boundaries,
 risk-to-test mapping, four harness assessments, duplication disposition, debt
 disposition, pilot-readiness conclusion, classified findings with evidence,
 exactly one next capability, unchanged production source, docs-only final tree,
-update/recovery documentation corrected, no independent-review claim for this
-report) are addressed by sections 1-32 and verified in the cycle's final
-repository check.
+update/recovery documentation corrected, recorded independent-review and
+remote-CI status) are addressed by sections 1-32 and verified in the cycle's
+final repository check.

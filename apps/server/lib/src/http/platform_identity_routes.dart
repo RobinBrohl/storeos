@@ -23,6 +23,7 @@ class PlatformIdentityRoutes {
     router.post('/api/v1/platform/users', _createUser);
     router.post('/api/v1/platform/users/<id>', _updateUser);
     router.post('/api/v1/platform/users/<id>/password', _setPassword);
+    router.post('/api/v1/platform/profile/password', _changeOwnPassword);
   }
 
   final AuthService auth;
@@ -106,4 +107,12 @@ class PlatformIdentityRoutes {
           await readJson(request),
         ),
       );
+
+  Future<Response> _changeOwnPassword(Request request) async {
+    await identity.changeOwnPassword(
+      await auth.authenticate(bearerToken(request)),
+      await readJson(request),
+    );
+    return Response(204);
+  }
 }

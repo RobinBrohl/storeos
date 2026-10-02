@@ -36,6 +36,23 @@ class IdentityRepository {
     return result.isEmpty ? null : _userFromRow(result.single);
   }
 
+  Future<UserCredential?> credential(TxSession tx, String userId) async {
+    final result = await tx.execute(
+      Sql.named(
+        'SELECT password_hash, version FROM ${database.schema}.accounts '
+        'WHERE id = CAST(@userId AS uuid) '
+        'AND company_id = CAST(@companyId AS uuid)',
+      ),
+      parameters: {'userId': userId, 'companyId': database.companyId},
+    );
+    if (result.isEmpty) return null;
+    final values = result.single.toColumnMap();
+    return UserCredential(
+      passwordHash: values['password_hash']! as String,
+      version: values['version']! as int,
+    );
+  }
+
   Future<bool> usernameExists(TxSession tx, String usernameKey) async {
     final result = await tx.execute(
       Sql.named(

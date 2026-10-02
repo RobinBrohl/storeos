@@ -25,6 +25,8 @@ paths:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1users~1{id}'
   /api/v1/platform/users/{id}/password:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1users~1{id}~1password'
+  /api/v1/platform/profile/password:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1profile~1password'
   /api/v1/platform/audit:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1audit'
   /api/v1/platform/events:

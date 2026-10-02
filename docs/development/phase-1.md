@@ -28,6 +28,7 @@ Alle folgenden Benutzerrouten liegen unter `/api/v1/platform`; Bearer-Sitzung er
 - `POST /users`: `{id,username,password,locationId,role}`; Admin.
 - `POST /users/{id}`: `{role,isActive,expectedVersion}`; Admin; keine Passwortänderung über dieses Kommando.
 - `POST /users/{id}/password`: `{password,expectedVersion}`; Admin setzt ein neues Passwort und widerruft alle Sitzungen des Accounts.
+- `POST /profile/password`: `{currentPassword,newPassword}`; jede angemeldete Rolle ändert ausschließlich das eigene Passwort nach Prüfung des aktuellen Passworts (Capability `identity.self.password`, 12–1024 UTF-8-Bytes für das neue Passwort), widerruft alle Sitzungen des Accounts einschließlich der aufrufenden und auditiert `identity.user.password_changed`; falsches aktuelles Passwort 422 `invalid_current_password`, zu viele Fehlversuche pro Account 429 `rate_limited`.
 - `GET /audit?after=...`: `{items:[...],nextCursor}`; Admin/Auditor, Lesezugriff wird auditiert.
 - `GET /events?after=...`: `{items:[...],nextCursor}`; Admin/Auditor, redigierte Ereignisse und Zustellstatus.
 - `POST /events/{eventId}/replay`: ausschließlich Admin, ausschließlich `dead_letter`; erneuter Versuch mit derselben ID, auditiert.
@@ -54,7 +55,7 @@ Plugin-Tokens gelten 24 Stunden. Zur erneuten Freigabe muss eine aktive Registri
 
 Der Worker prüft alle zwei Sekunden bis zu 25 Events, versucht eine fehlgeschlagene interne Zustellung höchstens fünfmal mit wachsender Wartezeit und legt sie dann als `dead_letter` ab. Replay bleibt manuell. Die eigene Node-ID wird mit der Datenbank gesichert; eine Restorekopie darf nicht parallel als aktiver zweiter Schreiber betrieben werden.
 
-Auditoren dürfen Audit inklusive Benutzerkennungen firmenweit lesen; Viewer erhalten nur ihre Standortdaten. Abteilungen, delegierte Administration, MFA, Personalakten, Manifest-Updates und automatisierte Token-Erneuerung gehören nicht zu P1. Passwortänderungen durch Administratoren widerrufen alle Sitzungen des betroffenen Accounts; bei eigener Änderung folgt eine neue Anmeldung.
+Auditoren dürfen Audit inklusive Benutzerkennungen firmenweit lesen; Viewer erhalten nur ihre Standortdaten. Abteilungen, delegierte Administration, MFA, Personalakten, Manifest-Updates und automatisierte Token-Erneuerung gehören nicht zu P1. Passwortänderungen durch Administratoren widerrufen alle Sitzungen des betroffenen Accounts; bei eigener Änderung über `identity.self.password` folgt eine neue Anmeldung.
 
 ## Abnahme und Testwerkzeuge
 

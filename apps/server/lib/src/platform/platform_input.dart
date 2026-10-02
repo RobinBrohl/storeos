@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'package:storeos_api_contracts/api_contracts.dart';
 
 import '../config.dart';
 import 'platform_database.dart';
@@ -58,11 +58,13 @@ String requireUsername(Map<String, dynamic> input) {
   return value;
 }
 
-String requirePassword(Map<String, dynamic> input) {
-  final value = input['password'];
-  if (value is! String ||
-      utf8.encode(value).length < 12 ||
-      utf8.encode(value).length > 1024) {
+String requirePassword(Map<String, dynamic> input, {String key = 'password'}) {
+  final value = input[key];
+  if (value is! String) {
+    throw const PlatformFailure(400, 'invalid_request', 'Invalid password.');
+  }
+  final bytes = passwordUtf8ByteLength(value);
+  if (bytes < passwordMinUtf8Bytes || bytes > passwordMaxUtf8Bytes) {
     throw const PlatformFailure(400, 'invalid_request', 'Invalid password.');
   }
   return value;

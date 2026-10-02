@@ -1,6 +1,6 @@
 # StoreOS handover
 
-Start here after [AGENTS.md](../AGENTS.md). Baseline: `19151f6`, status updated 2026-10-01.
+Start here after [AGENTS.md](../AGENTS.md). Baseline: `512ac64`, status updated 2026-10-02.
 The incoming tree was clean. This handover does not authorize the next feature.
 [Actual status](roadmap/status.md) and [verification](development/handover-verification.md)
 distinguish current evidence from plans.
@@ -68,7 +68,7 @@ the merged slice was subsequently verified by the remote CI job.
 
 P1b acceptance/pilot hardening remains active; P2 has operating foundations, a
 remotely verified task-aware backup/restore acceptance, a remotely verified
-concurrent-work capacity measurement and a locally verified controlled
+concurrent-work capacity measurement and a remotely verified controlled
 update/recovery acceptance, but no device-offline implementation. Only a Flutter Web runner is checked in. Published
 shifts can be cancelled while every task instance is still open; editing/cancelling
 started shifts and cancelling a blocked task are different operations.

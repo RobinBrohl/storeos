@@ -1,8 +1,9 @@
 # P2: Controlled update/recovery acceptance
 
-Status: implemented and locally verified (two consecutive full runs plus prepare,
-post-upgrade and recovery failure injections); independent review and remote CI
-pending.
+Status: implemented, independently reviewed with APPROVE, committed to `main` as
+`512ac64` and verified by the remote CI job `update-recovery-acceptance`.
+Local evidence: two consecutive full runs plus prepare, post-upgrade and
+recovery failure injections.
 
 This slice proves the supported single-site update/recovery contract on populated
 pre-update data. It is an acceptance and operating-evidence slice: it changes no
@@ -242,7 +243,7 @@ Numbered criteria are tracked in the slice review; locally verified behavior:
 21. the sanitized report contains no secrets or raw rows and states the recovery
     boundary;
 22. existing regression checks remain green;
-23. the CI job exists; remote CI is unverified until pushed.
+23. the CI job exists and the remote CI job passed.
 
 ## Remaining limits
 
@@ -254,4 +255,4 @@ Numbered criteria are tracked in the slice review; locally verified behavior:
   product runtime dependency.
 - Production updates are still an operator procedure; no `Update-StoreOS.ps1`
   tooling is provided by this slice.
-- Local Windows evidence plus a CI job; remote CI is unverified until pushed.
+- Local Windows evidence plus the CI job; remote CI verified.

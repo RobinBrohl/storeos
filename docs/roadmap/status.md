@@ -1,6 +1,6 @@
 # Actual implementation status
 
-Assessment baseline: `19151f6` (2026-10-01; includes P1b.8).
+Assessment baseline: `512ac64` (2026-10-02; includes the P2 update/recovery acceptance).
 Use only `DONE`, `IN PROGRESS`, `TODO` and `BLOCKED` as status values.
 `DONE` applies to the bounded scope below, not every ambition in architecture documents.
 See [handover verification](../development/handover-verification.md) for evidence.
@@ -22,14 +22,14 @@ See [handover verification](../development/handover-verification.md) for evidenc
 | Numeric browser E2E | DONE | Real Flutter/HTTP/PostgreSQL journey and evidence/audit/receipt checks; crosses a replaced API process and browser page boundaries and replays recorded operation IDs. CI job executed successfully after the merge. |
 | P2 single-site capacity measurement | DONE | Opt-in harness drives declared concurrent read/write workloads against a run-scoped database, observes lock contention and verifies task state, receipts and audit deltas independently. Committed as `8a58226`; independent review and remote CI completed. |
 | P1b.8 published-shift cancellation | DONE | A published shift can be terminally cancelled only while every task instance is still open; started/blocked/completed work refuses the whole request. Instance cancellation, evidence, strict version retry, audit, Employee Home exclusion and admin display are verified. Committed as `19151f6`; independent review with fixed findings, re-review APPROVE and remote CI passed. |
+| P2 controlled update/recovery acceptance | DONE | A run-scoped acceptance proves the forward-only 0010→0011 upgrade on populated pre-update data: byte-identical prefix, encrypted restore point before migration, preservation of stable pre-0011 projections, new 0011 protections, current-server HTTP smoke including P1b.8 cancellation, and isolated recovery fencing. Prepare/post-upgrade/recovery failure injections verified. Committed as `512ac64`; independent review APPROVE and remote CI passed. No down migration, application downgrade or replacement activation is claimed. |
 
 ## Partially implemented / active
 
 | Scope | Status | Remaining boundary |
 | --- | --- | --- |
 | P1b overall acceptance/pilot readiness | IN PROGRESS | Bounded online journey works; page and process recovery plus replay are automated and remotely verified. Broader pilot operating evidence and device/offline contracts remain separate checks; no recommendation engine or new shift lifecycle is implied. |
-| P2 operational resilience | IN PROGRESS | Backup encryption, isolated restore, readiness, a remotely verified task-aware restore acceptance, a remotely verified concurrent-work capacity measurement and a locally verified controlled update/recovery acceptance exist. Replacement activation, retention and device/offline policies are not a complete operating model. |
-| P2 controlled update/recovery acceptance | IN PROGRESS | A run-scoped acceptance proves the forward-only 0010→0011 upgrade on populated pre-update data: byte-identical prefix, encrypted restore point before migration, preservation of stable pre-0011 projections, new 0011 protections, current-server HTTP smoke including P1b.8 cancellation, and isolated recovery fencing. Locally verified with prepare/post-upgrade/recovery failure injections; independent review and remote CI pending. No down migration, application downgrade or replacement activation is claimed. |
+| P2 operational resilience | IN PROGRESS | Backup encryption, isolated restore, readiness, a remotely verified task-aware restore acceptance, a remotely verified concurrent-work capacity measurement and a remotely verified controlled update/recovery acceptance exist. Replacement activation, retention and device/offline policies are not a complete operating model. |
 | P2 task-aware backup/restore acceptance | DONE | Seeded active/blocked/completed tasks restore with equal counts, hashes and sequence state; sessions/plugin tokens revoked, runtime access denied; tampered backup rejected and cleanup proven. Committed as `b94c8e0`; the remote CI job passed. |
 
 The highest completed foundation phase is **P1**. P1b.1–P1b.8 are delivered bounded

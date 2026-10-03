@@ -220,6 +220,18 @@ class MigrationRunner {
             'ON $_schema.shifts TO $role',
           );
         }
+        if (known.containsKey('0013_article_master')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.articles TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (sku, barcode, name, description, unit, is_active, '
+            'version, updated_at) ON $_schema.articles TO $role',
+          );
+          await tx.execute(
+            'REVOKE DELETE, TRUNCATE ON $_schema.articles FROM $role',
+          );
+        }
         if (known.containsKey('0009_task_cancellation')) {
           await tx.execute(
             'GRANT UPDATE (resolution_kind) ON $_schema.task_blockings TO $role',

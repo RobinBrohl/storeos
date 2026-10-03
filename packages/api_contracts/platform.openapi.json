@@ -3097,6 +3097,400 @@
         ],
         "summary": "Read immutable numeric attempts, newest accepted version first"
       }
+    },
+    "/api/v1/platform/articles": {
+      "get": {
+        "operationId": "listArticles",
+        "description": "Requires inventory.articles.manage (admin only), current session and company scope. Articles are company-wide master data: no location ownership and no stock, supplier, purchasing or price data exists in this slice. Company-scoped keyset page ordered by id, at most 50 entries; after is the last article UUID and a malformed value returns 400 invalid_cursor. q is a literal case-insensitive name/SKU search where %, _ and backslash are literal characters, not SQL wildcards. active=true returns only active articles, active=false only inactive ones, omitted returns both. Reads do not modify state or audit.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticlePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID of the last article. Stable ascending ID order; 50 rows per page. A malformed value returns 400 invalid_cursor."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Literal case-insensitive search over name and SKU; %, _ and backslash are literal characters."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "description": "true returns only active articles, false only inactive ones, omitted returns all."
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createArticle",
+        "description": "Requires inventory.articles.manage (admin only), current session and company scope. Creates a company-wide article with version 1 and isActive=true. The client-supplied id is the reconciliation key: a duplicate id, case-insensitive SKU or non-null barcode returns 409 already_exists with zero writes. SKU uniqueness folds ASCII letters only and preserves other characters exactly; barcode is opaque optional text. Writes and audit are atomic; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticle"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/articles/{id}": {
+      "get": {
+        "operationId": "getArticle",
+        "description": "Requires inventory.articles.manage (admin only), current session and company scope. Returns an own-company article including inactive ones; unknown or foreign ids return 404 without an existence leak.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/articles/{id}/edit": {
+      "post": {
+        "operationId": "editArticle",
+        "description": "Requires inventory.articles.manage (admin only), current session and company scope. Full replacement of the mutable attributes with an expectedVersion guard. A current-version request whose normalized attributes equal the stored row is a no-op returning the current state without a version bump or audit. A stale version returns 409 article_conflict; a SKU or barcode collision with another article returns 409 already_exists; both write nothing. Writes and audit are atomic; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditArticle"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/articles/{id}/deactivate": {
+      "post": {
+        "operationId": "deactivateArticle",
+        "description": "Requires inventory.articles.manage (admin only), current session and company scope. Version-guarded non-destructive lifecycle: the row is kept and is_active becomes false. A current-version request in the target state is a no-op without a version bump or audit; a stale version returns 409 article_conflict. There is no delete route or hard-delete path. Writes and audit are atomic; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleLifecycle"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/articles/{id}/reactivate": {
+      "post": {
+        "operationId": "reactivateArticle",
+        "description": "Requires inventory.articles.manage (admin only), current session and company scope. Version-guarded non-destructive lifecycle: is_active becomes true. A current-version request in the target state is a no-op without a version bump or audit; a stale version returns 409 article_conflict. Writes and audit are atomic; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleLifecycle"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5555,6 +5949,213 @@
           },
           "value": {
             "$ref": "#/components/schemas/TaskDecimal"
+          }
+        }
+      },
+      "Article": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "sku",
+          "barcode",
+          "name",
+          "description",
+          "unit",
+          "isActive",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArticlePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Article"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "CreateArticle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sku",
+          "barcode",
+          "name",
+          "description",
+          "unit"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        }
+      },
+      "EditArticle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "sku",
+          "barcode",
+          "name",
+          "description",
+          "unit"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        }
+      },
+      "ArticleLifecycle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
           }
         }
       }

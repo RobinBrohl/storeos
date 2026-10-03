@@ -45,6 +45,7 @@ const _permissions = <String>[
   'plugins.read',
   'plugins.write',
   'people.manage',
+  'inventory.articles.manage',
   'tasks.templates.manage',
   'workforce.shifts.manage',
   'workforce.shifts.self.read',

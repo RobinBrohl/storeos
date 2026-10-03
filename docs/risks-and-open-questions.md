@@ -40,5 +40,7 @@ Status: Architektur- und Produkthypothesen. Dieser Katalog macht Zielkonflikte s
 | Welche maximal tolerierbaren Datenverluste und Wiederherstellungszeiten gelten je Standort? | Backup-/Restore-Abnahme |
 | Welche API- und Plugin-Fähigkeiten braucht der erste reale Integrationsfall; wer prüft fremde Plugins? | Plugin-Runtime |
 | Welche alten Client-/Plugin-/Sync- und Guided-Work-Versionen unterstützt ein Release, und wie werden aktive Instanzen vor einer inkompatiblen Änderung behandelt? | Erster entsprechender Versionswechsel |
+| Wann wird aus der Einheiten-Bezeichnung des P4.1-Artikelstamms ein standardisierter Einheitenkatalog mit Umrechnungen, und wer besitzt ihn? | Bestands-, Wareneingangs- oder Rezeptfunktion (P4/P6) |
+| Welche weiteren Artikelstammdaten (Kategorien, Lieferantenbezug, GTIN-Prüfung) sind durch reale Betreiberdaten begründet? | Nächste P4-Ausbaustufe |
 
 Der [Fahrplan](roadmap/phases.md) ordnet diese Fragen Lieferphasen zu. [Compliance](compliance/overview.md) vertieft die regulatorischen Prüfungen, ohne generelle Rechtskonformität zu behaupten.

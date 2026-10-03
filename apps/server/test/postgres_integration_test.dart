@@ -159,6 +159,7 @@ void main() {
             '0010_task_numeric_steps',
             '0011_published_shift_cancellation',
             '0012_published_shift_amendment',
+            '0013_article_master',
           ],
         );
         final account = await connection.execute(
@@ -580,6 +581,7 @@ void main() {
           '0010_task_numeric_steps',
           '0011_published_shift_cancellation',
           '0012_published_shift_amendment',
+          '0013_article_master',
         ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(

@@ -15,6 +15,7 @@ class BlockingApi extends execution.ExecutionApi {
     String token,
     String route, {
     String? after,
+    Map<String, String>? query,
   }) async {
     if (route.endsWith('/blockings')) {
       if (failHistory) {

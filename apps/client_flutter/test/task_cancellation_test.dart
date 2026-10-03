@@ -15,6 +15,7 @@ class CancellationApi extends blocking.BlockingApi {
     String token,
     String route, {
     String? after,
+    Map<String, String>? query,
   }) async {
     if (route.endsWith('/cancelled-tasks')) {
       if (failCancelled) {

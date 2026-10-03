@@ -157,6 +157,66 @@ void main() {
           body: {'id': otherLocation, 'name': 'Other smoke location'},
           expected: 201,
         );
+        final smokeArticle = newUuid();
+        final createdArticle = await call(
+          'POST',
+          '$prefix/articles',
+          token: token,
+          body: {
+            'id': smokeArticle,
+            'sku': 'SMOKE-1',
+            'barcode': null,
+            'name': 'Smoke article',
+            'description': null,
+            'unit': 'Stk',
+          },
+          expected: 201,
+        );
+        expect(createdArticle['sku'], 'SMOKE-1');
+        expect(createdArticle['isActive'], true);
+        final readArticle = await call(
+          'GET',
+          '$prefix/articles/$smokeArticle',
+          token: token,
+        );
+        expect(readArticle['id'], smokeArticle);
+        final listedArticles = await call(
+          'GET',
+          '$prefix/articles?active=true&q=SMOKE',
+          token: token,
+        );
+        expect(
+          (listedArticles['items'] as List).map((item) => item['id']),
+          contains(smokeArticle),
+        );
+        final editedArticle = await call(
+          'POST',
+          '$prefix/articles/$smokeArticle/edit',
+          token: token,
+          body: {
+            'expectedVersion': 1,
+            'sku': 'SMOKE-1',
+            'barcode': '000123',
+            'name': 'Smoke article edited',
+            'description': null,
+            'unit': 'Stk',
+          },
+        );
+        expect(editedArticle['version'], 2);
+        final deactivatedArticle = await call(
+          'POST',
+          '$prefix/articles/$smokeArticle/deactivate',
+          token: token,
+          body: {'expectedVersion': 2},
+        );
+        expect(deactivatedArticle['isActive'], false);
+        final reactivatedArticle = await call(
+          'POST',
+          '$prefix/articles/$smokeArticle/reactivate',
+          token: token,
+          body: {'expectedVersion': 3},
+        );
+        expect(reactivatedArticle['isActive'], true);
         final viewerId = newUuid();
         await call(
           'POST',
@@ -183,6 +243,12 @@ void main() {
           token: viewerToken,
         );
         expect((restricted['locations'] as List).single['id'], otherLocation);
+        await call(
+          'GET',
+          '$prefix/articles',
+          token: viewerToken,
+          expected: 403,
+        );
         await call(
           'GET',
           '/api/v1/locations/$otherLocation/system/status',

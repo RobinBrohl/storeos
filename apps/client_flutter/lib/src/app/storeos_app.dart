@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:storeos_design_system/storeos_design_system.dart';
 
+import '../application/article_controller.dart';
 import '../application/session_controller.dart';
 import '../application/platform_controller.dart';
 import '../application/employee_controller.dart';
@@ -34,6 +35,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   PlatformController? _platformController;
   EmployeeController? _employees;
   TaskTemplateController? _templates;
+  ArticleController? _articles;
   ShiftController? _shifts, _home;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _wasAuthenticated = false;
@@ -58,6 +60,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
         _platformController!,
         api,
       );
+      _articles = ArticleController(_controller, _platformController!, api);
     }
   }
 
@@ -67,6 +70,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _shifts?.dispose();
     _home?.dispose();
     _templates?.dispose();
+    _articles?.dispose();
     _employees?.dispose();
     _platformController?.dispose();
     _controller.dispose();
@@ -112,6 +116,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       platform: _platformController!,
                       employees: _employees!,
                       templates: _templates!,
+                      articles: _articles,
                       shifts: _shifts,
                       home: _home,
                       baseUri: widget.baseUri,

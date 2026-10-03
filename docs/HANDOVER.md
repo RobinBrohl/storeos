@@ -1,9 +1,8 @@
 # StoreOS handover
 
-Start here after [AGENTS.md](../AGENTS.md). Baseline: `9aef373`, status updated 2026-10-02.
-The committed baseline was clean; the working tree additionally contains the
-uncommitted P1b.9 interval-amendment slice, which is not authorization to
-release or to start another feature. This handover does not authorize the next
+Start here after [AGENTS.md](../AGENTS.md). Baseline: `f37dd6b`, status updated 2026-10-03.
+The committed baseline is clean; P1b.9 is committed, independently reviewed and
+verified by the remote CI run. This handover does not authorize the next
 feature.
 [Actual status](roadmap/status.md) and [verification](development/handover-verification.md)
 distinguish current evidence from plans.
@@ -81,16 +80,26 @@ verification; all sessions are revoked and the change is audited atomically.
 Independent review returned APPROVE; its single LOW documentation-count finding
 (F1) was corrected before commit. The slice is committed as `9aef373`, pushed, and
 the remote CI run for that commit is green.
-A bounded pre-execution interval amendment (P1b.9, working tree, independent
-review pending) lets an administrator change only the `startsAt`/`endsAt` of a
-published shift while every task instance is still pristine `open`; employee,
-selections, snapshots and open instances remain unchanged. Migration `0012`
-also enforces the published-shift overlap invariant at the database level
-(closing finding M2) and introduces the trusted `btree_gist` dependency. The
-existing controlled update/recovery acceptance was extended to the `0010→0012`
-chain and passes locally, including a real HTTP amendment. See
+A bounded pre-execution interval amendment (P1b.9) lets an administrator change
+only the `startsAt`/`endsAt` of a published shift while every task instance is
+still pristine `open`; employee, selections, snapshots and open instances
+remain unchanged. Migration `0012` also enforces the published-shift overlap
+invariant at the database level (closing finding M2) and introduces the trusted
+`btree_gist` dependency. The controlled update/recovery acceptance covers the
+`0010→0012` chain, including a real HTTP amendment. The slice was independently
+reviewed (APPROVE after corrected LOW findings), committed as `f37dd6b`, pushed
+and verified by the remote CI run. See
 [P1b.9](development/phase-1b-9-shift-amendment.md) and
 [ADR 0014](adr/0014-pre-execution-shift-interval-amendment.md).
+A new `inventory` module now contains the P4.1 company-wide article/product
+master (working tree, uncommitted; independent review and remote CI pending):
+create, list/search, edit, deactivate and reactivate articles with a client
+UUID, deterministic ASCII-only SKU uniqueness, optional opaque barcode, bounded
+unit label, non-destructive lifecycle, audit and a Flutter **Artikel** section.
+Migration `0013` is additive; there is no stock, supplier, purchasing, price or
+event behavior, and `unit` is a label without conversions. See
+[P4.1](development/phase-4-1-article-master.md) and
+[ADR 0015](adr/0015-company-wide-article-master.md).
 There is no automatic priority engine, timezone-aware recurring calendar, timekeeping,
 stock ledger or HACCP module. See [status](roadmap/status.md) before claiming completion.
 
@@ -99,8 +108,8 @@ stock ledger or HACCP module. See [status](roadmap/status.md) before claiming co
 | Path | Responsibility |
 | --- | --- |
 | `apps/server/bin/` | Explicit server, migration and bootstrap entry points |
-| `apps/server/lib/src/` | HTTP/configuration, application coordinators, identity/organization/people/workforce/tasks and platform persistence |
-| `apps/server/migrations/` | Append-only SQL history 0001–0011; `MigrationRunner` also applies runtime grants |
+| `apps/server/lib/src/` | HTTP/configuration, application coordinators, identity/organization/people/workforce/tasks/inventory and platform persistence |
+| `apps/server/migrations/` | Append-only SQL history 0001–0013; `MigrationRunner` also applies runtime grants |
 | `apps/server/test/`, `tool/` | Unit and real PostgreSQL/HTTP tests; isolated browser fixtures |
 | `apps/client_flutter/lib/src/` | App composition, controllers, API adapters, UI |
 | `apps/client_flutter/test/`, `integration_test/`, `test_driver/` | Unit/widget tests and Web E2E |
@@ -343,3 +352,30 @@ Proposals only; implement one approved scope at a time.
   rollback and lock-contention races, unchanged numeric browser E2E. See
   [P1b.8 shift cancellation](development/phase-1b-8-shift-cancellation.md) and
   [ADR 0013](adr/0013-published-shift-cancellation.md).
+
+### 5. Company-wide article master foundation (P4.1)
+
+- **Goal:** start the Product/Bestand half of the StoreOS vision with one durable
+  master aggregate and no stock behavior.
+- **Exact Scope:** company-wide articles (client UUID, deterministic
+  ASCII-only SKU uniqueness per company, optional opaque barcode, name,
+  optional description, bounded unit label, active/inactive lifecycle, audit)
+  with create, get, bounded list/search, edit, deactivate and reactivate, plus
+  the Flutter **Artikel** section and additive migration `0013`.
+- **Out of Scope:** stock, valuation, suppliers, purchasing, receiving,
+  batches/MHD, waste, recipes, prices, categories, location assortment, GTIN
+  validation, unit conversions, events, plugins and offline writes.
+- **Acceptance Criteria:** server-side company scope and RBAC; deterministic
+  409/404 behavior; no-op and stale-version semantics; case-insensitive SKU and
+  non-null barcode uniqueness; runtime DELETE/TRUNCATE denial; audit atomicity;
+  exact Dart/OpenAPI contract; non-destructive lifecycle.
+- **Required Tests:** contract/OpenAPI containment, real PostgreSQL/HTTP matrix
+  including concurrency and audit rollback, populated `0012→0013` upgrade,
+  extended update/recovery acceptance, Flutter controller/widget tests and the
+  full regression suites.
+- **Status (2026-10-03):** implemented and verified locally (contracts 55,
+  server 161, Flutter 148, extended `0010→0013` update/recovery acceptance);
+  the change set is uncommitted and independent review plus remote CI are
+  pending. See
+  [P4.1 article master](development/phase-4-1-article-master.md) and
+  [ADR 0015](adr/0015-company-wide-article-master.md).

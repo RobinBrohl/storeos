@@ -46,6 +46,7 @@ Die Grenzen sind zunächst logisch: Sie verlangen weder einen Prozess noch ein D
 | `people` | Employee, spätere Skill- und Personalnachweise | minimale Mitarbeiterreferenz und autorisierte Eignung | Account-Sessions, Aufgabenstatus |
 | `workforce` | Shift und spätere Einsatzplanung | veröffentlichte Schichten, verfügbare Einsatzfenster | Guided-Work-Schritte, Arbeitszeit aus Plan ableiten |
 | `tasks` | TaskTemplate, TaskInstance, Ausführung | Aufgabenstatus und begründete nächste Aufgabe | Personalakten, Schichtdatenhoheit, HACCP-Kontrollakte |
+| `inventory` | Article (unternehmensweiter Produktstamm) | Artikelprojektion für spätere Bestands-/Einkaufsfunktionen | Bestände, Lieferanten, Preise |
 | `audit` | AuditEntry | berechtigte Historie und Export | fachliche Zustandsentscheidung |
 | Plattformkomponente Identität/Berechtigungen | Account, Account-Employee-Verknüpfung, Rollen und Grants | geprüfter Zugriffskontext und minimale Identitätsreferenzen | Personalakte, fachliche Schicht-/Aufgabenregeln |
 
@@ -79,3 +80,5 @@ P1b.5 erweitert denselben Tasks-Port um Blockierung, Klärung und Historie. Der 
 P1b.6 ergänzt Stornierung im bestehenden Tasks-Port. ShiftApplication prüft Adminrecht und lokalen Scope; aktive People-Zuordnung ist nur für Freigaben erforderlich. Workforce-Daten bleiben unverändert.
 
 P1b.8 ergänzt die Stornierung veröffentlichter Schichten vor Ausführungsbeginn. `ShiftApplication` prüft Recht und Scope, lässt Tasks zuerst alle noch offenen Instanzen atomar stornieren (Tasks schreibt Zustand und Audit) und storniert danach die Schicht (Workforce schreibt Zustand und Audit) in derselben autorisierten Transaktion. Sind Instanzen bereits begonnen, blockiert, abgeschlossen oder storniert, lehnt der Tasks-Port den gesamten Vorgang mit 422 ab, ohne etwas zu schreiben. Kein neues Modul, kein Ereignis, keine fremden Tabellenzugriffe.
+
+P4.1 ergänzt `apps/server/lib/src/inventory/` als logisches Modul für einen unternehmensweiten Artikel-/Produktstamm. Das Modul besitzt `articles` (keine Standortspalte), prüft Firmenzugehörigkeit ausschließlich über den revalidierten Principal und schreibt Änderung plus Audit in derselben autorisierten Transaktion. Bestand, Lieferanten, Bestellungen, Wareneingang, Chargen/MHD und Preise bleiben ausdrücklich außerhalb dieses Slice; spätere Kindtabellen binden über `(article_id, company_id)` an den vorhandenen Anker. Kein Ereignis, keine Plugin-Rechte. [P4.1-Vertrag](../development/phase-4-1-article-master.md).

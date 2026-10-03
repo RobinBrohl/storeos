@@ -29,6 +29,7 @@ class ExecutionApi extends base.Api {
     String token,
     String route, {
     String? after,
+    Map<String, String>? query,
   }) async {
     if (failGet || route == failRoute) {
       throw const StoreApiException('network_unavailable', 'Offline');

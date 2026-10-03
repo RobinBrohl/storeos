@@ -1,8 +1,8 @@
 # P1b.9: Pre-execution published-shift interval amendment
 
-Status (2026-10-02): implemented and verified locally (contracts, real
-PostgreSQL, real HTTP and Flutter suites); independent review and remote CI
-pending. Baseline at implementation start: `9aef373`. Decision record:
+Status (2026-10-03): implemented, independently reviewed (APPROVE after
+corrected LOW findings), committed as `f37dd6b`, pushed and verified by the
+remote CI run. Baseline at implementation start: `9aef373`. Decision record:
 [ADR 0014](../adr/0014-pre-execution-shift-interval-amendment.md).
 
 ## Goal
@@ -155,7 +155,8 @@ messages. The client gate is UX only; the server remains authoritative.
   sanitized report under `.local/update-recovery/`).
 - `dart format --set-exit-if-changed`, `dart analyze`/`flutter analyze` clean in
   the touched packages.
-- Independent review and remote CI are not yet performed.
+- Independent review returned APPROVE after the LOW findings were corrected;
+  the remote CI run for `f37dd6b` passed.
 
 ## Boundaries and debt
 

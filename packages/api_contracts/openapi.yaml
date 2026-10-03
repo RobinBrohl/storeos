@@ -29,6 +29,16 @@ paths:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1profile~1password'
   /api/v1/platform/shifts/{id}/amend:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1shifts~1{id}~1amend'
+  /api/v1/platform/articles:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1articles'
+  /api/v1/platform/articles/{id}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{id}'
+  /api/v1/platform/articles/{id}/edit:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{id}~1edit'
+  /api/v1/platform/articles/{id}/deactivate:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{id}~1deactivate'
+  /api/v1/platform/articles/{id}/reactivate:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{id}~1reactivate'
   /api/v1/platform/audit:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1audit'
   /api/v1/platform/events:

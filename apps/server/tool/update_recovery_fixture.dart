@@ -52,6 +52,7 @@ const _prefixMaxNumber = '0010';
 const _expectedPendingMigrations = [
   '0011_published_shift_cancellation',
   '0012_published_shift_amendment',
+  '0013_article_master',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -490,6 +491,7 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
     final legacyNull = await _legacyCancellationFieldsAreNull(owner);
     final constraints = await _constraintNames(owner);
     final triggers = await _triggerNames(owner);
+    final articleSchema = await _articleMasterSchema(owner, runtimeUser);
 
     guard = await Connection.open(
       _ownerEndpoint(env, source),
@@ -556,6 +558,7 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
       'legacyCancellationFieldsNull': legacyNull,
       'constraintsPresent': constraints,
       'triggersPresent': triggers,
+      'articleMasterSchema': articleSchema,
       'invalidWritesRejected': rejected,
       'invalidWritesLeftNoChange': true,
     });
@@ -900,6 +903,44 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       throw StateError('The amendment audit evidence is incomplete.');
     }
 
+    final articleId = newUuid();
+    final articleCreated = await api.request(
+      'POST',
+      '/api/v1/platform/articles',
+      token: adminToken,
+      expected: 201,
+      body: {
+        'id': articleId,
+        'sku': 'UPDATE-PROBE-1',
+        'barcode': null,
+        'name': 'Migration probe article',
+        'description': null,
+        'unit': 'Stk',
+      },
+    );
+    final articleRead = await api.request(
+      'GET',
+      '/api/v1/platform/articles/$articleId',
+      token: adminToken,
+    );
+    if (articleCreated['sku'] != 'UPDATE-PROBE-1' ||
+        articleCreated['version'] != 1 ||
+        articleCreated['isActive'] != true ||
+        articleRead['id'] != articleId ||
+        articleRead['name'] != 'Migration probe article') {
+      throw StateError('The upgraded article master route is wrong.');
+    }
+    final articleAudits = await owner.execute(
+      Sql.named(
+        'SELECT changes FROM $_schema.audit_entries '
+        'WHERE entity_id = @id AND action = @action',
+      ),
+      parameters: {'id': articleId, 'action': 'inventory.article.created'},
+    );
+    if (articleAudits.length != 1) {
+      throw StateError('The article creation audit evidence is incomplete.');
+    }
+
     await _writeJson(resultFile, {
       'ready': true,
       'adminLogin': true,
@@ -941,6 +982,11 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         'shiftStatus': 'published',
         'shiftVersion': 3,
         'amendmentVersion': 2,
+        'auditVerified': true,
+      },
+      'articleMaster': {
+        'created': true,
+        'readBack': true,
         'auditVerified': true,
       },
       'auditVerified': true,
@@ -1042,7 +1088,8 @@ Future<void> _recovery(Map<String, String> env, String source) async {
     }
 
     final sourceMigrations = await _migrationRows(sourceOwner);
-    if (sourceMigrations.versions.length != 12 ||
+    if (sourceMigrations.versions.length !=
+            10 + _expectedPendingMigrations.length ||
         sourceMigrations.versions.last != _expectedPendingMigrations.last) {
       throw StateError('The upgraded source is not at the latest migration.');
     }
@@ -2203,6 +2250,42 @@ Future<Map<String, bool>> _triggerNames(Connection owner) async {
     'shifts_immutable': names.contains('shifts_immutable'),
     'instances_immutable': names.contains('instances_immutable'),
   };
+}
+
+Future<Map<String, bool>> _articleMasterSchema(
+  Connection owner,
+  String runtimeUser,
+) async {
+  final table = await owner.execute(
+    "SELECT to_regclass('$_schema.articles')::text AS name",
+  );
+  final indexes = await owner.execute(
+    "SELECT indexname FROM pg_indexes "
+    "WHERE schemaname = '$_schema' AND tablename = 'articles'",
+  );
+  final names = indexes.map((row) => row.single! as String).toSet();
+  final grants = await owner.execute(
+    Sql.named(
+      'SELECT privilege_type FROM information_schema.role_table_grants '
+      "WHERE table_schema = '$_schema' AND table_name = 'articles' "
+      'AND grantee = @grantee',
+    ),
+    parameters: {'grantee': runtimeUser},
+  );
+  final privileges = grants.map((row) => row.single! as String).toSet();
+  final result = <String, bool>{
+    'tablePresent': table.single.single != null,
+    'skuIndexPresent': names.contains('articles_company_sku_key'),
+    'barcodeIndexPresent': names.contains('articles_company_barcode'),
+    'selectGranted': privileges.contains('SELECT'),
+    'insertGranted': privileges.contains('INSERT'),
+    'deleteNotGranted': !privileges.contains('DELETE'),
+    'truncateNotGranted': !privileges.contains('TRUNCATE'),
+  };
+  if (result.values.any((value) => !value)) {
+    throw StateError('The article master schema probe failed.');
+  }
+  return result;
 }
 
 Future<bool> _rejected(

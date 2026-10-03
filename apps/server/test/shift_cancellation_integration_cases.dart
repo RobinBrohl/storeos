@@ -813,6 +813,7 @@ void shiftCancellationTests() {
         expect(await runner.apply(), [
           '0011_published_shift_cancellation',
           '0012_published_shift_amendment',
+          '0013_article_master',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

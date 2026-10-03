@@ -765,6 +765,7 @@ class Api implements PlatformApi {
     String token,
     String route, {
     String? after,
+    Map<String, String>? query,
   }) async {
     if (route == '/context') {
       return {

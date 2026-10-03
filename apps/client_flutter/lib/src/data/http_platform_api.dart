@@ -25,9 +25,10 @@ class HttpPlatformApi implements PlatformApi {
     String token,
     String route, {
     String? after,
+    Map<String, String>? query,
   }) => _request(
     () => _client.get(
-      _uri(route, after: after),
+      _uri(route, after: after, query: query),
       headers: {'Authorization': 'Bearer $token'},
     ),
   );
@@ -48,7 +49,7 @@ class HttpPlatformApi implements PlatformApi {
     ),
   );
 
-  Uri _uri(String route, {String? after}) {
+  Uri _uri(String route, {String? after, Map<String, String>? query}) {
     // P1 routes contain UUIDs or manifest IDs, never URI control characters.
     // Repeated dots inside a manifest ID are valid; traversal segments are not.
     if (!RegExp(r'^/[A-Za-z0-9._/-]+$').hasMatch(route) ||
@@ -56,7 +57,8 @@ class HttpPlatformApi implements PlatformApi {
       throw ArgumentError.value(route, 'route', 'Ungültiger API-Pfad');
     }
     final uri = _baseUri.resolve('/api/v1/platform$route');
-    return after == null ? uri : uri.replace(queryParameters: {'after': after});
+    final parameters = <String, String>{...?query, 'after': ?after};
+    return parameters.isEmpty ? uri : uri.replace(queryParameters: parameters);
   }
 
   Future<Map<String, dynamic>> _request(

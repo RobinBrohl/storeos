@@ -349,6 +349,7 @@ class _UiPlatformApi implements PlatformApi {
     String token,
     String route, {
     String? after,
+    Map<String, String>? query,
   }) async {
     switch (route) {
       case '/context':

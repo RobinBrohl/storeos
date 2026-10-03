@@ -939,7 +939,10 @@ void shiftAmendmentTests() {
           schemaName: f.schema,
           runtimeDatabaseUser: f.runtimeUser,
         );
-        expect(await runner.apply(), ['0012_published_shift_amendment']);
+        expect(await runner.apply(), [
+          '0012_published_shift_amendment',
+          '0013_article_master',
+        ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
 

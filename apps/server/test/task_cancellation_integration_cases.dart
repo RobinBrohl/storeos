@@ -419,35 +419,16 @@ void cancellationTests() {
     () => _withFixture((f) async {
       final p = await _executionPlan(f);
       for (var i = 0; i < 51; i++) {
-        final shift = newUuid(), task = newUuid();
-        await f.owner.execute(
-          Sql.named(
-            '''INSERT INTO "${f.schema}".shifts
-        (id,company_id,location_id,employee_id,starts_at,ends_at,status,version,created_by,creation_input,published_at,published_by,publication_version)
-        SELECT CAST(@id AS uuid),company_id,location_id,employee_id,starts_at,ends_at,status,version,created_by,creation_input,published_at,published_by,publication_version FROM "${f.schema}".shifts WHERE id=CAST(@source AS uuid)''',
-          ),
-          parameters: {'id': shift, 'source': p.plan.id},
+        final start = p.plan.employee.assignedFrom.subtract(
+          Duration(hours: (i + 1) * 2),
         );
-        await f.owner.execute(
-          Sql.named(
-            '''INSERT INTO "${f.schema}".task_instances
-        (id,company_id,location_id,employee_id,shift_id,template_id,revision_id,position,content)
-        SELECT CAST(@id AS uuid),company_id,location_id,employee_id,CAST(@shift AS uuid),template_id,revision_id,position,content FROM "${f.schema}".task_instances WHERE id=CAST(@source AS uuid)''',
-          ),
-          parameters: {'id': task, 'shift': shift, 'source': p.task},
-        );
-        final root = '/employee-home/shifts/$shift/tasks/$task';
-        await f.call('POST', '$root/start', body: _command(1), token: p.token);
-        await f.call(
-          'POST',
-          '$root/block',
-          body: _reasonCommand(2),
-          token: p.token,
-        );
-        await f.call(
-          'POST',
-          '/shifts/$shift/tasks/$task/cancel',
-          body: _reasonCommand(3),
+        await _seedTaskState(
+          f,
+          sourceShift: p.plan.id,
+          sourceTask: p.task,
+          startsAt: start,
+          endsAt: start.add(const Duration(hours: 1)),
+          state: 'cancelled',
         );
       }
       for (final root in [
@@ -581,6 +562,7 @@ void cancellationTests() {
           '0009_task_cancellation',
           '0010_task_numeric_steps',
           '0011_published_shift_cancellation',
+          '0012_published_shift_amendment',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

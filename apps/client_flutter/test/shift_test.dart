@@ -367,6 +367,226 @@ void main() {
       expect(f.api.posts, requests);
     },
   );
+  test(
+    'published shift interval amendment persists and keeps tasks open',
+    () async {
+      final f = await Fixture.create();
+      addTearDown(f.dispose);
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      expect(f.c.canAmendShift, isTrue);
+      await f.c.amendShift('2030-01-01T09:00:00Z', '2030-01-01T17:00:00Z');
+      expect(f.c.error, isNull);
+      expect(f.c.conflict, isFalse);
+      expect(f.c.unconfirmed, isFalse);
+      expect(f.c.selected!.status, 'published');
+      expect(f.c.selected!.version, 3);
+      expect(f.c.selected!.amendmentVersion, 2);
+      expect(f.c.selected!.amendedBy, account);
+      expect(f.c.selected!.draft.startsAt, DateTime.utc(2030, 1, 1, 9));
+      expect(f.c.selected!.draft.endsAt, DateTime.utc(2030, 1, 1, 17));
+      expect(f.c.tasks.single.status, 'open');
+      expect(f.c.tasks.single.version, 1);
+      expect(f.c.canAmendShift, isTrue);
+      expect(f.c.canCancelShift, isTrue);
+    },
+  );
+  test('amendment validates the window before any request', () async {
+    final f = await Fixture.create();
+    addTearDown(f.dispose);
+    await f.prepare();
+    await f.c.save();
+    await f.c.publish();
+    final requests = f.api.posts;
+    await f.c.amendShift('2030-01-01T18:00:00Z', '2030-01-01T08:00:00Z');
+    expect(f.c.error, isNotNull);
+    expect(f.api.posts, requests);
+    await f.c.amendShift('2030-01-01T08:00:00', '2030-01-01T18:00:00Z');
+    expect(f.c.error, isNotNull);
+    expect(f.api.posts, requests);
+    expect(f.c.selected!.version, 2);
+  });
+  test(
+    'unchanged amendment window is rejected locally without a request',
+    () async {
+      final f = await Fixture.create();
+      addTearDown(f.dispose);
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      final requests = f.api.posts;
+      final shift = f.c.selected!;
+      await f.c.amendShift(
+        shift.draft.startsAt.toIso8601String(),
+        shift.draft.endsAt.toIso8601String(),
+      );
+      expect(f.c.error, contains('ändern'));
+      expect(f.api.posts, requests);
+      expect(f.c.conflict, isFalse);
+      expect(f.c.unconfirmed, isFalse);
+      expect(f.c.selected!.version, 2);
+      expect(f.c.selected!.amendmentVersion, isNull);
+      final shiftedStart = shift.draft.startsAt.add(const Duration(hours: 1));
+      final shiftedEnd = shift.draft.endsAt.add(const Duration(hours: 1));
+      await f.c.amendShift(
+        '${shiftedStart.toIso8601String().replaceFirst('Z', '')}+01:00',
+        '${shiftedEnd.toIso8601String().replaceFirst('Z', '')}+01:00',
+      );
+      expect(f.api.posts, requests);
+      expect(f.c.selected!.version, 2);
+      expect(f.c.selected!.amendmentVersion, isNull);
+    },
+  );
+  test('amendment allows changing exactly one bound', () async {
+    for (final startsOnly in [true, false]) {
+      final f = await Fixture.create();
+      addTearDown(f.dispose);
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      final shift = f.c.selected!;
+      final starts = shift.draft.startsAt.add(
+        startsOnly ? const Duration(hours: 1) : Duration.zero,
+      );
+      final ends = shift.draft.endsAt.add(
+        startsOnly ? Duration.zero : const Duration(hours: 1),
+      );
+      await f.c.amendShift(starts.toIso8601String(), ends.toIso8601String());
+      expect(
+        f.c.error,
+        isNull,
+        reason: startsOnly ? 'startsAt only' : 'endsAt only',
+      );
+      expect(f.c.conflict, isFalse);
+      expect(f.c.selected!.version, 3);
+      expect(f.c.selected!.amendmentVersion, 2);
+      expect(f.c.selected!.draft.startsAt, starts);
+      expect(f.c.selected!.draft.endsAt, ends);
+    }
+  });
+  test('amendment is not offered once a task left open', () async {
+    final f = await Fixture.create();
+    addTearDown(f.dispose);
+    await f.prepare();
+    await f.c.save();
+    await f.c.publish();
+    final id = f.c.selected!.id;
+    ((f.api.records[id]!['tasks'] as List).first as Map)['status'] =
+        'in_progress';
+    await f.c.open(id);
+    expect(f.c.canAmendShift, isFalse);
+    expect(f.c.canCancelShift, isFalse);
+  });
+  test(
+    'lost amendment response confirms only exact amendment evidence',
+    () async {
+      final f = await Fixture.create();
+      addTearDown(f.dispose);
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      f.api.lose = true;
+      await f.c.amendShift('2030-01-01T09:00:00Z', '2030-01-01T17:00:00Z');
+      expect(f.c.error, isNull);
+      expect(f.c.conflict, isFalse);
+      expect(f.c.unconfirmed, isFalse);
+      expect(f.c.notice, isNotNull);
+      expect(f.c.selected!.version, 3);
+      expect(f.c.selected!.amendmentVersion, 2);
+    },
+  );
+  test('a mismatching amendment is never treated as success', () async {
+    final f = await Fixture.create();
+    addTearDown(f.dispose);
+    await f.prepare();
+    await f.c.save();
+    await f.c.publish();
+    f.api.amendTamper = true;
+    f.api.lose = true;
+    await f.c.amendShift('2030-01-01T09:00:00Z', '2030-01-01T17:00:00Z');
+    expect(f.c.conflict, isTrue);
+    expect(f.c.notice, isNull);
+  });
+  test(
+    'server refusal keeps the shift published and shows the reason',
+    () async {
+      final f = await Fixture.create();
+      addTearDown(f.dispose);
+      await f.prepare();
+      await f.c.save();
+      await f.c.publish();
+      f.api.amendRefused = true;
+      await f.c.amendShift('2030-01-01T09:00:00Z', '2030-01-01T17:00:00Z');
+      expect(f.c.error, contains('begonnen'));
+      expect(f.c.selected!.status, 'published');
+      expect(f.c.canAmendShift, isTrue);
+      expect(f.c.unconfirmed, isFalse);
+      f.api.amendRefused = false;
+      f.api.amendNotAmendable = true;
+      await f.c.amendShift('2030-01-01T10:00:00Z', '2030-01-01T17:00:00Z');
+      expect(f.c.error, contains('Serverzeit'));
+    },
+  );
+  testWidgets('published shift offers the interval amendment dialog', (
+    tester,
+  ) async {
+    final f = await Fixture.create();
+    await f.prepare();
+    await f.c.save();
+    await f.c.publish();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: ShiftSection(controller: f.c)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await f.c.open(f.c.selected!.id);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('amend-shift')), 300);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<OutlinedButton>(find.byKey(const Key('amend-shift')))
+          .onPressed,
+      isNotNull,
+    );
+    await tester.tap(find.byKey(const Key('amend-shift')));
+    await tester.pumpAndSettle();
+    final posts = f.api.posts;
+    await tester.tap(find.byKey(const Key('confirm-amend-shift')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('muss sich ändern'), findsOneWidget);
+    expect(f.api.posts, posts);
+    expect(f.c.selected!.version, 2);
+    await tester.enterText(
+      find.byKey(const Key('amend-shift-start')),
+      '2030-01-01T18:00:00Z',
+    );
+    await tester.enterText(
+      find.byKey(const Key('amend-shift-end')),
+      '2030-01-01T08:00:00Z',
+    );
+    await tester.tap(find.byKey(const Key('confirm-amend-shift')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Beginn muss vor Ende'), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const Key('amend-shift-start')),
+      '2030-01-01T09:00:00Z',
+    );
+    await tester.enterText(
+      find.byKey(const Key('amend-shift-end')),
+      '2030-01-01T17:00:00Z',
+    );
+    await tester.tap(find.byKey(const Key('confirm-amend-shift')));
+    await tester.pumpAndSettle();
+    expect(f.c.selected!.version, 3);
+    expect(f.c.selected!.draft.startsAt, DateTime.utc(2030, 1, 1, 9));
+    expect(f.api.posts, posts + 1);
+    expect(find.byKey(const Key('shift-error')), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    f.dispose();
+  });
   testWidgets('published shift offers cancellation and renders it read-only', (
     tester,
   ) async {
@@ -530,7 +750,10 @@ class Api implements PlatformApi {
       noProfile = false,
       page = false,
       cancelRefused = false,
-      cancelTamper = false;
+      cancelTamper = false,
+      amendRefused = false,
+      amendNotAmendable = false,
+      amendTamper = false;
   int posts = 0;
   final cursors = <String>[];
   Completer<Map<String, dynamic>>? pending;
@@ -746,6 +969,27 @@ class Api implements PlatformApi {
           (task as Map<String, dynamic>)['status'] = 'cancelled';
           task['version'] = 2;
         }
+      } else if (route.endsWith('/amend')) {
+        if (amendRefused) {
+          throw const StoreApiException(
+            'shift_in_progress',
+            'Task started',
+            statusCode: 422,
+          );
+        }
+        if (amendNotAmendable) {
+          throw const StoreApiException(
+            'shift_not_amendable',
+            'Window in the past',
+            statusCode: 422,
+          );
+        }
+        shift['startsAt'] = body['startsAt'];
+        shift['endsAt'] = body['endsAt'];
+        shift['amendedAt'] = time;
+        shift['amendedBy'] = account;
+        shift['amendmentVersion'] = amendTamper ? 99 : body['expectedVersion'];
+        shift['version'] = (shift['version'] as int) + 1;
       } else if (route.endsWith('/publish')) {
         shift['status'] = 'published';
         shift['publishedAt'] = time;

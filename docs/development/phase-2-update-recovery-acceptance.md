@@ -5,6 +5,15 @@ Status: implemented, independently reviewed with APPROVE, committed to `main` as
 Local evidence: two consecutive full runs plus prepare, post-upgrade and
 recovery failure injections.
 
+Update (2026-10-02, P1b.9 working tree, uncommitted): the same runner and
+fixture were extended to the current migration chain. It now applies exactly
+`0011` and `0012`, verifies the amendment evidence columns and the
+`shifts_published_no_overlap` exclusion constraint, proves that a raw
+overlapping published interval is rejected on the upgraded database, and runs a
+real HTTP interval amendment against the upgraded server. Local result:
+`pass`. Independent review and remote CI for this extension are pending; the
+historical `0010→0011` evidence above is unchanged.
+
 This slice proves the supported single-site update/recovery contract on populated
 pre-update data. It is an acceptance and operating-evidence slice: it changes no
 product behavior, adds no migration and promises no downgrade.

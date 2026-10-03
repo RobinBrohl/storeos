@@ -1,8 +1,10 @@
 # P1 – Authenticated self-service password change
 
-Status (2026-10-02): local implementation and verification complete (contracts,
-real PostgreSQL, real HTTP and Flutter suites); independent review pending;
-remote CI pending. Baseline: `0ddcd4f`.
+Status (2026-10-02): implemented and verified locally (contracts, real PostgreSQL,
+real HTTP and Flutter suites); independent review returned APPROVE with one
+corrected LOW documentation-count finding (F1); committed to `main` as `9aef373`,
+pushed, and verified by the remote CI run for that commit. Baseline at
+implementation start: `0ddcd4f`.
 
 ## Goal
 
@@ -165,7 +167,8 @@ No privileged follow-up request is issued with the revoked token.
   adapter and dialog/widget tests.
 - `dart format --set-exit-if-changed`, `dart analyze`/`flutter analyze` clean in
   the touched packages.
-- Independent review and remote CI are not yet performed.
+- Independent review returned APPROVE; its single LOW documentation-count finding
+  (F1) was corrected before commit. Committed as `9aef373`; remote CI green.
 
 ## Boundaries and debt
 

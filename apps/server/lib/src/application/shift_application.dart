@@ -65,14 +65,28 @@ class ShiftApplication {
     TxSession tx,
     String location,
     ShiftDraftInput input,
+  ) => _eligibleWindow(
+    tx,
+    location,
+    input.employeeId,
+    input.startsAt,
+    input.endsAt,
+  );
+
+  Future<void> _eligibleWindow(
+    TxSession tx,
+    String location,
+    String employeeId,
+    DateTime startsAt,
+    DateTime endsAt,
   ) async {
     await _organization.requireConfiguredLocation(tx, location);
-    final employee = await _people.get(tx, input.employeeId);
+    final employee = await _people.get(tx, employeeId);
     if (!employee.isActive ||
         employee.locationId != location ||
-        employee.assignedFrom.isAfter(input.startsAt) ||
+        employee.assignedFrom.isAfter(startsAt) ||
         (employee.assignedUntil != null &&
-            employee.assignedUntil!.isBefore(input.endsAt))) {
+            employee.assignedUntil!.isBefore(endsAt))) {
       throw const PlatformFailure(
         422,
         'employee_unavailable',
@@ -208,6 +222,66 @@ class ShiftApplication {
         selections: shift.draft.selections,
       );
       return _detail(tx, await _workforce.publish(tx, actor, id));
+    });
+  }
+
+  Future<Map<String, dynamic>> amend(
+    SessionPrincipal p,
+    String id,
+    Map<String, dynamic> input,
+  ) {
+    id = requireUuid({'id': id}, 'id');
+    requireFields(input, required: {'expectedVersion', 'startsAt', 'endsAt'});
+    final version = requireVersion(input);
+    late final ShiftAmendmentInput amendment;
+    try {
+      amendment = ShiftAmendmentInput.fromJson(input);
+    } on FormatException {
+      throw const PlatformFailure(
+        400,
+        'invalid_shift',
+        'Invalid shift interval; the end must be after the start.',
+      );
+    }
+    return _run(p, 'workforce.shifts.manage', (tx, actor) async {
+      _require(actor, 'tasks.instances.read');
+      final shift = await _workforce.get(tx, id);
+      final amended = await _workforce.amend(
+        tx,
+        actor,
+        id,
+        version,
+        amendment.startsAt,
+        amendment.endsAt,
+        () async {
+          await _tasks.requireAllOpen(tx, shiftId: id);
+          final now =
+              (await tx.execute('SELECT clock_timestamp()')).single.first
+                  as DateTime;
+          if (!amendment.endsAt.isAfter(now)) {
+            throw const PlatformFailure(
+              422,
+              'shift_not_amendable',
+              'The amended shift must end after the current time.',
+            );
+          }
+          await _eligibleWindow(
+            tx,
+            shift.locationId,
+            shift.draft.employeeId,
+            amendment.startsAt,
+            amendment.endsAt,
+          );
+          await _workforce.checkAmendOverlap(
+            tx,
+            shift,
+            amendment.startsAt,
+            amendment.endsAt,
+          );
+          return now;
+        },
+      );
+      return _detail(tx, amended);
     });
   }
 

@@ -31,6 +31,7 @@ Status: Architektur- und Produkthypothesen. Dieser Katalog macht Zielkonflikte s
 | Darf eine Installation mehrere Companies enthalten, oder ist zunächst eine Company pro Installation vorgesehen? Wie werden Mandanten administrativ getrennt? | Persistenzschema und Berechtigungstest des ersten Slice |
 | Wie werden Accounts, Employee-Stammdaten und Rollen zwischen mehreren Standorten verantwortet und bei getrennter Zentrale widerrufen? | Zentrale Synchronisation; lokale Authentifizierung bereits vor erstem Pilot |
 | Welche Schichtänderung erzeugt, ändert oder storniert TaskInstances? Wie wird eine laufende Aufgabe behandelt? | Erster Vertical Slice |
+| Teilantwort (2026-10-02): Ein Beginn-/Ende-Wechsel veröffentlichter Schichten vor Ausführungsbeginn ändert keine Instanzen; Änderungen an Mitarbeiter/Vorlagen sowie begonnene Arbeit bleiben offen ([ADR 0014](adr/0014-pre-execution-shift-interval-amendment.md)). | Weiterhin vor Mitarbeiter-/Vorlagenänderung oder Wiederaufnahme begonnener Arbeit |
 | Welche Schritte und Nachweise dürfen auf Handhelds offline erstellt werden? Was sieht der Nutzer bis zur Annahme durch den Server? | Geräte-Offlinephase |
 | Wie lange werden getrennte Geräte/Standorte und alte Wiederholungen unterstützt? Wie passen Rechtegültigkeit, Speicherbedarf und Deduplizierungsaufbewahrung zusammen? | Geräte- und Standort-Sync-Freigabe |
 | Wie lange bleiben Aufgaben-, Geräte-, Audit- und HR-Daten gespeichert, und wer darf sie exportieren? | Erster Pilot mit realen Beschäftigtendaten |

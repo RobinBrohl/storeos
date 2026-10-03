@@ -1,7 +1,10 @@
 # StoreOS handover
 
-Start here after [AGENTS.md](../AGENTS.md). Baseline: `0ddcd4f`, status updated 2026-10-02.
-The incoming tree was clean. This handover does not authorize the next feature.
+Start here after [AGENTS.md](../AGENTS.md). Baseline: `9aef373`, status updated 2026-10-02.
+The committed baseline was clean; the working tree additionally contains the
+uncommitted P1b.9 interval-amendment slice, which is not authorization to
+release or to start another feature. This handover does not authorize the next
+feature.
 [Actual status](roadmap/status.md) and [verification](development/handover-verification.md)
 distinguish current evidence from plans.
 
@@ -74,8 +77,20 @@ shifts can be cancelled while every task instance is still open; editing/cancell
 started shifts and cancelling a blocked task are different operations.
 Self-service password change (P1 identity, `identity.self.password`, no migration)
 lets any authenticated account change only its own password after current-password
-verification; all sessions are revoked and the change is audited atomically. Local
-verification is complete; independent review and remote CI are pending.
+verification; all sessions are revoked and the change is audited atomically.
+Independent review returned APPROVE; its single LOW documentation-count finding
+(F1) was corrected before commit. The slice is committed as `9aef373`, pushed, and
+the remote CI run for that commit is green.
+A bounded pre-execution interval amendment (P1b.9, working tree, independent
+review pending) lets an administrator change only the `startsAt`/`endsAt` of a
+published shift while every task instance is still pristine `open`; employee,
+selections, snapshots and open instances remain unchanged. Migration `0012`
+also enforces the published-shift overlap invariant at the database level
+(closing finding M2) and introduces the trusted `btree_gist` dependency. The
+existing controlled update/recovery acceptance was extended to the `0010→0012`
+chain and passes locally, including a real HTTP amendment. See
+[P1b.9](development/phase-1b-9-shift-amendment.md) and
+[ADR 0014](adr/0014-pre-execution-shift-interval-amendment.md).
 There is no automatic priority engine, timezone-aware recurring calendar, timekeeping,
 stock ledger or HACCP module. See [status](roadmap/status.md) before claiming completion.
 

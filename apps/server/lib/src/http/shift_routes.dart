@@ -29,6 +29,17 @@ class ShiftRoutes {
       ),
     );
     router.post(
+      '$root/<id>/amend',
+      (Request r, String id) async => jsonResponse(
+        200,
+        await app.amend(
+          await auth.authenticate(bearerToken(r)),
+          id,
+          await readJson(r),
+        ),
+      ),
+    );
+    router.post(
       '$root/<id>/publish',
       (Request r, String id) async => jsonResponse(
         200,

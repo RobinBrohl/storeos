@@ -56,9 +56,12 @@ class AuditRepository {
       'operationId',
       'oldVersion',
       'oldStatus',
+      'oldStartsAt',
+      'oldEndsAt',
       'reason',
       'origin',
       'cancellationVersion',
+      'amendmentVersion',
     };
     for (final entry in changes.entries) {
       if (!allowedFields.contains(entry.key) || !_safeAuditValue(entry.value)) {

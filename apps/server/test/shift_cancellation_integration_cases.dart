@@ -787,7 +787,8 @@ void shiftCancellationTests() {
         Future<List<String>> snapshot() async => [
           (await f.owner.execute(
                 'SELECT jsonb_agg((to_jsonb(s)-ARRAY[\'cancelled_at\',\'cancelled_by\','
-                '\'cancellation_reason\',\'cancellation_version\']) ORDER BY id)::text '
+                '\'cancellation_reason\',\'cancellation_version\',\'amended_at\','
+                '\'amended_by\',\'amendment_version\']) ORDER BY id)::text '
                 'FROM "${f.schema}".shifts s',
               )).single.first
               as String,
@@ -809,7 +810,10 @@ void shiftCancellationTests() {
           schemaName: f.schema,
           runtimeDatabaseUser: f.runtimeUser,
         );
-        expect(await runner.apply(), ['0011_published_shift_cancellation']);
+        expect(await runner.apply(), [
+          '0011_published_shift_cancellation',
+          '0012_published_shift_amendment',
+        ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
 

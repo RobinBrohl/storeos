@@ -57,6 +57,21 @@ class _ShiftSectionState extends State<ShiftSection> {
     if (reason != null && mounted) await c.cancelShift(reason);
   }
 
+  Future<void> _amendShift() async {
+    final selected = c.selected;
+    if (selected == null) return;
+    final window = await showDialog<({String startsAt, String endsAt})>(
+      context: context,
+      builder: (context) => _AmendShiftDialog(
+        startsAt: selected.draft.startsAt.toIso8601String(),
+        endsAt: selected.draft.endsAt.toIso8601String(),
+      ),
+    );
+    if (window != null && mounted) {
+      await c.amendShift(window.startsAt, window.endsAt);
+    }
+  }
+
   String _employee(String id) {
     if (c.self) return 'Eigene Schicht';
     for (final e in c.employees) {
@@ -258,7 +273,12 @@ class _ShiftSectionState extends State<ShiftSection> {
           ],
           if (!c.self && c.selected?.status == 'published') ...[
             const Text(
-              'Solange keine Aufgabe begonnen wurde, kann die Schicht storniert werden. Begonnene Arbeit kann nicht storniert werden.',
+              'Solange keine Aufgabe begonnen wurde, können Beginn und Ende geändert oder die Schicht storniert werden. Mitarbeiter und Vorlagen bleiben unverändert; begonnene Arbeit kann nicht mehr geändert werden.',
+            ),
+            OutlinedButton(
+              key: const Key('amend-shift'),
+              onPressed: c.canAmendShift ? _amendShift : null,
+              child: const Text('Zeiten ändern'),
             ),
             OutlinedButton(
               key: const Key('cancel-shift'),
@@ -680,6 +700,107 @@ class _CancelShiftDialogState extends State<_CancelShiftDialog> {
         key: const Key('confirm-cancel-shift'),
         onPressed: _confirm,
         child: const Text('Endgültig stornieren'),
+      ),
+    ],
+  );
+}
+
+class _AmendShiftDialog extends StatefulWidget {
+  const _AmendShiftDialog({required this.startsAt, required this.endsAt});
+
+  final String startsAt, endsAt;
+
+  @override
+  State<_AmendShiftDialog> createState() => _AmendShiftDialogState();
+}
+
+class _AmendShiftDialogState extends State<_AmendShiftDialog> {
+  late final TextEditingController _start = TextEditingController(
+    text: widget.startsAt,
+  );
+  late final TextEditingController _end = TextEditingController(
+    text: widget.endsAt,
+  );
+  String? _validation;
+
+  @override
+  void dispose() {
+    _start.dispose();
+    _end.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    late final DateTime begins, ends;
+    try {
+      begins = shiftInstant(_start.text.trim());
+      ends = shiftInstant(_end.text.trim());
+      if (!begins.isBefore(ends)) throw const FormatException();
+    } on FormatException {
+      setState(
+        () => _validation =
+            'UTC-Zeitpunkte mit Offset erforderlich; Beginn muss vor Ende liegen.',
+      );
+      return;
+    }
+    if (begins == shiftInstant(widget.startsAt) &&
+        ends == shiftInstant(widget.endsAt)) {
+      setState(() => _validation = 'Beginn oder Ende muss sich ändern.');
+      return;
+    }
+    Navigator.pop(context, (
+      startsAt: begins.toIso8601String(),
+      endsAt: ends.toIso8601String(),
+    ));
+  }
+
+  void _clearValidation(String _) {
+    if (_validation != null) setState(() => _validation = null);
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Beginn und Ende ändern?'),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Nur der Zeitraum der veröffentlichten Schicht ändert sich. '
+          'Mitarbeiter, Vorlagen und offene Aufgaben bleiben unverändert. '
+          'Begonnene Arbeit kann nicht mehr geändert werden.',
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          key: const Key('amend-shift-start'),
+          controller: _start,
+          decoration: const InputDecoration(
+            labelText: 'Beginn UTC',
+            hintText: '2026-10-01T08:00:00Z',
+          ),
+          onChanged: _clearValidation,
+        ),
+        TextField(
+          key: const Key('amend-shift-end'),
+          controller: _end,
+          decoration: InputDecoration(
+            labelText: 'Ende UTC',
+            hintText: '2026-10-01T16:00:00Z',
+            errorText: _validation,
+          ),
+          onChanged: _clearValidation,
+        ),
+      ],
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Abbrechen'),
+      ),
+      FilledButton(
+        key: const Key('confirm-amend-shift'),
+        onPressed: _confirm,
+        child: const Text('Zeiten ändern'),
       ),
     ],
   );

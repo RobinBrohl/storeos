@@ -1826,6 +1826,80 @@
         }
       }
     },
+    "/api/v1/platform/shifts/{id}/amend": {
+      "post": {
+        "operationId": "amendShift",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location. Amends only the startsAt/endsAt interval of a published shift while every task instance is still pristine open; any started, blocked, completed or already cancelled instance refuses the whole request with 422 shift_in_progress and no writes. Employee, location and template selections cannot be changed. The requested interval must end after the database clock, stay inside the employee's assignment window and not overlap another published shift of that employee (409 shift_overlap). State, last-amendment evidence and audit share one transaction; no integration events. A current-version request with the identical interval is a no-op; a retry with the original expectedVersion, same actor and same interval returns the current state without new effects; a mismatching retry identity or stale version returns 409 shift_conflict. Earlier amendments remain only in the append-only audit.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmendShift"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/platform/shifts/{id}/publish": {
       "post": {
         "operationId": "publishShift",
@@ -4629,6 +4703,31 @@
           }
         }
       },
+      "AmendShift": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "startsAt",
+          "endsAt"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC. Must be before endsAt."
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Explicit UTC or numeric offset required; response normalized to UTC. Must be after startsAt and after the database clock."
+          }
+        }
+      },
       "Shift": {
         "type": "object",
         "additionalProperties": false,
@@ -4738,6 +4837,30 @@
             "type": "integer",
             "minimum": 1,
             "description": "Present exactly when status is cancelled; the request's original expectedVersion, used for lost-response retry recognition."
+          },
+          "amendedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Present exactly when any amendment has been committed; acknowledgement time of the most recent amendment. Earlier amendments remain only in the append-only audit."
+          },
+          "amendedBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Present exactly when any amendment has been committed; the account of the most recent amendment."
+          },
+          "amendmentVersion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "description": "Present exactly when any amendment has been committed; the request's original expectedVersion of the most recent amendment, used for lost-response retry recognition."
           }
         }
       },

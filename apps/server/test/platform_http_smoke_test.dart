@@ -493,11 +493,207 @@ void main() {
           expected: 200,
         );
 
+        final amendEmployee = await call(
+          'POST',
+          '$prefix/employees',
+          token: token,
+          body: {
+            'id': newUuid(),
+            'displayName': 'Smoke amendment employee',
+            'locationId': _location,
+          },
+          expected: 201,
+        );
+        final amendTemplate = newUuid(), amendRevision = newUuid();
+        await call(
+          'POST',
+          '$prefix/task-templates',
+          token: token,
+          body: {
+            'id': amendTemplate,
+            'revisionId': amendRevision,
+            'locationId': _location,
+            'content': {
+              'schemaVersion': 1,
+              'title': 'Smoke amendment task',
+              'steps': [
+                {
+                  'id': newUuid(),
+                  'type': 'confirmation',
+                  'instruction': 'Confirm',
+                },
+              ],
+            },
+          },
+          expected: 201,
+        );
+        await call(
+          'POST',
+          '$prefix/task-templates/$amendTemplate/revisions/$amendRevision/publish',
+          token: token,
+          body: {'expectedVersion': 1},
+        );
+        final amendStart = DateTime.now().toUtc().add(const Duration(days: 1));
+        Map<String, dynamic> amendBody(
+          int version,
+          DateTime startsAt,
+          DateTime endsAt,
+        ) => {
+          'expectedVersion': version,
+          'startsAt': startsAt.toIso8601String(),
+          'endsAt': endsAt.toIso8601String(),
+        };
+        final amendShift = newUuid(), secondShift = newUuid();
+        for (final entry in [
+          (amendShift, amendStart, amendStart.add(const Duration(hours: 4))),
+          (
+            secondShift,
+            amendStart.add(const Duration(hours: 4)),
+            amendStart.add(const Duration(hours: 8)),
+          ),
+        ]) {
+          await call(
+            'POST',
+            '$prefix/shifts',
+            token: token,
+            body: {
+              'id': entry.$1,
+              'locationId': _location,
+              'employeeId': amendEmployee['id'],
+              'startsAt': entry.$2.toIso8601String(),
+              'endsAt': entry.$3.toIso8601String(),
+              'selections': [
+                {'templateId': amendTemplate, 'revisionId': amendRevision},
+              ],
+            },
+            expected: 201,
+          );
+          await call(
+            'POST',
+            '$prefix/shifts/${entry.$1}/publish',
+            token: token,
+            body: {'expectedVersion': 1},
+          );
+        }
+        final overlapping = await call(
+          'POST',
+          '$prefix/shifts/$amendShift/amend',
+          token: token,
+          body: amendBody(
+            2,
+            amendStart.add(const Duration(hours: 2)),
+            amendStart.add(const Duration(hours: 6)),
+          ),
+          expected: 409,
+        );
+        expect(overlapping['code'], 'shift_overlap');
+        await call(
+          'POST',
+          '$prefix/shifts/$amendShift/amend',
+          token: token,
+          body: {
+            ...amendBody(
+              2,
+              amendStart,
+              amendStart.add(const Duration(hours: 4)),
+            ),
+            'employeeId': amendEmployee['id'],
+          },
+          expected: 400,
+        );
+        final pastWindow = await call(
+          'POST',
+          '$prefix/shifts/$amendShift/amend',
+          token: token,
+          body: amendBody(
+            2,
+            DateTime.now().toUtc().subtract(const Duration(hours: 2)),
+            DateTime.now().toUtc().subtract(const Duration(hours: 1)),
+          ),
+          expected: 422,
+        );
+        expect(pastWindow['code'], 'shift_not_amendable');
+        await call(
+          'POST',
+          '$prefix/shifts/$amendShift/amend',
+          body: amendBody(
+            2,
+            amendStart.add(const Duration(hours: 1)),
+            amendStart.add(const Duration(hours: 4)),
+          ),
+          expected: 401,
+        );
+        await call(
+          'POST',
+          '$prefix/shifts/${newUuid()}/amend',
+          token: token,
+          body: amendBody(
+            2,
+            amendStart.add(const Duration(hours: 1)),
+            amendStart.add(const Duration(hours: 4)),
+          ),
+          expected: 404,
+        );
+        final amended = await call(
+          'POST',
+          '$prefix/shifts/$amendShift/amend',
+          token: token,
+          body: amendBody(
+            2,
+            amendStart.add(const Duration(hours: 1)),
+            amendStart.add(const Duration(hours: 4)),
+          ),
+        );
+        expect((amended['shift'] as Map)['version'], 3);
+        expect((amended['shift'] as Map)['amendmentVersion'], 2);
+        final amendedRetry = await call(
+          'POST',
+          '$prefix/shifts/$amendShift/amend',
+          token: token,
+          body: amendBody(
+            2,
+            amendStart.add(const Duration(hours: 1)),
+            amendStart.add(const Duration(hours: 4)),
+          ),
+        );
+        expect((amendedRetry['shift'] as Map)['version'], 3);
+        await call(
+          'POST',
+          '$prefix/shifts/$amendShift/amend',
+          token: token,
+          body: amendBody(
+            2,
+            amendStart.add(const Duration(hours: 3)),
+            amendStart.add(const Duration(hours: 4)),
+          ),
+          expected: 409,
+        );
+        await call(
+          'POST',
+          '$prefix/shifts/$amendShift/amend',
+          token: token,
+          raw: '[]',
+          expected: 400,
+        );
+        final wrongTypeRequest = await client.postUrl(
+          Uri.parse('$base$prefix/shifts/$amendShift/amend'),
+        );
+        wrongTypeRequest.headers.set('authorization', 'Bearer $token');
+        wrongTypeRequest.headers.contentType = ContentType.text;
+        wrongTypeRequest.write('{}');
+        final wrongTypeResponse = await wrongTypeRequest.close();
+        await wrongTypeResponse.drain<void>();
+        expect(wrongTypeResponse.statusCode, 415);
+        // Body-size (413) semantics for the shared body reader are asserted by
+        // api_support_test.dart; an oversized HTTP write can be refused before
+        // the client reads the response on some platforms.
+
         final finalAudit = await call('GET', '$prefix/audit', token: token);
         expect(
           jsonEncode(finalAudit),
           contains('identity.user.password_changed'),
         );
+        expect(jsonEncode(finalAudit), contains('workforce.shift.amended'));
         expect(jsonEncode(finalAudit), isNot(contains(selfOld)));
         expect(jsonEncode(finalAudit), isNot(contains(selfNew)));
         expect(jsonEncode(finalAudit), isNot(contains(limitedOld)));

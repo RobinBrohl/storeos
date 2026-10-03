@@ -222,6 +222,7 @@ void executionTests() {
           '0009_task_cancellation',
           '0010_task_numeric_steps',
           '0011_published_shift_cancellation',
+          '0012_published_shift_amendment',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

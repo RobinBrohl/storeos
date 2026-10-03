@@ -214,6 +214,12 @@ class MigrationRunner {
             'ON $_schema.task_instances TO $role',
           );
         }
+        if (known.containsKey('0012_published_shift_amendment')) {
+          await tx.execute(
+            'GRANT UPDATE (amended_at, amended_by, amendment_version) '
+            'ON $_schema.shifts TO $role',
+          );
+        }
         if (known.containsKey('0009_task_cancellation')) {
           await tx.execute(
             'GRANT UPDATE (resolution_kind) ON $_schema.task_blockings TO $role',

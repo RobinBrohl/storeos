@@ -3,7 +3,7 @@
 // scripts/update/Run-UpdateRecoveryAcceptance.ps1 creates the database, grants
 // the restricted runtime role CONNECT and drops the database again. The owner
 // connection builds the pre-update schema and seed; the runtime role serves the
-// API only after migration 0011 has been applied.
+// API only after the pending migrations (0011 and 0012) have been applied.
 //
 // Modes (STOREOS_UPDATE_MODE):
 //  - prepare: apply exactly migrations 0001-0010 from a byte-identical copy of
@@ -11,12 +11,14 @@
 //    evidence with owner SQL, capture stable projections and write the private
 //    run manifest plus a non-secret prepare result.
 //  - upgrade: apply the real repository migrations through the production
-//    MigrationRunner (only 0011 may be pending), verify checksums, idempotency,
-//    preservation of the pre-0011 projections, the new 0011 columns/constraints
-//    and that the new database protections reject invalid writes.
-//  - smoke: start the current server against the upgraded 0011 database with
-//    the restricted runtime role and run the bounded real HTTP smoke, including
-//    pre-execution cancellation of the all-open legacy published shift.
+//    MigrationRunner (only 0011 and 0012 may be pending), verify checksums,
+//    idempotency, preservation of the pre-update projections, the new
+//    0011/0012 columns, constraints and the published-interval exclusion
+//    invariant, and that the new database protections reject invalid writes.
+//  - smoke: start the current server against the upgraded database with the
+//    restricted runtime role and run the bounded real HTTP smoke, including
+//    pre-execution cancellation of the all-open legacy published shift and a
+//    bounded interval amendment through the current API.
 //  - recovery: verify the isolated restore target from the pre-update encrypted
 //    restore point (exactly 0001-0010, unchanged pre-update evidence, fencing)
 //    and prove the upgraded source stayed independent. The current server is
@@ -47,7 +49,10 @@ const _sourcePattern = r'^storeos_update_[a-f0-9]{16}$';
 const _targetPattern = r'^storeos_restore_upd_[a-f0-9]{16}$';
 const _rolePattern = r'^[a-z_][a-z0-9_]{0,62}$';
 const _prefixMaxNumber = '0010';
-const _expectedPendingMigration = '0011_published_shift_cancellation';
+const _expectedPendingMigrations = [
+  '0011_published_shift_cancellation',
+  '0012_published_shift_amendment',
+];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
   timeZone: 'UTC',
@@ -440,8 +445,10 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
       schemaName: _schema,
       runtimeDatabaseUser: runtimeUser,
     ).apply();
-    if (!_sameList(applied, const [_expectedPendingMigration])) {
-      throw StateError('The update did not apply exactly migration 0011.');
+    if (!_sameList(applied, _expectedPendingMigrations)) {
+      throw StateError(
+        'The update did not apply exactly the pending migrations.',
+      );
     }
     final second = await MigrationRunner(
       connection: owner,
@@ -479,6 +486,7 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
     }
 
     final newColumns = await _newCancellationColumns(owner);
+    final newAmendmentColumns = await _newAmendmentColumns(owner);
     final legacyNull = await _legacyCancellationFieldsAreNull(owner);
     final constraints = await _constraintNames(owner);
     final triggers = await _triggerNames(owner);
@@ -506,6 +514,18 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
         'WHERE id = CAST(@id AS uuid)',
         {'id': manifest['taskCancelledId']},
       ),
+      'overlapping_published_interval': await _rejected(
+        guard,
+        'INSERT INTO $_schema.shifts '
+        '(id,company_id,location_id,employee_id,starts_at,ends_at,status,'
+        'version,created_by,creation_input,published_at,published_by,'
+        'publication_version) '
+        "SELECT gen_random_uuid(), company_id, location_id, employee_id, "
+        "starts_at, ends_at, 'published', 2, created_by, '{}', "
+        'clock_timestamp(), created_by, 1 '
+        'FROM $_schema.shifts WHERE id = CAST(@id AS uuid)',
+        {'id': manifest['shiftOpenId']},
+      ),
     };
     if (rejected.values.any((value) => !value)) {
       throw StateError('A new 0011 protection accepted an invalid write.');
@@ -532,6 +552,7 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
         'activePluginTokensMatch': true,
       },
       'newColumns': newColumns,
+      'newAmendmentColumns': newAmendmentColumns,
       'legacyCancellationFieldsNull': legacyNull,
       'constraintsPresent': constraints,
       'triggersPresent': triggers,
@@ -780,6 +801,105 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       throw StateError('The cancellation audit evidence is incomplete.');
     }
 
+    await api.request(
+      'POST',
+      '/api/v1/platform/organization/setup',
+      token: adminToken,
+      body: {
+        'companyName': 'Update acceptance company',
+        'locationName': 'Update acceptance location',
+      },
+    );
+    final templates = await api.request(
+      'GET',
+      '/api/v1/platform/task-templates',
+      token: adminToken,
+    );
+    final templateItems = (templates['items'] as List)
+        .cast<Map<String, dynamic>>();
+    final employees = await api.request(
+      'GET',
+      '/api/v1/platform/employees',
+      token: adminToken,
+    );
+    final employeeItems = (employees['employees'] as List)
+        .cast<Map<String, dynamic>>();
+    Map<String, dynamic>? amendmentEmployee;
+    for (final item in employeeItems) {
+      if (item['isActive'] == true) {
+        amendmentEmployee = item;
+        break;
+      }
+    }
+    if (templateItems.isEmpty || amendmentEmployee == null) {
+      throw StateError('The upgraded server has no amendment prerequisites.');
+    }
+    final template = templateItems.first;
+    final publishedId = template['publishedId'];
+    if (publishedId is! String) {
+      throw StateError('The seeded template has no published revision.');
+    }
+    final amendmentShift = newUuid();
+    final amendmentStart = DateTime.now().toUtc().add(const Duration(days: 30));
+    final amendmentEnd = amendmentStart.add(const Duration(hours: 8));
+    await api.request(
+      'POST',
+      '/api/v1/platform/shifts',
+      token: adminToken,
+      expected: 201,
+      body: {
+        'id': amendmentShift,
+        'locationId': locationId,
+        'employeeId': amendmentEmployee['id'],
+        'startsAt': amendmentStart.toIso8601String(),
+        'endsAt': amendmentEnd.toIso8601String(),
+        'selections': [
+          {'templateId': template['id'], 'revisionId': publishedId},
+        ],
+      },
+    );
+    await api.request(
+      'POST',
+      '/api/v1/platform/shifts/$amendmentShift/publish',
+      token: adminToken,
+      body: {'expectedVersion': 1},
+    );
+    final amendedStart = amendmentStart.add(const Duration(hours: 1));
+    final amendedEnd = amendmentEnd.add(const Duration(hours: 1));
+    final amended = await api.request(
+      'POST',
+      '/api/v1/platform/shifts/$amendmentShift/amend',
+      token: adminToken,
+      body: {
+        'expectedVersion': 2,
+        'startsAt': amendedStart.toIso8601String(),
+        'endsAt': amendedEnd.toIso8601String(),
+      },
+    );
+    final amendedShift = amended['shift'] as Map<String, dynamic>;
+    if (amendedShift['status'] != 'published' ||
+        amendedShift['version'] != 3 ||
+        amendedShift['amendmentVersion'] != 2 ||
+        amendedShift['amendedBy'] != adminId ||
+        !DateTime.parse(
+          amendedShift['startsAt'] as String,
+        ).isAtSameMomentAs(amendedStart) ||
+        !DateTime.parse(
+          amendedShift['endsAt'] as String,
+        ).isAtSameMomentAs(amendedEnd)) {
+      throw StateError('The upgraded interval amendment is wrong.');
+    }
+    final amendmentAudits = await owner.execute(
+      Sql.named(
+        'SELECT changes FROM $_schema.audit_entries '
+        'WHERE entity_id = @id AND action = @action',
+      ),
+      parameters: {'id': amendmentShift, 'action': 'workforce.shift.amended'},
+    );
+    if (amendmentAudits.length != 1) {
+      throw StateError('The amendment audit evidence is incomplete.');
+    }
+
     await _writeJson(resultFile, {
       'ready': true,
       'adminLogin': true,
@@ -816,6 +936,12 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         'status': 'cancelled',
         'version': 2,
         'hasCancellationEvidence': true,
+      },
+      'amendment': {
+        'shiftStatus': 'published',
+        'shiftVersion': 3,
+        'amendmentVersion': 2,
+        'auditVerified': true,
       },
       'auditVerified': true,
       'correlationShared': true,
@@ -858,12 +984,16 @@ Future<void> _recovery(Map<String, String> env, String source) async {
     final targetVersions = targetMigrations.versions;
     if (targetVersions.length != 10 ||
         targetVersions.last.substring(0, 4) != _prefixMaxNumber ||
-        targetVersions.contains(_expectedPendingMigration)) {
+        targetVersions.any(_expectedPendingMigrations.contains)) {
       throw StateError('The recovered database is not at the prefix.');
     }
     final targetColumns = await _newCancellationColumns(targetOwner);
-    if (targetColumns.values.any((present) => present)) {
-      throw StateError('The recovered database already has 0011 columns.');
+    final targetAmendmentColumns = await _newAmendmentColumns(targetOwner);
+    if (targetColumns.values.any((present) => present) ||
+        targetAmendmentColumns.values.any((present) => present)) {
+      throw StateError(
+        'The recovered database already has post-prefix columns.',
+      );
     }
 
     final expected = _Snapshot.fromJson(
@@ -912,9 +1042,9 @@ Future<void> _recovery(Map<String, String> env, String source) async {
     }
 
     final sourceMigrations = await _migrationRows(sourceOwner);
-    if (sourceMigrations.versions.length != 11 ||
-        sourceMigrations.versions.last != _expectedPendingMigration) {
-      throw StateError('The upgraded source left migration 0011.');
+    if (sourceMigrations.versions.length != 12 ||
+        sourceMigrations.versions.last != _expectedPendingMigrations.last) {
+      throw StateError('The upgraded source is not at the latest migration.');
     }
     final sourceState = await sourceOwner.execute(
       Sql.named(
@@ -957,7 +1087,7 @@ Future<void> _recovery(Map<String, String> env, String source) async {
       'targetDatabase': target,
       'targetMigrationCount': targetVersions.length,
       'targetVersions': targetVersions,
-      'targetHasNo0011Column': true,
+      'targetHasNoPostPrefixColumns': true,
       'evidenceProjectionsMatchPreUpdate': true,
       'sequencesMatchPreUpdate': true,
       'activeSessions': recoveredSessions,
@@ -967,7 +1097,7 @@ Future<void> _recovery(Map<String, String> env, String source) async {
       'accountsPresent': true,
       'bootstrapSingleton': true,
       'targetPreUpdateBusinessState': true,
-      'sourceStillAt11': true,
+      'sourceAtLatest': true,
       'sourceSmokeEvidencePresent': true,
       'sourceDistinctFromTarget': true,
     });
@@ -2020,6 +2150,18 @@ Future<Map<String, bool>> _newCancellationColumns(Connection owner) async {
   return present;
 }
 
+Future<Map<String, bool>> _newAmendmentColumns(Connection owner) async {
+  const expected = ['amended_at', 'amended_by', 'amendment_version'];
+  final result = await owner.execute(
+    "SELECT column_name FROM information_schema.columns "
+    "WHERE table_schema = '$_schema' AND table_name = 'shifts'",
+  );
+  final columns = result.map((row) => row.single! as String).toSet();
+  return {
+    for (final column in expected) 'shifts.$column': columns.contains(column),
+  };
+}
+
 Future<bool> _legacyCancellationFieldsAreNull(Connection owner) async {
   final shifts = await owner.execute(
     'SELECT count(*)::bigint FROM $_schema.shifts WHERE '
@@ -2042,6 +2184,9 @@ Future<Map<String, bool>> _constraintNames(Connection owner) async {
   return {
     'shifts_status': names.contains('shifts_status'),
     'shifts_state': names.contains('shifts_state'),
+    'shifts_published_no_overlap': names.contains(
+      'shifts_published_no_overlap',
+    ),
     'task_execution_status': names.contains('task_execution_status'),
     'task_execution_times': names.contains('task_execution_times'),
   };

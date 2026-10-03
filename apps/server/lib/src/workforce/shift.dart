@@ -23,6 +23,26 @@ class Shift {
     }
   }
 
+  bool matchesAmendment(DateTime startsAt, DateTime endsAt) =>
+      view.draft.startsAt == startsAt && view.draft.endsAt == endsAt;
+
+  bool repeatsAmendment(
+    int version,
+    String actorId,
+    DateTime startsAt,
+    DateTime endsAt,
+  ) =>
+      view.status == 'published' &&
+      view.amendmentVersion == version &&
+      view.amendedBy == actorId &&
+      matchesAmendment(startsAt, endsAt);
+
+  void requireAmendable(int version) {
+    if (view.status != 'published' || view.version != version) {
+      throw ShiftConflict();
+    }
+  }
+
   void requirePublishable(DateTime now) {
     if (view.draft.selections.isEmpty || !view.draft.endsAt.isAfter(now)) {
       throw ShiftNotPublishable();

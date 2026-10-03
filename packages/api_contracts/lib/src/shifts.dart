@@ -108,6 +108,38 @@ class ShiftDraftInput {
   };
 }
 
+/// Exact request body for the bounded interval amendment of a published shift.
+class ShiftAmendmentInput {
+  ShiftAmendmentInput({
+    required this.expectedVersion,
+    required this.startsAt,
+    required this.endsAt,
+  });
+  final int expectedVersion;
+  final DateTime startsAt, endsAt;
+  factory ShiftAmendmentInput.fromJson(Map<String, dynamic> json) {
+    final version = json['expectedVersion'];
+    if (version is! int || version < 1) {
+      throw const FormatException('Invalid expected version.');
+    }
+    final start = shiftInstant(json['startsAt']),
+        end = shiftInstant(json['endsAt']);
+    if (!start.isBefore(end)) {
+      throw const FormatException('Shift end must be after start.');
+    }
+    return ShiftAmendmentInput(
+      expectedVersion: version,
+      startsAt: start,
+      endsAt: end,
+    );
+  }
+  Map<String, dynamic> toJson() => {
+    'expectedVersion': expectedVersion,
+    'startsAt': startsAt.toUtc().toIso8601String(),
+    'endsAt': endsAt.toUtc().toIso8601String(),
+  };
+}
+
 class ShiftDto {
   ShiftDto({
     required this.id,
@@ -124,6 +156,9 @@ class ShiftDto {
     this.cancelledBy,
     this.cancellationReason,
     this.cancellationVersion,
+    this.amendedAt,
+    this.amendedBy,
+    this.amendmentVersion,
   });
   final String id, companyId, locationId, status;
   final int version;
@@ -134,6 +169,9 @@ class ShiftDto {
   final DateTime? cancelledAt;
   final String? cancelledBy, cancellationReason;
   final int? cancellationVersion;
+  final DateTime? amendedAt;
+  final String? amendedBy;
+  final int? amendmentVersion;
   factory ShiftDto.fromJson(Map<String, dynamic> j) {
     final status = j['status'] as String;
     final cancelledAt = j['cancelledAt'] == null
@@ -144,6 +182,18 @@ class ShiftDto {
         : shiftUuid(j['cancelledBy']);
     final cancellationReason = j['cancellationReason'];
     final cancellationVersion = j['cancellationVersion'];
+    final amendedAt = j['amendedAt'] == null
+        ? null
+        : shiftInstant(j['amendedAt']);
+    final amendedBy = j['amendedBy'] == null ? null : shiftUuid(j['amendedBy']);
+    final amendmentVersion = j['amendmentVersion'];
+    final amendmentEvidence =
+        amendedAt != null &&
+        amendedBy != null &&
+        amendmentVersion is int &&
+        amendmentVersion >= 1;
+    final noAmendmentEvidence =
+        amendedAt == null && amendedBy == null && amendmentVersion == null;
     if (!{'draft', 'published', 'cancelled'}.contains(status) ||
         (status == 'cancelled'
             ? cancelledAt == null ||
@@ -156,7 +206,9 @@ class ShiftDto {
             : cancelledAt != null ||
                   cancelledBy != null ||
                   cancellationReason != null ||
-                  cancellationVersion != null)) {
+                  cancellationVersion != null) ||
+        (!amendmentEvidence && !noAmendmentEvidence) ||
+        (status == 'draft' && !noAmendmentEvidence)) {
       throw const FormatException('Ungültiger Schichtstatus.');
     }
     return ShiftDto(
@@ -176,6 +228,9 @@ class ShiftDto {
       cancelledBy: cancelledBy,
       cancellationReason: cancellationReason as String?,
       cancellationVersion: cancellationVersion as int?,
+      amendedAt: amendedAt,
+      amendedBy: amendedBy,
+      amendmentVersion: amendmentVersion as int?,
     );
   }
   Map<String, dynamic> toJson() => {
@@ -194,6 +249,9 @@ class ShiftDto {
     if (cancelledBy != null) 'cancelledBy': cancelledBy,
     if (cancellationReason != null) 'cancellationReason': cancellationReason,
     if (cancellationVersion != null) 'cancellationVersion': cancellationVersion,
+    if (amendedAt != null) 'amendedAt': amendedAt!.toUtc().toIso8601String(),
+    if (amendedBy != null) 'amendedBy': amendedBy,
+    if (amendmentVersion != null) 'amendmentVersion': amendmentVersion,
   };
 }
 

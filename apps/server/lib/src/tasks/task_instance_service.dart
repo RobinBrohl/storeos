@@ -76,6 +76,20 @@ class TaskInstanceService {
     }
   }
 
+  /// Read-only pre-execution gate: every instance must still be pristine open.
+  Future<void> requireAllOpen(TxSession tx, {required String shiftId}) async {
+    final tasks = await _instances.forShifts(tx, [shiftId]);
+    for (final task in tasks) {
+      if (task.status != 'open' || task.version != 1) {
+        throw PlatformFailure(
+          422,
+          'shift_in_progress',
+          'Task ${task.id} is no longer open; the shift cannot be amended.',
+        );
+      }
+    }
+  }
+
   Future<void> cancelForShift(
     TxSession tx,
     PlatformActor actor, {

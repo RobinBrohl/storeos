@@ -180,6 +180,15 @@ class ShiftController extends ChangeNotifier {
       selected?.status == 'published' &&
       tasks.isNotEmpty &&
       tasks.every((t) => t.status == 'open');
+  bool get canAmendShift =>
+      !self &&
+      platform.allows('workforce.shifts.manage') &&
+      !busy &&
+      !conflict &&
+      !unconfirmed &&
+      selected?.status == 'published' &&
+      tasks.isNotEmpty &&
+      tasks.every((t) => t.status == 'open');
   bool canAddRevision(TemplateRevisionDto revision) =>
       editable &&
       !revision.isDraft &&
@@ -700,6 +709,27 @@ class ShiftController extends ChangeNotifier {
     });
   }
 
+  Future<void> amendShift(String newStartsAt, String newEndsAt) {
+    if (!canAmendShift) return Future.value();
+    return _run((e) async {
+      final begins = shiftInstant(newStartsAt), ends = shiftInstant(newEndsAt);
+      if (!begins.isBefore(ends)) {
+        throw const FormatException('Beginn muss vor Ende liegen.');
+      }
+      if (begins == selected!.draft.startsAt &&
+          ends == selected!.draft.endsAt) {
+        throw const FormatException('Beginn oder Ende muss sich ändern.');
+      }
+      _pendingRoute = '/shifts/${selected!.id}/amend';
+      _pendingBody = {
+        'expectedVersion': selected!.version,
+        'startsAt': begins.toIso8601String(),
+        'endsAt': ends.toIso8601String(),
+      };
+      await _send(e);
+    });
+  }
+
   bool _matches(
     String route,
     Map<String, dynamic> body,
@@ -708,6 +738,22 @@ class ShiftController extends ChangeNotifier {
   ) {
     final publish = route.endsWith('/publish');
     final cancel = route.endsWith('/cancel');
+    if (route.endsWith('/amend')) {
+      final begins = shiftInstant(body['startsAt']),
+          ends = shiftInstant(body['endsAt']);
+      return actual.status == 'published' &&
+          prior != null &&
+          actual.draft.employeeId == prior.draft.employeeId &&
+          jsonEncode(actual.draft.selections.map((s) => s.toJson()).toList()) ==
+              jsonEncode(
+                prior.draft.selections.map((s) => s.toJson()).toList(),
+              ) &&
+          actual.draft.startsAt == begins &&
+          actual.draft.endsAt == ends &&
+          actual.version == (body['expectedVersion'] as int) + 1 &&
+          actual.amendmentVersion == body['expectedVersion'] &&
+          actual.amendedBy == session.user?.id;
+    }
     final intended = publish || cancel
         ? prior!.draft
         : ShiftDraftInput.fromJson(body);
@@ -835,7 +881,9 @@ class ShiftController extends ChangeNotifier {
     StoreApiException(code: 'shift_not_publishable') =>
       'Mindestens eine Aufgabe und eine noch nicht beendete Schicht sind erforderlich.',
     StoreApiException(code: 'shift_in_progress') =>
-      'Mindestens eine Aufgabe wurde bereits begonnen. Die Schicht kann nicht mehr storniert werden.',
+      'Mindestens eine Aufgabe wurde bereits begonnen. Die Schicht kann nicht mehr geändert oder storniert werden.',
+    StoreApiException(code: 'shift_not_amendable') =>
+      'Das neue Ende muss nach der aktuellen Serverzeit liegen.',
     StoreApiException(code: 'invalid_selection') =>
       'Nur veröffentlichte Vorlagenrevisionen dieses Standorts sind erlaubt.',
     StoreApiException(:final message) => message,

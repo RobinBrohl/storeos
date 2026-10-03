@@ -6,9 +6,9 @@
 # Docker Compose PostgreSQL server. It builds a real pre-update 0010 database
 # from byte-identical repository migration copies, seeds representative
 # pre-update evidence with owner SQL, creates an encrypted restore point with the
-# existing backup script, applies the real pending migration 0011 through the
-# production MigrationRunner, verifies preservation and the new protections,
-# starts the current server against the upgraded database for a bounded HTTP
+# existing backup script, applies the real pending migrations (0011 and 0012)
+# through the production MigrationRunner, verifies preservation and the new
+# protections, starts the current server against the upgraded database for a bounded HTTP
 # smoke, restores the pre-update restore point into a NEW isolated target and
 # verifies the recovered pre-update evidence and fencing. The normal StoreOS
 # database is never read beyond an existence check, written, migrated, backed
@@ -21,8 +21,9 @@ param(
     [string] $DockerPath = 'docker',
     [ValidateSet('none', 'prepare', 'upgrade', 'recovery')]
     # Test hook: abort after the named step to prove failure-path cleanup.
-    # 'upgrade' fails only after migration 0011 has committed and preservation
-    # was verified; it is a post-upgrade operational failure, not rollback proof.
+    # 'upgrade' fails only after the pending migrations have committed and
+    # preservation was verified; it is a post-upgrade operational failure, not
+    # rollback proof.
     [string] $InjectFailureAfter = 'none'
 )
 
@@ -338,7 +339,7 @@ try {
 
     $injectionDescription = switch ($InjectFailureAfter) {
         'prepare' { 'Operational failure after the pre-update database and seed existed.' }
-        'upgrade' { 'Post-upgrade operational failure after migration 0011 committed and preservation was verified; this does not prove migration rollback.' }
+        'upgrade' { 'Post-upgrade operational failure after the pending migrations committed and preservation was verified; this does not prove migration rollback.' }
         'recovery' { 'Operational failure after the isolated recovery restore completed.' }
         default { 'none' }
     }
@@ -359,7 +360,7 @@ try {
                 'encrypted PostgreSQL restore point before migration',
                 'forward-only migration with checksum and prefix validation',
                 'single-transaction migration atomicity',
-                'current application after a successful 0011 upgrade',
+                'current application after a successful 0011/0012 upgrade',
                 'isolated recovery of pre-update PostgreSQL state',
                 'recovery fencing',
                 'operator-verifiable evidence'

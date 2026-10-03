@@ -22,6 +22,7 @@ part 'task_blocking_integration_cases.dart';
 part 'task_cancellation_integration_cases.dart';
 part 'task_numeric_integration_cases.dart';
 part 'shift_cancellation_integration_cases.dart';
+part 'shift_amendment_integration_cases.dart';
 
 const _company = '11111111-1111-4111-8111-111111111111';
 const _home = '22222222-2222-4222-8222-222222222222';
@@ -35,6 +36,7 @@ void main() {
   cancellationTests();
   numericTests();
   shiftCancellationTests();
+  shiftAmendmentTests();
   test(
     'pinned selections reject mismatched templates and published foreign-location revisions without writes',
     () => _withFixture((f) async {
@@ -806,6 +808,7 @@ void main() {
         '0009_task_cancellation',
         '0010_task_numeric_steps',
         '0011_published_shift_cancellation',
+        '0012_published_shift_amendment',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);
@@ -964,6 +967,103 @@ Future<String> _seedPublishedShift(
     parameters: {'id': id, 'admin': f.adminPrincipal.id},
   );
   return taskId;
+}
+
+/// Seeds one extra shift/task pair in a terminal execution state without going
+/// through the API. [startsAt]/[endsAt] of blocked clones must not overlap
+/// another published shift of the same employee (database invariant).
+Future<void> _seedTaskState(
+  _Fixture f, {
+  required String sourceShift,
+  required String sourceTask,
+  required DateTime startsAt,
+  required DateTime endsAt,
+  required String state,
+}) async {
+  final shift = newUuid(), task = newUuid(), actor = f.adminPrincipal.id;
+  if (state == 'cancelled') {
+    await f.owner.execute(
+      Sql.named('''INSERT INTO "${f.schema}".shifts
+        (id,company_id,location_id,employee_id,starts_at,ends_at,status,version,created_by,creation_input,published_at,published_by,publication_version,cancelled_at,cancelled_by,cancellation_reason,cancellation_version)
+        SELECT CAST(@id AS uuid),company_id,location_id,employee_id,@start,@end,'cancelled',3,created_by,creation_input,published_at,published_by,publication_version,clock_timestamp(),CAST(@actor AS uuid),'Seeded cancellation',2
+        FROM "${f.schema}".shifts WHERE id=CAST(@source AS uuid)'''),
+      parameters: {
+        'id': shift,
+        'source': sourceShift,
+        'start': startsAt,
+        'end': endsAt,
+        'actor': actor,
+      },
+    );
+    await f.owner.execute(
+      Sql.named('''INSERT INTO "${f.schema}".task_instances
+        (id,company_id,location_id,employee_id,shift_id,template_id,revision_id,position,content,status,version,cancelled_at,cancelled_by)
+        SELECT CAST(@id AS uuid),company_id,location_id,employee_id,CAST(@shift AS uuid),template_id,revision_id,position,content,'cancelled',2,clock_timestamp(),CAST(@actor AS uuid)
+        FROM "${f.schema}".task_instances WHERE id=CAST(@source AS uuid)'''),
+      parameters: {
+        'id': task,
+        'shift': shift,
+        'source': sourceTask,
+        'actor': actor,
+      },
+    );
+    return;
+  }
+  await f.owner.execute(
+    Sql.named('''INSERT INTO "${f.schema}".shifts
+      (id,company_id,location_id,employee_id,starts_at,ends_at,status,version,created_by,creation_input,published_at,published_by,publication_version)
+      SELECT CAST(@id AS uuid),company_id,location_id,employee_id,@start,@end,'published',2,created_by,creation_input,published_at,published_by,publication_version
+      FROM "${f.schema}".shifts WHERE id=CAST(@source AS uuid)'''),
+    parameters: {
+      'id': shift,
+      'source': sourceShift,
+      'start': startsAt,
+      'end': endsAt,
+    },
+  );
+  await f.owner.execute(
+    Sql.named('''INSERT INTO "${f.schema}".task_instances
+      (id,company_id,location_id,employee_id,shift_id,template_id,revision_id,position,content)
+      SELECT CAST(@id AS uuid),company_id,location_id,employee_id,CAST(@shift AS uuid),template_id,revision_id,position,content
+      FROM "${f.schema}".task_instances WHERE id=CAST(@source AS uuid)'''),
+    parameters: {'id': task, 'shift': shift, 'source': sourceTask},
+  );
+  await f.owner.execute(
+    Sql.named(
+      'UPDATE "${f.schema}".task_instances SET status=\'in_progress\',version=2,'
+      'started_at=@at,started_by=CAST(@actor AS uuid) '
+      'WHERE id=CAST(@task AS uuid)',
+    ),
+    parameters: {'at': startsAt, 'actor': actor, 'task': task},
+  );
+  await f.owner.execute(
+    Sql.named('''INSERT INTO "${f.schema}".task_step_results
+      (instance_id,company_id,location_id,step_id,position,confirmed_at,confirmed_by,accepted_version)
+      SELECT id,company_id,location_id,(content::jsonb->'steps'->0->>'id')::uuid,0,@at,CAST(@actor AS uuid),3
+      FROM "${f.schema}".task_instances WHERE id=CAST(@task AS uuid)'''),
+    parameters: {'at': startsAt, 'actor': actor, 'task': task},
+  );
+  await f.owner.execute(
+    Sql.named(
+      'UPDATE "${f.schema}".task_instances SET version=3 '
+      'WHERE id=CAST(@task AS uuid)',
+    ),
+    parameters: {'task': task},
+  );
+  await f.owner.execute(
+    Sql.named('''INSERT INTO "${f.schema}".task_blockings
+      (id,instance_id,company_id,location_id,step_id,reason,reported_at,reported_by,reported_version)
+      SELECT CAST(@id AS uuid),id,company_id,location_id,NULL,'Seeded obstacle',@at,CAST(@actor AS uuid),4
+      FROM "${f.schema}".task_instances WHERE id=CAST(@task AS uuid)'''),
+    parameters: {'id': newUuid(), 'at': startsAt, 'actor': actor, 'task': task},
+  );
+  await f.owner.execute(
+    Sql.named(
+      'UPDATE "${f.schema}".task_instances SET status=\'blocked\',version=4 '
+      'WHERE id=CAST(@task AS uuid)',
+    ),
+    parameters: {'task': task},
+  );
 }
 
 Future<({String root, String task, String token, _Plan plan})>

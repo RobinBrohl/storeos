@@ -100,9 +100,74 @@ class WorkforceService {
 
   Future<ShiftDto> publish(TxSession tx, PlatformActor actor, String id) async {
     final current = await _get(tx, id);
-    await _repository.publish(tx, current, actor.id);
+    await _mapOverlapConstraint(
+      () => _repository.publish(tx, current, actor.id),
+    );
     final result = await get(tx, id);
     await _audit(tx, actor, result, 'published');
+    return result;
+  }
+
+  /// Maps only the published-shift exclusion constraint to the friendly
+  /// overlap conflict; every other exclusion or integrity failure is rethrown.
+  Future<void> _mapOverlapConstraint(Future<void> Function() action) async {
+    try {
+      await action();
+    } on ServerException catch (error) {
+      if (error.code == '23P01' &&
+          error.constraintName == 'shifts_published_no_overlap') {
+        throw const PlatformFailure(
+          409,
+          'shift_overlap',
+          'A published shift overlaps this interval.',
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> checkAmendOverlap(
+    TxSession tx,
+    ShiftDto current,
+    DateTime startsAt,
+    DateTime endsAt,
+  ) async {
+    if (await _repository.overlapsWindow(
+      tx,
+      current.id,
+      current.draft.employeeId,
+      startsAt,
+      endsAt,
+    )) {
+      throw const PlatformFailure(
+        409,
+        'shift_overlap',
+        'A published shift overlaps this interval.',
+      );
+    }
+  }
+
+  Future<ShiftDto> amend(
+    TxSession tx,
+    PlatformActor actor,
+    String id,
+    int expectedVersion,
+    DateTime startsAt,
+    DateTime endsAt,
+    Future<DateTime> Function() preWriteCheck,
+  ) async {
+    final current = await _get(tx, id);
+    if (current.repeatsAmendment(expectedVersion, actor.id, startsAt, endsAt)) {
+      return current.view;
+    }
+    current.requireAmendable(expectedVersion);
+    if (current.matchesAmendment(startsAt, endsAt)) return current.view;
+    final now = await preWriteCheck();
+    await _mapOverlapConstraint(
+      () => _repository.amend(tx, current, actor.id, startsAt, endsAt, now),
+    );
+    final result = await get(tx, id);
+    await _audit(tx, actor, result, 'amended', before: current.view);
     return result;
   }
 
@@ -160,8 +225,13 @@ class WorkforceService {
       'status': shift.status,
       if (action == 'cancelled' && before != null) 'oldStatus': before.status,
       if (action == 'cancelled' && before != null) 'oldVersion': before.version,
+      if (action == 'amended' && before != null)
+        'oldStartsAt': before.draft.startsAt.toIso8601String(),
+      if (action == 'amended' && before != null)
+        'oldEndsAt': before.draft.endsAt.toIso8601String(),
       'reason': ?reason,
       'cancellationVersion': ?shift.cancellationVersion,
+      'amendmentVersion': ?shift.amendmentVersion,
       if (before != null)
         'changedFields': [
           if (before.draft.employeeId != shift.draft.employeeId) 'employeeId',

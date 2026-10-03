@@ -195,6 +195,56 @@ void main() {
       expect(() => ArticleDto.fromJson(bad), throwsFormatException);
     }
   });
+  test('article version bounds stay JavaScript-safe for Flutter Web', () {
+    expect(ArticleDto.fromJson({...dtoJson(), 'version': 1}).version, 1);
+    expect(
+      ArticleDto.fromJson({
+        ...dtoJson(),
+        'version': maxJsonSafeInteger,
+      }).version,
+      maxJsonSafeInteger,
+    );
+    expect(
+      () => ArticleDto.fromJson({
+        ...dtoJson(),
+        'version': maxJsonSafeInteger + 1,
+      }),
+      throwsFormatException,
+    );
+    expect(
+      ArticleEditInput.fromJson({
+        ...createJson()..remove('id'),
+        'expectedVersion': 1,
+      }).expectedVersion,
+      1,
+    );
+    expect(
+      ArticleEditInput.fromJson({
+        ...createJson()..remove('id'),
+        'expectedVersion': maxIncrementableJsonSafeInteger,
+      }).expectedVersion,
+      maxIncrementableJsonSafeInteger,
+    );
+    expect(
+      () => ArticleEditInput.fromJson({
+        ...createJson()..remove('id'),
+        'expectedVersion': maxJsonSafeInteger,
+      }),
+      throwsFormatException,
+    );
+    expect(
+      ArticleLifecycleInput.fromJson({
+        'expectedVersion': maxIncrementableJsonSafeInteger,
+      }).expectedVersion,
+      maxIncrementableJsonSafeInteger,
+    );
+    expect(
+      () => ArticleLifecycleInput.fromJson({
+        'expectedVersion': maxJsonSafeInteger,
+      }),
+      throwsFormatException,
+    );
+  });
   test('OpenAPI documents the article master routes and schemas', () {
     final document = jsonDecode(
       File('platform.openapi.json').readAsStringSync(),
@@ -343,6 +393,7 @@ void main() {
     );
     expect(articleProperties['barcode']['type'], contains('null'));
     expect(articleProperties['version']['minimum'], 1);
+    expect(articleProperties['version']['maximum'], maxJsonSafeInteger);
     final createSchema = schemas['CreateArticle'] as Map;
     expect(createSchema['additionalProperties'], isFalse);
     expect((createSchema['required'] as List).toSet(), {
@@ -363,9 +414,17 @@ void main() {
       'description',
       'unit',
     });
+    expect(
+      editSchema['properties']['expectedVersion']['maximum'],
+      maxIncrementableJsonSafeInteger,
+    );
     final lifecycleSchema = schemas['ArticleLifecycle'] as Map;
     expect(lifecycleSchema['additionalProperties'], isFalse);
     expect(lifecycleSchema['required'], ['expectedVersion']);
+    expect(
+      lifecycleSchema['properties']['expectedVersion']['maximum'],
+      maxIncrementableJsonSafeInteger,
+    );
     final page = schemas['ArticlePage'] as Map;
     expect(page['additionalProperties'], isFalse);
     expect((page['required'] as List).toSet(), {'items', 'nextCursor'});

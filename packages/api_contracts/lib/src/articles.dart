@@ -2,6 +2,8 @@
 /// no stock, supplier, purchasing or price behavior is defined here.
 library;
 
+import 'json_numbers.dart';
+
 const int articleSkuMaxLength = 64;
 const int articleBarcodeMaxLength = 64;
 const int articleNameMaxLength = 120;
@@ -152,7 +154,10 @@ class ArticleDto {
     });
     final isActive = json['isActive'];
     final version = json['version'];
-    if (isActive is! bool || version is! int || version < 1) {
+    if (isActive is! bool ||
+        version is! int ||
+        version < 1 ||
+        version > maxJsonSafeInteger) {
       throw const FormatException('Ungültiger Artikelzustand.');
     }
     return ArticleDto(
@@ -320,9 +325,11 @@ String _id(Map<String, dynamic> json, String key) {
   return value.toLowerCase();
 }
 
+/// A mutating command increments the persisted version by one, so the accepted
+/// `expectedVersion` must stay incrementable and JSON-safe for Flutter Web.
 int _version(Map<String, dynamic> json) {
   final value = json['expectedVersion'];
-  if (value is! int || value < 1 || value > 9223372036854775806) {
+  if (value is! int || value < 1 || value > maxIncrementableJsonSafeInteger) {
     throw const FormatException('Ungültige Version.');
   }
   return value;

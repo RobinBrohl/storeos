@@ -6013,7 +6013,8 @@
           },
           "version": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "maximum": 9007199254740991
           },
           "createdAt": {
             "type": "string",
@@ -6111,7 +6112,8 @@
         "properties": {
           "expectedVersion": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "maximum": 9007199254740990
           },
           "sku": {
             "type": "string",
@@ -6155,7 +6157,8 @@
         "properties": {
           "expectedVersion": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "maximum": 9007199254740990
           }
         }
       }

@@ -44,6 +44,11 @@ It checks formatting, all four analyzers/test suites and Compose configuration.
 Separate setup, backup-crypto and browser E2E commands are in
 [HANDOVER](../HANDOVER.md#how-to-run-storeos). Use absolute log paths for redirected
 PowerShell pipelines: the development script changes directory between packages.
+`check` compiles no Web target. A slice that changes shared client contracts under
+`packages/api_contracts` must additionally run
+`flutter build web --release --no-web-resources-cdn` from `apps/client_flutter`
+before push/handoff: VM tests and analyzers do not detect `dart2js`
+integer-representability or other Web-only compile errors.
 
 Keep secrets in private files/environment, never in Git, terminal output, reports
 or prompts. Run fixtures only against a dedicated test database. Never delete the

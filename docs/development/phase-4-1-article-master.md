@@ -51,8 +51,18 @@ plugins, offline writes, M1/M3-global/M4 cleanup, company-lock changes.
 | `description` | optional, 1-2000 chars, trimmed; blank canonicalizes to null; not copied into audit |
 | `unit` | required bounded label, 1-32 chars, trimmed, no control chars; no conversion semantics |
 | `isActive` | lifecycle flag; deactivation never deletes |
-| `version` | starts at 1, increments by exactly one per accepted mutation |
+| `version` | starts at 1, increments by exactly one per accepted mutation; bounded by the JavaScript-safe maximum `maxJsonSafeInteger` (9007199254740991) |
 | `createdAt`/`updatedAt` | database clock |
+
+Versions are JSON numbers consumed by Flutter Web. `ArticleDto` accepts
+`version` in `1..maxJsonSafeInteger`. A mutating command accepts
+`expectedVersion` in `1..maxIncrementableJsonSafeInteger` (9007199254740990) so
+that `version + 1` remains exactly representable. A row at the maximum safe
+version cannot be mutated: an in-range `expectedVersion` mismatches
+(`409 article_conflict`) and the maximum itself is rejected as
+`400 invalid_article`; both paths write nothing and stay below any unsafe
+value. Migration `0013` keeps the broader database check `version > 0`, which
+remains valid under the documented raw-writer threat model.
 
 ## API contract
 
@@ -148,6 +158,9 @@ non-emitter.
   runs); root cause was not diagnosed and no P4.1-specific failure was
   identified.
 - Formatter and analyzer checks pass in all four packages.
+- `flutter build web --release --no-web-resources-cdn` compiles the shared
+  contracts with `dart2js`, pinning the JavaScript-safe version bounds that VM
+  tests and analyzers cannot verify.
 - Independent review and remote CI are pending.
 
 ## Boundaries and debt

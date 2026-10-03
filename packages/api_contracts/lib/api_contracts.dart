@@ -10,6 +10,7 @@ export 'src/platform_identity.dart';
 export 'src/employees.dart';
 export 'src/task_templates.dart';
 export 'src/platform_plugins.dart';
+export 'src/json_numbers.dart';
 export 'src/articles.dart';
 
 class HealthResponse {

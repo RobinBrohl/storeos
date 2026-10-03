@@ -391,6 +391,155 @@ void main() {
   );
 
   test(
+    'an article at the maximum safe version refuses further mutations safely',
+    () => _withFixture((f) async {
+      final created = await f.article(_input(sku: 'MAX-1'));
+      await f.owner.execute(
+        Sql.named(
+          'UPDATE "${f.schema}".articles SET version=CAST(@version AS bigint) '
+          'WHERE id=CAST(@id AS uuid)',
+        ),
+        parameters: {'version': maxJsonSafeInteger, 'id': created.id},
+      );
+      final readBack = await f.call('GET', '/articles/${created.id}');
+      expect(readBack.body['version'], maxJsonSafeInteger);
+
+      Future<Map<String, dynamic>> row() async => (await f.owner.execute(
+        Sql.named(
+          'SELECT sku, barcode, name, description, unit, is_active, version, '
+          'updated_at FROM "${f.schema}".articles WHERE id=CAST(@id AS uuid)',
+        ),
+        parameters: {'id': created.id},
+      )).single.toColumnMap();
+      Future<int> auditCount() async =>
+          (await f.owner.execute(
+                Sql.named(
+                  'SELECT count(*) FROM "${f.schema}".audit_entries WHERE entity_id=@id',
+                ),
+                parameters: {'id': created.id},
+              )).single.first
+              as int;
+
+      final before = await row();
+      expect(before['version'], maxJsonSafeInteger);
+      expect(await auditCount(), 1);
+
+      final stale = await f.call(
+        'POST',
+        '/articles/${created.id}/edit',
+        body: {
+          'expectedVersion': maxIncrementableJsonSafeInteger,
+          'sku': 'MAX-1',
+          'barcode': null,
+          'name': 'Unsafe increment',
+          'description': null,
+          'unit': 'Stk',
+        },
+        expected: 409,
+      );
+      expect(stale.body['code'], 'article_conflict');
+      final outOfRange = await f.call(
+        'POST',
+        '/articles/${created.id}/deactivate',
+        body: {'expectedVersion': maxJsonSafeInteger},
+        expected: 400,
+      );
+      expect(outOfRange.body['code'], 'invalid_article');
+      expect(await row(), before);
+      expect(await auditCount(), 1);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'a mutation at the maximum incrementable version reaches the maximum safe version',
+    () => _withFixture((f) async {
+      final created = await f.article(_input(sku: 'BOUNDARY-1'));
+      await f.owner.execute(
+        Sql.named(
+          'UPDATE "${f.schema}".articles '
+          'SET version=CAST(@version AS bigint) WHERE id=CAST(@id AS uuid)',
+        ),
+        parameters: {
+          'version': maxIncrementableJsonSafeInteger,
+          'id': created.id,
+        },
+      );
+
+      Future<Map<String, dynamic>> row() async => (await f.owner.execute(
+        Sql.named(
+          'SELECT sku, barcode, name, description, unit, is_active, version, '
+          'updated_at FROM "${f.schema}".articles WHERE id=CAST(@id AS uuid)',
+        ),
+        parameters: {'id': created.id},
+      )).single.toColumnMap();
+      Future<int> auditCount() async =>
+          (await f.owner.execute(
+                Sql.named(
+                  'SELECT count(*) FROM "${f.schema}".audit_entries WHERE entity_id=@id',
+                ),
+                parameters: {'id': created.id},
+              )).single.first
+              as int;
+
+      final before = await row();
+      expect(before['version'], maxIncrementableJsonSafeInteger);
+      expect(await auditCount(), 1);
+
+      final reply = await f.call(
+        'POST',
+        '/articles/${created.id}/edit',
+        body: {
+          'expectedVersion': maxIncrementableJsonSafeInteger,
+          'sku': before['sku'],
+          'barcode': before['barcode'],
+          'name': 'Letzter Stand',
+          'description': before['description'],
+          'unit': before['unit'],
+        },
+      );
+      expect(reply.body['version'], maxJsonSafeInteger);
+      final edited = ArticleDto.fromJson(reply.body);
+      expect(edited.version, maxJsonSafeInteger);
+      expect(edited.toJson()['version'], maxJsonSafeInteger);
+      expect(edited.name, 'Letzter Stand');
+
+      final after = await row();
+      expect(after['version'], maxJsonSafeInteger);
+      expect(after['name'], 'Letzter Stand');
+      expect(after['sku'], before['sku']);
+      expect(after['barcode'], before['barcode']);
+      expect(after['description'], before['description']);
+      expect(after['unit'], before['unit']);
+      expect(after['is_active'], before['is_active']);
+      expect(
+        (after['updated_at'] as DateTime).isAfter(
+          before['updated_at'] as DateTime,
+        ),
+        isTrue,
+      );
+      expect(await auditCount(), 2);
+      final audit = await f.owner.execute(
+        Sql.named(
+          'SELECT action, changes FROM "${f.schema}".audit_entries '
+          'WHERE entity_id=@id ORDER BY id DESC LIMIT 1',
+        ),
+        parameters: {'id': created.id},
+      );
+      final auditRow = audit.single.toColumnMap();
+      expect(auditRow['action'], 'inventory.article.updated');
+      final changes = auditRow['changes'] as Map<String, dynamic>;
+      expect(changes['version'], maxJsonSafeInteger);
+      expect(changes['changedFields'], ['name']);
+
+      final readBack = await f.call('GET', '/articles/${created.id}');
+      expect(readBack.body['version'], maxJsonSafeInteger);
+      expect(ArticleDto.fromJson(readBack.body).version, maxJsonSafeInteger);
+    }),
+    skip: _skip,
+  );
+
+  test(
     'deactivate and reactivate are version-guarded, non-destructive and no-op aware',
     () => _withFixture((f) async {
       final created = await f.article(_input());

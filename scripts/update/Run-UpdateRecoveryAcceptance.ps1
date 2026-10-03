@@ -6,9 +6,9 @@
 # Docker Compose PostgreSQL server. It builds a real pre-update 0010 database
 # from byte-identical repository migration copies, seeds representative
 # pre-update evidence with owner SQL, creates an encrypted restore point with the
-# existing backup script, applies the real pending migrations (0011, 0012 and
-# 0013) through the production MigrationRunner, verifies preservation and the new
-# protections, starts the current server against the upgraded database for a bounded HTTP
+# existing backup script, applies the real pending migrations (0011, 0012,
+# 0013 and 0014) through the production MigrationRunner, verifies preservation
+# and the new protections, starts the current server against the upgraded database for a bounded HTTP
 # smoke, restores the pre-update restore point into a NEW isolated target and
 # verifies the recovered pre-update evidence and fencing. The normal StoreOS
 # database is never read beyond an existence check, written, migrated, backed
@@ -360,7 +360,7 @@ try {
                 'encrypted PostgreSQL restore point before migration',
                 'forward-only migration with checksum and prefix validation',
                 'single-transaction migration atomicity',
-                'current application after a successful 0011/0012/0013 upgrade',
+                'current application after a successful 0011/0012/0013/0014 upgrade',
                 'isolated recovery of pre-update PostgreSQL state',
                 'recovery fencing',
                 'operator-verifiable evidence'

@@ -1,9 +1,10 @@
 # StoreOS handover
 
-Start here after [AGENTS.md](../AGENTS.md). Baseline: `f37dd6b`, status updated 2026-10-03.
-The committed baseline is clean; P1b.9 is committed, independently reviewed and
-verified by the remote CI run. This handover does not authorize the next
-feature.
+Start here after [AGENTS.md](../AGENTS.md). Baseline: `d90dd7e`, status updated 2026-10-03.
+The committed baseline is clean; P1b.9 and P4.1 are committed and verified by
+remote CI (run 31 on `d90dd7e`). A P4.2 location-assortment slice is implemented
+in an uncommitted working tree; independent review and remote CI are pending.
+This handover does not authorize the next feature.
 [Actual status](roadmap/status.md) and [verification](development/handover-verification.md)
 distinguish current evidence from plans.
 
@@ -91,15 +92,31 @@ reviewed (APPROVE after corrected LOW findings), committed as `f37dd6b`, pushed
 and verified by the remote CI run. See
 [P1b.9](development/phase-1b-9-shift-amendment.md) and
 [ADR 0014](adr/0014-pre-execution-shift-interval-amendment.md).
-A new `inventory` module now contains the P4.1 company-wide article/product
-master (working tree, uncommitted; independent review and remote CI pending):
-create, list/search, edit, deactivate and reactivate articles with a client
-UUID, deterministic ASCII-only SKU uniqueness, optional opaque barcode, bounded
-unit label, non-destructive lifecycle, audit and a Flutter **Artikel** section.
-Migration `0013` is additive; there is no stock, supplier, purchasing, price or
-event behavior, and `unit` is a label without conversions. See
+A new `inventory` module contains the P4.1 company-wide article/product
+master (committed as `a4aeecd`, corrected by `d0fcf43` and `d90dd7e`, remote CI
+run 31 green): create, list/search, edit, deactivate and reactivate articles
+with a client UUID, deterministic ASCII-only SKU uniqueness, optional opaque
+barcode, bounded unit label, non-destructive lifecycle, audit and a Flutter
+**Artikel** section. Migration `0013` is additive; there is no stock, supplier,
+purchasing, price or event behavior, and `unit` is a label without conversions.
+See
 [P4.1](development/phase-4-1-article-master.md) and
 [ADR 0015](adr/0015-company-wide-article-master.md).
+An uncommitted P4.2 slice (location assortment) adds
+`article_location_assortment` via migration `0014` and a Flutter **Sortiment**
+section: an explicit per-location freigabe of company articles with the
+capability `inventory.assortment.manage` (admin only), non-destructive
+lifecycle and audit. Membership state and global article state are independent;
+effective operational availability is the conjunction of both and is never
+stored. Article deactivation does not mutate assortment rows, and a globally
+inactive article cannot be newly enabled or reactivated. Local verification
+covers the enumerated suites, the Web release build and the extended
+`0010→0014` update/recovery acceptance; the numeric browser E2E was not run
+locally and is pending remote CI. There is still no stock, quantity, valuation,
+supplier, purchasing or price behavior. Independent review and remote CI are
+pending. See
+[P4.2](development/phase-4-2-location-assortment.md) and
+[ADR 0016](adr/0016-article-location-assortment.md).
 There is no automatic priority engine, timezone-aware recurring calendar, timekeeping,
 stock ledger or HACCP module. See [status](roadmap/status.md) before claiming completion.
 
@@ -109,7 +126,7 @@ stock ledger or HACCP module. See [status](roadmap/status.md) before claiming co
 | --- | --- |
 | `apps/server/bin/` | Explicit server, migration and bootstrap entry points |
 | `apps/server/lib/src/` | HTTP/configuration, application coordinators, identity/organization/people/workforce/tasks/inventory and platform persistence |
-| `apps/server/migrations/` | Append-only SQL history 0001–0013; `MigrationRunner` also applies runtime grants |
+| `apps/server/migrations/` | Append-only SQL history 0001–0014; `MigrationRunner` also applies runtime grants |
 | `apps/server/test/`, `tool/` | Unit and real PostgreSQL/HTTP tests; isolated browser fixtures |
 | `apps/client_flutter/lib/src/` | App composition, controllers, API adapters, UI |
 | `apps/client_flutter/test/`, `integration_test/`, `test_driver/` | Unit/widget tests and Web E2E |
@@ -375,7 +392,8 @@ Proposals only; implement one approved scope at a time.
   full regression suites.
 - **Status (2026-10-03):** implemented and verified locally (contracts 55,
   server 161, Flutter 148, extended `0010→0013` update/recovery acceptance);
-  the change set is uncommitted and independent review plus remote CI are
-  pending. See
+  committed as `a4aeecd`, corrected by `d0fcf43` (web-safe version bounds) and
+  `d90dd7e` (numeric E2E synchronization); the remote CI run 31 on `d90dd7e`
+  passed. P4.1 is closed. See
   [P4.1 article master](development/phase-4-1-article-master.md) and
   [ADR 0015](adr/0015-company-wide-article-master.md).

@@ -2,8 +2,9 @@
 
 Status (2026-10-03): implemented and verified locally (contracts, real
 PostgreSQL, real HTTP, Flutter and the extended update/recovery acceptance);
-the change set is uncommitted and independent review plus remote CI are pending.
-Baseline at implementation start: `f37dd6b`. Decision record:
+committed as `a4aeecd`, corrected by `d0fcf43` (web-safe version bounds) and
+`d90dd7e` (numeric E2E synchronization); the remote CI run 31 on `d90dd7e`
+passed. P4.1 is closed. Baseline at implementation start: `f37dd6b`. Decision record:
 [ADR 0015](../adr/0015-company-wide-article-master.md).
 
 ## Goal
@@ -161,7 +162,9 @@ non-emitter.
 - `flutter build web --release --no-web-resources-cdn` compiles the shared
   contracts with `dart2js`, pinning the JavaScript-safe version bounds that VM
   tests and analyzers cannot verify.
-- Independent review and remote CI are pending.
+- Committed as `a4aeecd`; the web-safe version fix `d0fcf43` and the numeric
+  E2E synchronization fix `d90dd7e` follow; remote CI run 31 on `d90dd7e`
+  passed and P4.1 is closed.
 
 ## Boundaries and debt
 

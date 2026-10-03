@@ -19,5 +19,6 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0013](0013-published-shift-cancellation.md) | Published-shift cancellation before execution starts |
 | [0014](0014-pre-execution-shift-interval-amendment.md) | Pre-execution published-shift interval amendment |
 | [0015](0015-company-wide-article-master.md) | Company-wide article master foundation |
+| [0016](0016-article-location-assortment.md) | Article–location assortment membership |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).

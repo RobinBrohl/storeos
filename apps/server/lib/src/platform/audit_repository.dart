@@ -48,6 +48,7 @@ class AuditRepository {
       'sku',
       'barcode',
       'unit',
+      'articleId',
       'startsAt',
       'endsAt',
       'revisionNumber',

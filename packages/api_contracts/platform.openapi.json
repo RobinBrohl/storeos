@@ -3491,6 +3491,382 @@
           }
         }
       }
+    },
+    "/api/v1/platform/locations/{locationId}/assortment": {
+      "get": {
+        "operationId": "listArticleAssortment",
+        "description": "Requires inventory.assortment.manage (admin only), current session and company scope. Lists one location's assortment memberships with the embedded company article summary. The active query filter applies only to the membership state: active=true returns active memberships, active=false inactive ones, omitted returns both; an active membership may embed a globally inactive article, which is intentional. Company- and location-scoped keyset page ordered by association id, at most 50 entries; after is the last association UUID and a malformed value returns 400 invalid_cursor. q is a literal case-insensitive article name/SKU search where %, _ and backslash are literal characters. Unknown or foreign locations return 404. Reads do not modify state or audit.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleAssortmentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID of the last association. Stable ascending ID order; 50 rows per page. A malformed value returns 400 invalid_cursor."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Literal case-insensitive search over the embedded article name and SKU; %, _ and backslash are literal characters."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "description": "Filters the membership state only: true returns active memberships, false inactive ones, omitted returns all. Article activity is exposed separately in the embedded article."
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createArticleAssortment",
+        "description": "Requires inventory.assortment.manage (admin only), current session and company scope. Enables one company article at the route's company location with version 1 and isActive=true. The server derives the company from the revalidated session; the client cannot pass authority fields. The client-supplied id is the reconciliation key: a duplicate id or an existing (article, location) pair, including an inactive one, returns 409 already_exists with zero writes; an inactive pair must be reactivated instead of recreated. An unknown location or article returns 404; a globally inactive article returns 409 article_inactive. Membership state and article state stay independent. Writes and audit are atomic; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleAssortment"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleAssortment"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/assortment/{id}": {
+      "get": {
+        "operationId": "getArticleAssortment",
+        "description": "Requires inventory.assortment.manage (admin only), current session, company scope and the route location. Returns one membership including inactive memberships and globally inactive articles; unknown ids, ids of another location and unknown or foreign locations return 404 without an existence leak.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleAssortment"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/assortment/{id}/deactivate": {
+      "post": {
+        "operationId": "deactivateArticleAssortment",
+        "description": "Requires inventory.assortment.manage (admin only), current session, company scope and the route location. Version-guarded non-destructive membership lifecycle: is_active becomes false and the row is kept. A stale expectedVersion returns 409 assortment_conflict before any target-state check, so a stale request is never a no-op; a current-version request already inactive returns the current state without a version bump or audit. Deactivation is always allowed with respect to the article state; article deactivation never mutates memberships. There is no delete route. Writes and audit are atomic; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleAssortment"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleAssortmentLifecycle"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/assortment/{id}/reactivate": {
+      "post": {
+        "operationId": "reactivateArticleAssortment",
+        "description": "Requires inventory.assortment.manage (admin only), current session, company scope and the route location. Version-guarded non-destructive membership lifecycle: is_active becomes true and the existing row is reused, never duplicated. A stale expectedVersion returns 409 assortment_conflict before any target-state check, so a stale request is never a no-op; a current-version request already active returns the current state without a version bump or audit. Reactivating requires the company article to be globally active at the check point, otherwise 409 article_inactive; a later article deactivation leaves an active membership persisted but operationally unavailable. Writes and audit are atomic; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleAssortment"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleAssortmentLifecycle"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6149,6 +6525,147 @@
         }
       },
       "ArticleLifecycle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          }
+        }
+      },
+      "ArticleAssortmentArticle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sku",
+          "barcode",
+          "name",
+          "unit",
+          "isActive"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ArticleAssortment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locationId",
+          "isActive",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "article"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "article": {
+            "$ref": "#/components/schemas/ArticleAssortmentArticle"
+          }
+        }
+      },
+      "ArticleAssortmentPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ArticleAssortment"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "CreateArticleAssortment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "articleId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ArticleAssortmentLifecycle": {
         "type": "object",
         "additionalProperties": false,
         "required": [

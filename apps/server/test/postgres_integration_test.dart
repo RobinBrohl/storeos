@@ -160,6 +160,7 @@ void main() {
             '0011_published_shift_cancellation',
             '0012_published_shift_amendment',
             '0013_article_master',
+            '0014_location_assortment',
           ],
         );
         final account = await connection.execute(
@@ -582,6 +583,7 @@ void main() {
           '0011_published_shift_cancellation',
           '0012_published_shift_amendment',
           '0013_article_master',
+          '0014_location_assortment',
         ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(

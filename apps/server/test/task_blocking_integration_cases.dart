@@ -614,6 +614,7 @@ void blockingTests() {
           '0011_published_shift_cancellation',
           '0012_published_shift_amendment',
           '0013_article_master',
+          '0014_location_assortment',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

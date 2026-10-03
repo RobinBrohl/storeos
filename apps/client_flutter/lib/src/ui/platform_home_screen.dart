@@ -3,10 +3,12 @@ import 'shift_section.dart';
 import 'package:flutter/material.dart';
 import 'package:storeos_design_system/storeos_design_system.dart';
 
+import '../application/article_assortment_controller.dart';
 import '../application/article_controller.dart';
 import '../application/platform_controller.dart';
 import '../application/session_controller.dart';
 import 'article_section.dart';
+import 'assortment_section.dart';
 import 'change_password_dialog.dart';
 import 'platform_sections.dart';
 import 'employee_section.dart';
@@ -26,6 +28,7 @@ enum _Section {
   profile,
   templates,
   articles,
+  assortment,
   shifts,
   home,
 }
@@ -37,6 +40,7 @@ class PlatformHomeScreen extends StatefulWidget {
     required this.employees,
     this.templates,
     this.articles,
+    this.assortment,
     this.shifts,
     this.home,
     required this.baseUri,
@@ -48,6 +52,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final EmployeeController employees;
   final TaskTemplateController? templates;
   final ArticleController? articles;
+  final ArticleAssortmentController? assortment;
   final ShiftController? shifts, home;
   final Uri baseUri;
 
@@ -72,6 +77,9 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     if (widget.articles != null &&
         widget.platform.allows('inventory.articles.manage'))
       _Section.articles,
+    if (widget.assortment != null &&
+        widget.platform.allows('inventory.assortment.manage'))
+      _Section.assortment,
     if (widget.platform.allows('people.self.read')) _Section.profile,
     if (widget.platform.allows('people.manage')) _Section.people,
     if (widget.platform.allows('organization.read')) _Section.organization,
@@ -86,6 +94,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.home => 'Meine Arbeit',
     _Section.templates => 'Arbeitsvorlagen',
     _Section.articles => 'Artikel',
+    _Section.assortment => 'Sortiment',
     _Section.people => 'Mitarbeiter',
     _Section.profile => 'Mein Profil',
     _Section.status => 'Status',
@@ -101,6 +110,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.home => Icons.assignment_outlined,
     _Section.templates => Icons.checklist_outlined,
     _Section.articles => Icons.inventory_2_outlined,
+    _Section.assortment => Icons.storefront_outlined,
     _Section.people => Icons.badge_outlined,
     _Section.profile => Icons.person_outline,
     _Section.status => Icons.monitor_heart_outlined,
@@ -118,6 +128,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.home:
       case _Section.templates:
       case _Section.articles:
+      case _Section.assortment:
       case _Section.people:
       case _Section.profile:
       case _Section.status:
@@ -143,6 +154,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.home:
       case _Section.templates:
       case _Section.articles:
+      case _Section.assortment:
         break;
       case _Section.people:
         widget.employees.loadEmployees();
@@ -174,6 +186,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     ),
     _Section.templates => TaskTemplateSection(controller: widget.templates!),
     _Section.articles => ArticleSection(controller: widget.articles!),
+    _Section.assortment => AssortmentSection(
+      controller: widget.assortment!,
+      platform: widget.platform,
+    ),
     _Section.people => EmployeeSection(
       key: const ValueKey('employees'),
       controller: widget.employees,
@@ -243,6 +259,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
             if (section != _Section.status &&
                 section != _Section.templates &&
                 section != _Section.articles &&
+                section != _Section.assortment &&
                 section != _Section.shifts &&
                 section != _Section.home)
               IconButton(

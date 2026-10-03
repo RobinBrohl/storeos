@@ -12,6 +12,7 @@ export 'src/task_templates.dart';
 export 'src/platform_plugins.dart';
 export 'src/json_numbers.dart';
 export 'src/articles.dart';
+export 'src/article_assortment.dart';
 
 class HealthResponse {
   const HealthResponse({required this.status});

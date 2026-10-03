@@ -232,6 +232,20 @@ class MigrationRunner {
             'REVOKE DELETE, TRUNCATE ON $_schema.articles FROM $role',
           );
         }
+        if (known.containsKey('0014_location_assortment')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON '
+            '$_schema.article_location_assortment TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (is_active, version, updated_at) '
+            'ON $_schema.article_location_assortment TO $role',
+          );
+          await tx.execute(
+            'REVOKE DELETE, TRUNCATE ON '
+            '$_schema.article_location_assortment FROM $role',
+          );
+        }
         if (known.containsKey('0009_task_cancellation')) {
           await tx.execute(
             'GRANT UPDATE (resolution_kind) ON $_schema.task_blockings TO $role',

@@ -14,12 +14,21 @@ real HTTP interval amendment against the upgraded server. Independent review
 returned APPROVE and the remote CI run passed; the historical `0010→0011`
 evidence above is unchanged.
 
-Update (2026-10-03, P4.1 working tree, uncommitted): the same runner and
-fixture now apply exactly `0011`, `0012` and `0013`, probe the article table,
-uniqueness indexes and runtime grants, and create and read a real HTTP article
-on the upgraded server. The historical `0010→0011` and `0010→0012` evidence
-above is unchanged; independent review and remote CI for this extension are
-pending.
+Update (2026-10-03, committed with P4.1 as `a4aeecd` and corrected by
+`d0fcf43`/`d90dd7e`): the same runner and fixture now apply exactly `0011`,
+`0012` and `0013`, probe the article table, uniqueness indexes and runtime
+grants, and create and read a real HTTP article on the upgraded server. The
+historical `0010→0011` and `0010→0012` evidence above is unchanged; remote CI
+run 31 on `d90dd7e` passed.
+
+Update (2026-10-03, P4.2 working tree, uncommitted): the same runner and fixture
+now apply exactly `0011`–`0014`, additionally probe the
+`article_location_assortment` table, its pair/page indexes and runtime grants,
+and create and read a real HTTP assortment membership on the upgraded server.
+A local acceptance run (`fb710b7ac2c249a9`) passed with intact isolated recovery
+fencing and a sanitized report; the historical `0010→0011`, `0010→0012` and
+`0010→0013` evidence above is unchanged. Independent review and remote CI for
+this extension are pending.
 
 This slice proves the supported single-site update/recovery contract on populated
 pre-update data. It is an acceptance and operating-evidence slice: it changes no

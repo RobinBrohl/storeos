@@ -3,10 +3,12 @@ import '../application/shift_application.dart';
 import 'package:shelf/shelf.dart';
 
 import '../application/auth_service.dart';
+import '../inventory/article_assortment_service.dart';
 import '../inventory/article_service.dart';
 import '../platform/identity_service.dart';
 import '../platform/organization_service.dart';
 import '../platform/platform_database.dart';
+import 'article_assortment_routes.dart';
 import 'article_routes.dart';
 import 'platform_identity_routes.dart';
 import 'employee_routes.dart';
@@ -23,6 +25,12 @@ Handler createPlatformHandler(AuthService auth, PlatformDatabase database) =>
           TaskTemplateRoutes(auth, TaskTemplateService(database)).router.call,
         )
         .add(ArticleRoutes(auth, ArticleService(database)).router.call)
+        .add(
+          ArticleAssortmentRoutes(
+            auth,
+            ArticleAssortmentService(database),
+          ).router.call,
+        )
         .add(EmployeeRoutes(auth, EmployeeApplication(database)).router.call)
         .add(
           PlatformIdentityRoutes(

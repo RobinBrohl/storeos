@@ -3,7 +3,7 @@
 // scripts/update/Run-UpdateRecoveryAcceptance.ps1 creates the database, grants
 // the restricted runtime role CONNECT and drops the database again. The owner
 // connection builds the pre-update schema and seed; the runtime role serves the
-// API only after the pending migrations (0011 and 0012) have been applied.
+// API only after the pending migrations (0011 through 0014) have been applied.
 //
 // Modes (STOREOS_UPDATE_MODE):
 //  - prepare: apply exactly migrations 0001-0010 from a byte-identical copy of
@@ -11,10 +11,11 @@
 //    evidence with owner SQL, capture stable projections and write the private
 //    run manifest plus a non-secret prepare result.
 //  - upgrade: apply the real repository migrations through the production
-//    MigrationRunner (only 0011 and 0012 may be pending), verify checksums,
+//    MigrationRunner (only 0011 through 0014 may be pending), verify checksums,
 //    idempotency, preservation of the pre-update projections, the new
 //    0011/0012 columns, constraints and the published-interval exclusion
-//    invariant, and that the new database protections reject invalid writes.
+//    invariant, the 0013 article master and 0014 assortment schema/grants, and
+//    that the new database protections reject invalid writes.
 //  - smoke: start the current server against the upgraded database with the
 //    restricted runtime role and run the bounded real HTTP smoke, including
 //    pre-execution cancellation of the all-open legacy published shift and a
@@ -53,6 +54,7 @@ const _expectedPendingMigrations = [
   '0011_published_shift_cancellation',
   '0012_published_shift_amendment',
   '0013_article_master',
+  '0014_location_assortment',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -492,6 +494,7 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
     final constraints = await _constraintNames(owner);
     final triggers = await _triggerNames(owner);
     final articleSchema = await _articleMasterSchema(owner, runtimeUser);
+    final assortmentSchema = await _assortmentSchema(owner, runtimeUser);
 
     guard = await Connection.open(
       _ownerEndpoint(env, source),
@@ -559,6 +562,7 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
       'constraintsPresent': constraints,
       'triggersPresent': triggers,
       'articleMasterSchema': articleSchema,
+      'assortmentSchema': assortmentSchema,
       'invalidWritesRejected': rejected,
       'invalidWritesLeftNoChange': true,
     });
@@ -941,6 +945,44 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       throw StateError('The article creation audit evidence is incomplete.');
     }
 
+    final assortmentId = newUuid();
+    final assortmentCreated = await api.request(
+      'POST',
+      '/api/v1/platform/locations/$locationId/assortment',
+      token: adminToken,
+      expected: 201,
+      body: {'id': assortmentId, 'articleId': articleId},
+    );
+    final assortmentRead = await api.request(
+      'GET',
+      '/api/v1/platform/locations/$locationId/assortment/$assortmentId',
+      token: adminToken,
+    );
+    final embeddedArticle =
+        assortmentCreated['article'] as Map<String, dynamic>;
+    if (assortmentCreated['locationId'] != locationId ||
+        assortmentCreated['isActive'] != true ||
+        assortmentCreated['version'] != 1 ||
+        embeddedArticle['id'] != articleId ||
+        embeddedArticle['isActive'] != true ||
+        assortmentRead['id'] != assortmentId ||
+        assortmentRead['isActive'] != true) {
+      throw StateError('The upgraded assortment route is wrong.');
+    }
+    final assortmentAudits = await owner.execute(
+      Sql.named(
+        'SELECT changes FROM $_schema.audit_entries '
+        'WHERE entity_id = @id AND action = @action',
+      ),
+      parameters: {
+        'id': assortmentId,
+        'action': 'inventory.assortment.created',
+      },
+    );
+    if (assortmentAudits.length != 1) {
+      throw StateError('The assortment creation audit evidence is incomplete.');
+    }
+
     await _writeJson(resultFile, {
       'ready': true,
       'adminLogin': true,
@@ -989,6 +1031,7 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         'readBack': true,
         'auditVerified': true,
       },
+      'assortment': {'created': true, 'readBack': true, 'auditVerified': true},
       'auditVerified': true,
       'correlationShared': true,
     });
@@ -2284,6 +2327,48 @@ Future<Map<String, bool>> _articleMasterSchema(
   };
   if (result.values.any((value) => !value)) {
     throw StateError('The article master schema probe failed.');
+  }
+  return result;
+}
+
+Future<Map<String, bool>> _assortmentSchema(
+  Connection owner,
+  String runtimeUser,
+) async {
+  final table = await owner.execute(
+    "SELECT to_regclass('$_schema.article_location_assortment')::text AS name",
+  );
+  final indexes = await owner.execute(
+    "SELECT indexname FROM pg_indexes "
+    "WHERE schemaname = '$_schema' "
+    "AND tablename = 'article_location_assortment'",
+  );
+  final names = indexes.map((row) => row.single! as String).toSet();
+  final grants = await owner.execute(
+    Sql.named(
+      'SELECT privilege_type FROM information_schema.role_table_grants '
+      "WHERE table_schema = '$_schema' "
+      "AND table_name = 'article_location_assortment' "
+      'AND grantee = @grantee',
+    ),
+    parameters: {'grantee': runtimeUser},
+  );
+  final privileges = grants.map((row) => row.single! as String).toSet();
+  final result = <String, bool>{
+    'tablePresent': table.single.single != null,
+    'pairIndexPresent': names.contains(
+      'article_location_assortment_pair_unique',
+    ),
+    'pageIndexPresent': names.contains(
+      'article_location_assortment_location_page',
+    ),
+    'selectGranted': privileges.contains('SELECT'),
+    'insertGranted': privileges.contains('INSERT'),
+    'deleteNotGranted': !privileges.contains('DELETE'),
+    'truncateNotGranted': !privileges.contains('TRUNCATE'),
+  };
+  if (result.values.any((value) => !value)) {
+    throw StateError('The assortment schema probe failed.');
   }
   return result;
 }

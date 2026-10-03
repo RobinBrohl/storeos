@@ -1046,7 +1046,10 @@ void main() {
         schemaName: f.schema,
         runtimeDatabaseUser: f.runtimeUser,
       );
-      expect(await runner.apply(), ['0013_article_master']);
+      expect(await runner.apply(), [
+        '0013_article_master',
+        '0014_location_assortment',
+      ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);
       final indexes = await f.owner.execute(
@@ -1078,7 +1081,7 @@ void main() {
       });
       final created = await f.article(_input(sku: 'AFTER-MIGRATION'));
       expect(created.version, 1);
-    }, legacy: true),
+    }, legacyBefore: '0013'),
     skip: _skip,
   );
 
@@ -1118,7 +1121,974 @@ void main() {
         'SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY id), \'[]\'::jsonb)::text FROM "${f.schema}".employees t',
       )).single.first;
       expect(after, before);
-    }, legacy: true),
+    }, legacyBefore: '0013'),
+    skip: _skip,
+  );
+
+  test(
+    'enabling an article creates one readable, audited location membership',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'ASS-1'));
+      final created = await f.assortment(article.id);
+      expect(created.locationId, _home);
+      expect(created.isActive, isTrue);
+      expect(created.version, 1);
+      expect(created.article.id, article.id);
+      expect(created.article.name, article.name);
+      expect(created.article.isActive, isTrue);
+
+      final read = ArticleAssortmentDto.fromJson(
+        (await f.call(
+          'GET',
+          '/locations/$_home/assortment/${created.id}',
+        )).body,
+      );
+      expect(read.toJson(), created.toJson());
+      final page = (await f.call(
+        'GET',
+        '/locations/$_home/assortment?active=true',
+      )).body;
+      expect(page['items'], hasLength(1));
+      expect((page['items'] as List).first['id'], created.id);
+
+      final audits = await f.owner.execute(
+        Sql.named(
+          'SELECT action, location_id::text AS location_id, changes '
+          'FROM "${f.schema}".audit_entries WHERE entity_id=@id',
+        ),
+        parameters: {'id': created.id},
+      );
+      expect(audits, hasLength(1));
+      final row = audits.single.toColumnMap();
+      expect(row['action'], 'inventory.assortment.created');
+      expect(row['location_id'], _home);
+      expect(row['changes'], {
+        'articleId': article.id,
+        'isActive': true,
+        'version': 1,
+      });
+      expect(await f.auditCount(created.id), 1);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'duplicate enables by id or pair are deterministic and write nothing',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'DUP-1'));
+      final created = await f.assortment(article.id);
+      Future<Map<String, dynamic>> row() async => (await f.owner.execute(
+        'SELECT count(*) AS count FROM "${f.schema}".article_location_assortment',
+      )).single.toColumnMap();
+      final before = await row();
+      final sameId = await f.call(
+        'POST',
+        '/locations/$_home/assortment',
+        body: {'id': created.id, 'articleId': article.id},
+        expected: 409,
+      );
+      expect(sameId.body['code'], 'already_exists');
+      final samePair = await f.call(
+        'POST',
+        '/locations/$_home/assortment',
+        body: {'id': newUuid(), 'articleId': article.id},
+        expected: 409,
+      );
+      expect(samePair.body['code'], 'already_exists');
+      await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/deactivate',
+        body: {'expectedVersion': 1},
+      );
+      final inactivePair = await f.call(
+        'POST',
+        '/locations/$_home/assortment',
+        body: {'id': newUuid(), 'articleId': article.id},
+        expected: 409,
+      );
+      expect(inactivePair.body['code'], 'already_exists');
+      expect(await row(), before);
+      expect(await f.auditCount(created.id), 2);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'one article can be enabled at several locations and stays location-scoped',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'MULTI-1'));
+      final second = await f.createLocation('Second');
+      final home = await f.assortment(article.id);
+      final other = await f.assortment(article.id, location: second);
+      expect(other.locationId, second);
+      expect(home.locationId, _home);
+      expect(
+        (await f.call('GET', '/locations/$_home/assortment')).body['items'],
+        hasLength(1),
+      );
+      expect(
+        (await f.call('GET', '/locations/$second/assortment')).body['items'],
+        hasLength(1),
+      );
+      final foreign = await f.call(
+        'GET',
+        '/locations/$_home/assortment/${other.id}',
+        expected: 404,
+      );
+      expect(foreign.body['code'], 'not_found');
+      final unknownLocation = await f.call(
+        'GET',
+        '/locations/${newUuid()}/assortment',
+        expected: 404,
+      );
+      expect(unknownLocation.body['code'], 'not_found');
+      final unknownArticle = await f.call(
+        'POST',
+        '/locations/$_home/assortment',
+        body: {'id': newUuid(), 'articleId': newUuid()},
+        expected: 404,
+      );
+      expect(unknownArticle.body['code'], 'not_found');
+      final foreignDeactivate = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${other.id}/deactivate',
+        body: {'expectedVersion': 1},
+        expected: 404,
+      );
+      expect(foreignDeactivate.body['code'], 'not_found');
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'membership state and article state stay independent',
+    () => _withFixture((f) async {
+      final active = await f.article(_input(sku: 'STATE-ACTIVE'));
+      final inactive = await f.article(
+        _input(sku: 'STATE-INACTIVE', barcode: null),
+      );
+      await f.call(
+        'POST',
+        '/articles/${inactive.id}/deactivate',
+        body: {'expectedVersion': 1},
+      );
+      final refused = await f.call(
+        'POST',
+        '/locations/$_home/assortment',
+        body: {'id': newUuid(), 'articleId': inactive.id},
+        expected: 409,
+      );
+      expect(refused.body['code'], 'article_inactive');
+
+      final membership = await f.assortment(active.id);
+      await f.call(
+        'POST',
+        '/articles/${active.id}/deactivate',
+        body: {'expectedVersion': 1},
+      );
+      final read = ArticleAssortmentDto.fromJson(
+        (await f.call(
+          'GET',
+          '/locations/$_home/assortment/${membership.id}',
+        )).body,
+      );
+      expect(read.isActive, isTrue);
+      expect(read.article.isActive, isFalse);
+      expect(read.version, 1);
+      final stillListed = (await f.call(
+        'GET',
+        '/locations/$_home/assortment?active=true',
+      )).body;
+      expect(
+        (stillListed['items'] as List).map((item) => item['id']),
+        contains(membership.id),
+      );
+
+      await f.call(
+        'POST',
+        '/locations/$_home/assortment/${membership.id}/deactivate',
+        body: {'expectedVersion': 1},
+      );
+      final reactivateRefused = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${membership.id}/reactivate',
+        body: {'expectedVersion': 2},
+        expected: 409,
+      );
+      expect(reactivateRefused.body['code'], 'article_inactive');
+
+      await f.call(
+        'POST',
+        '/articles/${active.id}/reactivate',
+        body: {'expectedVersion': 2},
+      );
+      final reactivated = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${membership.id}/reactivate',
+        body: {'expectedVersion': 2},
+      );
+      expect(reactivated.body['isActive'], true);
+      expect(reactivated.body['version'], 3);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'the active filter selects membership state only and search stays literal',
+    () => _withFixture((f) async {
+      final one = await f.article(
+        _input(sku: 'LIST-1', barcode: null, name: '50% Mehl'),
+      );
+      final two = await f.article(
+        _input(sku: 'LIST-2', barcode: null, name: 'a_b'),
+      );
+      final three = await f.article(
+        _input(sku: 'LIST-3', barcode: null, name: r'back\slash'),
+      );
+      final first = await f.assortment(one.id);
+      await f.assortment(two.id);
+      await f.assortment(three.id);
+      await f.call(
+        'POST',
+        '/locations/$_home/assortment/${first.id}/deactivate',
+        body: {'expectedVersion': 1},
+      );
+      Future<List> search(String query) async =>
+          (await f.call(
+                'GET',
+                '/locations/$_home/assortment?q=${Uri.encodeQueryComponent(query)}',
+              )).body['items']
+              as List;
+      expect(await search('%'), hasLength(1));
+      expect(await search('_'), hasLength(1));
+      expect(await search(r'\'), hasLength(1));
+      expect(await search('mehl'), hasLength(1));
+      expect(
+        (await f.call('GET', '/locations/$_home/assortment')).body['items'],
+        hasLength(3),
+      );
+      expect(
+        (await f.call(
+          'GET',
+          '/locations/$_home/assortment?active=true',
+        )).body['items'],
+        hasLength(2),
+      );
+      final inactiveOnly = (await f.call(
+        'GET',
+        '/locations/$_home/assortment?active=false',
+      )).body;
+      expect(inactiveOnly['items'], hasLength(1));
+      expect((inactiveOnly['items'] as List).first['id'], first.id);
+      final all = (await f.call('GET', '/locations/$_home/assortment')).body;
+      final ids =
+          (all['items'] as List).map((item) => item['id'] as String).toList()
+            ..sort();
+      final tail = (await f.call(
+        'GET',
+        '/locations/$_home/assortment?after=${ids[1]}',
+      )).body;
+      expect((tail['items'] as List).map((item) => item['id']), [ids[2]]);
+      expect(tail['nextCursor'], isNull);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'a stale lifecycle request is never a no-op and current-state no-ops never audit',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'LIFE-1'));
+      final created = await f.assortment(article.id);
+      final staleTarget = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/deactivate',
+        body: {'expectedVersion': 2},
+        expected: 409,
+      );
+      expect(staleTarget.body['code'], 'assortment_conflict');
+      final deactivated = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/deactivate',
+        body: {'expectedVersion': 1},
+      );
+      expect(deactivated.body['version'], 2);
+      expect(deactivated.body['isActive'], false);
+      expect(await f.auditCount(created.id), 2);
+      final noop = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/deactivate',
+        body: {'expectedVersion': 2},
+      );
+      expect(noop.body['version'], 2);
+      expect(noop.body['isActive'], false);
+      expect(await f.auditCount(created.id), 2);
+      final staleNoop = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/deactivate',
+        body: {'expectedVersion': 1},
+        expected: 409,
+      );
+      expect(staleNoop.body['code'], 'assortment_conflict');
+      expect(await f.auditCount(created.id), 2);
+      final reactivated = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/reactivate',
+        body: {'expectedVersion': 2},
+      );
+      expect(reactivated.body['version'], 3);
+      expect(reactivated.body['isActive'], true);
+      expect(await f.auditCount(created.id), 3);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'assortment versions stay JSON-safe at the boundary',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'BOUND-ASS'));
+      final created = await f.assortment(article.id);
+      await f.owner.execute(
+        Sql.named(
+          'UPDATE "${f.schema}".article_location_assortment '
+          'SET version=CAST(@version AS bigint) WHERE id=CAST(@id AS uuid)',
+        ),
+        parameters: {
+          'version': maxIncrementableJsonSafeInteger,
+          'id': created.id,
+        },
+      );
+      final reached = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/deactivate',
+        body: {'expectedVersion': maxIncrementableJsonSafeInteger},
+      );
+      expect(reached.body['version'], maxJsonSafeInteger);
+      expect(reached.body['isActive'], false);
+      final outOfRange = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/reactivate',
+        body: {'expectedVersion': maxJsonSafeInteger},
+        expected: 400,
+      );
+      expect(outOfRange.body['code'], 'invalid_assortment');
+      final stale = await f.call(
+        'POST',
+        '/locations/$_home/assortment/${created.id}/reactivate',
+        body: {'expectedVersion': maxIncrementableJsonSafeInteger},
+        expected: 409,
+      );
+      expect(stale.body['code'], 'assortment_conflict');
+      final state = (await f.owner.execute(
+        'SELECT is_active, version FROM "${f.schema}".article_location_assortment',
+      )).single.toColumnMap();
+      expect(state['is_active'], false);
+      expect(state['version'], maxJsonSafeInteger);
+      final audit = await f.owner.execute(
+        Sql.named(
+          'SELECT changes FROM "${f.schema}".audit_entries '
+          'WHERE entity_id=@id ORDER BY id DESC LIMIT 1',
+        ),
+        parameters: {'id': created.id},
+      );
+      expect(
+        (audit.single.toColumnMap()['changes']
+            as Map<String, dynamic>)['version'],
+        maxJsonSafeInteger,
+      );
+      expect(await f.auditCount(created.id), 2);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'only admins with inventory.assortment.manage reach assortment routes',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'AUTH-1'));
+      final created = await f.assortment(article.id);
+      for (final role in ['viewer', 'auditor', 'employee']) {
+        final username = 'assort-$role-${newUuid().substring(0, 8)}';
+        await f.account(username, role: role);
+        final token = await f.login(username);
+        expect(
+          (await f.call(
+            'GET',
+            '/locations/$_home/assortment',
+            token: token,
+            expected: 403,
+          )).body['code'],
+          'forbidden',
+        );
+        expect(
+          (await f.call(
+            'GET',
+            '/locations/$_home/assortment/${created.id}',
+            token: token,
+            expected: 403,
+          )).body['code'],
+          'forbidden',
+        );
+        expect(
+          (await f.call(
+            'POST',
+            '/locations/$_home/assortment',
+            token: token,
+            body: {'id': newUuid(), 'articleId': article.id},
+            expected: 403,
+          )).body['code'],
+          'forbidden',
+        );
+        expect(
+          (await f.call(
+            'POST',
+            '/locations/$_home/assortment/${created.id}/deactivate',
+            token: token,
+            body: {'expectedVersion': 1},
+            expected: 403,
+          )).body['code'],
+          'forbidden',
+        );
+        expect(
+          (await f.call(
+            'POST',
+            '/locations/$_home/assortment/${created.id}/reactivate',
+            token: token,
+            body: {'expectedVersion': 1},
+            expected: 403,
+          )).body['code'],
+          'forbidden',
+        );
+      }
+      expect(
+        (await f.call(
+          'GET',
+          '/locations/$_home/assortment',
+          token: '',
+          expected: 401,
+        )).body['code'],
+        'unauthorized',
+      );
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'malformed assortment requests fail closed',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'MAL-1'));
+      final created = await f.assortment(article.id);
+      Future<Map<String, dynamic>> post(
+        String route,
+        Map<String, dynamic> body,
+        int expected,
+      ) async =>
+          (await f.call('POST', route, body: body, expected: expected)).body;
+      expect(
+        (await post('/locations/$_home/assortment', {
+          'id': newUuid(),
+        }, 400))['code'],
+        'invalid_assortment',
+      );
+      expect(
+        (await post('/locations/$_home/assortment', {
+          'id': newUuid(),
+          'articleId': article.id,
+          'extra': 1,
+        }, 400))['code'],
+        'invalid_assortment',
+      );
+      expect(
+        (await post('/locations/$_home/assortment', {
+          'id': 'nope',
+          'articleId': article.id,
+        }, 400))['code'],
+        'invalid_assortment',
+      );
+      expect(
+        (await post('/locations/$_home/assortment/${created.id}/deactivate', {
+          'expectedVersion': 0,
+        }, 400))['code'],
+        'invalid_assortment',
+      );
+      expect(
+        (await post('/locations/$_home/assortment/${created.id}/deactivate', {
+          'expectedVersion': maxJsonSafeInteger,
+        }, 400))['code'],
+        'invalid_assortment',
+      );
+      expect(
+        (await f.call(
+          'GET',
+          '/locations/$_home/assortment?after=nope',
+          expected: 400,
+        )).body['code'],
+        'invalid_cursor',
+      );
+      expect(
+        (await f.call(
+          'GET',
+          '/locations/$_home/assortment?active=maybe',
+          expected: 400,
+        )).body['code'],
+        'invalid_request',
+      );
+      expect(
+        (await f.call(
+          'GET',
+          '/locations/$_home/assortment?q=',
+          expected: 400,
+        )).body['code'],
+        'invalid_request',
+      );
+      expect(
+        (await f.call(
+          'GET',
+          '/locations/not-a-uuid/assortment',
+          expected: 400,
+        )).body['code'],
+        'invalid_request',
+      );
+      expect(
+        (await f.call(
+          'GET',
+          '/locations/$_home/assortment/not-a-uuid',
+          expected: 400,
+        )).body['code'],
+        'invalid_request',
+      );
+      expect(
+        (await f.call(
+          'POST',
+          '/locations/$_home/assortment',
+          raw: '[]',
+          expected: 400,
+        )).body['code'],
+        'invalid_json',
+      );
+      expect(
+        (await f.call(
+          'POST',
+          '/locations/$_home/assortment',
+          body: {'id': newUuid(), 'articleId': article.id},
+          jsonContentType: false,
+          expected: 415,
+        )).body['code'],
+        'unsupported_media_type',
+      );
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'concurrent duplicate enables collapse to one row and one audit',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'RACE-1'));
+      final replies = await Future.wait([
+        f.call(
+          'POST',
+          '/locations/$_home/assortment',
+          body: {'id': newUuid(), 'articleId': article.id},
+          expected: null,
+        ),
+        f.call(
+          'POST',
+          '/locations/$_home/assortment',
+          body: {'id': newUuid(), 'articleId': article.id},
+          expected: null,
+        ),
+      ]);
+      expect(replies.map((reply) => reply.status).toList()..sort(), [201, 409]);
+      final rows = await f.owner.execute(
+        'SELECT id::text, version FROM "${f.schema}".article_location_assortment',
+      );
+      expect(rows, hasLength(1));
+      final winner =
+          replies.singleWhere((reply) => reply.status == 201).body['id']
+              as String;
+      expect(rows.single.toColumnMap()['id'], winner);
+      expect(await f.auditCount(winner), 1);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'concurrent same-target lifecycle commands bump once and conflict once',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'RACE-2'));
+      final created = await f.assortment(article.id);
+      final deactivates = await Future.wait([
+        f.call(
+          'POST',
+          '/locations/$_home/assortment/${created.id}/deactivate',
+          body: {'expectedVersion': 1},
+          expected: null,
+        ),
+        f.call(
+          'POST',
+          '/locations/$_home/assortment/${created.id}/deactivate',
+          body: {'expectedVersion': 1},
+          expected: null,
+        ),
+      ]);
+      expect(deactivates.map((reply) => reply.status).toList()..sort(), [
+        200,
+        409,
+      ]);
+      expect(await f.auditCount(created.id), 2);
+      final afterDeactivate = (await f.owner.execute(
+        'SELECT version, is_active FROM "${f.schema}".article_location_assortment',
+      )).single.toColumnMap();
+      expect(afterDeactivate['version'], 2);
+      expect(afterDeactivate['is_active'], false);
+
+      final reactivates = await Future.wait([
+        f.call(
+          'POST',
+          '/locations/$_home/assortment/${created.id}/reactivate',
+          body: {'expectedVersion': 2},
+          expected: null,
+        ),
+        f.call(
+          'POST',
+          '/locations/$_home/assortment/${created.id}/reactivate',
+          body: {'expectedVersion': 2},
+          expected: null,
+        ),
+      ]);
+      expect(reactivates.map((reply) => reply.status).toList()..sort(), [
+        200,
+        409,
+      ]);
+      expect(await f.auditCount(created.id), 3);
+      final afterReactivate = (await f.owner.execute(
+        'SELECT version, is_active FROM "${f.schema}".article_location_assortment',
+      )).single.toColumnMap();
+      expect(afterReactivate['version'], 3);
+      expect(afterReactivate['is_active'], true);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'mixed concurrent lifecycle keeps only serialized invariants',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'RACE-3'));
+      final created = await f.assortment(article.id);
+      final replies = await Future.wait([
+        f.call(
+          'POST',
+          '/locations/$_home/assortment/${created.id}/deactivate',
+          body: {'expectedVersion': 1},
+          expected: null,
+        ),
+        f.call(
+          'POST',
+          '/locations/$_home/assortment/${created.id}/reactivate',
+          body: {'expectedVersion': 1},
+          expected: null,
+        ),
+      ]);
+      for (final reply in replies) {
+        expect({200, 409}, contains(reply.status));
+      }
+      final row = (await f.owner.execute(
+        'SELECT version, is_active FROM "${f.schema}".article_location_assortment',
+      )).single.toColumnMap();
+      expect(row['version'], 2);
+      expect(row['is_active'], false);
+      final actions = await f.owner.execute(
+        Sql.named(
+          'SELECT action FROM "${f.schema}".audit_entries '
+          'WHERE entity_id=@id ORDER BY id',
+        ),
+        parameters: {'id': created.id},
+      );
+      expect(actions.map((row) => row.single), [
+        'inventory.assortment.created',
+        'inventory.assortment.deactivated',
+      ]);
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'assortment reactivation and article deactivation serialize without lost decisions',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'RACE-ARTICLE'));
+      final membership = await f.assortment(article.id);
+      await f.call(
+        'POST',
+        '/locations/$_home/assortment/${membership.id}/deactivate',
+        body: {'expectedVersion': 1},
+      );
+      final replies = await Future.wait([
+        f.call(
+          'POST',
+          '/articles/${article.id}/deactivate',
+          body: {'expectedVersion': 1},
+          expected: null,
+        ),
+        f.call(
+          'POST',
+          '/locations/$_home/assortment/${membership.id}/reactivate',
+          body: {'expectedVersion': 2},
+          expected: null,
+        ),
+      ]);
+      final assortmentReply = replies[1];
+      expect({200, 409}, contains(assortmentReply.status));
+      final articleRow = (await f.owner.execute(
+        Sql.named(
+          'SELECT is_active, version FROM "${f.schema}".articles '
+          'WHERE id=CAST(@id AS uuid)',
+        ),
+        parameters: {'id': article.id},
+      )).single.toColumnMap();
+      expect(articleRow['is_active'], false);
+      expect(articleRow['version'], 2);
+      final assortmentRow = (await f.owner.execute(
+        Sql.named(
+          'SELECT is_active, version FROM '
+          '"${f.schema}".article_location_assortment '
+          'WHERE id=CAST(@id AS uuid)',
+        ),
+        parameters: {'id': membership.id},
+      )).single.toColumnMap();
+      if (assortmentReply.status == 200) {
+        // Reactivation ran first while the article was still active; the later
+        // article deactivation leaves the membership active but unavailable.
+        expect(assortmentRow['is_active'], true);
+        expect(assortmentRow['version'], 3);
+      } else {
+        // Article deactivation ran first; reactivation was refused without a
+        // write because the article was already inactive.
+        expect(assortmentReply.body['code'], 'article_inactive');
+        expect(assortmentRow['is_active'], false);
+        expect(assortmentRow['version'], 2);
+      }
+    }),
+    skip: _skip,
+  );
+
+  test(
+    'assortment audit failure rolls back create and lifecycle completely',
+    () => _withFixture((f) async {
+      final first = await f.article(_input(sku: 'ROLLBACK-ASS-1'));
+      final second = await f.article(
+        _input(sku: 'ROLLBACK-ASS-2', barcode: null),
+      );
+      final created = await f.assortment(first.id);
+      await f.owner.execute(
+        'REVOKE INSERT ON "${f.schema}".audit_entries FROM "${f.runtimeUser}"',
+      );
+      try {
+        await f.call(
+          'POST',
+          '/locations/$_home/assortment',
+          body: {'id': newUuid(), 'articleId': second.id},
+          expected: 503,
+        );
+        await f.call(
+          'POST',
+          '/locations/$_home/assortment/${created.id}/deactivate',
+          body: {'expectedVersion': 1},
+          expected: 503,
+        );
+      } finally {
+        await f.owner.execute(
+          'GRANT INSERT ON "${f.schema}".audit_entries TO "${f.runtimeUser}"',
+        );
+      }
+      final counts = await f.owner.execute(
+        'SELECT (SELECT count(*) FROM "${f.schema}".article_location_assortment), '
+        "(SELECT count(*) FROM \"${f.schema}\".audit_entries "
+        "WHERE action LIKE 'inventory.assortment.%')",
+      );
+      expect(counts.single, [1, 1]);
+      final state = (await f.owner.execute(
+        'SELECT is_active, version FROM "${f.schema}".article_location_assortment',
+      )).single.toColumnMap();
+      expect(state['is_active'], true);
+      expect(state['version'], 1);
+    }),
+    skip: _skip,
+  );
+
+  test('runtime grants block delete, truncate and ungranted columns', () {
+    return _withFixture((f) async {
+      final article = await f.article(_input(sku: 'GRANT-ASS'));
+      final created = await f.assortment(article.id);
+      Future<void> denied(String sql) async => expectLater(
+        f.pool.execute(Sql.named(sql), parameters: {'id': created.id}),
+        throwsA(isA<PgException>()),
+      );
+      await denied(
+        'DELETE FROM "${f.schema}".article_location_assortment '
+        'WHERE id=CAST(@id AS uuid)',
+      );
+      await expectLater(
+        f.pool.execute('TRUNCATE "${f.schema}".article_location_assortment'),
+        throwsA(isA<PgException>()),
+      );
+      for (final assignment in [
+        "id='${newUuid()}'",
+        "company_id='${newUuid()}'",
+        "article_id='${newUuid()}'",
+        "location_id='${newUuid()}'",
+        'created_at=clock_timestamp()',
+      ]) {
+        await denied(
+          'UPDATE "${f.schema}".article_location_assortment '
+          'SET $assignment WHERE id=CAST(@id AS uuid)',
+        );
+      }
+      final tableGrants = await f.owner.execute(
+        Sql.named(
+          'SELECT privilege_type FROM information_schema.role_table_grants '
+          "WHERE table_schema=@schema AND "
+          "table_name='article_location_assortment' AND grantee=@grantee "
+          'ORDER BY privilege_type',
+        ),
+        parameters: {'schema': f.schema, 'grantee': f.runtimeUser},
+      );
+      expect(
+        tableGrants.map((r) => r.toColumnMap()['privilege_type']).toSet(),
+        {'SELECT', 'INSERT'},
+      );
+      final updateColumns = await f.owner.execute(
+        Sql.named(
+          'SELECT column_name FROM information_schema.column_privileges '
+          "WHERE table_schema=@schema AND "
+          "table_name='article_location_assortment' "
+          "AND grantee=@grantee AND privilege_type='UPDATE' "
+          'ORDER BY column_name',
+        ),
+        parameters: {'schema': f.schema, 'grantee': f.runtimeUser},
+      );
+      expect(updateColumns.map((r) => r.toColumnMap()['column_name']).toSet(), {
+        'is_active',
+        'version',
+        'updated_at',
+      });
+    });
+  }, skip: _skip);
+
+  test(
+    'migration 0014 preserves populated 0013 data, adds the assortment table and is idempotent',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'MIGRATION-0014'));
+      Future<List<String>> preserved() async {
+        final rows = <String>[];
+        for (final table in [
+          'accounts',
+          'employees',
+          'articles',
+          'audit_entries',
+        ]) {
+          rows.add(
+            (await f.owner.execute(
+                  'SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY id), \'[]\'::jsonb)::text FROM "${f.schema}".$table t',
+                )).single.first
+                as String,
+          );
+        }
+        return rows;
+      }
+
+      final before = await preserved();
+      final runner = MigrationRunner(
+        connection: f.owner,
+        migrationsDirectory: Directory('migrations'),
+        schemaName: f.schema,
+        runtimeDatabaseUser: f.runtimeUser,
+      );
+      expect(await runner.apply(), ['0014_location_assortment']);
+      expect(await runner.apply(), isEmpty);
+      expect(await preserved(), before);
+      final indexes = await f.owner.execute(
+        "SELECT indexname FROM pg_indexes WHERE schemaname='${f.schema}' "
+        "AND tablename='article_location_assortment' ORDER BY indexname",
+      );
+      expect(indexes.map((r) => r.toColumnMap()['indexname']).toSet(), {
+        'article_location_assortment_location_active',
+        'article_location_assortment_location_page',
+        'article_location_assortment_pair_unique',
+        'article_location_assortment_pkey',
+      });
+      final constraints = await f.owner.execute(
+        "SELECT conname FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid "
+        'JOIN pg_namespace n ON n.oid=t.relnamespace '
+        "WHERE n.nspname='${f.schema}' "
+        "AND t.relname='article_location_assortment' ORDER BY conname",
+      );
+      expect(constraints.map((r) => r.toColumnMap()['conname']).toSet(), {
+        'article_location_assortment_article_fk',
+        'article_location_assortment_location_fk',
+        'article_location_assortment_pair_unique',
+        'article_location_assortment_pkey',
+        'article_location_assortment_version_check',
+      });
+      final created = await f.assortment(article.id);
+      expect(created.version, 1);
+    }, legacyBefore: '0014'),
+    skip: _skip,
+  );
+
+  test(
+    'failed migration 0014 rolls back the table, ledger and grants while preserving data',
+    () => _withFixture((f) async {
+      final article = await f.article(_input(sku: 'FAIL-0014'));
+      final before = (await f.owner.execute(
+        'SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY id), \'[]\'::jsonb)::text FROM "${f.schema}".articles t',
+      )).single.first;
+      final broken = await _migrationCopy(
+        replace: '0014_location_assortment.sql',
+        sql: 'CREATE TABLE {{schema}}.article_location_assortment (broken',
+      );
+      try {
+        await expectLater(
+          MigrationRunner(
+            connection: f.owner,
+            migrationsDirectory: broken,
+            schemaName: f.schema,
+            runtimeDatabaseUser: f.runtimeUser,
+          ).apply(),
+          throwsA(isA<PgException>()),
+        );
+      } finally {
+        await broken.delete(recursive: true);
+      }
+      final ledger = await f.owner.execute(
+        "SELECT version FROM \"${f.schema}\".schema_migrations "
+        "WHERE version='0014_location_assortment'",
+      );
+      expect(ledger, isEmpty);
+      final table = await f.owner.execute(
+        "SELECT to_regclass('\"${f.schema}\".article_location_assortment')::text AS name",
+      );
+      expect(table.single.first, isNull);
+      final after = (await f.owner.execute(
+        'SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY id), \'[]\'::jsonb)::text FROM "${f.schema}".articles t',
+      )).single.first;
+      expect(after, before);
+      final grants = await f.owner.execute(
+        Sql.named(
+          'SELECT privilege_type FROM information_schema.role_table_grants '
+          "WHERE table_schema=@schema AND "
+          "table_name='article_location_assortment' AND grantee=@grantee",
+        ),
+        parameters: {'schema': f.schema, 'grantee': f.runtimeUser},
+      );
+      expect(grants, isEmpty);
+      // The failed migration left the schema without the table, so the
+      // application route honestly reports database unavailability.
+      final unavailable = await f.call(
+        'POST',
+        '/locations/$_home/assortment',
+        body: {'id': newUuid(), 'articleId': article.id},
+        expected: 503,
+      );
+      expect(unavailable.body['code'], 'database_unavailable');
+    }, legacyBefore: '0014'),
     skip: _skip,
   );
 }
@@ -1238,6 +2208,39 @@ class _Fixture {
     );
   }
 
+  Future<ArticleAssortmentDto> assortment(
+    String articleId, {
+    String? id,
+    String? location,
+  }) async => ArticleAssortmentDto.fromJson(
+    (await call(
+      'POST',
+      '/locations/${location ?? _home}/assortment',
+      body: {'id': id ?? newUuid(), 'articleId': articleId},
+      expected: 201,
+    )).body,
+  );
+
+  Future<String> createLocation(String name) async {
+    final id = newUuid();
+    await call(
+      'POST',
+      '/locations',
+      expected: 201,
+      body: {'id': id, 'name': name},
+    );
+    return id;
+  }
+
+  Future<int> auditCount(String entityId) async =>
+      (await owner.execute(
+            Sql.named(
+              'SELECT count(*) FROM "$schema".audit_entries WHERE entity_id=@id',
+            ),
+            parameters: {'id': entityId},
+          )).single.first
+          as int;
+
   Future<String> login(String username) async =>
       (await call(
             'POST',
@@ -1277,7 +2280,7 @@ class _Fixture {
 
 Future<void> _withFixture(
   Future<void> Function(_Fixture) action, {
-  bool legacy = false,
+  String? legacyBefore,
 }) async {
   final uri = Uri.parse(_url!);
   final split = uri.userInfo.indexOf(':');
@@ -1317,12 +2320,12 @@ Future<void> _withFixture(
   );
   final fixture = _Fixture(owner, pool, schema, runtime);
   Directory? legacyDirectory;
-  if (legacy) {
+  if (legacyBefore != null) {
     legacyDirectory = await Directory.systemTemp.createTemp(
       'storeos_articles_legacy_',
     );
     for (final file in Directory('migrations').listSync().whereType<File>()) {
-      if (file.uri.pathSegments.last.compareTo('0013') < 0) {
+      if (file.uri.pathSegments.last.compareTo(legacyBefore) < 0) {
         await file.copy(
           '${legacyDirectory.path}/${file.uri.pathSegments.last}',
         );

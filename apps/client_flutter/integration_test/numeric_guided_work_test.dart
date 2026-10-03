@@ -90,24 +90,23 @@ Future<void> _phaseB(WidgetTester tester) async {
     'Anzeige geprüft; neuen Wert erfassen.',
   );
   await _tapInList(tester, find.byKey(const Key('resume-task')));
-  expect(_executionText(tester), 'In Bearbeitung · 0/2 bestätigt');
+  await _waitForExecution(tester, 'In Bearbeitung · 0/2 bestätigt');
   await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
 
   await _signOut(tester);
   await _signIn(tester, _workerUsername, _workerPassword);
   await _selectSection(tester, 'Meine Arbeit');
   await _openFixtureTask(tester);
-  expect(_executionText(tester), 'In Bearbeitung · 0/2 bestätigt');
+  await _waitForExecution(tester, 'In Bearbeitung · 0/2 bestätigt');
   await _enterNumber(tester, '4,5');
   await _tapInList(tester, find.byKey(const Key('record-number')));
-  expect(_executionText(tester), 'In Bearbeitung · 1/2 bestätigt');
+  await _waitForExecution(tester, 'In Bearbeitung · 1/2 bestätigt');
   await _expectAttempt(tester, '4.5 · Innerhalb der Grenzen');
   await _expectAttempt(tester, '5 · Außerhalb der Grenzen');
   await _tapInList(tester, find.byKey(const Key('confirm-step')));
-  expect(_executionText(tester), 'In Bearbeitung · 2/2 bestätigt');
+  await _waitForExecution(tester, 'In Bearbeitung · 2/2 bestätigt');
   await _tapInList(tester, find.byKey(const Key('complete-task')));
-  await _waitFor(tester, find.byKey(const Key('execution-status')));
-  expect(_executionText(tester), 'Abgeschlossen · 2/2 bestätigt');
+  await _waitForExecution(tester, 'Abgeschlossen · 2/2 bestätigt');
   expect(find.byKey(const Key('complete-task')), findsNothing);
   await _signOut(tester);
 }
@@ -222,6 +221,23 @@ String? _executionText(WidgetTester tester) {
   final status = find.byKey(const Key('execution-status'));
   expect(status, findsOneWidget);
   return tester.widget<Text>(status).data;
+}
+
+/// Waits for a command's confirmed execution status. Tapping a command button
+/// starts an asynchronous server round-trip; the UI only reflects the result
+/// once the controller received and refreshed it. Fails closed on timeout.
+Future<void> _waitForExecution(WidgetTester tester, String expected) async {
+  final deadline = DateTime.now().add(const Duration(seconds: 30));
+  while (DateTime.now().isBefore(deadline)) {
+    await tester.pump(const Duration(milliseconds: 100));
+    final status = find.byKey(const Key('execution-status'));
+    if (status.evaluate().isNotEmpty &&
+        tester.widget<Text>(status).data == expected) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+  }
+  fail('Timed out waiting for execution status "$expected".');
 }
 
 Future<void> _expectAttempt(WidgetTester tester, String text) async {

@@ -148,6 +148,18 @@ driver processes; an injected phase-A browser failure dropped the isolated schem
 through the cleanup fallback. The slice was merged into `main` as `898c2a1` and
 the remote CI job subsequently verified the same runner.
 
+Test-synchronization follow-up (2026-10-03): after the web-safe article-version
+fix removed the compilation blocker, the remote numeric E2E failed in phase B.
+The browser asserted command outcomes immediately after tapping while the newly
+restarted API process could respond slower than the assertion; the fixture then
+reported the task as incomplete because the browser had aborted. This was a
+latent, pre-existing test synchronization gap, not a workforce/task defect. The
+three-phase test now waits for the confirmed execution status after resume,
+record, confirm and complete. A temporarily widened five-second resume response
+window reproduced the original failure deterministically before the fix and
+passed after it; the full runner then passed two additional consecutive times
+with verified cleanup. The phase protocol and production behavior are unchanged.
+
 ## Verbleibende Grenzen
 
 - Der automatisierte Ablauf umfasst inzwischen einen ersetzten HTTP-Prozess, zwei

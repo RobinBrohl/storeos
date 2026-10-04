@@ -1,14 +1,20 @@
 # StoreOS handover
 
-Start after [AGENTS.md](../AGENTS.md). P4.5 starting baseline: `main`,
-`ce00a241b967ab9242604e4d043a8241b3593f64`, verified 2026-10-04 with a clean
-tree/index, matching cached and live `origin/main`, one intended worktree and no
-stash. Baseline [CI run 37218392419](https://github.com/RobinBrohl/storeos/actions/runs/37218392419)
-has all five jobs green. P4.5 Approved Operational Knowledge is **IMPLEMENTED
-LOCALLY**, **INDEPENDENT REVIEW PENDING**, **REMOTE CHANGED-COMMIT CI PENDING**.
-The implementation is uncommitted; no branch change, commit or push was performed.
-See [P4.5 evidence](development/phase-4-5-approved-operational-knowledge.md) and
-[ADR 0019](adr/0019-approved-operational-knowledge.md). It is not DONE/CLOSED.
+Start after [AGENTS.md](../AGENTS.md). Current source baseline: `main`,
+`93072a476f93e8fb14da357b0a4b747435369376`, verified 2026-10-04 before documentation
+edits with a clean tree/index, matching cached and live `origin/main`, one intended
+worktree and no stash. P4.5 Approved Operational Knowledge is **DONE/CLOSED**:
+independent adversarial review **APPROVE**, **60/60 PASS**, and all five jobs green
+in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360)
+for that exact implementation commit. The migration chain ends at
+`0017_approved_operational_knowledge.sql`; 0001–0016 are unchanged and no 0018 exists.
+No active P4.5 remediation remains. F01/F02 are LOW, non-blocking follow-ups retained
+in [technical debt](development/technical-debt.md#p45-low-non-blocking-follow-ups).
+See [P4.5 evidence](development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
+and [ADR 0019](adr/0019-approved-operational-knowledge.md). Browser acceptance does
+not establish native-device or accessibility acceptance. This closure pass makes
+no implementation change, commit, push or branch change.
+
 P4.3 Manual Stock Foundation is **DONE/CLOSED**: the committed acceptance correction
 has independent targeted review **APPROVE**, **28/28 PASS**, and fully green
 [changed-commit CI](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
@@ -18,7 +24,7 @@ and bounded CI portability fix `73dca5a4` are committed on `main`. Closure combi
 the independent full CHANGES REQUIRED review, F01/F02 remediation, targeted
 **APPROVE**, acceptance 1–49 PASS / 50A PASS / 50B QUALIFIED / 51–68 PASS,
 and fully green [changed-commit CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802)
-for the exact source baseline above. All five jobs succeeded. Migration/update/
+for portability-fix commit `73dca5a4`. All five jobs succeeded. Migration/update/
 recovery, backup/restore, real Flutter/HTTP/PostgreSQL journeys and browser print
 acceptance are recorded in the [final closure](development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04).
 Browser evidence does not establish physical printer/device or accessibility acceptance.
@@ -53,11 +59,13 @@ records the accepted correction and current-head CI.
   target-Location Assortment validation and browser HTML/CSS print. The migration
   chain at closure ended at `0016_local_planograms.sql`; 0001–0015 retain identical Git content,
   with historical raw checkout-byte evidence qualified rather than asserted.
-- P4.5 Approved Operational Knowledge is implemented locally: Company-wide
+- P4.5 Approved Operational Knowledge is **DONE/CLOSED**: Company-wide
   instructions, one draft, immutable published/discarded revisions, terminal
   retirement and strict publication replay. Migration 0017 adds two tables;
-  0001–0016 retain identical Git content. Independent review and changed-commit CI
-  remain pending. No Task evidence integration or events exist.
+  0001–0016 retain identical Git content. Independent review APPROVE, 60/60 PASS,
+  real Flutter/HTTP/PostgreSQL and Chrome journeys, backup/update/recovery, full
+  regression and green changed-commit CI establish closure. No Task evidence
+  integration or events exist. F01/F02 remain LOW, non-blocking follow-ups.
 - Highest broadly completed foundation remains P1; later slices do not mean all
   intervening roadmap domains are complete. P2 has bounded recovery/capacity tooling,
   not device queues, distributed sync, HA or automatic restore activation.
@@ -77,7 +85,7 @@ records the accepted correction and current-head CI.
 - Inventory owns Article/Assortment. Stock owns immutable movements and level
   projections; it reads the released inventory projection/port, not foreign tables.
   Existing stock survives Article/Assortment deactivation.
-- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0016 are
+- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0017 are
   append-only; no applied file edits, silent overwrite or evidence deletion.
 - Personnel decisions remain human. Task activity is not attendance or employee scoring.
 
@@ -124,9 +132,9 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. Independently review the uncommitted P4.5 Approved Operational Knowledge slice,
-   then obtain changed-commit remote CI after separately authorized commit/push.
-   No further P4.4 remediation is active absent regression.
+1. After this documentation closure is committed, perform fresh P4.6 capability
+   selection from real operator evidence and the reconciled product vision.
+   No P4.6 capability is preselected or ACTIVE; no active P4.5 remediation remains.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

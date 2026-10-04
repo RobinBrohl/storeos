@@ -6,10 +6,16 @@ with one intended worktree and no stash. P4.4 implementation `cd7669ed`,
 migration 0016 and bounded CI portability fix `73dca5a4` are committed. Historical
 development/review/CI states are retained in the slice evidence.
 
-P4.5 Approved Operational Knowledge is **IMPLEMENTED LOCALLY**,
-**INDEPENDENT REVIEW PENDING**, **REMOTE CHANGED-COMMIT CI PENDING**. It remains
-uncommitted on `main` and is not DONE/CLOSED. Migration 0017 adds exactly two
-Knowledge tables; migrations 0001–0016 remain unchanged. [Local evidence](../development/phase-4-5-approved-operational-knowledge.md)
+P4.5 Approved Operational Knowledge is **DONE/CLOSED** at implementation commit
+`93072a476f93e8fb14da357b0a4b747435369376` on `main`. Before closure edits, HEAD
+matched cached and live `origin/main`; the tree/index were clean, with no stash and
+one intended worktree. Independent adversarial review **APPROVE**, **60/60 PASS**,
+and all five successful jobs in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360)
+establish closure alongside real Flutter/HTTP/PostgreSQL and Chrome journeys,
+backup/restore, update/recovery and full regression. Migration 0017 adds exactly
+two Knowledge-owned tables; 0001–0016 remain unchanged, no 0018 exists and no
+dependency/lockfile changes were introduced. No active P4.5 remediation remains.
+[Final evidence](../development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
 and [ADR 0019](../adr/0019-approved-operational-knowledge.md) define the bounded slice.
 
 P4.3 Manual Stock Foundation is **DONE/CLOSED**. Foundation commit
@@ -46,6 +52,7 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P2 bounded recovery/capacity tooling | DONE | Encrypted restore, opt-in concurrent-work measurement and forward-only update/isolated recovery acceptance. | [Restore](../development/phase-2-restore-acceptance.md), [capacity](../development/phase-2-capacity-measurement.md), [update](../development/phase-2-update-recovery-acceptance.md). [P4.4 acceptance](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04) extends migration/recovery and backup evidence through 0016; no automatic replacement activation/downgrade. |
 | P4.3 manual Stock | DONE / CLOSED | Foundation `e8ce8c3`; migration 0015 / ADR 0017. Acceptance correction committed `f9c8b07`: immutable scoped retries, immediate session fencing, typed outcomes, definitive 413/415 rejection, separate refresh warnings, retained dialog input, neutral abandonment and faithful fake semantics. Server semantics unchanged. | Independent targeted review APPROVE, 28/28 PASS; changed-commit [CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795), all five jobs green. [Slice closure](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04); F01/F06/F07 and R1/R2/R3 CLOSED. |
 | P4.4 Local Planogram Execution | DONE / CLOSED | Implementation `cd7669ed`; CI portability fix `73dca5a4`; migration 0016 / ADR 0018. Company Planogram, Location Fixture, immutable published Revision, explicit append-only Assignment, target Assortment validation and browser HTML/CSS print. | Full independent review, bounded F01/F02 remediation, targeted APPROVE; 1–49 PASS, 50A PASS, 50B QUALIFIED, 51–68 PASS, no blockers. All five jobs green in [CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802). [Final closure](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04) records real journeys, browser print and backup/update/recovery acceptance. |
+| P4.5 Approved Operational Knowledge | DONE / CLOSED | Implementation 93072a4; migration 0017 / ADR 0019. Company-scoped WikiArticle, one active draft, immutable published/discarded WikiRevision, current published pointer, terminal retirement and strict publication replay. Plain text, Company-wide audience; no Task evidence or events. | Independent adversarial review APPROVE, 60/60 PASS; all five jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360). [Final closure](../development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04) records real journeys, Chrome workflow, backup/update/recovery and full regression. F01/F02 LOW non-blocking follow-ups. |
 
 ## Accepted manual Stock boundaries
 
@@ -80,15 +87,37 @@ accessibility, offline queues, HQ rollout, PDF generation, Stock mutation and
 Tasks/Guided Work integration are outside this slice. Uncertain command tracking
 remains memory-only. See [ADR 0018](../adr/0018-local-planogram-execution.md).
 
+## Accepted Approved Knowledge boundaries
+
+P4.5 is **DONE/CLOSED**, with no active remediation. F01/F02 remain **LOW —
+NON-BLOCKING FOLLOW-UP**, not commit blockers; see [technical debt](../development/technical-debt.md#p45-low-non-blocking-follow-ups).
+Capabilities are `knowledge.articles.read`, `knowledge.articles.manage` and
+`knowledge.articles.publish`. Admin has all three; employee has read only.
+Viewer, auditor and approved plugin tokens have none; roles remain fixed.
+Employees read only active Articles' current published revisions. Search uses only
+their current published titles, filters visibility before pagination and treats
+%, _ and backslash literally. Draft/discarded/historical titles and retired
+Articles do not leak through discovery or employee management access.
+
+Publication is approval. Fresh authorization precedes exact replay, which returns
+original evidence without duplicate audit, version/pointer changes or retirement
+reversal. Late v1 replay leaves v2 current; replay after retirement leaves the
+Article retired. Conflicting operation reuse returns `operation_conflict`.
+No hard delete, readership tracking, generic receipt table or events/outbox exist.
+TaskTemplate schema, Task snapshots, Shift publication, Task execution and Task
+evidence were unchanged. Knowledge navigation creates no Task evidence and cannot
+prove which revision informed a completed Task; that is future Guided Operation work.
+Native-device/accessibility acceptance and durable offline recovery are not claimed.
+
 ## Planned and deferred scope
 
-Next: independent P4.5 review and separately authorized changed-commit CI.
-P4.5 is locally implemented and remains review/CI pending.
+Next, after this closure is committed: fresh P4.6 capability selection is required.
+No P4.6 capability is preselected or ACTIVE.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
-| Workforce / Tasks / Wiki extension | PLANNED | Recurrence, recommendations, qualification workflows, Task revision pins and swaps are future slices. Approved Knowledge discovery/read is implemented locally in P4.5; begun-work reconciliation remains open. |
+| Workforce / Tasks / Wiki extension | PLANNED | Recurrence, recommendations, qualification workflows, Task revision pins and swaps are future slices. Approved Knowledge discovery/read is DONE/CLOSED in P4.5; begun-work reconciliation remains open. |
 | Inventory / Stock / Purchasing / Production | PLANNED | Beyond existing Article/Assortment/manual Stock: units/conversions, receiving, inventory counts, batches, Recipe, production and valuation. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |

@@ -1,6 +1,7 @@
 # Module boundaries
 
-P4.4 Local Planogram Execution is DONE/CLOSED at source baseline `73dca5a4`; future boundaries are
+P4.4 Local Planogram Execution and P4.5 Approved Operational Knowledge are DONE/CLOSED
+at current source baseline `93072a4`; future boundaries are
 explicitly labeled below. [Status](../roadmap/status.md) owns delivery and
 [vision](../vision.md) owns product scope. A logical boundary does not require
 a separate process, Dart package or database schema.
@@ -8,7 +9,7 @@ a separate process, Dart package or database schema.
 ## Current placement and dependency rule
 
 `apps/server` is the composition root. Logical modules live in
-`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock,merchandising}/`;
+`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock,merchandising,knowledge}/`;
 platform/application/infrastructure components provide identity, authorization,
 transactions, audit and events. The `modules/` directory is reserved, not where
 today's business implementations are deployed.
@@ -35,7 +36,7 @@ share a transaction; events are added only when the use case needs them.
 | Inventory | Company-wide Article and ArticleLocationAssortment | `InventoryArticlePort` and released `inventory_article_location_projection`. Owns effective Article/Assortment information, not stock quantities or prices. |
 | Stock | StockLevel projection and immutable StockMovement ledger | Authorized queries and manual opening/absolute correction. Exact thousandths; frozen unit; movement-ID replay. No valuation, receiving or unit conversion. |
 | Merchandising | Local Fixture, independent Company Planogram, Revision/Zone/Placement and immutable Assignment | Organization scope, Inventory Article/Assortment and Stock referenced-level public ports; browser print; no Stock writes or events. P4.4 DONE/CLOSED. |
-| Knowledge | Company-wide WikiArticle and immutable published/discarded WikiRevision | Authorized instruction discovery/read and explicit management/publication. No foreign business tables, Task evidence, readership tracking or events; [ADR 0019](../adr/0019-approved-operational-knowledge.md). P4.5 locally implemented; review/CI pending. |
+| Knowledge | Company-wide WikiArticle and immutable published/discarded WikiRevision | Authorized instruction discovery/read and explicit management/publication. No foreign business tables, Task evidence, readership tracking or events; [ADR 0019](../adr/0019-approved-operational-knowledge.md). P4.5 DONE/CLOSED; review APPROVE and changed-commit CI green. |
 | Audit infrastructure | Append-only business audit | Shared transactional append and authorized reads. Does not decide business state; runtime grants do not protect against every privileged owner action. |
 | Event/plugin infrastructure | Organization outbox, delivery receipts/inbox and registry | Bounded local dispatch/retry/dead-letter/replay and approved external read clients. No executed plugin code or business-module write API. |
 

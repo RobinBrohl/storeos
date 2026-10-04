@@ -1,7 +1,7 @@
 # Documentation index
 
 Canonical sources reconciled 2026-10-04. Start with [HANDOVER](HANDOVER.md) after
-[AGENTS](../AGENTS.md). P4.5 starting source baseline is `ce00a241`; P4.3 Manual Stock
+[AGENTS](../AGENTS.md). Current source baseline is `93072a4`; P4.3 Manual Stock
 Foundation is **DONE/CLOSED**, with independent targeted review APPROVE, 28/28 PASS
 and all five jobs green in [changed-commit CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
 See the [final closure](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
@@ -10,11 +10,13 @@ qualified migration-byte evidence and all five jobs green in
 [changed-commit CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802).
 The [P4.4 final closure](development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04)
 preserves the full review/remediation/failed-CI chronology. No active P4.4 remediation
-remains absent regression. P4.5 Approved Operational Knowledge is **IMPLEMENTED
-LOCALLY**, **INDEPENDENT REVIEW PENDING**, **REMOTE CHANGED-COMMIT CI PENDING**;
-see [local evidence](development/phase-4-5-approved-operational-knowledge.md) and
-[ADR 0019](adr/0019-approved-operational-knowledge.md). The changes are uncommitted;
-P4.5 is not DONE/CLOSED.
+remains absent regression. P4.5 Approved Operational Knowledge is **DONE/CLOSED**,
+with independent adversarial review APPROVE, 60/60 PASS and all five jobs green in
+[changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360).
+See [final evidence](development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
+and [ADR 0019](adr/0019-approved-operational-knowledge.md). Migration chain ends at
+0017; no active P4.5 remediation remains. F01/F02 are LOW non-blocking follow-ups.
+After this closure commit, fresh P4.6 capability selection is required; none is preselected.
 Do not infer delivery from a target architecture description or an Accepted ADR.
 
 ## Canonical sources

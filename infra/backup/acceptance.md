@@ -117,7 +117,7 @@ must not be used for production restores.
 - The run is destructive only to its own isolated databases; a host with an
   unhealthy Compose database fails before any change.
 
-## P4.5 local extension
+## P4.5 closed extension
 
 P4.5 local acceptance (2026-10-04) extends the fixture through migration 0017.
 The encrypted restore compares Knowledge Articles and six revision states,
@@ -125,7 +125,9 @@ including current/historical publication, active draft, discard and retirement,
 and probes restored immutability/runtime grants. The normal database is untouched.
 Use `-SkipPackageResolution` with cached pinned dependencies when resolution is
 unwanted; [P4.5 evidence](../../docs/development/phase-4-5-approved-operational-knowledge.md)
-records the local result. Independent P4.5 review/changed-commit CI remain pending.
+records the local result, independent APPROVE and final DONE/CLOSED disposition.
+All five jobs in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360)
+succeeded for implementation 93072a4, including backup-restore-acceptance.
 
 ## Interrupted runs
 

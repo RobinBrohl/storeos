@@ -1,11 +1,12 @@
 # P2: Controlled update/recovery acceptance
 
-P4.5 local follow-up (2026-10-04): the existing runner now applies the chain through
+P4.5 closed follow-up (2026-10-04): the existing runner now applies the chain through
 0017 and its current HTTP smoke verifies approved Knowledge lifecycle/replay and
 runtime protections. A separate populated 0016→0017 test proves preservation and
 failed-migration rollback. [P4.5 evidence](phase-4-5-approved-operational-knowledge.md)
-records both local wrapper runs. P4.5 remains independent-review/changed-commit-CI
-pending; historical P2 and P4.1–P4.4 results below are unchanged.
+records local and independent review wrapper runs. P4.5 is DONE/CLOSED with review
+APPROVE, 60/60 PASS and green [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360),
+including update-recovery-acceptance. Historical P2 and P4.1–P4.4 results below are unchanged.
 
 Status: implemented, independently reviewed with APPROVE, committed to `main` as
 `512ac64` and verified by the remote CI job `update-recovery-acceptance`.

@@ -1,6 +1,6 @@
 # Current technical debt
 
-Living disposition register, reconciled 2026-10-04 against source baseline `73dca5a4`.
+Living disposition register, reconciled 2026-10-04 against source baseline `93072a4`.
 The [2026-10-04 audit](project-health-audit-2026-10-04.md) preserves original
 findings F01–F19; the [2026-10-02 report](milestone-health-check-2026-10-02.md)
 preserves M1–M4/L1–L12 at its old baseline. Product and operator decisions belong
@@ -53,6 +53,22 @@ absent regression. These P4.4 IDs are separate from the older findings below.
 The [final closure](phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04)
 preserves the CHANGES REQUIRED review, remediation, APPROVE and failed CI history.
 Physical printer/device/accessibility and operator gates remain separate.
+
+## P4.5 LOW non-blocking follow-ups
+
+P4.5 Approved Operational Knowledge is **DONE/CLOSED**: independent adversarial
+review **APPROVE**, **60/60 PASS** and green exact-implementation CI establish
+[closure](phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04).
+No active P4.5 remediation remains. These slice-specific findings are retained
+follow-ups, not commit blockers; neither was implemented during closure.
+
+| ID | Final disposition | Consequence / follow-up trigger |
+| --- | --- | --- |
+| P4.5 F01 | LOW — NON-BLOCKING FOLLOW-UP; commit blocker NO | Mounted Knowledge search text may survive session replacement although controller query state resets. Security/session dispatch and stale-response fencing remain correct. On relevant Knowledge UI touch, reset the mounted search controller on identity change and add a mounted-widget replacement regression. |
+| P4.5 F02 | LOW — NON-BLOCKING FOLLOW-UP; commit blocker NO | Checked-in browser workflow passes, but literal-rendering/executable-element assertions could be stronger and more self-contained. Production plain-text behavior was independently verified. On browser acceptance touch, persist literal-rendering and absence-of-content-created executable/link-element assertions, including image-handler/entity cases. |
+
+The accepted raw-runtime-SQL/supported-writer boundary, memory-only uncertain-command
+recovery, physical-device/accessibility gaps and operator gates remain unchanged.
 
 ## Original medium findings
 

@@ -9,9 +9,17 @@ local Fixtures, immutable published revisions, explicit Assignments and browser
 HTML/CSS printing. Independent targeted review APPROVE and all five jobs in
 [changed-commit CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802)
 complete the [closure evidence](docs/development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04).
-The migration chain ends at 0016. Browser print verification does not establish
-physical printer/device acceptance. Fresh P4.5 capability selection follows once
-this documentation closure is committed; no capability is preselected.
+Browser print verification does not establish physical printer/device acceptance.
+
+P4.5 Approved Operational Knowledge is **DONE/CLOSED**: Company-wide plain-text
+instructions, one active draft, immutable published/discarded revisions, terminal
+retirement and strict publication replay. Independent adversarial review APPROVE,
+60/60 PASS and all five jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360)
+complete the [closure evidence](docs/development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04).
+The migration chain ends at 0017; 0001–0016 are unchanged and no 0018 exists.
+No active P4.5 remediation remains; F01/F02 are LOW non-blocking follow-ups.
+No Task evidence integration or native-device/accessibility acceptance is claimed.
+Fresh P4.6 capability selection follows after this closure commit; none is preselected.
 
 ## Start locally
 

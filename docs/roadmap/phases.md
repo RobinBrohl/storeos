@@ -7,7 +7,7 @@ that all lower-numbered domains ship before higher-numbered ones.
 
 A new slice needs a real use case, owner, permission/audit/error contract and
 bounded acceptance. This document proposes sequencing; it does not authorize
-parallel implementation or preselect a P4.5 capability.
+parallel implementation or preselect a P4.6 capability.
 
 ## Near-term implementation direction
 
@@ -24,14 +24,20 @@ Migration 0016, real journeys, browser print and backup/update/recovery acceptan
 are recorded in the [final closure](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04).
 No P4.4 remediation remains active absent regression.
 
-Next, after this documentation closure is committed: fresh P4.5 capability selection
-from the reconciled product vision and real
-operator evidence. Select **one** bounded useful slice after assessing its source
-contracts and prerequisites. The next capability has not been chosen; the domain
-directions below do not preselect or mark any P4.5 capability ACTIVE.
+P4.5 Approved Operational Knowledge is **DONE/CLOSED**: implementation 93072a4,
+migration 0017, independent adversarial review APPROVE, 60/60 PASS and all five
+jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360).
+[Final closure](../development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
+retains the selection, local implementation, independent review and CI chronology.
+No active P4.5 remediation remains; F01/F02 are LOW non-blocking follow-ups.
+
+Next, after this documentation closure is committed: fresh P4.6 capability selection
+from the reconciled product vision and real operator evidence. Select **one**
+bounded useful slice after assessing its source contracts and prerequisites.
+No P4.6 capability is preselected or ACTIVE.
 
 M3 containment applies to every new API. M1 gates the adoption of a real-user
-proxy deployment. Wider RBAC, remote access, Wiki, Planogram extensions, Recipes, Menus and
+proxy deployment. Wider RBAC, remote access, Knowledge extensions, Planogram extensions, Recipes, Menus and
 communications remain domain/dependency direction rather than a fixed sequence.
 
 ## D0 – Dokumentation und Repository-Grundlage
@@ -84,7 +90,8 @@ active authoritative writers for the same aggregate.
 ## P3 – Workforce und Wissensabläufe erweitern
 
 Planned: skills, qualification validity, recurrence, dependencies/windows,
-handover, justified absences, training and approved Wiki guidance. Boards may
+handover, justified absences, training and Task-pinned Wiki guidance. Company-wide
+approved Knowledge discovery/read is delivered by P4.5; Task pinning remains future. Boards may
 provide a bounded durable communication slice before Chat. Recommendations start
 with deterministic rules/reasons and human decisions; preserve breaks/ongoing work
 and minimize HR data.

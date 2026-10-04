@@ -1,6 +1,7 @@
 # ADR 0019: Approved operational Knowledge
 
-Status: Accepted decision; P4.5 implemented locally, independent review and changed-commit CI pending.
+Status: Accepted decision; P4.5 DONE/CLOSED, independent review APPROVE and changed-commit CI green.
+Delivery evidence: [final closure](../development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04).
 
 ## Context
 

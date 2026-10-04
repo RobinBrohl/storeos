@@ -1,8 +1,18 @@
 # P4.5: Approved Operational Knowledge
 
-Status: **IMPLEMENTED LOCALLY**, **INDEPENDENT REVIEW PENDING**,
-**REMOTE CHANGED-COMMIT CI PENDING**. Uncommitted on `main`; not DONE/CLOSED.
-Local evidence date: 2026-10-04. Decision: [ADR 0019](../adr/0019-approved-operational-knowledge.md).
+Status: **DONE/CLOSED**. Implementation committed on `main` as
+`93072a476f93e8fb14da357b0a4b747435369376`; independent adversarial review
+**APPROVE**, **60/60 PASS** and all five jobs successful in
+[changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360).
+No active remediation remains; F01/F02 are LOW non-blocking follow-ups.
+Evidence and closure date: 2026-10-04. Decision: [ADR 0019](../adr/0019-approved-operational-knowledge.md).
+
+## Historical local implementation disposition
+
+At local handoff the slice was **IMPLEMENTED LOCALLY**, **INDEPENDENT REVIEW PENDING**,
+**REMOTE CHANGED-COMMIT CI PENDING**, uncommitted on `main` and not DONE/CLOSED.
+These statements describe that earlier stage, superseded by review, commit, CI
+and final closure below. The implementation and local acceptance evidence is retained.
 
 ## Starting baseline
 
@@ -15,7 +25,10 @@ had all five jobs green. This is baseline CI evidence, not CI for these changes.
 No branch switch/create, commit, push, dependency installation/upgrade or lockfile
 change was performed. Earlier review/closure history remains authoritative.
 
-The immediately preceding approved plan selected this bounded slice. M1 remains
+P4.5 capability selection chose Approved Operational Knowledge. The approved
+architecture selected Company-scoped WikiArticle, immutable versioned WikiRevision,
+one active draft, a current published pointer, publication = approval, Company-wide
+audience and plain text only, without Task revision pinning or events. M1 remains
 the existing proxy/operator gate; M3/M4 are contained locally on the new APIs.
 Other debt was not broadened into this implementation.
 
@@ -113,8 +126,8 @@ Pending commands are immutable and bound to opaque SessionController identity.
 The synchronous busy guard runs before UUID generation or pending replacement.
 Live identity is checked again immediately before transport; stale callbacks are
 ignored after same-account or different-account replacement, including a held
-replacement-status request. Replacement clears draft fields, preview, search,
-history, errors and pending state.
+replacement-status request. Replacement clears controller query state, draft fields, preview,
+history, errors and pending state. Mounted search text may remain visible (F01 below).
 
 Uncertain publication retries the exact original route/body/operation/version.
 transport failure, HTTP 408 and unexpected failure statuses retain this identity.
@@ -206,7 +219,7 @@ refuses an occupied driver port. The numeric
 runner has the same opt-out so cached pinned dependencies can be used without
 resolution; its default behavior is preserved.
 
-## Independent acceptance mapping
+## Historical local acceptance mapping
 
 Each row is a separate assertion. K = real PostgreSQL Knowledge tests;
 C = deterministic client tests; J = real Flutter/HTTP/PostgreSQL journey;
@@ -285,11 +298,99 @@ integration. No readership/acknowledgment, attachment, search service,
 suggestion, separate review workflow, offline queue, sync, notification or new
 dependency exists. Migration 0017 is the sole new migration.
 
-Independent review and changed-commit remote CI remain pending. Browser checks do
-not establish physical-device or accessibility acceptance. Pending recovery is
+At the local handoff, independent review and changed-commit remote CI remained pending.
+Browser checks do not establish physical-device or accessibility acceptance. Pending recovery is
 memory-only. Arbitrary raw runtime SQL can repoint an active Article to its own
 historical publication without supported-writer version/audit advancement; SQL
 still enforces ownership/state and immutable revision content. This follows the
 accepted existing writer threat boundary, documented in ADR 0019. Current search
 case behavior follows database collation. Existing proxy/operator deployment,
 retention/key-custody and isolated-restore activation gates remain unchanged.
+
+## Independent adversarial review — 2026-10-04
+
+The independent [Review P4.5 knowledge implementation](codex://threads/01a10853-01a1-7e92-a109-f1164c7726e9)
+reviewed the full uncommitted slice on baseline `ce00a241`, inspected production
+behavior and independently reran integration, browser, regression and recovery checks.
+Final result: **APPROVE**; **all 60 acceptance criteria PASS**; no CRITICAL, HIGH
+or MEDIUM findings and no commit blockers. Criterion 60 records the correct
+review/CI-pending documentation at that historical review stage; final closure
+does not rewrite that assertion.
+
+Independent evidence: 79 contracts + 231 server/PostgreSQL + 2 design-system +
+257 Flutter = **569 ordinary suite passes**. The opt-in browser test skipped in
+the ordinary server suite was exercised separately. Knowledge PostgreSQL 12/12,
+16 deterministic client tests, real Flutter/HTTP/PostgreSQL journey, Chrome workflow,
+four analyzers/format checks, release Web/Compose, Planogram print, numeric browser
+regression and seven setup/crypto/diagnostic scripts passed.
+Fresh independent backup/restore report: `2eac72d5396645ce`;
+update/recovery report: `055783caeffa4b8b`. Review verified retained Knowledge
+history/pointers/publication evidence and runtime protections in fenced recovery.
+
+| Finding | Final disposition | Evidence / follow-up |
+| --- | --- | --- |
+| F01 | LOW — NON-BLOCKING FOLLOW-UP; commit blocker NO | Mounted Knowledge search text may survive session replacement even though controller query state resets. Security/session dispatch and stale-response fencing remain correct. On relevant UI touch, reset the mounted search controller on session identity change and add a mounted-widget regression. |
+| F02 | LOW — NON-BLOCKING FOLLOW-UP; commit blocker NO | The checked-in browser test proves the workflow, but literal-rendering/executable-element assertions could be stronger and more self-contained. Production plain-text behavior was independently verified with production-code review and supplemental live DOM/shadow-DOM observation. On browser acceptance touch, persist literal-rendering and absence-of-executable/link-element assertions, including image-handler/entity cases. |
+
+Neither finding was implemented in this documentation closure. Both remain in
+[technical debt](technical-debt.md#p45-low-non-blocking-follow-ups).
+F01 qualifies the earlier complete search-UI-reset claim; F02 qualifies the
+self-contained checked-in proof, while criteria 26/27/57 passed using combined evidence.
+Browser results do not establish native-device or accessibility acceptance.
+
+## Changed-commit CI — 2026-10-04
+
+Implementation commit: `93072a476f93e8fb14da357b0a4b747435369376`
+(Add approved operational knowledge).
+[changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360)
+was verified directly through the GitHub Actions API: exact head SHA as above,
+status **completed**, conclusion **success**.
+
+| Job | Job ID | Conclusion |
+| --- | --- | --- |
+| update-recovery-acceptance | 111517387087 | success |
+| backup-restore-acceptance | 111517387116 | success |
+| numeric-guided-work-e2e | 111517387121 | success |
+| dart | 111517387157 | success |
+| flutter | 111517387231 | success |
+
+This is changed-commit evidence, separate from starting-baseline CI run
+37218392419. The original local implementation and review-pending/CI-pending
+history above remains historical evidence.
+
+## Final documentation closure — 2026-10-04
+
+Before documentation edits, branch was `main`; HEAD, cached `origin/main` and
+live remote `main` matched implementation commit `93072a476f93e8fb14da357b0a4b747435369376`.
+Tree/index/untracked files were clean, no stash existed and exactly one intended
+worktree (`C:/dev/storeos`) existed. Implementation is committed and present.
+Migration chain is exactly 0001–0017, ending at
+`0017_approved_operational_knowledge.sql`; 0001–0016 have unchanged Git content
+against predecessor `ce00a241`, and no 0018 exists. Migration 0017 introduces
+exactly two Knowledge-owned tables. No dependency/lockfile changes were introduced.
+
+Closure combines completed implementation, migration 0017, independent APPROVE,
+60/60 PASS, real Flutter/HTTP/PostgreSQL and Chrome workflow, backup/restore,
+update/recovery, full regression and fully green exact-implementation CI.
+Company-wide plain text, fixed capabilities, immutable revision history, terminal
+retirement and strict publication replay remain the delivered contract.
+TaskTemplate schema, Task snapshots, Shift publication, Task execution and Task
+evidence were unchanged. Navigation records no Task evidence and proves no
+Knowledge revision used by a completed Task; future Guided Operation needs a
+separate revision-pinning contract. No events/outbox or generic receipts exist.
+
+This pass changes documentation/status only; no implementation, tests, migrations,
+scripts, CI, contracts, dependencies or lockfiles were edited. Documentation
+validation uses diff/status/scope and stale-current-state searches; software
+regression was not rerun. No branch change, staging, commit or push was performed.
+Native-device/accessibility acceptance, device offline writes, Location audiences,
+Task pins, acknowledgment/read tracking, training certification, attachments/media,
+external publishing and full-text/semantic search are outside delivered scope.
+Unrelated debt and operator gates remain unchanged.
+
+Next action after the closure commit: fresh P4.6 capability selection.
+No P4.6 capability is preselected or ACTIVE.
+
+P4.5 DONE/CLOSED
+
+No active remediation.

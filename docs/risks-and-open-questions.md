@@ -78,8 +78,12 @@ boundary; it does not close every future case.
 
 ## Current technical and operator gates
 
-P4.3 F01/F06/F07 are unresolved acceptance defects. M1 requires a tested disposition
-before real-user reverse-proxy deployment. M3/M4 need containment on new APIs and
+P4.3 software acceptance is DONE/CLOSED; F01/F06/F07 and targeted-review findings
+R1/R2/R3 are CLOSED by `f9c8b07`, review APPROVE and green changed-commit CI
+([closure evidence](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04)).
+These targeted-review IDs are distinct from the product-risk IDs above.
+Memory-only recovery and physical-device/operator boundaries remain. M1 requires
+a tested disposition before real-user reverse-proxy deployment. M3/M4 need containment on new APIs and
 broader review before external API/SDK commitments. M2 is ANSWERED/closed by
 migration 0012; old M2 deferral is SUPERSEDED. See the [live debt register](development/technical-debt.md).
 

@@ -2,7 +2,7 @@
 
 StoreOS is a local-first, self-hosted operating system for retail and gastronomy. It connects daily employee work with shared operational data: shifts, guided tasks, Articles, location Assortment and Stock. Operators own their data; the local core needs no vendor cloud account or mandatory telemetry.
 
-The current implementation is a single-site online Flutter Web client, a Dart modular monolith and PostgreSQL. The bounded employee journey and platform administration are delivered. Manual stock is committed, with client retry/input defects still requiring correction before slice acceptance. See [actual status](docs/roadmap/status.md) for implementation and verification boundaries.
+The current implementation is a single-site online Flutter Web client, a Dart modular monolith and PostgreSQL. The bounded employee journey and platform administration are delivered. P4.3 Manual Stock Foundation is DONE/CLOSED, including the accepted adjustment retry correction, independent targeted review APPROVE, 28/28 PASS and green changed-commit CI. See [actual status](docs/roadmap/status.md) and the [closure record](docs/development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04) for evidence and remaining operational boundaries.
 
 ## Start locally
 

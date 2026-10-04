@@ -34,6 +34,7 @@ pass adds no irreversible decision or new speculative ADR.
 
 Follow-up context: ADR 0015's location-availability boundary is implemented by
 ADR 0016; ADR 0016's first Stock consumer is implemented by ADR 0017. Manual Stock
-is committed at `e8ce8c3` with active client acceptance corrections. The broader
-unit catalog/conversion and costing questions remain open. Do not rewrite the
+foundation is committed at `e8ce8c3`, with acceptance correction `f9c8b07`;
+P4.3 is DONE/CLOSED per the [closure evidence](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
+The broader unit catalog/conversion and costing questions remain open. Do not rewrite the
 original alternatives, decisions or dated verification to reflect later delivery.

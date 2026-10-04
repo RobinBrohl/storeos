@@ -292,7 +292,7 @@ Numbered criteria are tracked in the slice review; locally verified behavior:
   tooling is provided by this slice.
 - Local Windows evidence plus the CI job; remote CI verified.
 
-## Current follow-up — 2026-10-04
+## Historical follow-up — 2026-10-04
 
 The P4.3 extension through 0015 is now committed at `e8ce8c3`; independent
 acceptance/current-head remote CI were not established by the later audit or this
@@ -307,3 +307,14 @@ are historical evidence. Readiness alone does not establish full binary/schema
 compatibility, and diagnostic JSON redaction does not cover every raw failure tail.
 See [audit](project-health-audit-2026-10-04.md), [technical debt](technical-debt.md)
 and [current status](../roadmap/status.md).
+
+## Current P4.3 closure evidence — 2026-10-04
+
+P4.3 is **DONE/CLOSED**: foundation `e8ce8c3`, correction `f9c8b07`, independent
+targeted review APPROVE and 28/28 PASS. All five jobs in
+[CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795)
+succeeded for the correction commit, including `update-recovery-acceptance` and
+`backup-restore-acceptance`. Migrations remain 0001–0015. This supplies the later
+remote CI evidence; the wrappers were not rerun locally in this documentation pass.
+Historical run IDs, failures, injections and local evidence gaps above are retained.
+Recovery/diagnostic/operator limits remain; see the [P4.3 closure](phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).

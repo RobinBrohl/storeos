@@ -1,15 +1,17 @@
 # StoreOS handover
 
-Start after [AGENTS.md](../AGENTS.md). Current corrective-slice baseline: `main`,
-`22b600bb3483cfcf4e114c8303c3ca5e1db63522`, verified 2026-10-04.
-The correction started clean with live `origin/main` matching and baseline CI green.
-P4.3 acceptance corrections, including review findings R1/R2/R3, are implemented
-and uncommitted; targeted fix review and changed-commit remote CI remain pending.
+Start after [AGENTS.md](../AGENTS.md). Current source baseline: `main`,
+`f9c8b070f870cabbba3ae7b63bf16190b46aad8e`, verified 2026-10-04 with a clean
+tree/index, matching live `origin/main`, one worktree and no stash.
+P4.3 Manual Stock Foundation is **DONE/CLOSED**: the committed acceptance correction
+has independent targeted review **APPROVE**, **28/28 PASS**, and fully green
+[changed-commit CI](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
 
 Use [actual status](roadmap/status.md) for delivery, [vision](vision.md) for the
 product, [roadmap](roadmap/phases.md) for sequencing and [technical debt](development/technical-debt.md)
 for live findings. The [2026-10-04 audit](development/project-health-audit-2026-10-04.md)
-records earlier checks in this session; current-head remote CI was not verified.
+preserves the earlier audit baseline; the [P4.3 closure](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04)
+records the accepted correction and current-head CI.
 
 ## Done and active work
 
@@ -21,10 +23,10 @@ records earlier checks in this session; current-head remote CI was not verified.
   pre-execution published-shift interval amendment. No general rescheduling or swaps.
 - P4.1 Article and P4.2 location Assortment are committed; historical remote CI is
   recorded for these baselines. Article unit remains a label, not a conversion system.
-- P4.3 manual Stock is implemented and committed at `e8ce8c3` (migration 0015,
-  [ADR 0017](adr/0017-manual-stock-foundation.md)). **ACTIVE: acceptance corrections
-  remain.** The focused retry identity/dialog/fake correction is implemented
-  locally; review and changed-commit remote CI still gate acceptance.
+- P4.3 manual Stock is **DONE/CLOSED**: foundation `e8ce8c3`, accepted retry/session/
+  dialog/fake correction `f9c8b07`, migration chain ending at `0015_manual_stock.sql`
+  ([ADR 0017](adr/0017-manual-stock-foundation.md)). Ledger and adjustment retry
+  semantics are accepted; no active P4.3 remediation gate remains absent regression.
 - Highest broadly completed foundation remains P1; later slices do not mean all
   intervening roadmap domains are complete. P2 has bounded recovery/capacity tooling,
   not device queues, distributed sync, HA or automatic restore activation.
@@ -54,17 +56,11 @@ Details: [module boundaries](architecture/module-boundaries.md),
 
 ## Active blockers and debt
 
-F01/F06/F07 gate P4.3 acceptance: the local correction guards before identity creation,
-retains immutable scoped retries and dialog input, separates confirmed commands from
-refresh failures, and corrects fake replay/version/no-op semantics. Verification is
-recorded in the [P4.3 follow-up](development/phase-4-3-manual-stock.md).
-Independent review found a replacement-session notification window (R1),
-413/415 misclassification (R2), and misleading local-abandonment wording (R3).
-The targeted fixes have direct regression evidence; fix review and changed-commit
-remote CI remain pending. Session replacement ends local tracking without cancelling
-or reversing a server operation; the new session must reload authoritative state.
-Server version checks protect against silent ledger overwrite; this is a client
-retry/UX defect, not demonstrated ledger corruption.
+F01/F06/F07 and targeted-review findings R1/R2/R3 are **CLOSED** by `f9c8b07`,
+review APPROVE and changed-commit CI. The [P4.3 record](development/phase-4-3-manual-stock.md)
+preserves the original defects, CHANGES REQUIRED review and final acceptance.
+Pending recovery remains memory-only; session replacement ends local tracking
+without cancelling or reversing a server operation and requires authoritative reload.
 
 M1 remains active before a proxied real-user pilot: the current login limiter sees
 the proxy socket address. Arbitrary forwarded headers are not a trusted fix.
@@ -96,12 +92,9 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. Independently review the uncommitted P4.3 correction and obtain changed-commit
-   remote CI before marking the slice DONE.
-2. Choose one next product slice against real operator data. Canonical external-POS
-   ingestion is a candidate with a concrete source; recurring/guided work is an
-   alternative if no usable source exists. Neither is an active implementation.
-3. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
+1. Begin fresh P4.4 capability selection from the reconciled product vision and
+   real operator evidence. The next capability has not been chosen.
+2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 
 No feature, commit, push or branch change is authorized by this handover.

@@ -11,16 +11,16 @@ parallel implementation or allocate speculative P4.4/P4.5 numbers.
 
 ## Near-term implementation direction
 
-1. Close P4.3 acceptance with the focused F01/F06/F07 stock client correction and
-   relevant regression/review/CI checks. The server ledger is committed; a code
-   fix is still needed.
-2. Select **one** next slice from operator evidence. First canonical external-POS
-   sales ingestion is a candidate if an actual source/API/export is available.
-   Define source authority, durable import identity, mapping and visible health;
-   defer stock effects until their unit/cutover/return rules are defined.
-3. If there is no usable sales source, a bounded recurring/guided-work use case
-   is an alternative. Neither candidate is ACTIVE merely because it is listed.
-   Resolve the appropriate open decisions before scope approval.
+P4.3 Manual Stock Foundation is **DONE/CLOSED**: foundation `e8ce8c3`, accepted
+correction `f9c8b07`, independent targeted review APPROVE, 28/28 PASS and all five
+jobs green in [CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
+No active P4.3 remediation gate remains absent regression; see the
+[phase closure](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
+
+Next: fresh P4.4 capability selection from the reconciled product vision and real
+operator evidence. Select **one** bounded useful slice after assessing its source
+contracts and prerequisites. The next capability has not been chosen; the domain
+directions below do not declare a P4.4 implementation or rank its candidates.
 
 M3 containment applies to every new API. M1 gates the adoption of a real-user
 proxy deployment. Wider RBAC, remote access, Wiki, Planograms, Recipes, Menus and
@@ -83,9 +83,10 @@ and minimize HR data.
 
 ## P4 – Artikel, Einkauf und Bestand
 
-Article and location Assortment are delivered. Manual Stock is committed with
-active acceptance corrections. Future units/conversions, Suppliers, orders,
-receiving, batches/expiry, inventory counts, transfers and valuation require
+Article and location Assortment are delivered. P4.3 Manual Stock is **DONE/CLOSED**,
+including the committed and accepted adjustment retry correction. Future
+units/conversions, Suppliers, orders, receiving, batches/expiry, inventory counts,
+transfers and valuation require
 separate slices; a frozen unit label suffices for current manual stock.
 [ADRs 0015–0017](../adr/README.md).
 

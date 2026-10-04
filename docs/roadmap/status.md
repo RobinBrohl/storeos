@@ -1,17 +1,18 @@
 # Actual implementation status
 
-Assessed 2026-10-04 against `main` at `e8ce8c319e2dd3051b402d252a0666f33b170fa3`.
-Locally cached `origin/main` matches; no fetch or current-head remote CI verification
-was performed. The working tree was clean before the documentation reconciliation.
+Reconciled 2026-10-04 against `main` at `f9c8b070f870cabbba3ae7b63bf16190b46aad8e`.
+HEAD matches cached and live `origin/main`; tree/index were clean before this
+documentation pass, with one worktree and no stash. Migrations remain 0001–0015.
 
-P4.3 corrective follow-up started clean on `22b600b`, matching the verified live
-remote head with baseline CI green. The initial correction had 474 passing package
-tests plus a real controller/API/PostgreSQL journey. Independent review identified
-R1/R2/R3; their targeted fixes are implemented uncommitted, with fix review and
-changed-commit remote CI pending. Fresh verification has **491 passing package
-tests**, the real PostgreSQL Stock suite/client journey and a release Web build.
-Current verification is recorded in the
-[slice follow-up](../development/phase-4-3-manual-stock.md).
+P4.3 Manual Stock Foundation is **DONE/CLOSED**. Foundation commit
+`e8ce8c319e2dd3051b402d252a0666f33b170fa3` and acceptance correction
+`f9c8b070f870cabbba3ae7b63bf16190b46aad8e` are committed. The authoritative
+independent targeted review supplied for reconciliation is **APPROVE**, with
+**28/28 acceptance criteria PASS**, R1/R2/R3 closed and no new actionable findings
+or commit blockers. All five jobs in
+[CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795)
+are successful for the correction commit. The [slice record](../development/phase-4-3-manual-stock.md)
+preserves the earlier 474/491-test runs, CHANGES REQUIRED review and final closure.
 
 **DONE** means the bounded delivered scope below; **ACTIVE** means current work or
 unresolved acceptance; **PLANNED** means no active delivered slice. Implementation,
@@ -35,20 +36,21 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P4.1 Company-wide Article | DONE | SKU, optional opaque barcode, unit label, activation lifecycle, audit and Web UI. Migration 0013 / ADR 0015; `a4aeecd` with `d0fcf43`/`d90dd7e` corrections. | [Slice](../development/phase-4-1-article-master.md) records remote CI run 31 on `d90dd7e`. |
 | P4.2 location Assortment | DONE | Membership with independent activation and effective availability; no quantity/price. Migration 0014 / ADR 0016; committed `3bc27d5`. | Historical remote CI is recorded in the prior handover/status and [update follow-up](../development/phase-2-update-recovery-acceptance.md); not rechecked online here. |
 | P2 bounded recovery/capacity tooling | DONE | Encrypted restore, opt-in concurrent-work measurement and forward-only update/isolated recovery acceptance. | [Restore](../development/phase-2-restore-acceptance.md), [capacity](../development/phase-2-capacity-measurement.md), [update](../development/phase-2-update-recovery-acceptance.md). Dated extensions cover migrations through 0015; no automatic replacement activation/downgrade. |
+| P4.3 manual Stock | DONE / CLOSED | Foundation `e8ce8c3`; migration 0015 / ADR 0017. Acceptance correction committed `f9c8b07`: immutable scoped retries, immediate session fencing, typed outcomes, definitive 413/415 rejection, separate refresh warnings, retained dialog input, neutral abandonment and faithful fake semantics. Server semantics unchanged. | Independent targeted review APPROVE, 28/28 PASS; changed-commit [CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795), all five jobs green. [Slice closure](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04); F01/F06/F07 and R1/R2/R3 CLOSED. |
 
-## Active acceptance
-
-| Scope | Delivery | What exists | What remains |
-| --- | --- | --- | --- |
-| P4.3 manual Stock | ACTIVE | Foundation committed `e8ce8c3`; migration 0015 / ADR 0017. Focused F01/F06/F07 correction and R1/R2/R3 follow-up implemented uncommitted on `22b600b`: guarded immutable scoped retries, immediate session fencing, typed outcomes, definitive 413/415 rejection, separate refresh warnings, retained dialog input, neutral abandonment and faithful fake semantics. Server semantics unchanged. | Targeted fix review pending; changed-commit remote CI pending. Baseline `22b600b` remote CI is green and does not validate these edits. [Slice](../development/phase-4-3-manual-stock.md), [live debt](../development/technical-debt.md). |
+## Accepted manual Stock boundaries
 
 The server supports strict movement-ID replay with actor/payload checks. The client
-now preserves that identity in the local correction, including duplicate submissions
+preserves that identity in the accepted correction, including duplicate submissions
 and exact retries. R1's replacement-status window is fixed with immediate context
-publication and independent live-identity checks. The whole journey remains acceptance
-ACTIVE pending targeted fix review and CI.
+publication and independent live-identity checks. No active P4.3 remediation gate
+remains absent regression. Raw runtime-role SQL remains outside supported-writer
+semantics under the accepted threat model.
 Tracking is memory-only: browser reload, logout or client/session replacement cannot
 guarantee recovery of an unconfirmed adjustment. No durable offline recovery exists.
+
+Next: fresh P4.4 capability selection from the reconciled product vision. The next
+capability has not been chosen or declared active.
 
 ## Planned and deferred scope
 
@@ -70,18 +72,20 @@ navigation, not a locked chronological schedule. See [roadmap](phases.md).
 
 The [2026-10-04 audit](../development/project-health-audit-2026-10-04.md) records
 453 passing tests, clean analyzers/format, a Web release build and selected
-PowerShell checks on this same source baseline in the preceding session audit.
+PowerShell checks on its historical `e8ce8c3` source baseline.
 Those checks were not rerun for documentation-only changes. Browser E2E, full
 backup/update wrappers, target-hardware capacity and physical device acceptance
 were not freshly executed by that audit.
 
-Older CI/review evidence proves its named baseline, not automatically `e8ce8c3`.
+Older CI/review evidence proves its named baseline; CI for the correction commit
+is recorded above. Remote numeric browser E2E and backup/update acceptance passed;
+this documentation pass did not rerun those checks locally or run Stock browser E2E.
 The 2026-10-02 health check is historical and its M2/next-password-change
 recommendation is superseded by later implementation. [Technical debt](../development/technical-debt.md)
 is the live disposition source.
 
 Before real employee data: decide retention/access/export/deletion/offboarding,
 RPO/RTO, key custody/off-host recovery and supported devices. M1 needs resolution
-or a tested operator mitigation before a proxied real-user pilot. Stock use also
-requires the active acceptance corrections above. No blanket production,
-regulatory, native-device or multi-site readiness claim is made.
+or a tested operator mitigation before a proxied real-user pilot. P4.3 software
+acceptance does not close physical-device/accessibility or operator gates. No blanket
+production, regulatory, native-device or multi-site readiness claim is made.

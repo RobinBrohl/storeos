@@ -1,8 +1,12 @@
 # P4.3 — Manual stock foundation
 
-Current status (2026-10-04): implemented and committed on `main` at `e8ce8c3`;
-P4.3 acceptance remains ACTIVE because F01/F06/F07 require a focused correction.
-Independent acceptance review and current-head remote CI are not established.
+Current status (2026-10-04): **DONE/CLOSED**. Foundation `e8ce8c3` and acceptance
+correction `f9c8b07` are committed on `main`; independent targeted review **APPROVE**,
+**28/28 PASS**, and all five changed-commit CI jobs are green. See the
+[final closure](#final-acceptance-closure--2026-10-04) for full commit IDs and evidence.
+The dated implementation, failure, pending-review and verification records below
+are historical; their earlier ACTIVE/uncommitted statements are superseded by
+the final closure without changing the original evidence.
 Original implementation baseline: committed P4.2 `3bc27d5`.
 Related: [ADR 0017](../adr/0017-manual-stock-foundation.md),
 [ADR 0016](../adr/0016-article-location-assortment.md),
@@ -207,7 +211,7 @@ numeric guided-work browser E2E was not rerun locally. No valuation, receiving,
 waste, counting, sales, transfers, suppliers, purchasing or unit conversions
 exist, and no stock behavior was added to inventory.
 
-## Follow-up — 2026-10-04
+## Historical follow-up — 2026-10-04
 
 Commit `e8ce8c3` includes migration 0015 and the server/client implementation.
 The intended client retry behavior above is not reliable under duplicate dialog
@@ -218,7 +222,7 @@ is implemented; no silent ledger overwrite was demonstrated. Earlier local test
 and update/recovery outcomes remain the original runs, not independent approval
 or current-head remote CI. See [actual status](../roadmap/status.md).
 
-## Acceptance correction — 2026-10-04
+## Historical acceptance correction — 2026-10-04
 
 Correction implemented; independent review pending; changed-commit remote CI pending.
 P4.3 remains **ACTIVE**. Work stays uncommitted directly on `main`.
@@ -313,7 +317,11 @@ and physical-device acceptance were not run for this correction; the bounded rea
 controller/HTTP/database journey, widget regressions and Web build provide the
 freshly executed client evidence.
 
-## Targeted review corrections — 2026-10-04 (R1–R3)
+## Historical targeted review corrections — 2026-10-04 (R1–R3)
+
+The first independent correction review returned **CHANGES REQUIRED** for R1
+(HIGH), R2 (MEDIUM) and R3 (LOW). The following record preserves the fixes and
+verification before the final targeted approval and commit recorded below.
 
 R1, R2 and R3 are implemented locally; targeted fix review and changed-commit CI
 remain pending. P4.3 remains **ACTIVE**, with no commit or branch change.
@@ -367,3 +375,70 @@ Browser-level Stock/numeric E2E, backup/update wrappers and physical-device
 acceptance were not run for this follow-up. The initial verification above remains
 historical evidence for the earlier correction; this follow-up does not establish
 independent approval or changed-commit CI.
+
+## Final acceptance closure — 2026-10-04
+
+**P4.3 Manual Stock Foundation: DONE/CLOSED.** No further P4.3 remediation is
+required absent regression.
+
+### Accepted review and commit evidence
+
+- Foundation commit: `e8ce8c319e2dd3051b402d252a0666f33b170fa3`.
+- Acceptance correction commit: `f9c8b070f870cabbba3ae7b63bf16190b46aad8e`
+  (`Harden stock adjustment retry flow`), directly following `22b600b` on `main`.
+- Independent pre-commit targeted review: **APPROVE**, **28/28 acceptance criteria
+  PASS**; R1 HIGH (session replacement fencing), R2 MEDIUM (HTTP 413/415 definitive
+  rejection classification) and R3 LOW (local abandonment wording/state) **CLOSED**.
+- Review conclusion: no new actionable findings, no commit blockers, no additional
+  architecture work required; correction safe to commit and P4.3 may close after
+  changed-commit CI is green.
+- Review provenance: the operator supplied the authoritative pre-commit review
+  result and identified the reviewed correction as `f9c8b07` in the closure request.
+  This documentation pass records that result; it does not perform another review.
+
+The committed diff was checked against the described correction scope. Production
+changes are confined to the Flutter session identity, Stock adjustment controller
+and Stock dialogs; supporting regressions, the real client journey/fixture and
+documentation correspond to that scope. The only OpenAPI changes in that commit
+correct two opening-note descriptions (required key, nullable value). There are no
+production server, migration, operational script, dependency or lockfile changes in the
+correction commit. The baseline checkout is exactly that commit, with no intervening
+commit or local change. This is a scope/correspondence check against the supplied
+review attestation, not a separate byte-for-byte comparison with a reviewed-tree
+artifact, which was not supplied.
+
+### Changed-commit remote CI
+
+[GitHub Actions run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795)
+was verified remotely as completed/success for
+`f9c8b070f870cabbba3ae7b63bf16190b46aad8e`. All five jobs and all their steps succeeded:
+
+| Job | Result |
+| --- | --- |
+| `dart` — contracts/server, real PostgreSQL migrations and HTTP smoke | SUCCESS |
+| `flutter` — design system, Flutter client and Web build | SUCCESS |
+| `numeric-guided-work-e2e` — real browser/HTTP/PostgreSQL journey | SUCCESS |
+| `backup-restore-acceptance` | SUCCESS |
+| `update-recovery-acceptance` | SUCCESS |
+
+F01/F06/F07 and R1/R2/R3 are **CLOSED**, resolved by `f9c8b07`, review APPROVE
+and this green CI. Migration chain remains exactly 0001–0015, ending at
+`0015_manual_stock.sql`; the correction changes no applied migration.
+
+### Accepted boundaries and next state
+
+Pending adjustment recovery remains memory-only. Browser reload, logout or session
+replacement cannot guarantee continued recovery of an uncertain command. Local
+abandonment/session replacement neither cancels nor reverses a server operation.
+Raw runtime-role SQL remains outside supported-writer semantics under the accepted
+threat model; this closure does not expand the database-grant guarantee.
+
+This closes the defined bounded software acceptance slice. Stock browser E2E was
+not run locally; no physical-device/accessibility acceptance, production certification
+or resolution of all operator decisions is claimed. Remote numeric browser E2E and
+backup/update acceptance above do not change the earlier local-run history.
+M1/M3/M4 and unrelated live debt retain their existing triggers; M2 remains closed
+by migration 0012. This documentation pass reruns no software tests or wrappers.
+
+Next: fresh P4.4 capability selection from the reconciled product vision. No next
+capability has been selected or implemented by this closure.

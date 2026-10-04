@@ -10,7 +10,7 @@ The first verified journey is:
 
 `Company → Location → Employee → Shift → TaskTemplate → TaskInstance → Employee Home → Guided Work → Completion → Audit Log`
 
-Its bounded online implementation exists through P1b.9. Automatic next-work recommendations, general rescheduling, shift swaps and device-offline writes remain future capabilities. Article, location Assortment and manual Stock provide the next goods foundation; the stock client still needs the corrections recorded in [technical debt](development/technical-debt.md).
+Its bounded online implementation exists through P1b.9. Automatic next-work recommendations, general rescheduling, shift swaps and device-offline writes remain future capabilities. Article, location Assortment and manual Stock provide the goods foundation; P4.3 is DONE/CLOSED, including the accepted stock client correction recorded in the [phase closure](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04). The next capability awaits fresh selection.
 
 ## Local operation and ownership
 

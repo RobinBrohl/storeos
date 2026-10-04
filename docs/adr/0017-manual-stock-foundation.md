@@ -1,6 +1,6 @@
 # 0017 — Manual stock foundation
 
-- Status: Accepted; implemented and committed at `e8ce8c3` (P4.3 acceptance ACTIVE; see the 2026-10-04 follow-up)
+- Status: Accepted; foundation committed `e8ce8c3`, acceptance correction committed `f9c8b07`; P4.3 DONE/CLOSED (see final acceptance closure below)
 - Date: 2026-10-03
 - Context slice: P4.3 Manual Stock Foundation
 - Related: [ADR 0015](0015-company-wide-article-master.md), [ADR 0016](0016-article-location-assortment.md), [P4.3 contract](../development/phase-4-3-manual-stock.md)
@@ -169,8 +169,19 @@ inventory capabilities, so future operators can be authorized independently.
 - Valuation, receiving, waste, counting, sales and transfers require separate
   slices and ADRs.
 
-## Follow-up status — 2026-10-04
+## Historical follow-up status — 2026-10-04
 
 The implementation is committed at `e8ce8c3`. The decision remains Accepted, but P4.3 acceptance is ACTIVE: client retry identity/dialog/mock defects F01/F06/F07 remain in [technical debt](../development/technical-debt.md). Current-head remote CI and independent acceptance are not established by this reconciliation. No decision text or verification outcome above was rewritten.
 
 See [actual status](../roadmap/status.md) for current delivery; an Accepted ADR is not CI evidence.
+
+## Final acceptance closure — 2026-10-04
+
+P4.3 is **DONE/CLOSED**: correction `f9c8b07`, independent targeted review APPROVE,
+28/28 PASS and all five jobs successful in
+[CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
+F01/F06/F07 and R1/R2/R3 are CLOSED; no further P4.3 remediation is required absent
+regression. The [phase closure](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04)
+records full identities, review provenance and accepted limits, including memory-only
+recovery and raw runtime-role SQL outside supported-writer semantics. The decision,
+alternatives and historical verification above are unchanged.

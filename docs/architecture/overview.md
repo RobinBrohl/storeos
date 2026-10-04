@@ -1,6 +1,6 @@
 # Architekturüberblick
 
-Status: target architecture. The implemented single-site/Web scope includes P0, P1, P1b.1–P1b.9, Article, location Assortment and committed manual Stock with active acceptance corrections; see [actual status](../roadmap/status.md). Client offline queues, native runners, automatic work recommendations and enterprise synchronization described below are not implemented.
+Status: target architecture. The implemented single-site/Web scope includes P0, P1, P1b.1–P1b.9, Article, location Assortment and P4.3 manual Stock DONE/CLOSED with its accepted correction; see [actual status](../roadmap/status.md). Client offline queues, native runners, automatic work recommendations and enterprise synchronization described below are not implemented.
 
 ## Ausgangspunkt
 

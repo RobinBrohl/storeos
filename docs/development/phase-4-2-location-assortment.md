@@ -198,10 +198,18 @@ lines and order lines must later reference `(article_id, location_id)` directly
 and must not reference the assortment UUID or depend on its lifecycle. This
 document does not claim inventory, stock or purchasing functionality.
 
-## Follow-up — 2026-10-04
+## Historical follow-up — 2026-10-04
 
 The original pending/uncommitted wording in the dated evidence above is preserved.
 The slice is now committed, and manual Stock uses its released Inventory projection
 under ADR 0017. That does not add stock quantities to Assortment or decide units,
 receiving or valuation. Current Stock acceptance remains ACTIVE; see
 [P4.3](phase-4-3-manual-stock.md) and [technical debt](technical-debt.md).
+
+## Current Stock acceptance follow-up — 2026-10-04
+
+P4.3 Manual Stock Foundation is now **DONE/CLOSED**, including correction
+`f9c8b07`, independent targeted review APPROVE, 28/28 PASS and green
+[CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
+This supersedes the earlier ACTIVE statement without changing Assortment's
+contract or historical verification. See the [Stock closure](phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).

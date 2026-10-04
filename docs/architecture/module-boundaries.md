@@ -1,89 +1,104 @@
-# Modulgrenzen und Monorepo
+# Module boundaries
 
-Status: fachlich geplanter Zuschnitt. P0 implementiert Server, Flutter-Client, API-Verträge und Designsystem. P1 ergänzt Organization, Identity, Audit, Events und Plugin-Registrierungen als logisch getrennte Komponenten unter `apps/server/lib/src/organization/`, `identity/` und `platform/`. Weitere Verzeichnisse sind zunächst nur dokumentiert; Fachmodule werden erst mit ihrem jeweiligen Vertical Slice implementiert.
+Current implementation reconciled 2026-10-04 at `e8ce8c3`; future boundaries are
+explicitly labeled below. [Status](../roadmap/status.md) owns delivery and
+[vision](../vision.md) owns product scope. A logical boundary does not require
+a separate process, Dart package or database schema.
 
-P1b.1 ergänzt `apps/server/lib/src/people/` als logische Modulgrenze für Employee. Der Application-Koordinator `EmployeeApplication` verwendet die öffentlichen Ports `PeopleService`, `EmployeeLinks` (Identity) und `OrganizationService.requireConfiguredLocation` in einer gemeinsamen autorisierten Transaktion. People besitzt Profile und Standortgültigkeit; Identity besitzt Account-Verknüpfungen und Sitzungen. Nur API-Projektionen verlassen People, interne Domain- und Repositorytypen bleiben privat. Ein eigenes Package oder Event zur synchronen Verknüpfung ist nicht erforderlich. Details: [P1b.1](../development/phase-1b-employee.md).
+## Current placement and dependency rule
 
-## Repo-Zuschnitt
+`apps/server` is the composition root. Logical modules live in
+`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock}/`;
+platform/application/infrastructure components provide identity, authorization,
+transactions, audit and events. The `modules/` directory is reserved, not where
+today's business implementations are deployed.
 
-```text
-apps/
-  server/            # Dart-HTTP-Host, Konfiguration, Zusammensetzen der Module
-  client_flutter/    # Flutter-Anwendung mit gerätespezifischer UX
-packages/
-  api_contracts/     # versionierte öffentliche DTOs und API-Schemata
-  design_system/     # gemeinsame Flutter-Komponenten
-  plugin_sdk/        # öffentliche Plugin-Verträge
-  shared/            # kleine, stabile technische Primitive ohne Fachlogik
-modules/
-  organization/      # Company, Location; später Organisationshierarchie
-  people/            # Employee und später Skills/Personalbereiche
-  workforce/         # Shift und später Planung/Zeiterfassung
-  tasks/             # Vorlagen, Instanzen, Guided Work
-  audit/             # auf Anwendungsebene nur ergänzbare Historie
-  ...                # spätere fachliche Module nach ADR und Slice
-plugins/examples/    # Beispiele ohne Produktionsrechte
-infra/
-  docker/
-  backup/
-  reverse_proxy/
-docs/
-  architecture/
-  adr/
-  roadmap/
-  compliance/
-```
+Flutter UI calls controllers/Application, then API adapters. HTTP routes delegate
+to Application/Domain services. Business decisions do not belong in widgets,
+routes or plugins. `packages/api_contracts` is transport/validation shared by
+client and server; `shared` is not a catch-all for domain models.
 
-`apps/server` ist der Composition Root. Authentifizierung und Autorisierung sind dort als Plattformdienste beziehungsweise klar begrenzte interne Komponenten vorgesehen; deren endgültiger Paketort wird vor der Implementierung entschieden. `packages/shared` wird kein Sammelplatz für fachliche Modelle. `packages/api_contracts` enthält veröffentlichte Transportverträge, keine interne Datenbankstruktur. Ein Modul darf seine internen Domain- und Repositorytypen nicht zum allgemeinen Datenaustausch machen.
+Cross-module reads/commands use narrow public ports and released projections.
+Repositories/base tables are private to their owner. Company/session/location/
+resource authorization is revalidated on the server. Relevant state and audit
+share a transaction; events are added only when the use case needs them.
 
-Die Grenzen sind zunächst logisch: Sie verlangen weder einen Prozess noch ein Dart-Package oder Datenbankschema pro Fachobjekt. Interne Application-Ports können direkte typisierte Aufrufe im selben Prozess sein. Für eine lokale Abfrage sind weder HTTP noch Event-Zustellung nötig. Auch Audit bleibt ein gemeinsam nutzbarer Bestandteil der lokalen Transaktion und wird kein separat erreichbarer Dienst.
+## Implemented ownership
 
-## Fachliche Eigentümer
+| Owner | Writes / owns | Public boundary and limits |
+| --- | --- | --- |
+| Organization | Company, Location | Authorized scope/setup queries and configured-location port. Stable IDs; one configured Company per installation. Other named Locations can exist without distributed execution. |
+| Identity / platform authorization | Accounts, sessions, fixed role capabilities, Account–Employee links, plugin approvals/tokens | Revalidated access context and minimal references. No employee HR file or scheduling rule; configurable Roles/direct grants are future. |
+| People | Minimal Employee with current fixed Location and assignment interval | Authorized profile/eligibility information; no login sessions or task state. Future skills/HR need distinct privacy boundaries. |
+| Workforce | Shift drafts, publication/cancellation and last interval-amendment evidence | Shift command/query ports. Planned work is not actual time recording. Employee/template reassignment and begun-work reconciliation are unsupported. |
+| Tasks | TaskTemplate revisions, TaskInstance snapshots, execution state, step results, blockings, numeric attempts and command receipts | Task creation/execution/resolution/query ports. Does not update Workforce tables or own future HACCP records. |
+| Inventory | Company-wide Article and ArticleLocationAssortment | `InventoryArticlePort` and released `inventory_article_location_projection`. Owns effective Article/Assortment information, not stock quantities or prices. |
+| Stock | StockLevel projection and immutable StockMovement ledger | Authorized queries and manual opening/absolute correction. Exact thousandths; frozen unit; movement-ID replay. No valuation, receiving or unit conversion. |
+| Audit infrastructure | Append-only business audit | Shared transactional append and authorized reads. Does not decide business state; runtime grants do not protect against every privileged owner action. |
+| Event/plugin infrastructure | Organization outbox, delivery receipts/inbox and registry | Bounded local dispatch/retry/dead-letter/replay and approved external read clients. No executed plugin code or business-module write API. |
 
-| Eigentümer | Schreibt | Stellt anderen bereit | Darf nicht besitzen |
-| --- | --- | --- | --- |
-| `organization` | Company, Location, spätere Struktur | Standort- und Mandantenstatus, IDs | Personalakten, Schichten |
-| `people` | Employee, spätere Skill- und Personalnachweise | minimale Mitarbeiterreferenz und autorisierte Eignung | Account-Sessions, Aufgabenstatus |
-| `workforce` | Shift und spätere Einsatzplanung | veröffentlichte Schichten, verfügbare Einsatzfenster | Guided-Work-Schritte, Arbeitszeit aus Plan ableiten |
-| `tasks` | TaskTemplate, TaskInstance, Ausführung | Aufgabenstatus und begründete nächste Aufgabe | Personalakten, Schichtdatenhoheit, HACCP-Kontrollakte |
-| `inventory` | Article (unternehmensweiter Produktstamm) und ArticleLocationAssortment (standortbezogene Sortimentsfreigabe) | freigegebene Artikel-/Standortprojektion (`inventory_article_location_projection`) und `InventoryArticlePort` für Bestandsfunktionen, ausdrückliche Standortreichweite | Bestände, Lieferanten, Preise |
-| `stock` | StockLevel (aktuelle Projektion) und StockMovement (unveränderliches Bestands-Ledger) | aktueller Bestand, Bewegungshistorie und exact-decimal Mengen je Artikel und Standort | Article, Sortiment, Bewertung, Lieferanten, Preise |
-| `audit` | AuditEntry | berechtigte Historie und Export | fachliche Zustandsentscheidung |
-| Plattformkomponente Identität/Berechtigungen | Account, Account-Employee-Verknüpfung, Rollen und Grants | geprüfter Zugriffskontext und minimale Identitätsreferenzen | Personalakte, fachliche Schicht-/Aufgabenregeln |
+Inventory's released projection is an explicit read contract: Stock may join that
+view and use its typed port, not the underlying Article/Assortment tables.
+Stock identity is Article + Location, not the Assortment UUID. Opening requires
+effective availability; existing Stock remains readable/correctable after either
+Article or membership deactivation. Stock owns movement/version/replay logic.
 
-Die Abhängigkeiten laufen über benannte Application-Ports, versionierte API-Verträge oder Ereignisse. Im ersten Slice koordiniert ein Application-Use-Case Schichtveröffentlichung, Task-Erzeugung und Audit über diese Ports in einer gemeinsamen lokalen Transaktion; siehe [ADR 0011](../adr/0011-atomare-schichtveroeffentlichung.md). `tasks` besitzt Vorlagen und Instanzen und darf keine `workforce`-Tabelle aktualisieren. Die Koordination schafft keine gegenseitige Abhängigkeit der Domainmodelle. `shift.published.v1` wird nach Commit für Folgereaktionen zugestellt und erzeugt die P1-Aufgaben nicht erneut. Modulübergreifende Lesemodelle enthalten nur für ihre Empfänger freigegebene Felder. Direkte Datenbank-Joins zwischen Modul-Schemas sind keine öffentliche Integrationsschnittstelle.
+Current PluginService and IdentityService still read OrganizationRepository.
+These are recorded boundary exceptions (L1), not permission to copy the pattern.
+See [technical debt](../development/technical-debt.md).
 
-## Abhängigkeitsregeln
+## Coordinated local operations
 
-Employee Home ist ein zusammengesetztes Lesemodell: Ein Application-Query im Server kombiniert berechtigte Schicht- und Aufgabenabfragen. `tasks` besitzt die Aufgabenregeln, `workforce` die Schichtregeln. Die Ansicht begründet kein weiteres Fachmodul und zunächst keine eigene persistente Kopie dieser Daten. Eine materialisierte Projektion kommt erst bei nachgewiesenem Bedarf hinzu und braucht dann Aktualitäts- und Wiederaufbauregeln.
+`ShiftApplication` composes public Workforce, Tasks and People ports in the same
+authorized transaction. It owns orchestration, not another copy of their data.
 
-- UI ruft Application-Befehle und Queries über API-Verträge auf; HTTP-Routen und Widgets enthalten keine Geschäftsentscheidung.
-- Domainmodelle hängen weder von Flutter noch von HTTP, SQL, Docker oder Plugins ab.
-- Module besitzen Migrationen und Schemaobjekte für ihre Daten. Fremde Module greifen ausschließlich über Ports beziehungsweise dokumentierte Events zu.
-- Gemeinsame technische Primitive werden nur dann in `shared` aufgenommen, wenn ihre Bedeutung stabil und fachlich neutral ist. Eine zyklische Modulabhängigkeit ist ein Architekturfehler.
-- Ereignisse sind nach erfolgreichem Commit sichtbare Fakten. Ein Ereignis darf keinen synchronen Pflichtschritt ersetzen, wenn sonst ein ungültiger Gesamtzustand entstünde.
-- Plugins verwenden `plugin_sdk`, APIs und abonnierte Ereignisse mit expliziten Rechten. Sie ändern keine Core-Tabellen und erhalten keine stillen Administratorrechte.
+- Publication writes Shift, immutable selected task snapshots and relevant audit
+  atomically ([ADR 0011](../adr/0011-atomare-schichtveroeffentlichung.md)).
+- Employee Home combines authorized queries without a separate persistent aggregate.
+- Execution checks current own-employee/shift context; Tasks controls order, evidence,
+  completion, blocking and resolution. Cancellation of blocked work has its explicit
+  administrative eligibility exception; it is not an employee completion.
+- Pristine published-shift cancellation first asks Tasks to cancel every eligible
+  open instance, then cancels Workforce state in one transaction. Any ineligible task
+  or audit failure rolls back everything ([ADR 0013](../adr/0013-published-shift-cancellation.md)).
+- Pristine interval amendment changes only Workforce starts/ends and retry evidence;
+  it neither regenerates tasks nor changes their snapshots. The database overlap
+  invariant is enforced by migration 0012 ([ADR 0014](../adr/0014-pre-execution-shift-interval-amendment.md)).
 
-## Erster Slice und spätere Erweiterung
+**No shift/task integration events currently exist.** Names such as
+`shift.published.v1` in target examples are future contracts, not emitted facts.
+There is no asynchronous task generator. Add an event only for a concrete consumer;
+it must not repeat the synchronous publication effects.
 
-Der erste Slice benötigt nur `organization`, `people`, `workforce`, `tasks` und `audit` sowie minimale Plattformdienste. Manager-Dashboard, Skills, Abwesenheiten, Optimierung, Training und HACCP sind eigene spätere Änderungen. Beim Hinzufügen eines Moduls müssen Domainmodell, Anwendungsfälle, Berechtigungen, Ereignisse, Auditbedarf und Tests vor dem Code feststehen. [Workforce Orchestration](workforce-orchestration.md) erläutert die Vorschlagslogik; [Guided Work](guided-work.md) die Ausführung.
+## Intentional future ownership
 
-P0 setzt Authentifizierung und standortbezogene Autorisierung als interne Serverkomponenten um; eigene Pakete sind dafür noch nicht erforderlich. Die konkrete technische Grenze zwischen `people` und einem künftig stärker getrennten HR-Modul ist erst nach Datenschutz- und Berechtigungsmodell verbindlich zu ziehen.
+These are **planned boundaries**, not existing modules or final schema decisions.
+Public ports should express product dependencies without circular Domain ownership.
 
-P1b.2 implementiert unter `apps/server/lib/src/tasks/` ausschließlich Vorlagen und Revisionen. Der Application Service verwendet den Organization-Port für eingerichtete Standorte und die bestehende lokale Transaktion für Fachänderung und Audit. Vorlagen-Repository und Tabellen bleiben privat. Der gemeinsame Inhaltsvertrag definiert Schema und Validierung; Veröffentlichung und Konkurrenzregeln bleiben im Tasks-Modul. Ohne Folgeverbraucher entstehen keine neuen Domain Events. [Konkreter Vertrag](../development/phase-1b-templates.md).
+| Future owner | Intended data/responsibility | Dependencies through contracts; excluded ownership |
+| --- | --- | --- |
+| Knowledge | WikiArticle, approved revisions, suggestions and review/publication | Tasks consumes pinned approved guidance; Knowledge never changes execution history. |
+| Merchandising | Fixture, Planogram revisions, organizational/location assignments, acknowledgement and deviations | Article references and authorized Assortment/Stock queries; Tasks owns rollout work. No foreign stock writes or general CAD. |
+| Production / Recipes | Optional Article-linked Recipe revisions, ingredients/yield/instructions, production/batch evidence | Inventory owns Article identity; Stock applies physical effects; cost source and consumption model undecided. No duplicate manufactured product identity. |
+| Purchasing / Receiving | Suppliers, orders, receipt/source cost evidence | Article/unit references; authorized Stock commands for accepted physical receipts. Not Stock ledger owner or invented valuation. |
+| Sales integration | Canonical SalesSource/import/checkpoint, Sale/Line source references, mapping and import health | Core validates authority/identity and coordinates explicit Stock/report effects. Vendor adapter acquires/converts; checkout/payment/fiscal archive ownership separate. |
+| Pricing | Effective prices/currency and approval rules | Article references; Menu consumes approved price contract. No implicit price column in Article. |
+| Menu / public publishing | Structured Menu revisions, themes/print artifacts and explicit public publication | Optional Article/Recipe/price references. Publisher owns artifact deployment/status, not public operational DB access. |
+| Communications | Boards, announcements and Chat content/membership lifecycle | Identity/scope and operator privacy policy; Notifications owns delivery, not message content. No generic Slack system or employee scoring. |
+| Notifications | Durable event-based delivery/retry/failure/preferences/contact use | Domain facts with minimal authorized payloads; not business approval or proof of readership. |
+| Workforce extension | ShiftSwapRequest proposals/comments/responses and responsible approval | Final current-state checks and schedule mutation coordinated via Workforce/Tasks ports; no recipient-only schedule change. |
+| HACCP | ControlPlan/Execution, measurements, deviations and corrective actions | Tasks presents control work; HACCP retains authoritative safety evidence. Generic task numbers are not certified records. |
+| Reporting / Finance | Defined metrics, provenance, scoped exports and later finance records | Authorized projections; no business-table ownership, fabricated margins or assumed valuation. |
+| Remote access boundary | Authenticated workplace/remote context and capability allowlist, optional gateway | Identity/grants/resource authorization remains in Core. No mandatory private device/cloud and no automatic remote full-admin exposure. |
 
-P1b.3 ergänzt Workforce unter `apps/server/lib/src/workforce/` und Instanzen im bestehenden Tasks-Modul. `ShiftApplication` koordiniert öffentliche Ports mit derselben Transaktion; Employee Home kombiniert autorisierte Queries ohne eigene Speicherung. Es entsteht noch kein `shift.published.v1`-Outbox-Eintrag: Der oben beschriebene Zustellweg gilt erst bei konkretem Folgeverbraucher, gemäß Event-System. [P1b.3-Vertrag](../development/phase-1b-shifts.md).
+## Evolution rules
 
-P1b.4 ergänzt den Tasks-Port `TaskExecutionService`. `ShiftApplication` prüft eigene Mitarbeiter-/Standortzuordnung und reicht den veröffentlichten Schichtkontext an Tasks weiter. Tasks entscheidet Schrittfolge und Abschluss; Workforce schreibt keine Ausführungsdaten. Die laufenden Eigenaufgaben werden paginiert über den Tasks-Port gelesen. Kein neues Modul und kein Ereignisverbraucher.
+Own each schema change through a new tested migration; retain IDs, snapshots and
+supported contracts. Do not let a future integration write Core tables directly.
+Events represent committed facts, not a substitute for synchronous consistency.
 
-P1b.5 erweitert denselben Tasks-Port um Blockierung, Klärung und Historie. Der Application-Koordinator prüft administrative Rechte, lokalen Standort und aktuelle People-Zuordnung; Tasks erhält diesen Check für neue Freigaben nach dem Replay-Abgleich. Kein neues Modul und kein Zugriff auf fremde Tabellen.
-
-P1b.6 ergänzt Stornierung im bestehenden Tasks-Port. ShiftApplication prüft Adminrecht und lokalen Scope; aktive People-Zuordnung ist nur für Freigaben erforderlich. Workforce-Daten bleiben unverändert.
-
-P1b.8 ergänzt die Stornierung veröffentlichter Schichten vor Ausführungsbeginn. `ShiftApplication` prüft Recht und Scope, lässt Tasks zuerst alle noch offenen Instanzen atomar stornieren (Tasks schreibt Zustand und Audit) und storniert danach die Schicht (Workforce schreibt Zustand und Audit) in derselben autorisierten Transaktion. Sind Instanzen bereits begonnen, blockiert, abgeschlossen oder storniert, lehnt der Tasks-Port den gesamten Vorgang mit 422 ab, ohne etwas zu schreiben. Kein neues Modul, kein Ereignis, keine fremden Tabellenzugriffe.
-
-P4.1 ergänzt `apps/server/lib/src/inventory/` als logisches Modul für einen unternehmensweiten Artikel-/Produktstamm. Das Modul besitzt `articles` (keine Standortspalte), prüft Firmenzugehörigkeit ausschließlich über den revalidierten Principal und schreibt Änderung plus Audit in derselben autorisierten Transaktion. Bestand, Lieferanten, Bestellungen, Wareneingang, Chargen/MHD und Preise bleiben ausdrücklich außerhalb dieses Slice; spätere Kindtabellen binden über `(article_id, company_id)` an den vorhandenen Anker. Kein Ereignis, keine Plugin-Rechte. [P4.1-Vertrag](../development/phase-4-1-article-master.md).
-
-P4.2 ergänzt im selben Modul `article_location_assortment` als standortbezogene Freigabe („welcher Unternehmensartikel wird an welchem Standort geführt"). Artikelidentität und -eigentümerschaft bleiben unverändert; die Standortvalidierung nutzt den bestehenden Organization-Port `requireConfiguredLocation`, Änderung und Audit teilen dieselbe autorisierte Transaktion. Sortimentsfreigabe (`is_active`) und globaler Artikelstatus (`articles.is_active`) sind unabhängig; wirksame Verfügbarkeit ist die Konjunktion beider Zustände, die nicht gespeichert wird. Spätere Bestands-/Einkaufssätze referenzieren `(article_id, location_id)` direkt und nicht die Sortiments-UUID. Kein Ereignis, keine Plugin-Rechte. [P4.2-Vertrag](../development/phase-4-2-location-assortment.md).
-
-P4.3 ergänzt `apps/server/lib/src/stock/` als eigenes logisches Modul für den manuellen Bestand. `stock` besitzt ausschließlich `stock_levels` (transaktional gepflegte Projektion) und `stock_movements` (unveränderliches, autoritatives Ledger); Inventory behält Article und Sortiment. Inventory veröffentlicht dafür die lesende Sicht `inventory_article_location_projection` sowie den Dart-Port `InventoryArticlePort`; Stock joint nur die freigegebene Sicht und niemals Inventory-Basistabellen. Die Suche ist eine vollständige, keyset-paginierte Stock-Level-Abfrage über die Sicht (kein vorab gekürzter Artikelkandidatensatz). `stock_unit` friert die Artikeleinheit beim Anlegen ein; Menge, Delta und Saldo sind exakte Tausendstel als kanonische Dezimalstrings, manuelle Ziele sind nicht negativ. Öffnen erzeugt Ebene v1 mit genau einer Öffnungsbewegung; eine echte Korrektur speichert `delta = Ziel − aktuell` plus Saldo und Version, auditiert ohne Mengenwerte und ist über die clientgenerierte `movementId` exakt wiederholbar (409 `operation_conflict` bei abweichender Wiederverwendung). Bestehender Bestand bleibt nach Artikel- oder Sortimentsdeaktivierung les- und korrigierbar. Kein Ereignis, keine Plugin-Rechte, keine Bewertung, kein Wareneingang, keine Inventur, keine Umrechnung. [P4.3-Vertrag](../development/phase-4-3-manual-stock.md), [ADR 0017](../adr/0017-manual-stock-foundation.md).
+A new module needs one bounded use case, owner, permissions, audit/events decision,
+error handling and tests before code. See [ADRs](../adr/README.md),
+[guided work](guided-work.md), [workforce orchestration](workforce-orchestration.md)
+and [data ownership](data-ownership.md). Larger entity names above are conceptual;
+choose concrete persistence/API contracts only when a slice is approved.

@@ -1,0 +1,72 @@
+# Current technical debt
+
+Living disposition register, reconciled 2026-10-04 against `e8ce8c3`.
+The [2026-10-04 audit](project-health-audit-2026-10-04.md) preserves original
+findings F01–F19; the [2026-10-02 report](milestone-health-check-2026-10-02.md)
+preserves M1–M4/L1–L12 at its old baseline. Product and operator decisions belong
+in [risks/open questions](../risks-and-open-questions.md).
+
+**ACTIVE** means unresolved, **CLOSED** requires actual evidence, **DEFERRED**
+has a stated trigger. Documentation correction does not close a runtime defect.
+
+## Required before P4.3 acceptance
+
+| ID | State | Evidence and required next action |
+| --- | --- | --- |
+| F01 | ACTIVE / MEDIUM | [StockController](../../apps/client_flutter/lib/src/application/stock_controller.dart): pending adjustment assigned before busy guard; [stock dialog](../../apps/client_flutter/lib/src/ui/stock_section.dart): duplicate submission possible. Guard before identity mutation, disable submit while pending and retain the exact command until reconciliation/discard. Reproduce double submission + lost response/read-back failure in a meaningful regression. |
+| F06 | ACTIVE / LOW | [Stock client test](../../apps/client_flutter/test/stock_test.dart) fake ignores stale-version enforcement after another mutation. Correct it to match [StockService](../../apps/server/lib/src/stock/stock_service.dart): committed receipt replay first; unsent stale command must conflict. |
+| F07 | ACTIVE / LOW | Stock dialog closes regardless of validation/network outcome because adjustment returns void. Make result/error handling explicit, retain input and apply shared note bounds (500 runes/control-character rules) in the authorized fix. |
+
+The server guards versions and strict movement identity. F01 demonstrates unreliable
+client reconciliation, not silent ledger overwrite or duplicate stock corruption.
+No Dart or test correction was made by the documentation pass.
+
+## Original medium findings
+
+| ID | State | Current disposition / trigger |
+| --- | --- | --- |
+| M1 / F02 | ACTIVE | [HTTP login](../../apps/server/lib/src/http/server_app.dart), [limiter](../../apps/server/lib/src/application/login_limiter.dart): raw socket IP groups proxied clients. Decide/test mitigation before proxied real users; trusted-proxy parsing must enforce trust, not accept arbitrary headers. Shared limiter state also needed before multiple API processes. |
+| M2 | CLOSED | [Migration 0012](../../apps/server/migrations/0012_published_shift_amendment.sql), [ADR 0014](../adr/0014-pre-execution-shift-interval-amendment.md), populated upgrades/raw constraint/race evidence. Published overlap has database exclusion enforcement. Old deferred wording is historical. |
+| M3 / F03 | ACTIVE, contained | [OpenAPI](../../packages/api_contracts/platform.openapi.json) and [root contract](../../packages/api_contracts/openapi.yaml): error catalog/statuses and full router consistency gate still incomplete. Every added route needs matching DTO/OpenAPI, explicit tested errors and negative HTTP cases; broader cleanup before external API/SDK consumers. Manual 88-operation parity is not an automatic gate. |
+| M4 / F04 | ACTIVE | Broad constraint errors → 400, unmatched route shape, plugin-limit read/write statuses. Carry to endpoint/error-observability work; address before promising a uniform external error contract. |
+| F05 | CLOSED in this documentation pass | Canonical status now records committed P4.3 with open acceptance, bounded interval amendment and ledger; vision/history and CI baselines separated. Closure covers documentation only; F10 and runtime findings stay open. |
+
+## Low and bounded findings
+
+| ID | State | Current consequence / trigger |
+| --- | --- | --- |
+| L1 / F11 | ACTIVE | PluginService **and IdentityService** read OrganizationRepository. Replace with narrow public ports on relevant module touch; do not extend the shortcut. |
+| L2 / F11 | ACTIVE | Six application/Workforce DB-clock query sites remain. Introduce a narrow transaction-time helper on coordinator touch; preserve database-time authority. |
+| L3 / F11 | ACTIVE | Session/plugin expiry creation uses app clock, validation DB clock. Align when identity/plugin code changes. |
+| L4 / F12 | DEFERRED | Company-wide admin shift reads vs configured-location execution paths. Resolve before multi-location execution/scoped roles; other named Locations already exist. |
+| L5 / F12 | DEFERRED | Unscoped existence/receipt probes, with downstream actor/company checks. Scope before a shared-schema multi-Company writer model. Current deployment is one Company per installation. |
+| L6 / F13 | ACTIVE | [Backup runner](../../scripts/backup/Run-BackupRestoreAcceptance.ps1) / [update runner](../../scripts/update/Run-UpdateRecoveryAcceptance.ps1) raw failure tails differ from masked capacity diagnostics. No observed disclosure; sanitize on next harness touch. Passing report-redaction tests cover JSON only. |
+| L7 / F14 | ACTIVE | [Migration runner](../../apps/server/lib/src/infrastructure/migration_runner.dart) lacks targeted unknown/non-prefix/invalid-name/empty refusal coverage. Add on runner/harness touch; no current production fault shown. |
+| L8 | CLOSED in this documentation pass | [Module boundaries](../architecture/module-boundaries.md) now explicitly says no shift/task integration events exist; event examples are future contracts. |
+| L9 / F17 | DEFERRED | Organization setup is emittable but not subscribable; no current consumer needs it. Revisit subscription catalog on actual demand. |
+| L10 / F15 | ACTIVE on touch | Coordinator/UI density, raw-map parsing, safety fixture duplication and DDL column whitelists. Split/share only with demonstrated need; recheck whitelists for future columns. |
+| L11/L12 / F17 | DEFERRED | Plain result/blocking pairing is insert-time; execution receipts use runtime grants rather than an all-role immutability trigger. No supported-writer anomaly demonstrated. Re-prove before second writers or company-lock narrowing. |
+| F08 | ACTIVE | [AuthStore readiness](../../apps/server/lib/src/infrastructure/auth_store.dart) checks migrations 0001–0004, not current full binary schema. Migrate-before-start mitigates; correct on deployment/health automation touch without automatic runtime DDL. |
+| F09 | ACTIVE on touch | Article/Assortment/Stock filter controls remount empty while retained query filters data. Keep view/controller state coherent on relevant UI touch. |
+| F10 | ACTIVE | Published-shift UI prohibition copy and Stock OpenAPI note optionality remain wrong. OpenAPI and UI are excluded from this documentation-only pass. |
+| F16 | ACTIVE acceptance gap | No physical device/new goods UI accessibility acceptance; agree supported hardware and verify it before device/pilot claims. |
+| F17 legacy versions | DEFERRED | Older expected-version paths lack consistent Web-safe upper bounds. Carry on relevant contract touch; no realistic version-growth failure demonstrated. |
+| Recovery-verify transients | OPEN evidence gap | [P4.1 evidence](phase-4-1-article-master.md) records two non-injected recovery-verify failures followed by passing reruns without explained root cause. Revisit when the harness is next exercised; do not reclassify them as capacity injections or claim universal flake-free recovery. |
+
+## Other retained debt and gates
+
+Company-wide serialization remains deliberate; narrow it only with measured target
+hardware contention and renewed last-admin/revocation/race/evidence proofs. Client
+sessions and pending commands are memory-only; persistent offline queues require
+a separate contract. Optional unused dependency housekeeping and unpinned
+container/action reproducibility remain deferred; no upgrades are implied.
+
+F18 is an operator gate before relevant real-data use: retention/access/export/deletion,
+offboarding, RPO/RTO, backup-key custody, off-host restore/activation and devices.
+F19 gates future stock effects/margins: explicit source units/machine actor,
+provenance, physical cutover, returns/production policy and trustworthy cost basis.
+Basic sales ingestion can preserve unresolved effects without inventing these rules.
+
+Earlier proposals for self-password change, M2 exclusion and interval amendment
+are SUPERSEDED by implemented slices. The old P4.3-uncommitted baseline is
+SUPERSEDED by `e8ce8c3`. Historical review/CI runs remain scoped to their named commits.

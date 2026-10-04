@@ -1,8 +1,15 @@
 # StoreOS Standortclient
 
-Flutter-Webclient für den lokalen Standortserver. Nach der Anmeldung zeigt er den tatsächlich abgerufenen Systemstatus und den serverseitigen Berechtigungskontext. Phase 1 ergänzt die Einrichtung und Verwaltung von Unternehmen, Standorten und Login-Accounts sowie paginierte Audit- und Ereignislisten und die Freigabe externer Plugin-API-Clients. Fachmodule und Mitarbeiter-Home folgen erst im vorgesehenen Vertical Slice.
+Current Flutter Web client for the local StoreOS API: platform administration,
+Employee Home, guided confirmation/numeric work, exception resolution, bounded
+shift cancellation/amendment, Article, location Assortment and manual Stock.
+See [actual status](../../docs/roadmap/status.md) for delivered scope and acceptance.
+Native runners, automatic recommendations and persistent offline queues are future.
+P4.3 Stock is committed but its retry/dialog/mock defects require a separate code
+correction before acceptance; see [technical debt](../../docs/development/technical-debt.md).
+Authorization remains server-side; hiding a UI action does not grant or deny rights.
 
-Die Sitzung liegt nur im Arbeitsspeicher; ein Reload verlangt eine neue Anmeldung. Der Client trennt HTTP-Transport, Anwendungszustand und Widgets. Rollen steuern sichtbare Bereiche und Aktionen, der Server prüft jede Berechtigung erneut. Schreibanfragen verwenden Versionen beziehungsweise stabile Client-IDs; nach Konflikten oder unklaren Ausgängen lädt der Client den Serverstand neu. Verbindungsverlust wird sichtbar und ein alter Status nicht als gesund angezeigt. Ein Plugin-Zugangstoken erscheint nur direkt nach der Freigabe und wird nicht gespeichert.
+Die Sitzung liegt nur im Arbeitsspeicher; ein Reload verlangt eine neue Anmeldung. Der Client trennt HTTP-Transport, Anwendungszustand und Widgets. Rollen steuern sichtbare Bereiche und Aktionen, der Server prüft jede Berechtigung erneut. Schreibanfragen verwenden Versionen beziehungsweise stabile Client-IDs; nach Konflikten oder unklaren Ausgängen lädt der Client den Serverstand neu. Stock's duplicate-submission retry identity is a known exception requiring correction; do not claim that flow is fully accepted. Verbindungsverlust wird sichtbar und ein alter Status nicht als gesund angezeigt. Ein Plugin-Zugangstoken erscheint nur direkt nach der Freigabe und wird nicht gespeichert.
 
 ```powershell
 cd apps/client_flutter

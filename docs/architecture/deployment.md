@@ -1,20 +1,19 @@
 # Bereitstellung und Betrieb
 
-Implementation boundary: one local Dart server, PostgreSQL, Flutter Web, optional Caddy TLS and database-only encrypted backup/isolated restore tooling. Attachment storage, enterprise connections, comprehensive operating dashboards and automatic replacement-server activation below are planned. See [actual status](../roadmap/status.md) and [handover commands](../HANDOVER.md#how-to-run-storeos).
+Implementation boundary: one local Dart server, PostgreSQL, Flutter Web, optional Caddy TLS and database-only encrypted backup/isolated restore tooling. Attachment storage, enterprise connections, comprehensive operating dashboards and automatic replacement-server activation below are planned. See [actual status](../roadmap/status.md) and [local development](../development/local-development.md).
 
-## Topologie
+## Target topology
 
 Jeder Standort betreibt zunächst einen Standortserver mit Dart-Backend, PostgreSQL und einem kontrollierten Speicher für Anhänge. Flutter-Clients verbinden sich über einen lokalen Reverse Proxy mit TLS. Der Server hat eine dauerhafte technische `nodeId`; Company und Location besitzen davon unabhängige fachliche IDs. Die Zuordnung des aktiven Schreibers kann kontrolliert wechseln, ohne Datensätze umzunummerieren. Eine Installation ohne Unternehmensserver ist ein unterstützter Betriebsmodus. Optional verbindet sich ein zentraler Unternehmensserver über einen verschlüsselten, authentifizierten Sync-Kanal mit mehreren Standorten; er muss für lokale Kernabläufe nicht erreichbar sein. Der zentrale Server ist keine öffentliche Verwaltungs-API.
 
 `infra/docker/` beschreibt die P0-Referenzinstallation mit getrennten Runtime- und Migrationsrollen. `infra/reverse_proxy/` enthält den optionalen lokalen TLS-Proxy, `infra/backup/` verschlüsselte PostgreSQL-Sicherung und isolierte Restoreprobe. Die [Startanleitung](../../README.md) und [Prüfnachweise](../development/phase-0-verification.md) grenzen den aktuellen Stand ab. Eine Container-Installation vereinfacht Updates, ersetzt aber weder Host-Härtung noch überwachte Datenträger. Mindesthardware und unterstützte Betriebssysteme werden erst nach Lastmessungen für typische Standortgrößen festgelegt.
 
-## Betriebsvertrag
+## Target operating contract
 
 - Konfiguration und Secrets bleiben getrennt von Images und Quellcode. Bei Neustart werden Daten, Anhänge, Plugin-Konfiguration und Schlüssel aus dauerhaftem Speicher geladen.
 - PostgreSQL, Anhänge, Konfiguration und zur Wiederherstellung nötige Plugin-Versionen werden konsistent gesichert. Backups erhalten verschlüsselte Kopien außerhalb des primären Datenträgers. Restore wird regelmäßig in einer isolierten Umgebung getestet; ein bloß erfolgreiches Backup-Job-Log ist kein Wiederherstellungsnachweis.
 - Die nötigen Entschlüsselungs- und Datenschlüssel besitzen einen getrennten, geschützten Wiederherstellungsweg. Ein Schlüssel darf nicht ausschließlich im Backup liegen, das er erst öffnen müsste. Der Restoretest verwendet diesen Weg nach simuliertem Verlust des ursprünglichen Hosts; er benötigt kein Herstellerkonto.
-- Datenbankschema und API-/Event-Verträge werden versioniert. Updates prüfen Kompatibilität mit Clients und optionaler Zentrale, führen Migrationen kontrolliert aus und sichern vorher einen Restore-Punkt. Ein automatisches Downgrade nach einer Datenmigration wird nicht versprochen. Der abgenommene Einzelstandort-Ablauf (Quiesce, verschlüsselter Restore-Punkt vor der Migration, Forward-Only-Migration, isolierte Wiederherstellung ohne Aktivierung) ist mit echten
-0010→0014-Daten in der [Update-/Recovery-Abnahme](../development/phase-2-update-recovery-acceptance.md) belegt; ein automatisiertes Upgrade-Werkzeug und Ersatzserver-Aktivierung bleiben außerhalb dieses Umfangs.
+- Datenbankschema und API-/Event-Verträge werden versioniert. Updates prüfen Kompatibilität mit Clients und optionaler Zentrale, führen Migrationen kontrolliert aus und sichern vorher einen Restore-Punkt. Ein automatisches Downgrade nach einer Datenmigration wird nicht versprochen. The bounded single-site contract quiesces writes, creates an encrypted pre-migration restore point, applies forward-only migrations and recovers into an isolated fenced target. Dated [update/recovery evidence](../development/phase-2-update-recovery-acceptance.md) extends the populated 0010→0015 scenario through the 2026-10-03 stock probe; it is historical local evidence, not current-head remote CI. A general automated deployment tool and replacement-server activation remain outside that contract.
 - Lokale Health-Ansichten zeigen Datenbank, Speicher, Jobs, Outbox, Backups, Plugins und Sync-Rückstand. Strukturierte Logs und Metriken verbleiben standardmäßig lokal; externe Telemetrie ist freiwillig.
 - Administrationszugänge sind auf berechtigte Netze und Personen begrenzt. Fernwartung benötigt einen ausdrücklich eingerichteten sicheren Zugang; das LAN wird nicht als vertrauenswürdig vorausgesetzt.
 
@@ -43,3 +42,26 @@ Vor produktiver Wiederöffnung werden außerdem neuere Kontosperren, entzogene R
 Geplante maximale Trennungsdauer und Datenrate bestimmen den Speicherbedarf für Anhänge, Audit und nicht zugestellte Events. Warnschwellen müssen vor Speichererschöpfung eine Betreibermaßnahme ermöglichen. Nicht quittierte, notwendige Vorgänge werden nicht still verworfen, um Platz zu schaffen; die Offlinezusage gilt innerhalb dieses bemessenen Betriebsfensters.
 
 Zunächst genügen eine lokale Datenbank und wenige Worker. Vor zusätzlicher Parallelität werden konkurrierende Jobverarbeitung und Idempotenz geprüft. Skalierungsentscheidungen stützen sich auf gemessene Antwortzeiten, Transaktionskonflikte, Datenvolumen und Rückstau: begrenzte Abfragen, passende Indizes und entkoppelte aufwendige Reports kommen vor einer Aufteilung in Microservices. Eigene Projektionen oder Dienste werden erst bei belegtem Bedarf eingeführt; fachliche Konsistenz und Schreibzuständigkeit bleiben dabei erhalten.
+
+## Current deployment gates
+
+Apply the full migration chain 0001–0015 before starting the current binary.
+Current readiness checks only migrations 0001–0004, not full schema compatibility
+(F08). Green `/ready` is not a substitute for migration compatibility verification.
+
+The reference TLS proxy changes client attribution: M1 keys login throttling on the
+raw proxy socket IP. Decide/test a mitigation before proxied real users. Keep
+migration owner credentials away from the HTTP process and restored targets fenced
+until manual activation requirements are satisfied. JSON acceptance-report redaction
+checks do not cover every failure log tail (L6). See [technical debt](../development/technical-debt.md).
+
+Operator retention/access/export/offboarding policy, RPO/RTO, key custody, off-host
+restore exercises and the supported device matrix remain installation decisions.
+Physical devices, target-hardware performance and automatic replacement activation
+are not established by the isolated harnesses.
+
+Optional future remote self-service/gateway and public Menu publishing are distinct
+exposures with their own trust/capability contracts. Neither requires a public DB,
+full public admin API, mandatory cloud provider or private employee smartphone.
+Prefer local or outbound integration where feasible; WAN failures must not stop
+independent local Core work. See [vision](../vision.md) and [risks](../risks-and-open-questions.md).

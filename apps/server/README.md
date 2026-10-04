@@ -2,10 +2,12 @@
 
 This Dart modular monolith implements local authentication, organization, fixed
 roles, audit, organization outbox and a restricted external plugin API. It also
-contains People, Workforce and Tasks through P1b.8: employee/account links,
+contains People, Workforce and Tasks through P1b.9: employee/account links,
 templates, atomic shift publication and guided confirmation/numeric execution
 with blocking, resume, cancellation and completion, plus pre-execution
-cancellation of published shifts. See [actual status](../../docs/roadmap/status.md),
+cancellation and pristine interval amendment of published shifts, plus Inventory
+Article/Assortment and manual Stock. Stock client acceptance corrections remain
+open. See [actual status](../../docs/roadmap/status.md),
 [handover](../../docs/HANDOVER.md), [P1 contracts](../../docs/development/phase-1.md)
 and [numeric scope](../../docs/development/phase-1b-7-numeric-steps.md).
 
@@ -91,3 +93,19 @@ Schemas anlegen und Tabellenrechte an diese Rolle vergeben dürfen. `scripts/dev
 lädt diese Runtime-Konfiguration aus einer vorhandenen `.env`; die Test-URL
 bleibt ausdrücklich separat zu setzen. Bei direkten `dart test`-Aufrufen sind
 alle drei Variablen selbst zu setzen. Die CI stellt diese Voraussetzungen bereit.
+
+## Current domain and operational boundary — 2026-10-04
+
+Logical modules now include Employee/Tasks/Workforce through P1b.9 plus Inventory
+Article/Assortment and Stock. The full migration chain is 0001–0015. Pristine
+published interval amendment and the M2 database overlap invariant exist; general
+reassignment, begun-work reconciliation, device queues and multi-site execution do
+not. Stock is committed with active client acceptance corrections. See
+[status](../../docs/roadmap/status.md) and [module boundaries](../../docs/architecture/module-boundaries.md).
+
+Readiness currently verifies only the early 0001–0004 platform migration subset;
+apply all migrations before a new binary and do not infer complete compatibility
+from `/ready`. M1 groups login failures by raw socket address behind a proxy;
+resolve/test its disposition before proxied real users. M3/M4 remain external API/
+error-contract debt. See [technical debt](../../docs/development/technical-debt.md)
+and [deployment](../../docs/architecture/deployment.md).

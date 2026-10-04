@@ -1,5 +1,7 @@
 # Handover verification and repository audit
 
+Historical verification only; use the [2026-10-04 audit](project-health-audit-2026-10-04.md) and [actual status](../roadmap/status.md) for the later source baseline. Counts, migration scope and outcomes below are preserved; this is not the latest verification.
+
 Date: 2026-09-29. Baseline: `da2c9e8`. Incoming Git tree: clean.
 Handover changes are documentation-only; no migration, permission, event, product
 feature, dependency constraint or test assertion was changed.

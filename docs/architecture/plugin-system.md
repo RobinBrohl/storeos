@@ -6,7 +6,7 @@ Implementation boundary: P1 external API-client registrations and scoped organiz
 
 Plugins binden Geräte und Fremdsysteme an oder ergänzen begrenzte Funktionen. Sie sprechen ausschließlich mit versionierten APIs, Commands und freigegebenen Events. Direkter Datenbankzugriff, das Laden beliebigen Plugin-Codes in den Serverprozess und ein allgemeiner Zugriff auf interne Modulklassen sind ausgeschlossen. Das Plugin darf keine fachliche Validierung, Rechteprüfung oder Auditpflicht umgehen. Kritische Funktionen wie Kasse, Zahlungsabwicklung, TSE, Waagen und HACCP erfordern zusätzlich eigene fachliche und regulatorische Abnahmen.
 
-Das Core-System stellt in `packages/plugin_sdk/` Verträge bereit; `plugins/examples/` enthält später kleine Referenzadapter. Ein Plugin-Manifest beschreibt mindestens `id`, `name`, `version`, `vendor`, kompatible Core-/API-Versionen, Capabilities, abonnierte Event-Typen, angeforderte Berechtigungen und ein Konfigurationsschema. Das Manifest allein vergibt keine Rechte. Ein Administrator aktiviert pro Installation und Standort nur die konkret benötigten Scopes, etwa `task:create` oder `temperature:write`; Rechte werden bei jedem Aufruf auf dem Server gegen Plugin-Identität **und** Standortkontext geprüft. Breite Scopes wie `stock:write` sollen nur über eng definierte Commands statt allgemeiner Schreib-APIs wirksam sein.
+Future SDK contracts may live in `packages/plugin_sdk/`; that directory is currently documentation only. `plugins/examples/` contains the bounded external-reader example, not an executable managed runtime. Current shared DTO/API contracts live in `packages/api_contracts/`. Ein Plugin-Manifest beschreibt mindestens `id`, `name`, `version`, `vendor`, kompatible Core-/API-Versionen, Capabilities, abonnierte Event-Typen, angeforderte Berechtigungen und ein Konfigurationsschema. Das Manifest allein vergibt keine Rechte. Ein Administrator aktiviert pro Installation und Standort nur die konkret benötigten Scopes, etwa `task:create` oder `temperature:write`; Rechte werden bei jedem Aufruf auf dem Server gegen Plugin-Identität **und** Standortkontext geprüft. Breite Scopes wie `stock:write` sollen nur über eng definierte Commands statt allgemeiner Schreib-APIs wirksam sein.
 
 Handelt ein Plugin ausdrücklich im Auftrag eines Benutzers, gilt nur die Schnittmenge aus Plugin-Freigabe und aktuellen Benutzerrechten; die Delegation muss serverseitig geprüft sein. Eine frei übergebene `actorId` genügt nicht. Autonome Sensor- oder Hintergrundaktionen verwenden ihre eigene begrenzte Plugin-Identität. Herkunftsdaten eines Events übertragen keine Rechte des ursprünglichen Benutzers auf das Plugin.
 
@@ -25,3 +25,20 @@ Zusätzliche Rechte, Netzwerkziele, Event-Abonnements oder ausgegebene Datenfeld
 P1 konkretisiert gemäß [ADR 0012](../adr/0012-phase-1-plattform-und-plugin-api.md) ausschließlich die Registrierung externer API-Clients: Manifest, explizite Freigabe, standortgebundenes Token sowie kleine Organisations- und Event-Leseverträge. StoreOS installiert oder startet dabei keinen Fremdcode und öffnet keine Netzwerkverbindung zu einem Plugin. Die nachfolgend genannten Gates für eine verwaltete Runtime bleiben bestehen. Aktuelle Verträge stehen in [Phase 1](../development/phase-1.md); separate SDK-Pakete sind dafür noch nicht nötig.
 
 Der erste Slice benötigt keine Plugin-Runtime und keinen Beispieladapter. Er respektiert bereits Modul- und API-Grenzen; konkrete Manifest-, Capability- und SDK-Verträge werden vor dem ersten realen Adapterfall festgelegt. Ein öffentlicher Plugin-Marktplatz, die Ausführung nicht geprüfter Fremdplugins, dynamische UI-Erweiterungen und beliebige Automatisierungsregeln bleiben spätere Ausbaustufen. Vor der Öffnung für Dritte sind Signatur-/Vertrauensmodell, Versionspolitik, Update-Rollback, Isolation unter den unterstützten Betriebssystemen, Egress-Policy und ein Testprogramm festzulegen. Prozessisolation begrenzt Schäden, garantiert aber keine vollständige Sandbox; falsch konfigurierte Rechte und Datenabfluss bleiben wesentliche Risiken.
+
+## Planned vendor adapters and canonical sales boundary
+
+Core owns canonical external-POS ingestion: configured source authority, validation,
+durable identity, explicit Article mapping, checkpoints/health and permitted downstream
+effects. An adapter owns vendor authentication, acquisition and conversion. Start
+with a real first-party source; built-in adapters, isolated plugin clients or a
+separate integration service are deployment options, not a rule that every vendor
+must be a plugin. No direct Core-table writes or unchecked payload tenant IDs.
+
+Versioned fiscal exports can support backfill/reconciliation; operational latency
+may need a vendor API. Canonical ingestion can preserve unresolved lines/effects
+before Stock conversion/cutover/return policy exists. StoreOS checkout is deferred
+independently. Full contracts, scoped credentials, replay/error tests and M3/M4
+review are required before promising an external consumer API. See
+[vision](../vision.md#external-pos-sales-ingestion), [boundaries](module-boundaries.md)
+and [technical debt](../development/technical-debt.md).

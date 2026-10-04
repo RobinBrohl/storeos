@@ -113,3 +113,9 @@ tables.
 - Which retention/export rule applies to article master data and its audit?
 - When does location assortment become necessary, and is it a company or
   location decision?
+
+## Follow-up status — 2026-10-04
+
+Location availability is now implemented by [ADR 0016](0016-article-location-assortment.md) / migration 0014; Stock uses the released Inventory contract per [ADR 0017](0017-manual-stock-foundation.md). The original decision and open-question wording above are preserved at their original date. A standardized unit/conversion catalog and further Article fields remain open.
+
+See [actual status](../roadmap/status.md) for current delivery; an Accepted ADR is not CI evidence.

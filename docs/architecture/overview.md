@@ -1,12 +1,12 @@
 # Architekturüberblick
 
-Status: target architecture. The implemented single-site/Web scope includes P0, P1 and P1b.1–P1b.7; see [actual status](../roadmap/status.md). Client offline queues, native runners, automatic work recommendations and enterprise synchronization described below are not implemented.
+Status: target architecture. The implemented single-site/Web scope includes P0, P1, P1b.1–P1b.9, Article, location Assortment and committed manual Stock with active acceptance corrections; see [actual status](../roadmap/status.md). Client offline queues, native runners, automatic work recommendations and enterprise synchronization described below are not implemented.
 
 ## Ausgangspunkt
 
 StoreOS verbindet Standortbetrieb, Mitarbeiterarbeit und später weitere Geschäftsprozesse über ein gemeinsames Identitäts-, Berechtigungs-, Aufgaben-, Ereignis- und Auditmodell. Die Daten bleiben im Eigentum des Betreibers. Ein Standortserver muss die für den Standort freigegebenen Kernabläufe auch ohne Internetverbindung ausführen können. Ein Unternehmensserver ist optional und übernimmt später zentrale Stammdaten und standortübergreifende Auswertungen. Die Anwendung funktioniert ohne Cloudkonto und ohne verpflichtende Telemetrie.
 
-Die technische Grundform ist ein modularer Monolith mit einem Dart-Backend und PostgreSQL. Ein Flutter-Client nutzt dieselben API-Verträge für Handheld, Desktop und Web, aber jeweils passende Bedienoberflächen. API und Geschäftslogik bleiben serverseitig; lokale Clientdaten dienen dem begrenzten Offlinebetrieb. [Domänenmodell](domain-model.md), [Modulgrenzen](module-boundaries.md) und die [ADR](../adr/) präzisieren diese Festlegungen.
+Die technische Grundform ist ein modularer Monolith mit einem Dart-Backend und PostgreSQL. Ein Flutter-Client nutzt dieselben API-Verträge für Handheld, Desktop und Web, aber jeweils passende Bedienoberflächen. API und Geschäftslogik bleiben serverseitig. Current client sessions and pending commands are memory-only; a persistent offline cache/queue is planned. [Domänenmodell](domain-model.md), [Modulgrenzen](module-boundaries.md) und die [ADR](../adr/) präzisieren diese Festlegungen.
 
 ```mermaid
 flowchart LR
@@ -22,7 +22,7 @@ flowchart LR
 
 ## Schichten und Datenfluss
 
-1. **Flutter-Client:** Zeigt Aufgaben, Schichten und Anleitungen. Er sammelt Eingaben und kann klar gekennzeichnete, erlaubte Aktionen vorübergehend lokal vormerken. Anzeige und Ausblenden sind keine Berechtigungsentscheidung.
+1. **Flutter-Client:** Zeigt Aufgaben, Schichten und Anleitungen. Er sammelt Eingaben. Durable disconnected-device writes are not implemented; a permitted pending queue is future work. Anzeige und Ausblenden sind keine Berechtigungsentscheidung.
 2. **API/Application:** Authentifiziert, autorisiert, validiert Eingaben und führt einen Anwendungsfall aus. Hier liegen Transaktionsgrenze, Idempotenz, Fehlerübersetzung und Orchestrierung mehrerer Domänenports.
 3. **Domain:** Erzwingt fachliche Invarianten, Zustandsübergänge und Entscheidungsregeln unabhängig von UI, HTTP und Persistenz.
 4. **Infrastructure:** PostgreSQL, migrationsfähige Repositories, Outbox, lokaler Dateispeicher und externe Adapter. Plugins sehen keine internen Tabellen.
@@ -35,9 +35,14 @@ Nach der technischen Grundlage entsteht als erster durchgängiger Anwendungsfall
 
 `Company → Location → Employee → Shift → TaskTemplate → TaskInstance → Employee Home → Guided Work → Completion → Audit Log`
 
-Für diesen Slice besitzt `organization` Unternehmen und Standort, `people` den Mitarbeiter, `workforce` die Schicht, `tasks` Vorlage, Ausführung und geführte Schritte, `audit` die auf Anwendungsebene nur ergänzbare Änderungshistorie. Plattformdienste stellen Authentifizierung, Autorisierung und API-Verträge bereit. Schichtveröffentlichung und Erzeugung der konfigurierten Aufgaben erfolgen idempotent in derselben lokalen Transaktion; [ADR 0011](../adr/0011-atomare-schichtveroeffentlichung.md) begründet diese Vereinfachung. Dabei wird die geltende Vorlagenversion als Snapshot festgehalten. Nach Commit zeigt Employee Home die eigene Schicht und eine begründete nächste Aufgabe. Der Abschluss prüft Pflichtschritte und Eingaben auf dem Server; der Audit Log hält die Änderung fest.
+Für diesen Slice besitzt `organization` Unternehmen und Standort, `people` den Mitarbeiter, `workforce` die Schicht, `tasks` Vorlage, Ausführung und geführte Schritte, `audit` die auf Anwendungsebene nur ergänzbare Änderungshistorie. Plattformdienste stellen Authentifizierung, Autorisierung und API-Verträge bereit. Schichtveröffentlichung und Erzeugung der konfigurierten Aufgaben erfolgen idempotent in derselben lokalen Transaktion; [ADR 0011](../adr/0011-atomare-schichtveroeffentlichung.md) begründet diese Vereinfachung. Dabei wird die geltende Vorlagenversion als Snapshot festgehalten. Nach Commit zeigt Employee Home die eigene Schicht und die zugeordneten Aufgaben. Explained automatic next-work recommendations remain planned. Der Abschluss prüft Pflichtschritte und Eingaben auf dem Server; der Audit Log hält die Änderung fest.
 
-Der Slice umfasst noch keine automatische Personaleinsatzplanung, Zeiterfassung, vollwertige Qualifikationsverwaltung, HACCP-Zertifizierung, Unternehmenssynchronisation, POS oder Lagerwirtschaft. Ihre späteren Module dürfen die schon dokumentierten Grenzen nicht rückwirkend aufbrechen. Der [Fahrplan](../roadmap/phases.md) legt die Reihenfolge fest.
+The bounded employee slice does not implement automatic staffing, time recording,
+full qualification management, certified HACCP, headquarters sync or a StoreOS
+checkout. Later Article/Assortment/manual Stock slices are bounded additions,
+not a complete purchasing/valuation workflow. Future domains must preserve the
+existing ownership boundaries. The [roadmap](../roadmap/phases.md) separates
+near-term proposals from long-term domain/dependency direction.
 
 ## Betrieb und Evolution
 
@@ -53,3 +58,11 @@ Der Slice umfasst noch keine automatische Personaleinsatzplanung, Zeiterfassung,
 - Welche konkreten Vorgänge dürfen auf einem Handheld ohne Verbindung zum Standortserver vorgemerkt werden?
 - Welche Aufbewahrungsfristen und Beleganforderungen gelten je Branche, Rechtsraum und Mandant?
 - Wie werden mehrere Standorte einer Person, Dienstreisen und geteilte Geräte im ersten produktiven Mandantenmodell abgebildet?
+
+## Optional future external boundaries
+
+Canonical external-POS ingestion, context-restricted remote employee self-service
+and explicit public artifact publishing are separate boundaries. None requires
+a mandatory vendor cloud, StoreOS checkout or public access to the operational DB.
+They are not implemented. See [future ownership](module-boundaries.md#intentional-future-ownership)
+and [vision](../vision.md); product dependencies use public contracts.

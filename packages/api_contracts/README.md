@@ -1,6 +1,6 @@
 # API-Verträge
 
-Reines Dart-Package `storeos_api_contracts` für die HTTP-Verträge von P0, P1 und P1b.1 bis P1b.8. Keine Flutter-, Datenbank- oder Domain-Abhängigkeit. [Basis-OpenAPI](openapi.yaml) und [Plattform-OpenAPI](platform.openapi.json) beschreiben die API maschinenlesbar. Mitarbeiterprofile, Account-Verknüpfungen, Vorlagen, Schichten, stornierte Schichten und Aufgabenausführung werden als öffentliche DTOs transportiert; interne Domainmodelle bleiben im jeweiligen Servermodul.
+Reines Dart-Package `storeos_api_contracts` für die HTTP-Verträge von P0, P1 und P1b.1 bis P1b.9 sowie Article, Assortment und Stock. Keine Flutter-, Datenbank- oder Domain-Abhängigkeit. [Basis-OpenAPI](openapi.yaml) und [Plattform-OpenAPI](platform.openapi.json) beschreiben die API maschinenlesbar. Mitarbeiterprofile, Account-Verknüpfungen, Vorlagen, Schichten, stornierte/geänderte Schichtintervalle, Aufgabenausführung, Article, Assortment und Stock werden als öffentliche DTOs transportiert; interne Domainmodelle bleiben im jeweiligen Servermodul.
 
 `/api/v1/` ist die erste Vertragsversion. Zusätzliche optionale Antwortfelder sind kompatibel; vorhandene Pflichtfelder, Typen und Semantik bleiben stabil. Breaking Changes erhalten eine neue API-Version. IDs sind opake Referenzen und verleihen keine Berechtigung. Login- und Session-Payloads dürfen nicht geloggt werden.
 
@@ -47,3 +47,17 @@ Selbstbedienung (P1) ergänzt unter `/api/v1/platform`:
   Widerruf aller Sitzungen einschließlich der aufrufenden sind atomar. Falsches aktuelles
   Passwort: `422 invalid_current_password`; mehr als fünf Fehlversuche pro Account in
   15 Minuten: `429 rate_limited`. [Slice-Vertrag](../../docs/development/phase-1-self-service-password-change.md).
+
+## Current documentation boundaries
+
+OpenAPI route/error drift prevention remains M3; broad error-taxonomy cleanup remains
+M4. Shared Dart contracts and bounded endpoint tests do not constitute a global
+router/OpenAPI consistency gate. Every API-adding slice must document and test
+its request/response/errors and negative cases. Before external API/SDK consumers,
+review the broader surface. Stock's required-nullable note is described as optional
+in OpenAPI (F10); that contract file is intentionally unchanged in this documentation
+pass and the correction remains open. See [technical debt](../../docs/development/technical-debt.md).
+
+Package README text is guidance; dated phase contracts and actual DTO/HTTP tests
+establish implementation. Use [status](../../docs/roadmap/status.md) for delivery
+and [module boundaries](../../docs/architecture/module-boundaries.md) for ownership.

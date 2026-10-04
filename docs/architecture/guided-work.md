@@ -31,9 +31,9 @@ Abhängige Aufgaben werden erst nach dem serverseitig gültigen Abschluss freige
 
 Die Handheldführung nutzt kurze Anweisungen, große Aktionen, klare Fehler und möglichst wenige Eingaben. Scanner liefern Kontext, lösen aber keine Berechtigung aus. Mitarbeiter sehen eigene Aufgaben und für die Arbeit nötige Informationen; Führungskräfte erhalten nur zweckgebundene Fortschrittsansichten. Kommentare und Nachweise dürfen nicht unbegrenzt sensible Personal- oder Kundendaten sammeln. Zugriff und Aufbewahrung richten sich nach Datentyp und Standort.
 
-## Offene Fragen
+## Remaining decisions
 
-- Wer darf Vorlagen veröffentlichen, Grenzwerte ändern und laufende Instanzen korrigieren?
+- Current template publication/bound editing is an authorized admin command. Who may correct a running/terminal instance or future safety evidence remains undecided; existing snapshots are immutable.
 - Welche Schrittarten und Nachweise sind im ersten produktiven Einsatz tatsächlich nötig?
 - Wann ist eine Auslassung fachlich zulässig, und wer genehmigt sie?
 - Welche Offline-Schritte sind bei möglichem Risiko sicher zulässig?
@@ -52,3 +52,13 @@ behält denselben offenen Schritt; Cancel beendet die Aufgabe unter Erhalt der H
 SQL-Invarianten verhindern Bestätigungen ohne passenden erfolgreichen Versuch sowie
 verwaiste Versuche. Audit und Receipt werden in derselben Transaktion geschrieben.
 Werte sind nur über die berechtigte Versuchshistorie verfügbar, nicht im Audit/Log.
+
+## Future Wiki and Planogram guidance
+
+Tasks may pin approved Wiki revisions and assigned published Planogram revisions
+as guidance. Knowledge/Merchandising own publication, assignment and content;
+Tasks owns execution, feedback/evidence linkage and permissions. Employee suggestions
+or deviations require authorized review; they do not silently republish instructions.
+Live Article/Assortment/Stock drill-down is a separate authorized query with freshness,
+not a replacement of the pinned execution content. Print/PDF identifies the selected
+revision. None of these content integrations exists in current task schema.

@@ -30,7 +30,7 @@ fencing and a sanitized report; the historical `0010→0011`, `0010→0012` and
 `0010→0013` evidence above is unchanged. The remote CI run for the committed
 slice passed.
 
-Update (2026-10-03, P4.3 working tree, uncommitted): the same runner and fixture
+Historical update (2026-10-03, P4.3 working tree, then uncommitted): the same runner and fixture
 now apply exactly `0011`–`0015`, additionally probe `stock_levels`,
 `stock_movements`, the released `inventory_article_location_projection` view,
 the scope/version constraints and the append-only runtime grants, run a real
@@ -44,7 +44,7 @@ This slice proves the supported single-site update/recovery contract on populate
 pre-update data. It is an acceptance and operating-evidence slice: it changes no
 product behavior, adds no migration and promises no downgrade.
 
-## Exercised contract
+## Historical original exercised contract — 0010→0011
 
 Terminology: **recovery** means restoring the encrypted pre-update restore point
 into a NEW isolated database and proving its contents and safety fencing. It does
@@ -291,3 +291,19 @@ Numbered criteria are tracked in the slice review; locally verified behavior:
 - Production updates are still an operator procedure; no `Update-StoreOS.ps1`
   tooling is provided by this slice.
 - Local Windows evidence plus the CI job; remote CI verified.
+
+## Current follow-up — 2026-10-04
+
+The P4.3 extension through 0015 is now committed at `e8ce8c3`; independent
+acceptance/current-head remote CI were not established by the later audit or this
+documentation pass. Earlier run IDs, injections, original 0010→0011 criteria and
+recorded baseline-specific approvals/CI remain unchanged. The fixture now applies
+0011–0015 and probes the Article/Assortment/Stock contracts; the original body
+above describes the initial scenario, not a current one-migration upgrade claim.
+
+Full wrapper acceptance was not freshly rerun in the 2026-10-04 audit because its
+dependency-resolution behavior conflicted with no-install scope. Prior local reports
+are historical evidence. Readiness alone does not establish full binary/schema
+compatibility, and diagnostic JSON redaction does not cover every raw failure tail.
+See [audit](project-health-audit-2026-10-04.md), [technical debt](technical-debt.md)
+and [current status](../roadmap/status.md).

@@ -23,3 +23,17 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0017](0017-manual-stock-foundation.md) | Manual stock foundation (ledger, projection, immutable unit snapshot) |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).
+
+## Decision status versus delivery
+
+An Accepted ADR records a chosen architectural direction, not proof that every
+consequence has been implemented, independently reviewed or verified by CI. Use
+[actual status](../roadmap/status.md) for those facts and [live debt](../development/technical-debt.md)
+for remaining findings. All 17 stable records above are retained; this documentation
+pass adds no irreversible decision or new speculative ADR.
+
+Follow-up context: ADR 0015's location-availability boundary is implemented by
+ADR 0016; ADR 0016's first Stock consumer is implemented by ADR 0017. Manual Stock
+is committed at `e8ce8c3` with active client acceptance corrections. The broader
+unit catalog/conversion and costing questions remain open. Do not rewrite the
+original alternatives, decisions or dated verification to reflect later delivery.

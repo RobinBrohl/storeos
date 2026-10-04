@@ -1,5 +1,7 @@
 # P1b.7: Numerische Guided-Work-Schritte
 
+Current delivery: DONE for the bounded slice. The closing status paragraph is the original implementation-date evidence; later browser/remote-CI outcomes are in [numeric verification](phase-1b-7-numeric-verification.md) and [actual status](../roadmap/status.md). No new browser run was performed by this documentation pass.
+
 ## Verbindlicher Umfang
 
 Ein `number`-Schritt besitzt Anleitung, Einheit als Anzeigetext und feste inklusive

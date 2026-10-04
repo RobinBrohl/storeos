@@ -1,7 +1,9 @@
 # P4.3 — Manual stock foundation
 
-Status: implemented as an uncommitted slice on `main` (independent review and
-remote CI pending). Baseline before the slice: committed P4.2 `3bc27d5`.
+Current status (2026-10-04): implemented and committed on `main` at `e8ce8c3`;
+P4.3 acceptance remains ACTIVE because F01/F06/F07 require a focused correction.
+Independent acceptance review and current-head remote CI are not established.
+Original implementation baseline: committed P4.2 `3bc27d5`.
 Related: [ADR 0017](../adr/0017-manual-stock-foundation.md),
 [ADR 0016](../adr/0016-article-location-assortment.md),
 [ADR 0015](../adr/0015-company-wide-article-master.md),
@@ -180,10 +182,11 @@ article/assortment activity indicators, an article-unit divergence hint, an
 open dialog sourced from the location's active assortment (globally inactive
 articles excluded, already-carried articles disabled), an adjust dialog with a
 required correction reason, and movement history paged by balance version.
-Ambigous adjust responses keep the exact `movementId` for an explicit retry and
-never attribute another actor's same-quantity command.
+The intended client flow keeps the exact `movementId` for an ambiguous retry and
+avoids attributing another actor's same-quantity command. The follow-up below
+records the duplicate-submission limitation.
 
-## Verification
+## Original local verification — 2026-10-03
 
 - contracts: 69 tests (8 stock contract/OpenAPI tests)
 - server: 201 real-PostgreSQL tests, including 20 stock integration tests
@@ -198,7 +201,19 @@ never attribute another actor's same-quantity command.
 
 ## Remaining boundaries
 
-The slice is uncommitted; independent review and remote CI are pending. The
+At the original local verification, the slice was uncommitted and independent
+review/remote CI were pending; this is historical evidence. The
 numeric guided-work browser E2E was not rerun locally. No valuation, receiving,
 waste, counting, sales, transfers, suppliers, purchasing or unit conversions
 exist, and no stock behavior was added to inventory.
+
+## Follow-up — 2026-10-04
+
+Commit `e8ce8c3` includes migration 0015 and the server/client implementation.
+The intended client retry behavior above is not reliable under duplicate dialog
+submission: pending identity can be replaced before the busy guard; dialog failures
+lose input and a mock ignores stale-version enforcement. F01/F06/F07 remain open
+in [technical debt](technical-debt.md). The strict server replay/version contract
+is implemented; no silent ledger overwrite was demonstrated. Earlier local test
+and update/recovery outcomes remain the original runs, not independent approval
+or current-head remote CI. See [actual status](../roadmap/status.md).

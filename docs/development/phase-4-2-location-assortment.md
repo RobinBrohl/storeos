@@ -1,6 +1,10 @@
 # P4.2: Article–location assortment
 
-Status (2026-10-03): implemented and verified locally (contracts, real
+Current status (2026-10-04): committed as `3bc27d5`; historical remote CI is
+recorded in the prior HANDOVER/status and update/recovery follow-up. No new online
+CI verification or independent approval is inferred here. See [actual status](../roadmap/status.md).
+
+Original implementation status (2026-10-03, historical): implemented and verified locally (contracts, real
 PostgreSQL, real HTTP, Flutter and the extended `0010→0014` update/recovery
 acceptance); the change set is uncommitted and independent review plus remote CI
 are pending. Baseline at implementation start: `d90dd7e`. Decision record:
@@ -153,7 +157,7 @@ subject location as location context and bounded changes (`articleId`,
 domain or outbox event is emitted; `inventory` remains a documented
 non-emitter.
 
-## Verification (local, 2026-10-03)
+## Original local verification — 2026-10-03
 
 - `packages/api_contracts`: 61 tests passed, including assortment DTO/input
   validation, JSON-safe version boundaries and OpenAPI containment (exact
@@ -185,7 +189,7 @@ non-emitter.
   listed above.
 - Independent review and remote CI are pending.
 
-## Boundaries and debt
+## Original boundaries and debt — 2026-10-03
 
 M1, the global M3/M4 cleanup, L1-L12, fixture duplication, company-lock
 granularity, offline behavior and retention/export remain deferred and
@@ -193,3 +197,11 @@ untouched. `unit` remains an uninterpreted label. Stock movements, receiving
 lines and order lines must later reference `(article_id, location_id)` directly
 and must not reference the assortment UUID or depend on its lifecycle. This
 document does not claim inventory, stock or purchasing functionality.
+
+## Follow-up — 2026-10-04
+
+The original pending/uncommitted wording in the dated evidence above is preserved.
+The slice is now committed, and manual Stock uses its released Inventory projection
+under ADR 0017. That does not add stock quantities to Assortment or decide units,
+receiving or valuation. Current Stock acceptance remains ACTIVE; see
+[P4.3](phase-4-3-manual-stock.md) and [technical debt](technical-debt.md).

@@ -1,46 +1,88 @@
-# Kritische Prüfung der Produktvision
+# Risks and open questions
 
-Status: Architektur- und Produkthypothesen. Dieser Katalog macht Zielkonflikte sichtbar und hält Entscheidungen offen, die der Master-Prompt noch nicht ausreichend bestimmt. Er ist vor jedem relevanten Modul und vor Pilotbetrieb zu aktualisieren. Die [ADRs](adr/) halten bereits beschlossene Grundrichtungen fest; offene Detailfragen sind keine stillen Implementierungsaufträge.
+Living register, reconciled 2026-10-04. **OPEN** needs a product/technical decision;
+**ANSWERED** points to actual decisions; **SUPERSEDED** identifies an obsolete
+premise; **OPERATOR DECISION** needs installation/organizational policy;
+**DEFERRED** has a future trigger. No status here authorizes implementation.
+[ADRs](adr/README.md) own settled architecture; [technical debt](development/technical-debt.md)
+owns demonstrated code findings; [vision](vision.md) owns the intended product.
 
-## Spannungen und größte Risiken
+## Original risk register
 
-| ID | Spannung oder Risiko | Konsequenz bei Fehlentscheidung | Leitplanke und Prüfpunkt |
-| --- | --- | --- | --- |
-| R1 | „Eine Datenbasis“ bei autonomen Standortservern und optionaler Zentrale | Zwei Instanzen ändern denselben Datensatz; Bericht und operativer Zustand widersprechen sich | Schreibautorität je Aggregat und Replikationsrichtung festlegen; ein neuer Schreiber wird erst nach Ausschluss des alten aktiv. Mehrstandort-Sync braucht Konflikt- und Wiederanlaufproben. |
-| R2 | Standortbetrieb ohne Internet und kurzzeitig offline Handhelds | Aktionen werden doppelt, verspätet oder mit veralteten Berechtigungen übernommen | Standortserver bleibt operative Autorität. Geräteaktionen erhalten IDs, Versionsprüfung und sichtbaren Status „ausstehend“; kritische Aktionen werden offline begrenzt. |
-| R3 | Dynamische Aufgaben und Abhängigkeiten versus verlässliche, faire Arbeit | Nicht erklärbare Prioritäten, verhinderte Pausen oder verdeckte Mitarbeiterbewertung | Deterministische Regeln mit Begründung, Sperrgründen und manueller Führungskraftentscheidung; keine Sanktionen aus Nutzungsdaten. |
-| R4 | „Plugin first“ versus Least Privilege und Verfügbarkeit | Erweiterung liest HR-Daten, verändert Bestände oder legt den Standort lahm | Fremde Plugins nur mit erzwungener Isolation, freigegebenen Netzwerkzielen, begrenzten API-Rechten und widerrufbaren Zugangsdaten. Runtime erst nach konkretem Adapterbedarf. |
-| R5 | Ein Flutter-Client für Web, Android, Windows, Linux und später POS | Unterschiedliche Offline-, Scanner-, Drucker-, Tastatur- und Sicherheitsfähigkeiten bleiben ungetestet | Gemeinsame Fach- und Designsprache, plattformspezifische Adapter; pro Zielgerät reale Hardware- und Update-Tests. |
-| R6 | Auditierbarkeit versus Datenschutz und Datenminimierung | Audit speichert Gesundheitsdaten, Freitext, Fotos oder alte Werte länger als nötig | Zweck, Feldumfang, Schutz, Zugriff, Aufbewahrung und Lösch-/Sperrverfahren je Ereignistyp festlegen; keine pauschalen Voll-Snapshots sensibler Daten. |
-| R7 | „Einmal eingeben“ versus korrigierbare und rechtssichere Vorgänge | Korrekturen löschen historische Sachverhalte oder propagieren falsche Daten | Versionierte Änderung/Korrektur mit Grund und Provenienz; zuständiger Fachbereich entscheidet über Wirksamkeit. |
-| R8 | Umfang von ERP, POS, HACCP, HR, Finance und KI | Zu viele halbfertige Funktionen, Sicherheits- und Compliance-Schulden | Phasen mit Abnahmekriterien; erst tägliche Mitarbeiterreise, dann fachliche Erweiterungen. Keine Dummy-Funktionen als Release. |
-| R9 | Komplexe Synchronisation von Dienstplan, Aufgaben und Nachweisen | Veröffentlichung erzeugt doppelte oder unvollständige Aufgaben; ungeprüfte Vorlagenänderung beeinflusst laufende Arbeit | P1 veröffentlicht Schicht und Aufgaben atomar nach ADR 0011. Snapshots und explizite Änderungs-/Storno-Semantik bleiben erforderlich; spätere asynchrone Erzeuger brauchen eigene Verträge. |
-| R10 | Regulatorisch sensible Nutzung in mehreren Branchen/Ländern | Allgemeine Workflows werden als rechtlich gültige Nachweise missverstanden | Compliance-Packs erst nach fachlicher und juristischer Prüfung je Jurisdiktion; im ersten Slice nur generische Werteingabe und Ausnahmebehandlung, kein HACCP-Zertifizierungsversprechen. |
-| R11 | Self-hosting im Betrieb mit wenig IT-Personal | Fehlende Backups, Patches oder Zertifikate machen Standort und Daten verwundbar | Unterstütztes Deployment, sichere Defaults, Restore-Übung, Update-/Rollback-Verfahren und lokale Statusanzeigen als Betriebs-Gates. |
-| R12 | Open Source, AGPLv3 und kundenspezifische Plugins | Lizenzinkompatibilität oder unklare Veröffentlichungspflichten | Beiträge und Abhängigkeiten prüfen; Rechtsbewertung für Plugin-Verteilung und Integrationsmodelle vor kommerziellem Angebot. |
-| R13 | Wiederholung oder verspätete Zustellung von Events und Offline-Kommandos | Doppelte Wirkung trotz Deduplizierung, verlorene Wirkung bei falscher Commit-Reihenfolge | Deduplizierung, Fachänderung und Audit atomar speichern; verlorene Quittung, Crash und Replay prüfen. Externe Effekte brauchen gesonderte Idempotenz oder Abgleich. |
-| R14 | Restore eines älteren Standorts mit neueren Gegenstellen | Versionsrücksprung, verlorene Bestätigungen sowie reaktivierte Zugriffe oder gelöschte Personendaten | Sync-, Sperr- und Löschstände vor Wiederöffnung abgleichen; alte Zugänge invalidieren und Schlüssel-Recovery prüfen. Zentrale Projektionen ersetzen kein Standortbackup. |
-| R15 | Unbegrenztes Offlineversprechen bei endlichem Speicher | Outbox oder Anhänge füllen den Datenträger und stoppen lokale Transaktionen | Unterstützte Trennungsdauer und Datenrate bemessen; Aufbewahrung, Cursor-Neustart und Warnschwellen vor P2 festlegen. |
-| R16 | Lokale Schreiber bei standortübergreifenden Regeln | Zwei Standorte planen unabhängig dieselbe Person zur gleichen Zeit | Vor Freigabe pro Regel zwischen lokalem Hinweis und verbindlicher globaler Prüfung unterscheiden; letztere braucht Koordination oder vorherige verbindliche Zuteilung. |
-| R17 | Updates bei aktiven Aufgaben und getrennten Knoten | Alte Snapshots werden anders interpretiert oder noch ausstehende Kommandos passen nicht mehr zum Server | Schrittsemantik und öffentliche Verträge separat versionieren, vorhandene Daten/aktive Instanzen testen und ein begrenztes Kompatibilitätsfenster festlegen. |
+Risk IDs are retained. Partial implementation mitigates a risk within its tested
+boundary; it does not close every future case.
 
-## Offene Entscheidungen mit Termin im Fahrplan
+| ID | Classification | Risk and current disposition / decision gate |
+| --- | --- | --- |
+| R1 | DEFERRED | Shared model vs autonomous sites: current one-Company local authority is decided; per-aggregate headquarters ownership, replication and writer handoff before multi-site sync remain undecided. |
+| R2 | DEFERRED | WAN independence vs disconnected devices: local core is self-hosted; allowed device writes, stale grants, replay/conflict and pending status need a separate offline contract. |
+| R3 | OPEN | Dynamic priorities vs fair work: explainable rules, blocked prerequisites, preserved breaks and human override are principles; recurrence/recommendation semantics need a real slice. No employee scoring. |
+| R4 | DEFERRED | Plugin availability/least privilege: current approved external read clients are bounded. Isolation/network controls before executing third-party code; a first-party POS adapter need not be a plugin. |
+| R5 | OPERATOR DECISION | Supported browsers/devices/scanners/printers and update tests before pilot/device claims; current shipped runner is Web. |
+| R6 | OPERATOR DECISION | Audit vs minimization: field purpose, access, retention, export/delete/restriction, attachments and backup handling before real employee data. No blanket sensitive snapshots. |
+| R7 | OPEN | Corrections preserve provenance/history; existing versions/receipts/snapshots answer current mutations. Completed-work, sales and fiscal correction semantics remain domain-specific. |
+| R8 | OPEN | Product breadth risks half-finished ERP/POS/HR/AI. One small complete vertical slice, truthful acceptance and product boundaries remain the gate. |
+| R9 | ANSWERED for current slice | ADR 0011 atomically publishes shifts/tasks; ADRs 0013/0014 define pristine cancellation/interval amendment. Begun work, reassignment and async generation remain separate OPEN questions below. |
+| R10 | OPERATOR DECISION | Safety/fiscal/country-specific use needs qualified sector/jurisdiction review. Generic numeric tasks do not certify HACCP or regulatory compliance. |
+| R11 | OPERATOR DECISION | Low-IT self-hosting: deployment/backup/update tools mitigate; patching, trusted TLS, off-host restore, monitoring and activation responsibility remain operator gates. Recovery is not arbitrary rollback. |
+| R12 | OPERATOR DECISION | AGPLv3/components/custom plugin distribution: review licenses before third-party contributions/commercial integration commitments. |
+| R13 | ANSWERED for current commands; DEFERRED externally | Atomic replay/evidence exists for supported task/stock commands and local inbox. External side effects, imports, delayed offline commands and cross-node replay need explicit identity/reconciliation contracts. |
+| R14 | DEFERRED | Restores are currently fenced with credentials invalidated; rejoining newer counterpart sync/access/delete state before multi-node reopening is still required. |
+| R15 | DEFERRED | Finite queue/storage vs offline duration: define supported disconnection period, data rate, replay retention, cursor restart and warning thresholds before offline/sync release. |
+| R16 | DEFERRED | Multiple site writers/global employee rules: choose advisory local checks vs binding global allocation before multi-site planning. No unrestricted parallel authority. |
+| R17 | OPEN at relevant version change | Snapshot semantics are preserved in current migrations/tests; define future client/plugin/sync compatibility windows and treatment of active work before an incompatible release. |
 
-| Frage | Benötigt vor |
-| --- | --- |
-| Darf eine Installation mehrere Companies enthalten, oder ist zunächst eine Company pro Installation vorgesehen? Wie werden Mandanten administrativ getrennt? | Persistenzschema und Berechtigungstest des ersten Slice |
-| Wie werden Accounts, Employee-Stammdaten und Rollen zwischen mehreren Standorten verantwortet und bei getrennter Zentrale widerrufen? | Zentrale Synchronisation; lokale Authentifizierung bereits vor erstem Pilot |
-| Welche Schichtänderung erzeugt, ändert oder storniert TaskInstances? Wie wird eine laufende Aufgabe behandelt? | Erster Vertical Slice |
-| Teilantwort (2026-10-02): Ein Beginn-/Ende-Wechsel veröffentlichter Schichten vor Ausführungsbeginn ändert keine Instanzen; Änderungen an Mitarbeiter/Vorlagen sowie begonnene Arbeit bleiben offen ([ADR 0014](adr/0014-pre-execution-shift-interval-amendment.md)). | Weiterhin vor Mitarbeiter-/Vorlagenänderung oder Wiederaufnahme begonnener Arbeit |
-| Welche Schritte und Nachweise dürfen auf Handhelds offline erstellt werden? Was sieht der Nutzer bis zur Annahme durch den Server? | Geräte-Offlinephase |
-| Wie lange werden getrennte Geräte/Standorte und alte Wiederholungen unterstützt? Wie passen Rechtegültigkeit, Speicherbedarf und Deduplizierungsaufbewahrung zusammen? | Geräte- und Standort-Sync-Freigabe |
-| Wie lange bleiben Aufgaben-, Geräte-, Audit- und HR-Daten gespeichert, und wer darf sie exportieren? | Erster Pilot mit realen Beschäftigtendaten |
-| Wer darf eine Abweichung schließen oder eine abgeschlossene Aufgabe korrigieren? | Guided Work und spätere HACCP-Funktion |
-| Welche Geräteklassen, Betriebssystemversionen und Scanner/Drucker sind für die erste unterstützte Installation verbindlich? | Pilotbetrieb |
-| Welche maximal tolerierbaren Datenverluste und Wiederherstellungszeiten gelten je Standort? | Backup-/Restore-Abnahme |
-| Welche API- und Plugin-Fähigkeiten braucht der erste reale Integrationsfall; wer prüft fremde Plugins? | Plugin-Runtime |
-| Welche alten Client-/Plugin-/Sync- und Guided-Work-Versionen unterstützt ein Release, und wie werden aktive Instanzen vor einer inkompatiblen Änderung behandelt? | Erster entsprechender Versionswechsel |
-| Wann wird aus der Einheiten-Bezeichnung des P4.1-Artikelstamms ein standardisierter Einheitenkatalog mit Umrechnungen, und wer besitzt ihn? | Bestands-, Wareneingangs- oder Rezeptfunktion (P4/P6) |
-| Welche weiteren Artikelstammdaten (Kategorien, Lieferantenbezug, GTIN-Prüfung) sind durch reale Betreiberdaten begründet? | Nächste P4-Ausbaustufe |
+## Previous questions: answered and remaining parts
 
-Der [Fahrplan](roadmap/phases.md) ordnet diese Fragen Lieferphasen zu. [Compliance](compliance/overview.md) vertieft die regulatorischen Prüfungen, ohne generelle Rechtskonformität zu behaupten.
+| Topic | Classification | Answer or remaining decision / gate |
+| --- | --- | --- |
+| Multiple Companies per installation | ANSWERED | Current supported model is one Company per installation; Organization/authorization schema and ADR 0012 establish the bounded scope. Shared-schema tenancy would be a new architecture decision. |
+| Account/Employee/Roles across sites | DEFERRED | Current local ownership and revocation exist. Headquarters authority, scoped assignments, offline revocation and selective employee replication before multi-site sync remain open. |
+| Shift publication and task creation | ANSWERED | ADR 0011, P1b.3; immutable task snapshots in one local transaction. |
+| Published-shift pristine cancellation / interval changes | ANSWERED | ADRs 0013/0014, migrations 0011/0012. Interval changes regenerate no tasks. Old blanket prohibition is SUPERSEDED. |
+| Published employee/template changes; begun work | OPEN | Current employee/task snapshot assignments remain immutable. Define reconciliation, preserved evidence, eligibility and permitted operations before enabling it. |
+| Device offline evidence and user status | DEFERRED | No persistent queue exists. Decide permitted step/evidence types and visible pending/refused behavior before device offline writes. |
+| Disconnection/replay/version support | DEFERRED | Align rights expiry, dedup retention, bounded queues and client/snapshot semantics before sync/compatibility expansion. |
+| Retention/export of tasks, devices, audit and employee data | OPERATOR DECISION | Purpose, access and actual periods/workflows before real employee use; cleanup must not precede policy. |
+| Resolve a blocked task | ANSWERED | Current admin resume/cancel with reason, scope and audit; employee resumes remaining work. This is not a general safety deviation approval. |
+| Correct completed tasks / HACCP deviation | OPEN | Completed/cancelled tasks are terminal. A correction is a separate evidence-preserving domain command; qualified safety approval rules before HACCP. |
+| Devices/OS/scanners/printers | OPERATOR DECISION | Select supported device matrix and run hardware/accessibility tests before pilot claims. |
+| Site RPO/RTO | OPERATOR DECISION | Set acceptable loss/recovery time, key custody, off-host exercises and activation responsibilities. Existing isolated acceptance does not answer target-hardware recovery time. |
+| First real plugin/integration contract and review | OPEN | Select actual source/permissions/adapter deployment. Third-party runtime review/isolation before executing code; current read API is not that runtime. |
+| Article units/conversion timing | OPEN | Frozen text unit works for current manual Stock. Decide catalog owner, dimensional precision and explicit conversions before unlike-unit receiving/Recipes/sales effects; not a blocker for canonical sales records. |
+| More Article fields | OPEN | Categories, supplier links and GTIN validation require real operator data; optional current barcode is opaque. No speculative master-data expansion. |
+
+## Product decisions added by reconciliation
+
+| Topic | Classification | Decision required before |
+| --- | --- | --- |
+| Configurable Roles / direct grants | OPEN | System templates, company role assignments, additive direct grants, scope inheritance/revocation and admin lockout protection before RBAC expansion; explicit deny only if justified. |
+| Location-scoped permissions | OPEN | One/multiple-location scopes and consistent manager/employee queries before multi-site execution; see L4/L5. |
+| Legal entities / Employee lifecycle | DEFERRED | Explicit legal-entity relationships, employment periods, re-entry and data ownership before HR expansion; never conflate Account/Employee identity. |
+| Wiki publication/suggestions | OPEN | Review/approve/publish permissions, immutable approved revisions, suggestion lifecycle and historical task pins before Knowledge slice. |
+| Fixture / Planogram assignment | OPEN | Generic fixture zones, revision/effective dates, higher-level assignments, acknowledgement/feedback and local override authority before rollout. |
+| Recipe unit/yield/cost basis | OPEN | Ingredient/production units and yield/waste policy before calculation; trustworthy effective purchase/average/standard basis before cost/margin. No invented valuation. |
+| Production consumption model | OPEN | Finished-goods stock vs ingredient-on-sale consumption, batch provenance and no double consumption before automatic movements. |
+| Pricing and Menu content | OPEN | Authoritative effective price/currency, approvals and deterministic revision print before price-bearing Menu artifacts. |
+| Public publishing | OPEN | Artifact format, hosting/update/status/rollback boundary before website publication; operational DB/admin APIs stay private. No selected cloud vendor. |
+| Boards / Chat membership and privacy | OPEN | Bounded operational use case and controlled admin access before communication design. Boards may precede Chat. |
+| Communication retention / offboarding | OPERATOR DECISION | Purpose, periods, export/delete, membership removal, backups/restored access and notification contact use before real communications. No full chat body in default email. |
+| ShiftSwapRequest approval | OPEN | Recipient response, comments, responsible approval, stale-version revalidation and atomic mutation before swaps. Linked cancel/replacement is a candidate, not a decided ADR; begun work/marketplace deferred. |
+| Remote employee access | OPEN | Authenticated context allowlist, gateway/VPN trust, identity assurance/MFA/recovery and revocation before remote self-service. Network IP alone is insufficient. |
+| No private-device use | ANSWERED as product principle | Private smartphone/app is optional; preserve in-store access and print/email/kiosk alternatives. Concrete delivery/access arrangements remain OPERATOR DECISION. |
+| Canonical external-POS source | OPEN | Actual vendor API/export contract, configured Company/Location authority, source identity/checkpoints, retry/gap detection and explicit product mapping before ingest slice. DSFinV-K backfill is not itself a real-time API. |
+| Sales Stock effect / cutover / returns | OPEN | Source units, physical opening/cutover, delayed/backfill replay, machine actor, physical returns vs void/reversal and production policy before automatic effects. Unresolved effects can stay visible in earlier ingestion. |
+| Sales cost/margin reporting | OPEN | Reliable source amounts/currency/tax and effective cost basis before margins; not required for first canonical import. |
+| StoreOS-owned checkout | DEFERRED | Separate product decision, payment/fiscal contracts and qualified review; it is not a prerequisite for external-POS import or basic reporting. |
+| AI / autonomy | DEFERRED | Demonstrated benefit, approved scoped sources, uncertainty and human critical decisions before optional activation. |
+
+## Current technical and operator gates
+
+P4.3 F01/F06/F07 are unresolved acceptance defects. M1 requires a tested disposition
+before real-user reverse-proxy deployment. M3/M4 need containment on new APIs and
+broader review before external API/SDK commitments. M2 is ANSWERED/closed by
+migration 0012; old M2 deferral is SUPERSEDED. See the [live debt register](development/technical-debt.md).
+
+Operator/legal decisions are not closed by a successful test suite. [Compliance](compliance/overview.md)
+states review boundaries; deployment/restore documentation states technical procedures.
+No document in this pass certifies legal compliance.

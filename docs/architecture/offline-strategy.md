@@ -1,5 +1,7 @@
 # Offline- und Synchronisationsstrategie
 
+Current boundary: local authentication/server data work without a headquarters cloud; no persistent client offline cache/command queue or multi-site replication is implemented. Sessions/pending commands are memory-only. The sync contracts below are target requirements. See [status](../roadmap/status.md).
+
 ## Zwei getrennte Ausfallszenarien
 
 **WAN-Ausfall:** Ein Standortserver mit lokaler PostgreSQL-Datenbank bleibt für Clients im Standort-LAN der führende Server. Schichten, Aufgaben und lokale Abschlüsse funktionieren weiter. Ein optionaler Unternehmensserver ist für den laufenden Standortbetrieb nicht synchron erforderlich. Zentrale Änderungen, standortübergreifende Berichte und externe Integrationen können während der Trennung veralten oder ausfallen.
@@ -29,3 +31,16 @@ Standortdaten werden vom Standortserver geschrieben und als versionierte, berech
 Zentrale Empfangsbestätigung bedeutet nicht automatisch fachliche Freigabe. Globale Regeln über mehrere Standorte benötigen die in der [Datenhoheit](data-ownership.md) festgelegte Koordination. Aus einem lokalen Commit wird keine unzutreffende globale Zusage abgeleitet.
 
 Der erste Slice verlangt den autonomen Standortbetrieb bei WAN-Ausfall, aber noch keine Geräte-Offline-Queue. Cache, Queue und die Freigabe einzelner Offline-Operationen folgen als eigener Schritt in P2. Standort-Zentrale-Synchronisation, standortübergreifende Personaleinsatzplanung und Offline-Verarbeitung von HACCP, Bestand oder Geld folgen erst mit eigenen Konfliktregeln und Ausfalltests. Der Ausfall des Standortservers selbst ist kein durch „local first“ gelöstes Szenario; dafür braucht es Backup, Restore und einen betrieblichen Notfallprozess.
+
+## Remote access and external feed outages
+
+Remote self-service is an authenticated access context, not device-offline sync.
+An optional gateway's failure must preserve independent in-store operation and
+no-private-device access alternatives. Public Menu publishing exposes approved
+artifacts, not the operational DB.
+
+Future external-POS adapters may operate locally or use outbound source APIs. A
+source outage leaves import freshness/failures/unresolved effects visible; do not
+fabricate current sales or replay a backfill into Stock without explicit source
+identity, units and physical cutover policy. Core sales ingestion and device queues
+share the need for durable identity, but they are distinct contracts/owners.

@@ -44,8 +44,9 @@ scripts and proves that:
 pwsh ./scripts/backup/Run-BackupRestoreAcceptance.ps1
 ```
 
-The runner exits non-zero on any failed step, names that step without printing
-secrets and writes the report below. It requires no parameters in normal use.
+The runner exits non-zero on any failed step, names that step and writes the
+sanitized report below. Failure log-tail redaction is not fully established; see
+the diagnostic boundary below. It requires no parameters in normal use.
 
 ## Safety boundaries
 
@@ -59,8 +60,9 @@ secrets and writes the report below. It requires no parameters in normal use.
   run and matches the strict naming pattern. User-supplied database names are
   never dropped.
 - `docker compose down -v` is never used.
-- Owner and runtime credentials are read from the existing secret files into
-  process-local variables and never printed, logged or written to the report.
+- Owner and runtime credentials are read from existing secret files into
+  process-local variables and excluded from the accepted JSON report. Do not
+  treat the report's redaction checks as proof that every failure log tail is masked.
 - Run-scoped backups and fixtures live under `.local/backup-acceptance/<run-id>/`
   and are removed after the run; only `report.json` remains.
 
@@ -122,3 +124,18 @@ listed in the run report. Verify the names begin with `storeos_backup_accept_`
 or `storeos_restore_bkacc_`, confirm they belong to the interrupted run ID, then
 remove only those databases through the Compose server. Do not drop the normal
 StoreOS database and do not use `docker compose down -v`.
+
+## Diagnostic and verification boundaries
+
+The sanitized JSON report has explicit redaction assertions/tests. Backup/update
+runner failure log tails are not masked like capacity diagnostics (L6/F13); no
+actual disclosure was observed in the audit, but universal diagnostic secrecy
+is not established. Fix this in a separate authorized harness change, and avoid
+sharing raw failure tails without inspection. [Technical debt](../../docs/development/technical-debt.md)
+tracks the open item.
+
+This runbook documents commands, not a new acceptance run. The
+[2026-10-04 audit](../../docs/development/project-health-audit-2026-10-04.md) did
+not freshly rerun the full wrapper because it resolves dependencies. Restore
+activation, post-backup access/deletion policy and off-host/RPO/RTO decisions
+remain operator responsibilities.

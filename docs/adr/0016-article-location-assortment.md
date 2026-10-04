@@ -111,3 +111,9 @@ facts that survive assortment changes.
 - Which consumer (ordering, receiving, stock) first turns a membership into an
   operational gate, and does it need a per-location override reason?
 - Which retention/export rule applies to assortment membership and its audit?
+
+## Follow-up status — 2026-10-04
+
+The first manual-Stock consumer is implemented by [ADR 0017](0017-manual-stock-foundation.md) / migration 0015, committed at `e8ce8c3`. It uses Article + Location rather than the membership UUID and preserves Stock after deactivation. Original decision/evidence above remain historical. Unit conversion, receiving and valuation are not thereby implemented.
+
+See [actual status](../roadmap/status.md) for current delivery; an Accepted ADR is not CI evidence.

@@ -8,7 +8,7 @@ and verified by the remote CI job `backup-restore-acceptance`.
 The slice adds an opt-in acceptance that exercises the existing encrypted
 backup and isolated restore scripts against an isolated database containing the
 bounded employee journey. It is defined by
-[HANDOVER next recommended work item 2](../HANDOVER.md#next-recommended-work)
+[historical HANDOVER proposal item 2](handover-snapshot-2026-10-03.md#next-recommended-work)
 and the [acceptance runbook](../../infra/backup/acceptance.md).
 
 In scope:

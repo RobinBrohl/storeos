@@ -41,3 +41,16 @@ docker compose --profile tls up -d --build app proxy
 Für die Standardadresse muss `STOREOS_ALLOWED_ORIGINS` ausdrücklich `https://localhost:8443` enthalten, auch wenn Browser und API denselben Ursprung verwenden. Für Zugriff im Standort-LAN müssen `STOREOS_TLS_BIND` auf eine konkrete LAN-Adresse und `STOREOS_TLS_SITE` auf den passenden DNS-Namen gesetzt werden; die erlaubte Origin wird entsprechend angepasst. Diese Freigabe braucht Firewall-, DNS- und Zertifikatsprüfung. Der Entwicklungsport `8080` bleibt nur auf Loopback. Das Profil ist eine lokale Referenzkonfiguration; öffentliche Erreichbarkeit oder ein produktiver Zertifikatsbetrieb werden dadurch nicht eingerichtet.
 
 Die Caddy-CA liegt im Volume `caddy_data`. Bei einem Restore für dieselben Clientgeräte sind CA und Schlüssel zusammen mit Konfiguration und Secrets gesondert zu sichern; das Datenbanksicherungsskript deckt diese Dateien nicht ab.
+
+## Current migration and readiness boundary
+
+Apply the full 0001–0015 migration chain before starting the current server.
+`/ready` currently checks only the early platform migrations 0001–0004; it is
+not proof that every module's schema matches the binary. Do not rely on a green
+health response to replace controlled migration/compatibility checks (F08).
+
+The TLS topology also needs the [M1 login-attribution disposition](../reverse_proxy/README.md#current-real-user-pilot-gate--m1)
+before real proxied users. Restores remain fenced pending the operator activation
+procedure; isolated acceptance does not automatically reopen a production site.
+See [deployment](../../docs/architecture/deployment.md) and
+[technical debt](../../docs/development/technical-debt.md).

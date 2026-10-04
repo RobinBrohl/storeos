@@ -1,56 +1,91 @@
-# Dokumentationsindex
+# Documentation index
 
-**Current entry points:** [HANDOVER](HANDOVER.md) is the starting point for a new coding agent; [actual status](roadmap/status.md) records implemented scope, [workflow](development/workflow.md) defines the English technical-language policy, and [handover verification](development/handover-verification.md) records the latest checks. Older phase reports are historical evidence; architecture documents also describe planned capabilities.
+Canonical sources reconciled 2026-10-04. Start with [HANDOVER](HANDOVER.md) after
+[AGENTS](../AGENTS.md). Current source baseline is `e8ce8c3`; current-head
+remote CI/independent stock acceptance is not established. Do not infer delivery
+from a target architecture description or an Accepted ADR.
 
-These documents preserve the founder's StoreOS vision. Architecture describes the target and explicitly bounded implementations; [actual status](roadmap/status.md) records the current scope through P1b.9 (including the M2 database overlap invariant) plus the committed, CI-verified P4.1 article master and P4.2 location assortment. The P4.3 manual stock foundation is implemented as an uncommitted slice on top of P4.2; independent review and remote CI are pending. For conflicts, use the relevant ADR for architecture decisions, [product principles](product-principles.md) for priorities and [roadmap](roadmap/phases.md) for sequencing.
+## Canonical sources
 
-- [Vision](vision.md) – Problem, Nutzen, Zielbild und bewusste Grenzen
-- [Produktprinzipien](product-principles.md) – dauerhafte Prioritäten
-- [Kritische Prüfung und offene Fragen](risks-and-open-questions.md) – Spannungen und Entscheidungsbedarf
-- [Architekturüberblick](architecture/overview.md) – Systemkontext und Bausteine
-- [Domainmodell](architecture/domain-model.md), [Modulgrenzen](architecture/module-boundaries.md), [Workforce Orchestration](architecture/workforce-orchestration.md), [Guided Work](architecture/guided-work.md)
-- [Event-System](architecture/event-system.md), [Plugin-System](architecture/plugin-system.md), [Sicherheit](architecture/security.md), [Offline-Strategie](architecture/offline-strategy.md), [Deployment](architecture/deployment.md), [Datenhoheit](architecture/data-ownership.md)
-- [Entwicklungsphasen](roadmap/phases.md), [Compliance](compliance/overview.md), [Architekturentscheidungen](adr/)
-- [Phase-1-Prüfnachweis](development/phase-1-verification.md) – Tests, Migration, Browser-Smoke und Restore
-- [Implementierungsreview nach P1](development/implementation-review-2026-09-27.md) – Befunde, Korrekturen und zusätzliche Sicherheitsprüfungen
-- [P1b.1 – Mitarbeiteridentität und Eigenansicht](development/phase-1b-employee.md) – Umfang, Eigentümer, Rechte, API und Abnahme
-- [P1b.1-Prüfnachweis](development/phase-1b-verification.md) – Tests, Upgrade, Browser-Smoke, Restore und geänderte Dateien
-- [Review des P1b.1-Entwicklungszyklus](development/phase-1b-review-2026-09-27.md) – konkrete Befunde, Korrekturen, Regressionstests und verbleibende Grenzen
+| Question | Source | What it owns |
+| --- | --- | --- |
+| What is StoreOS / how do I start? | [Repository README](../README.md), [local development](development/local-development.md) | Product entry and detailed development commands. |
+| What should the next developer know now? | [HANDOVER](HANDOVER.md) | Current baseline, invariants, active blockers and next proposals. |
+| What product are we building? | [Vision](vision.md), [principles](product-principles.md) | Long-term definitions, priorities and product boundaries. |
+| What exists? | [Actual status](roadmap/status.md) | DONE/ACTIVE/PLANNED, implementation/commit/verification boundaries. |
+| What comes next / depends on what? | [Roadmap](roadmap/phases.md) | Near-term proposals and long-term domain dependencies, not exact distant promises. |
+| What owns what? | [Overview](architecture/overview.md), [module boundaries](architecture/module-boundaries.md), [domain model](architecture/domain-model.md) | Current logical modules and explicitly planned owners/concepts. |
+| Why was an architecture choice made? | [ADR index](adr/README.md) | Stable decision records; accepted decision is not completed implementation. |
+| What is still risky or undecided? | [Risks/open questions](risks-and-open-questions.md), [technical debt](development/technical-debt.md) | Product/operator decisions versus live code findings and resolution triggers. |
+| How do I operate safely? | [Deployment](architecture/deployment.md), [Docker](../infra/docker/README.md), [TLS](../infra/reverse_proxy/README.md), [backup](../infra/backup/README.md), [backup acceptance](../infra/backup/acceptance.md) | Supported procedures, fencing and operator gates. |
+| How do I change the repository? | [Development workflow](development/workflow.md) | Contribution process, English technical-language policy and checks. |
+| What was verified in a slice? | [Slice records](#slice-contracts-and-evidence) | Dated contract/test/review/CI evidence at the stated baseline. |
+| What needs qualified review? | [Compliance](compliance/overview.md) | Sector/legal review boundaries; no compliance certification. |
 
-- [P1b.2 – Arbeitsvorlagen](development/phase-1b-templates.md) – verbindlicher Scope, Modell, API, Rechte und Audit
-- [P1b.2-Prüfnachweis](development/phase-1b-templates-verification.md) – Tests, Smoke, Wiederherstellung und geänderte Dateien
+In a conflict, use the applicable ADR for settled architecture, principles for
+product priorities and status for delivery. Update relevant canonical sources
+when behavior changes. Preserve historical runs and add dated follow-ups rather
+than retroactively changing review/CI outcomes.
 
-- [Review des P1b.2-Zyklus](development/phase-1b-templates-review-2026-09-27.md) – drei behobene Befunde, Regressionstests und finale Prüfung
+## Architecture detail
 
-Änderungen an Verhalten, Eigentümerschaft von Daten oder Modulgrenzen aktualisieren die betroffenen Dokumente im selben Arbeitsschritt. Eine verworfene ADR wird durch eine neue ersetzt und im alten Dokument als überholt markiert.
+- [Workforce orchestration](architecture/workforce-orchestration.md) and [Guided Work](architecture/guided-work.md).
+- [Events](architecture/event-system.md) and [plugins](architecture/plugin-system.md).
+- [Security](architecture/security.md), [offline/sync](architecture/offline-strategy.md) and [data ownership](architecture/data-ownership.md).
 
-- [P1b.3 – Schichten und Employee Home](development/phase-1b-shifts.md) – Scope, Rechte, Transaktion und API
-- [P1b.3-Prüfnachweis](development/phase-1b-shifts-verification.md) – Tests, Browser-Smoke und Restore
-- [Review des P1b.3-Zyklus](development/phase-1b-shifts-review-2026-09-27.md) – drei behobene Befunde und finale Prüfung
+## Current audit and historical records
 
-- [P1b.4 – Guided Work und Completion](development/phase-1b-execution.md) – bestätigte Schritte, Rechte, Wiederholungen und Grenzen
-- [P1b.4-Prüfnachweis](development/phase-1b-execution-verification.md) – Tests, Browser-Smoke und Restore
-- [Review des P1b.4-Zyklus](development/phase-1b-execution-review-2026-09-27.md) – zwei behobene Fehler beim Fortschrittsabgleich und finale Prüfung
+- [Project health/vision audit 2026-10-04](development/project-health-audit-2026-10-04.md): preceding session audit of `e8ce8c3`, checks, findings and explicit gaps.
+- [Live technical debt](development/technical-debt.md): current M/L/F dispositions.
+- [Milestone health check 2026-10-02](development/milestone-health-check-2026-10-02.md): historical `512ac64` baseline, original M1–M4/L1–L12 and then-next password recommendation; not today's backlog.
+- [Handover verification](development/handover-verification.md): historical 2026-09-29 checks, not latest verification.
+- [Preserved handover snapshot](development/handover-snapshot-2026-10-03.md): original long handover, earlier baseline/proposals and preserved details.
+- [Implementation review](development/implementation-review-2026-09-27.md): dated foundation review.
 
-- [P1b.5 – Blockierung und Klärung](development/phase-1b-blocking.md) – Scope, Rechte, Historie und Migration
+## Slice contracts and evidence
 
-- [P1b.5-Prüfnachweis](development/phase-1b-blocking-verification.md) – Tests, Zwei-Benutzer-Smoke, Upgrade, Restore und geänderte Dateien
-- [Review des P1b.5-Zyklus](development/phase-1b-blocking-review-2026-09-27.md) – zwei behobene UI-Zustandsfehler und finale Prüfung
+Records below describe their own slice/run. Original “pending”, “uncommitted”
+and older counts inside evidence are historical unless a current header says
+otherwise. [Status](roadmap/status.md) and [live debt](development/technical-debt.md)
+resolve current delivery and outstanding findings.
 
-- [P1b.6 – Stornierung blockierter Aufgaben](development/phase-1b-cancellation.md) – Scope, Rechte, terminaler Zustand und Migration
-- [P1b.6-Prüfnachweis](development/phase-1b-cancellation-verification.md) – Tests, Browser-Smoke, Upgrade, Restore und geänderte Dateien
-- [Review des P1b.6-Zyklus](development/phase-1b-cancellation-review-2026-09-27.md) – korrigierte Fehlerzustände, API-Vertrag und finale Prüfung
+- [phase-0-verification](development/phase-0-verification.md)
+- [phase-0](development/phase-0.md)
+- [phase-1-self-service-password-change](development/phase-1-self-service-password-change.md)
+- [phase-1-verification](development/phase-1-verification.md)
+- [phase-1](development/phase-1.md)
+- [phase-1b-7-numeric-steps](development/phase-1b-7-numeric-steps.md)
+- [phase-1b-7-numeric-verification](development/phase-1b-7-numeric-verification.md)
+- [phase-1b-8-shift-cancellation](development/phase-1b-8-shift-cancellation.md)
+- [phase-1b-9-shift-amendment](development/phase-1b-9-shift-amendment.md)
+- [phase-1b-blocking-review-2026-09-27](development/phase-1b-blocking-review-2026-09-27.md)
+- [phase-1b-blocking-verification](development/phase-1b-blocking-verification.md)
+- [phase-1b-blocking](development/phase-1b-blocking.md)
+- [phase-1b-cancellation-review-2026-09-27](development/phase-1b-cancellation-review-2026-09-27.md)
+- [phase-1b-cancellation-verification](development/phase-1b-cancellation-verification.md)
+- [phase-1b-cancellation](development/phase-1b-cancellation.md)
+- [phase-1b-employee](development/phase-1b-employee.md)
+- [phase-1b-execution-review-2026-09-27](development/phase-1b-execution-review-2026-09-27.md)
+- [phase-1b-execution-verification](development/phase-1b-execution-verification.md)
+- [phase-1b-execution](development/phase-1b-execution.md)
+- [phase-1b-review-2026-09-27](development/phase-1b-review-2026-09-27.md)
+- [phase-1b-shifts-review-2026-09-27](development/phase-1b-shifts-review-2026-09-27.md)
+- [phase-1b-shifts-verification](development/phase-1b-shifts-verification.md)
+- [phase-1b-shifts](development/phase-1b-shifts.md)
+- [phase-1b-templates-review-2026-09-27](development/phase-1b-templates-review-2026-09-27.md)
+- [phase-1b-templates-verification](development/phase-1b-templates-verification.md)
+- [phase-1b-templates](development/phase-1b-templates.md)
+- [phase-1b-verification](development/phase-1b-verification.md)
+- [phase-2-capacity-measurement](development/phase-2-capacity-measurement.md)
+- [phase-2-restore-acceptance](development/phase-2-restore-acceptance.md)
+- [phase-2-update-recovery-acceptance](development/phase-2-update-recovery-acceptance.md)
+- [phase-4-1-article-master](development/phase-4-1-article-master.md)
+- [phase-4-2-location-assortment](development/phase-4-2-location-assortment.md)
+- [phase-4-3-manual-stock](development/phase-4-3-manual-stock.md)
 
-- [P1b.7 – Numerische Guided-Work-Schritte](development/phase-1b-7-numeric-steps.md) – verbindlicher Scope, Rechte, Audit und Abnahmekriterien
-- [P1b.7-Prüfnachweis](development/phase-1b-7-numeric-verification.md) – Tests, API-Smoke, automatisierter Browserablauf, Upgrade und Restore
+## Package entry points
 
-- [P2 – Aufgabenbezogene Backup-/Restore-Abnahme](development/phase-2-restore-acceptance.md) – lokaler Prüfnachweis, verschlüsselte Wiederherstellung der Aufgaben-Nachweise und verbleibende Grenzen
-- [P2 – Concurrent-work capacity measurement](development/phase-2-capacity-measurement.md) – measurement contract, profiles, integrity proof and local evidence; timings are environment-specific observations
-- [P2 – Controlled update/recovery acceptance](development/phase-2-update-recovery-acceptance.md) – forward-only 0010→0011 upgrade on populated data, encrypted restore point before migration, preservation, HTTP smoke and isolated recovery fencing; no downgrade or activation promise
-- [P1b.8 – Published-shift cancellation](development/phase-1b-8-shift-cancellation.md) – pre-execution cancellation contract, evidence, idempotency and verification scope; [ADR 0013](adr/0013-published-shift-cancellation.md)
-- [Milestone health check 2026-10-02](development/milestone-health-check-2026-10-02.md) – cross-cutting review of baseline `512ac64`, findings M1-M4 and L1-L12, pilot readiness and the mandatory M3 containment for the next API-adding slice; independently reviewed APPROVE and committed as `0ddcd4f`
-- [P1 – Authenticated self-service password change](development/phase-1-self-service-password-change.md) – self-only password change, UTF-8 byte policy, all-session revocation, per-account verification limiter; independently reviewed (APPROVE, one corrected LOW finding), committed as `9aef373`, remote CI green
-- [P1b.9 – Pre-execution published-shift interval amendment](development/phase-1b-9-shift-amendment.md) – bounded `startsAt`/`endsAt` amendment for a published shift with pristine tasks, last-amendment retry evidence, M2 database exclusion invariant and M3 containment; committed as `f37dd6b`, independently reviewed APPROVE and remote CI verified; [ADR 0014](adr/0014-pre-execution-shift-interval-amendment.md)
-- [P4.1 – Company-wide article master](development/phase-4-1-article-master.md) – Produktstamm foundation with create/list/search/edit/deactivate/reactivate, deterministic ASCII-only SKU uniqueness, optional opaque barcode, bounded unit label, non-destructive lifecycle and no stock behavior; implemented, committed as `a4aeecd` (corrected by `d0fcf43`, `d90dd7e`) and remote CI-verified (run 31); [ADR 0015](adr/0015-company-wide-article-master.md)
-- [P4.2 – Location assortment](development/phase-4-2-location-assortment.md) – per-location membership saying which company articles a location carries, with independent membership/article state, an explicit conjunction for effective availability, non-destructive lifecycle, audit, M3 containment and no stock, purchasing or price behavior; committed as `3bc27d5` and remote-CI-verified; [ADR 0016](adr/0016-article-location-assortment.md)
-- [P4.3 – Manual stock foundation](development/phase-4-3-manual-stock.md) – one stock level per article and location, opening, absolute manual corrections, an append-only movement ledger with exact thousandths and immutable unit snapshot, movement-id operation identity, released inventory projection view and the Flutter **Bestand** section; implemented as an uncommitted slice, independent review and remote CI pending; [ADR 0017](adr/0017-manual-stock-foundation.md)
+[Server](../apps/server/README.md), [Flutter client](../apps/client_flutter/README.md),
+[API contracts](../packages/api_contracts/README.md), [design system](../packages/design_system/README.md),
+[reserved modules](../modules/README.md), [shared](../packages/shared/README.md),
+[plugin SDK](../packages/plugin_sdk/README.md) and [plugin example](../plugins/examples/README.md).

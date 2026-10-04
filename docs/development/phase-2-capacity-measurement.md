@@ -5,7 +5,7 @@ verified by the remote CI run.
 
 This slice adds an opt-in, run-scoped harness that measures the existing
 single-site StoreOS stack under declared concurrent read and write workloads.
-It is defined by [HANDOVER next recommended work item 3](../HANDOVER.md#next-recommended-work).
+It is defined by [historical HANDOVER proposal item 3](handover-snapshot-2026-10-03.md#next-recommended-work).
 It measures the system; it does not optimize it.
 
 ## Purpose

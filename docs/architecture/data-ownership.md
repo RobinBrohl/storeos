@@ -1,5 +1,7 @@
 # Datenhoheit und Schreibzuständigkeit
 
+Current implementation is one locally configured Company with local authorized writers; the multi-site matrix below is future direction, not deployed replication. [Actual status](../roadmap/status.md) separates these scopes.
+
 ## Grundregel
 
 „Eine gemeinsame Datenbasis“ meint ein einheitliches fachliches Modell und nachvollziehbare Datenflüsse, nicht eine weltweit synchron beschreibbare Datenbank. Jeder Datensatz hat genau einen fachlich führenden Schreiber. Andere Knoten nutzen versionierte Projektionen oder explizite Commands an diesen Schreiber. Das vermeidet konkurrierende Änderungen bei Netzausfall. Der Betrieb behält Eigentum und Exportfähigkeit seiner Daten; [Synchronisation](offline-strategy.md) und [Sicherheit](security.md) setzen die technische Grenze für Kopien.
@@ -38,3 +40,24 @@ Ein zentraler Export ist nicht automatisch vollständig, da die Zentrale nur fre
 Datenschutzrechtliche Lösch- und Auskunftspflichten stehen teilweise im Spannungsverhältnis zu Aufbewahrung und Audit. Deshalb werden operative Daten, Identifikatoren und Nachweise getrennt klassifiziert; Löschung, Sperrung, Pseudonymisierung und Aufbewahrungsfristen müssen je Datenart und Rechtsraum festgelegt werden. Unbegrenzte Audit-Aufbewahrung oder uneingeschränkte Mitarbeiter-Exports sind keine Voreinstellung. Vor Produktiveinsatz in regulierten Bereichen bedarf es dazu fachlicher und rechtlicher Prüfung.
 
 Der Lösch- und Sperrplan umfasst auch Anhänge, Projektionen, Suche, Event-Payloads/Fehlerablagen, gespeicherte Kommandoergebnisse, Geräte und Plugin-Daten. Für Deduplizierung verbleibt nur die erforderliche technische Information, nicht vorsorglich der gesamte ursprüngliche Personenbezug oder Payload. Backups besitzen begrenzte Aufbewahrung; Lösch- und Sperrentscheidungen müssen über den ältesten noch zulässigen Restorepunkt hinweg separat nachvollziehbar bleiben und vor Wiederöffnung angewendet werden. Die Wiederherstellung eines Backups ist keine Freigabe, entfernte Daten erneut auszuliefern.
+
+## Planned knowledge, sales and publication authority
+
+Knowledge owns approved Wiki revisions; Merchandising owns Fixture/Planogram
+revisions and assignments; Menu owns structured approved content. Tasks pins the
+published guidance/revision it executes and owns execution evidence. Live Stock
+queries are separate from frozen instructions and do not rewrite them.
+
+An external POS remains authoritative for its source transaction/fiscal evidence.
+StoreOS owns normalized canonical import evidence, explicit mapping, checkpoint/
+health and its own permitted downstream effects. Source configuration and authenticated
+integration bind Company/Location; payload IDs do not grant authority. Retain source
+identity/provenance and explicit corrections; StoreOS imports do not replace a
+required fiscal archive. Unit mapping, physical cutover, return disposition and
+production policy precede automatic Stock effects. No payment secrets or unnecessary
+customer data should be imported.
+
+A public publisher receives an approved minimal artifact, not access to the operational
+database. Public hosting/remote access cannot create a second unrestricted writer.
+These future boundaries need concrete ownership/retention/export contracts when
+implemented; see [module boundaries](module-boundaries.md) and [open questions](../risks-and-open-questions.md).

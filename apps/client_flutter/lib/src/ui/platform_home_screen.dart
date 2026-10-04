@@ -13,6 +13,8 @@ import 'assortment_section.dart';
 import 'stock_section.dart';
 import 'merchandising_section.dart';
 import '../application/merchandising_controller.dart';
+import '../application/knowledge_controller.dart';
+import 'knowledge_section.dart';
 import 'change_password_dialog.dart';
 import 'platform_sections.dart';
 import 'employee_section.dart';
@@ -35,6 +37,7 @@ enum _Section {
   assortment,
   stock,
   merchandising,
+  knowledge,
   shifts,
   home,
 }
@@ -49,6 +52,7 @@ class PlatformHomeScreen extends StatefulWidget {
     this.assortment,
     this.stock,
     this.merchandising,
+    this.knowledge,
     this.shifts,
     this.home,
     required this.baseUri,
@@ -63,6 +67,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final ArticleAssortmentController? assortment;
   final StockController? stock;
   final MerchandisingController? merchandising;
+  final KnowledgeController? knowledge;
   final ShiftController? shifts, home;
   final Uri baseUri;
 
@@ -75,6 +80,9 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   List<_Section> get _available => [
     _Section.status,
+    if (widget.knowledge != null &&
+        widget.platform.allows('knowledge.articles.read'))
+      _Section.knowledge,
     if (widget.merchandising != null &&
         widget.platform.allows('merchandising.layouts.read'))
       _Section.merchandising,
@@ -112,6 +120,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.assortment => 'Sortiment',
     _Section.stock => 'Bestand',
     _Section.merchandising => 'Merchandising',
+    _Section.knowledge => 'Wissen',
     _Section.people => 'Mitarbeiter',
     _Section.profile => 'Mein Profil',
     _Section.status => 'Status',
@@ -130,6 +139,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.assortment => Icons.storefront_outlined,
     _Section.stock => Icons.warehouse_outlined,
     _Section.merchandising => Icons.view_quilt_outlined,
+    _Section.knowledge => Icons.menu_book_outlined,
     _Section.people => Icons.badge_outlined,
     _Section.profile => Icons.person_outline,
     _Section.status => Icons.monitor_heart_outlined,
@@ -150,6 +160,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.assortment:
       case _Section.stock:
       case _Section.merchandising:
+      case _Section.knowledge:
       case _Section.people:
       case _Section.profile:
       case _Section.status:
@@ -178,6 +189,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.assortment:
       case _Section.stock:
       case _Section.merchandising:
+      case _Section.knowledge:
         break;
       case _Section.people:
         widget.employees.loadEmployees();
@@ -206,6 +218,18 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.home => ShiftSection(
       key: const ValueKey('work-home'),
       controller: widget.home!,
+      knowledgeShortcut:
+          widget.knowledge != null &&
+              widget.platform.allows('knowledge.articles.read')
+          ? () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => Scaffold(
+                  appBar: AppBar(title: const Text('Wissen')),
+                  body: KnowledgeSection(controller: widget.knowledge!),
+                ),
+              ),
+            )
+          : null,
     ),
     _Section.templates => TaskTemplateSection(controller: widget.templates!),
     _Section.articles => ArticleSection(controller: widget.articles!),
@@ -220,6 +244,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.merchandising => MerchandisingSection(
       controller: widget.merchandising!,
     ),
+    _Section.knowledge => KnowledgeSection(controller: widget.knowledge!),
     _Section.people => EmployeeSection(
       key: const ValueKey('employees'),
       controller: widget.employees,
@@ -292,6 +317,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
                 section != _Section.assortment &&
                 section != _Section.stock &&
                 section != _Section.merchandising &&
+                section != _Section.knowledge &&
                 section != _Section.shifts &&
                 section != _Section.home)
               IconButton(

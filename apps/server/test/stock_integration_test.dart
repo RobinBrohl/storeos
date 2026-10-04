@@ -1564,6 +1564,7 @@ void main() {
       expect(await runner.apply(), [
         '0015_manual_stock',
         '0016_local_planograms',
+        '0017_approved_operational_knowledge',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);

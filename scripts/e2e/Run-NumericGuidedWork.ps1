@@ -1,7 +1,8 @@
 #requires -Version 7.4
 [CmdletBinding()]
 param(
-    [string]$ChromeDriverPath
+    [string]$ChromeDriverPath,
+    [switch]$SkipPackageResolution
 )
 
 $ErrorActionPreference = 'Stop'
@@ -165,6 +166,7 @@ function Invoke-Drive([string]$Phase, [string]$LogName) {
         ('"--dart-define-from-file=' + $manifestPath + '"'),
         ('"--dart-define=STOREOS_E2E_PHASE=' + $Phase + '"')
     )
+    if ($SkipPackageResolution) { $driveArguments += '--no-pub' }
     # flutter drive's WebDriver capabilities require an explicit browser binary;
     # CHROME_EXECUTABLE alone does not select it for the web-server device.
     if (![string]::IsNullOrWhiteSpace($chromeBinary)) {
@@ -238,16 +240,18 @@ try {
     $env:STOREOS_E2E_ALLOWED_ORIGIN = 'http://127.0.0.1:8095'
     $env:STOREOS_E2E_API_PORT = "$apiPort"
 
-    Push-Location $serverDirectory
-    try {
-        & $dartTool pub get --enforce-lockfile
-        if ($LASTEXITCODE -ne 0) { throw 'Server package resolution failed.' }
-    } finally { Pop-Location }
-    Push-Location $clientDirectory
-    try {
-        & $flutterTool pub get --enforce-lockfile
-        if ($LASTEXITCODE -ne 0) { throw 'Flutter package resolution failed.' }
-    } finally { Pop-Location }
+    if (!$SkipPackageResolution) {
+        Push-Location $serverDirectory
+        try {
+            & $dartTool pub get --enforce-lockfile
+            if ($LASTEXITCODE -ne 0) { throw 'Server package resolution failed.' }
+        } finally { Pop-Location }
+        Push-Location $clientDirectory
+        try {
+            & $flutterTool pub get --enforce-lockfile
+            if ($LASTEXITCODE -ne 0) { throw 'Flutter package resolution failed.' }
+        } finally { Pop-Location }
+    }
 
     # Phase A: prepare the installation and let the worker block the task.
     $prepareProcess = Start-Fixture 'prepare' $prepareStopPath 'fixture-prepare'

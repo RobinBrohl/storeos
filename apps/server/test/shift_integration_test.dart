@@ -813,6 +813,7 @@ void main() {
         '0014_location_assortment',
         '0015_manual_stock',
         '0016_local_planograms',
+        '0017_approved_operational_knowledge',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);

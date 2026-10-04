@@ -1,9 +1,14 @@
 # StoreOS handover
 
-Start after [AGENTS.md](../AGENTS.md). Current source baseline: `main`,
-`73dca5a4899c1bacd48af12c2073e59fa6cd5797`, verified 2026-10-04 with a clean
-tree/index before documentation closure, matching cached and live `origin/main`,
-one intended worktree and no stash.
+Start after [AGENTS.md](../AGENTS.md). P4.5 starting baseline: `main`,
+`ce00a241b967ab9242604e4d043a8241b3593f64`, verified 2026-10-04 with a clean
+tree/index, matching cached and live `origin/main`, one intended worktree and no
+stash. Baseline [CI run 37218392419](https://github.com/RobinBrohl/storeos/actions/runs/37218392419)
+has all five jobs green. P4.5 Approved Operational Knowledge is **IMPLEMENTED
+LOCALLY**, **INDEPENDENT REVIEW PENDING**, **REMOTE CHANGED-COMMIT CI PENDING**.
+The implementation is uncommitted; no branch change, commit or push was performed.
+See [P4.5 evidence](development/phase-4-5-approved-operational-knowledge.md) and
+[ADR 0019](adr/0019-approved-operational-knowledge.md). It is not DONE/CLOSED.
 P4.3 Manual Stock Foundation is **DONE/CLOSED**: the committed acceptance correction
 has independent targeted review **APPROVE**, **28/28 PASS**, and fully green
 [changed-commit CI](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
@@ -46,8 +51,13 @@ records the accepted correction and current-head CI.
 - P4.4 Local Planogram Execution is **DONE/CLOSED**: independent Company Planograms,
   local Fixtures, immutable published revisions, explicit append-only Assignments,
   target-Location Assortment validation and browser HTML/CSS print. The migration
-  chain ends at `0016_local_planograms.sql`; 0001–0015 retain identical Git content,
+  chain at closure ended at `0016_local_planograms.sql`; 0001–0015 retain identical Git content,
   with historical raw checkout-byte evidence qualified rather than asserted.
+- P4.5 Approved Operational Knowledge is implemented locally: Company-wide
+  instructions, one draft, immutable published/discarded revisions, terminal
+  retirement and strict publication replay. Migration 0017 adds two tables;
+  0001–0016 retain identical Git content. Independent review and changed-commit CI
+  remain pending. No Task evidence integration or events exist.
 - Highest broadly completed foundation remains P1; later slices do not mean all
   intervening roadmap domains are complete. P2 has bounded recovery/capacity tooling,
   not device queues, distributed sync, HA or automatic restore activation.
@@ -114,9 +124,9 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. After this documentation closure is committed, perform a **fresh P4.5 capability
-   selection** from product direction and operator evidence. No P4.5 capability is
-   selected or ACTIVE; no further P4.4 remediation is active absent regression.
+1. Independently review the uncommitted P4.5 Approved Operational Knowledge slice,
+   then obtain changed-commit remote CI after separately authorized commit/push.
+   No further P4.4 remediation is active absent regression.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

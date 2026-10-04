@@ -22,6 +22,7 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0016](0016-article-location-assortment.md) | Article–location assortment membership |
 | [0017](0017-manual-stock-foundation.md) | Manual stock foundation (ledger, projection, immutable unit snapshot) |
 | [0018](0018-local-planogram-execution.md) | Local planogram execution: independent layouts and explicit immutable deployment |
+| [0019](0019-approved-operational-knowledge.md) | Approved operational Knowledge: stable Article, immutable revisions and strict publication replay |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).
 

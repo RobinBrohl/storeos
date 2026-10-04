@@ -51,6 +51,9 @@ const _permissions = <String>[
   'merchandising.layouts.manage',
   'merchandising.layouts.publish',
   'merchandising.layouts.read',
+  'knowledge.articles.read',
+  'knowledge.articles.manage',
+  'knowledge.articles.publish',
   'tasks.templates.manage',
   'workforce.shifts.manage',
   'workforce.shifts.self.read',
@@ -72,6 +75,7 @@ List<String> permissionsForRole(String role) => switch (role) {
     'events.read',
   ],
   'employee' => const [
+    'knowledge.articles.read',
     'merchandising.layouts.read',
     'context.read',
     'organization.read',

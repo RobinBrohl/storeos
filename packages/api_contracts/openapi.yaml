@@ -7,6 +7,26 @@ servers:
   - url: http://127.0.0.1:8080
     description: Loopback development; use HTTPS for LAN deployments.
 paths:
+  /api/v1/platform/knowledge/articles:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1articles'
+  /api/v1/platform/knowledge/articles/{articleId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1articles~1{articleId}'
+  /api/v1/platform/knowledge/manage/articles:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1manage~1articles'
+  /api/v1/platform/knowledge/manage/articles/{articleId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1manage~1articles~1{articleId}'
+  /api/v1/platform/knowledge/manage/articles/{articleId}/retire:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1manage~1articles~1{articleId}~1retire'
+  /api/v1/platform/knowledge/manage/articles/{articleId}/revisions:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1manage~1articles~1{articleId}~1revisions'
+  /api/v1/platform/knowledge/manage/articles/{articleId}/revisions/{revisionId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1manage~1articles~1{articleId}~1revisions~1{revisionId}'
+  /api/v1/platform/knowledge/manage/articles/{articleId}/revisions/{revisionId}/edit:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1manage~1articles~1{articleId}~1revisions~1{revisionId}~1edit'
+  /api/v1/platform/knowledge/manage/articles/{articleId}/revisions/{revisionId}/discard:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1manage~1articles~1{articleId}~1revisions~1{revisionId}~1discard'
+  /api/v1/platform/knowledge/manage/articles/{articleId}/revisions/{revisionId}/publish:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1manage~1articles~1{articleId}~1revisions~1{revisionId}~1publish'
   /api/v1/platform/locations/{locationId}/merchandising/fixtures:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures'
   /api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}:

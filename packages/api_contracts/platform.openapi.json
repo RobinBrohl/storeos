@@ -6664,6 +6664,1390 @@
           }
         }
       }
+    },
+    "/api/v1/platform/knowledge/articles": {
+      "get": {
+        "operationId": "knowledgeSearch",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.read. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUID keyset, ascending article UUID. Visibility is filtered before the 50-item page."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Literal substring of active CURRENT published titles; PostgreSQL lower() case behavior under database collation. %, _ and backslash are literal. No trim, wildcard, full-text, draft or historical-title search."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedWikiPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/articles/{articleId}": {
+      "get": {
+        "operationId": "knowledgeRead",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.read. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedWiki"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/manage/articles": {
+      "get": {
+        "operationId": "knowledgeManageList",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.manage. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUID keyset, ascending article UUID. Visibility is filtered before the 50-item page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedWikiPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "knowledgeCreate",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.manage. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "responses": {
+          "201": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiRevisionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stale version, invalid lifecycle, existing draft/identity, revision allocation or publication identity conflict. Codes: stale_version, invalid_lifecycle, draft_exists, already_exists, revision_conflict, operation_conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON transport exceeds 65536 bytes. Code: body_too_large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Requires application/json. Code: unsupported_media_type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "At most 65536 transport bytes; canonical content at most 8192 UTF-8 bytes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWiki"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/manage/articles/{articleId}": {
+      "get": {
+        "operationId": "knowledgeDetail",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.manage. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/manage/articles/{articleId}/retire": {
+      "post": {
+        "operationId": "knowledgeRetire",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.publish. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stale version, invalid lifecycle, existing draft/identity, revision allocation or publication identity conflict. Codes: stale_version, invalid_lifecycle, draft_exists, already_exists, revision_conflict, operation_conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON transport exceeds 65536 bytes. Code: body_too_large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Requires application/json. Code: unsupported_media_type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "At most 65536 transport bytes; canonical content at most 8192 UTF-8 bytes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WikiVersionCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/manage/articles/{articleId}/revisions": {
+      "get": {
+        "operationId": "knowledgeHistory",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.manage. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Positive revision number, descending."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiHistoryPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "knowledgeNewDraft",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.manage. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiRevisionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stale version, invalid lifecycle, existing draft/identity, revision allocation or publication identity conflict. Codes: stale_version, invalid_lifecycle, draft_exists, already_exists, revision_conflict, operation_conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON transport exceeds 65536 bytes. Code: body_too_large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Requires application/json. Code: unsupported_media_type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "At most 65536 transport bytes; canonical content at most 8192 UTF-8 bytes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewWikiDraft"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/manage/articles/{articleId}/revisions/{revisionId}": {
+      "get": {
+        "operationId": "knowledgeRevision",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.manage. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/manage/articles/{articleId}/revisions/{revisionId}/edit": {
+      "post": {
+        "operationId": "knowledgeSave",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.manage. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiRevisionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stale version, invalid lifecycle, existing draft/identity, revision allocation or publication identity conflict. Codes: stale_version, invalid_lifecycle, draft_exists, already_exists, revision_conflict, operation_conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON transport exceeds 65536 bytes. Code: body_too_large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Requires application/json. Code: unsupported_media_type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "At most 65536 transport bytes; canonical content at most 8192 UTF-8 bytes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveWiki"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/manage/articles/{articleId}/revisions/{revisionId}/discard": {
+      "post": {
+        "operationId": "knowledgeDiscard",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.manage. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiRevisionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stale version, invalid lifecycle, existing draft/identity, revision allocation or publication identity conflict. Codes: stale_version, invalid_lifecycle, draft_exists, already_exists, revision_conflict, operation_conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON transport exceeds 65536 bytes. Code: body_too_large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Requires application/json. Code: unsupported_media_type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "At most 65536 transport bytes; canonical content at most 8192 UTF-8 bytes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WikiVersionCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/knowledge/manage/articles/{articleId}/revisions/{revisionId}/publish": {
+      "post": {
+        "operationId": "knowledgePublish",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Requires knowledge.articles.publish. Company comes exclusively from authenticated context. No events or readership tracking.",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiPublication"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid UUID, cursor, fields, version, JSON, content bounds or incomplete publication. Codes: invalid_request, invalid_json, invalid_cursor, invalid_publication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked session; plugin credentials are not sessions. Code: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing capability, Company scope violation, or forbidden Origin. Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article/revision not found in authorized Company/parent scope; employee current published active projection is absent. Code: not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stale version, invalid lifecycle, existing draft/identity, revision allocation or publication identity conflict. Codes: stale_version, invalid_lifecycle, draft_exists, already_exists, revision_conflict, operation_conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON transport exceeds 65536 bytes. Code: body_too_large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Requires application/json. Code: unsupported_media_type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected integrity/schema/programming defect. Code: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection, permission or transient infrastructure unavailable. Code: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "At most 65536 transport bytes; canonical content at most 8192 UTF-8 bytes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishWiki"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10696,6 +12080,481 @@
           },
           "html": {
             "type": "string"
+          }
+        }
+      },
+      "WikiContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "body"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "body": {
+            "type": "string"
+          }
+        },
+        "description": "Plain Unicode text, rendered literally. CRLF/CR normalize to LF before persistence. No trimming, Markdown, HTML, or arbitrary whitespace/Unicode normalization. Sum of normalized title and body UTF-8 byte lengths <=8192. Drafts may be incomplete. Publication requires both fields nonblank; title has no control characters and body has no NUL. Invalid Unicode scalars are rejected."
+      },
+      "CreateWiki": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "revisionId",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "content": {
+            "$ref": "#/components/schemas/WikiContent"
+          }
+        }
+      },
+      "NewWikiDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "expectedVersion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          }
+        },
+        "description": "Client UUID; copies current published content, or starts empty. Resolve ambiguous response by authorized read-back of this ID."
+      },
+      "SaveWiki": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "content"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "content": {
+            "$ref": "#/components/schemas/WikiContent"
+          }
+        },
+        "description": "Full desired state. Stale versions conflict, no automatic rebase. Identical current-version state is a no-op. Ambiguous results require authoritative reload and review."
+      },
+      "WikiVersionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          }
+        }
+      },
+      "PublishWiki": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          }
+        },
+        "description": "Publishes exact saved revision. Replay identity binds Company, actor, article, revision, operation ID, and expected version; these are all command parameters. Exact authorized replay returns immutable original evidence before current lifecycle/version rejection, without moving current pointer or writing audit. Conflicting reuse is operation_conflict."
+      },
+      "WikiArticle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "status",
+          "version",
+          "currentPublishedRevisionId",
+          "activeDraftRevisionId",
+          "createdAt",
+          "updatedAt",
+          "createdBy",
+          "retiredAt",
+          "retiredBy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "retired"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "currentPublishedRevisionId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "activeDraftRevisionId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "retiredAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "retiredBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "WikiRevision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "articleId",
+          "revisionNumber",
+          "status",
+          "content",
+          "createdAt",
+          "createdBy",
+          "publishedAt",
+          "publishedBy",
+          "publishOperationId",
+          "publishExpectedVersion",
+          "publicationVersion",
+          "discardedAt",
+          "discardedBy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "discarded"
+            ]
+          },
+          "content": {
+            "$ref": "#/components/schemas/WikiContent"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "publishedBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "publishOperationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "publishExpectedVersion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "publicationVersion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 2,
+            "maximum": 9007199254740991
+          },
+          "discardedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "discardedBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "PublishedWiki": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "articleId",
+          "revisionId",
+          "title",
+          "body",
+          "revisionNumber",
+          "publishedAt"
+        ],
+        "properties": {
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "body": {
+            "type": "string"
+          },
+          "revisionNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Safe projection of an active article current publication. No draft, history, actor or operation metadata."
+      },
+      "WikiDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "article",
+          "draft",
+          "currentPublished"
+        ],
+        "properties": {
+          "article": {
+            "$ref": "#/components/schemas/WikiArticle"
+          },
+          "draft": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WikiRevision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currentPublished": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WikiRevision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "WikiRevisionResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "article",
+          "revision"
+        ],
+        "properties": {
+          "article": {
+            "$ref": "#/components/schemas/WikiArticle"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/WikiRevision"
+          }
+        }
+      },
+      "WikiPublication": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "replayed"
+        ],
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/WikiRevision"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PublishedWikiPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PublishedWiki"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ManagedWikiPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/WikiDetail"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "WikiHistoryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/WikiRevision"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }

@@ -33,6 +33,7 @@
 // database downgrade, application downgrade or replacement activation.
 import 'dart:convert';
 import 'merchandising_acceptance.dart';
+import 'knowledge_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -61,6 +62,7 @@ const _expectedPendingMigrations = [
   '0014_location_assortment',
   '0015_manual_stock',
   '0016_local_planograms',
+  '0017_approved_operational_knowledge',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1076,7 +1078,24 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       ),
       locationId,
     );
+    await seedApprovedKnowledge(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        token: adminToken,
+        body: body,
+        expected: status,
+      ),
+    );
+    await verifyKnowledgeEvidence(owner, _schema, runtimeUser);
     await _writeJson(resultFile, {
+      'knowledge': {
+        'migration': '0017_approved_operational_knowledge',
+        'articleCount': 2,
+        'revisionCount': 6,
+        'replayVerified': true,
+        'runtimeProtections': true,
+      },
       'merchandising': {
         'revisionCount': 2,
         'assignmentCount': 2,

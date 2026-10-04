@@ -269,6 +269,20 @@ class MigrationRunner {
             'FROM $role',
           );
         }
+        if (known.containsKey('0017_approved_operational_knowledge')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.knowledge_articles, $_schema.knowledge_revisions TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status, version, current_published_revision_id, active_draft_revision_id, updated_at, retired_at, retired_by) ON $_schema.knowledge_articles TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (title, body, status, published_at, published_by, publish_operation_id, publish_expected_version, publication_version, discarded_at, discarded_by) ON $_schema.knowledge_revisions TO $role',
+          );
+          await tx.execute(
+            'REVOKE DELETE, TRUNCATE ON $_schema.knowledge_articles, $_schema.knowledge_revisions FROM $role',
+          );
+        }
         if (known.containsKey('0016_local_planograms')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.merchandising_fixtures, $_schema.merchandising_planograms, $_schema.merchandising_planogram_revisions, $_schema.merchandising_planogram_zones, $_schema.merchandising_planogram_placements, $_schema.merchandising_planogram_assignments TO $role',

@@ -50,10 +50,17 @@ class MerchandisingMovementPage {
 }
 
 class MerchandisingFixture {
-  MerchandisingFixture(this.owner, this.pool, this.schema, this.runtimeUser);
+  MerchandisingFixture(
+    this.owner,
+    this.pool,
+    this.schema,
+    this.runtimeUser, {
+    this.allowedOrigins = const {},
+  });
   final Connection owner;
   final Pool<void> pool;
   final String schema, runtimeUser;
+  final Set<String> allowedOrigins;
   final HttpClient client = HttpClient();
   late PlatformDatabase database;
   late SessionPrincipal adminPrincipal;
@@ -80,8 +87,8 @@ class MerchandisingFixture {
       locationId: _home,
     );
     final app = ServerApp(
-      config: const ServerConfig(
-        database: DatabaseConfig(
+      config: ServerConfig(
+        database: const DatabaseConfig(
           host: 'localhost',
           port: 5432,
           name: 'unused',
@@ -90,6 +97,7 @@ class MerchandisingFixture {
         ),
         companyId: _company,
         locationId: _home,
+        allowedOrigins: allowedOrigins,
       ),
       auth: auth,
       store: store,
@@ -306,6 +314,7 @@ class MerchandisingFixture {
 Future<void> withMerchandisingFixture(
   Future<void> Function(MerchandisingFixture) action, {
   String? legacyBefore,
+  Set<String> allowedOrigins = const {},
 }) async {
   final uri = Uri.parse(_url!);
   final split = uri.userInfo.indexOf(':');
@@ -343,7 +352,13 @@ Future<void> withMerchandisingFixture(
       maxConnectionCount: 6,
     ),
   );
-  final fixture = MerchandisingFixture(owner, pool, schema, runtime);
+  final fixture = MerchandisingFixture(
+    owner,
+    pool,
+    schema,
+    runtime,
+    allowedOrigins: allowedOrigins,
+  );
   Directory? legacyDirectory;
   if (legacyBefore != null) {
     legacyDirectory = await Directory.systemTemp.createTemp(

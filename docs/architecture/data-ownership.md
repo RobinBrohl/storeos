@@ -41,12 +41,21 @@ Datenschutzrechtliche Lösch- und Auskunftspflichten stehen teilweise im Spannun
 
 Der Lösch- und Sperrplan umfasst auch Anhänge, Projektionen, Suche, Event-Payloads/Fehlerablagen, gespeicherte Kommandoergebnisse, Geräte und Plugin-Daten. Für Deduplizierung verbleibt nur die erforderliche technische Information, nicht vorsorglich der gesamte ursprüngliche Personenbezug oder Payload. Backups besitzen begrenzte Aufbewahrung; Lösch- und Sperrentscheidungen müssen über den ältesten noch zulässigen Restorepunkt hinweg separat nachvollziehbar bleiben und vor Wiederöffnung angewendet werden. Die Wiederherstellung eines Backups ist keine Freigabe, entfernte Daten erneut auszuliefern.
 
-## Planned knowledge, sales and publication authority
+## Knowledge authority and planned integration boundaries
 
-Knowledge owns approved Wiki revisions; Merchandising owns Fixture/Planogram
-revisions and assignments; Menu owns structured approved content. Tasks pins the
-published guidance/revision it executes and owns execution evidence. Live Stock
-queries are separate from frozen instructions and do not rewrite them.
+Knowledge owns Company-wide WikiArticles and their draft, immutable published and
+discarded revisions in the local configured Company. Publication is approval;
+retirement retains evidence. The existing encrypted database backup/export
+includes identities, pointers, content and publication/audit evidence. There is
+no hard-delete or replication workflow. Read access is operational instruction
+access, not employee activity tracking. Retention and any future deletion/export
+product contract require operator policy. See [ADR 0019](../adr/0019-approved-operational-knowledge.md).
+
+Merchandising owns Fixture/Planogram revisions and assignments; a future Menu
+module would own its approved structured content. Future Tasks integration would
+need a separate revision-pinning contract; P4.5 does not persist Wiki references
+in execution evidence. Live Stock queries are separate from frozen instructions
+and do not rewrite them.
 
 An external POS remains authoritative for its source transaction/fiscal evidence.
 StoreOS owns normalized canonical import evidence, explicit mapping, checkpoint/

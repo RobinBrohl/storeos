@@ -17,6 +17,7 @@
 // STOREOS_BACKUP_TARGET_DATABASE.
 import 'dart:convert';
 import 'merchandising_acceptance.dart';
+import 'knowledge_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -46,6 +47,8 @@ const _connectionSettings = ConnectionSettings(
 /// Evidence tables and their deterministic ordering keys. Identifiers are
 /// compile-time constants, never user input.
 const _evidenceTables = <String, String>{
+  'knowledge_articles': 'id',
+  'knowledge_revisions': 'id',
   'shifts': 'id',
   'merchandising_fixtures': 'id',
   'merchandising_planograms': 'id',
@@ -244,6 +247,8 @@ Future<void> _verify(Map<String, String> env, String source) async {
     if (!restored.sameEvidence(current)) {
       throw StateError('Restored evidence differs from the source.');
     }
+    await verifyKnowledgeEvidence(sourceOwner, _schema, runtimeUser);
+    await verifyKnowledgeEvidence(targetOwner, _schema, runtimeUser);
 
     final sourceSessions = await _activeSessions(sourceOwner, _schema);
     final restoredSessions = await _activeSessions(targetOwner, _schema);
@@ -337,6 +342,15 @@ Future<Map<String, String>> _seed(
     locationId,
   );
   final employeeId = newUuid(), workerId = newUuid();
+  await seedApprovedKnowledge(
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      token: adminToken,
+      body: body,
+      expected: status,
+    ),
+  );
   final employee = await api.request(
     'POST',
     '$root/employees',
@@ -655,6 +669,8 @@ Future<void> _assertSeededJourney(
     throw StateError('Expected exactly one active source plugin token.');
   }
   const expectedCounts = {
+    'knowledge_articles': 2,
+    'knowledge_revisions': 6,
     'merchandising_fixtures': 1,
     'merchandising_planograms': 1,
     'merchandising_planogram_revisions': 2,

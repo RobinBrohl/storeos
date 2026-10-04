@@ -35,6 +35,7 @@ share a transaction; events are added only when the use case needs them.
 | Inventory | Company-wide Article and ArticleLocationAssortment | `InventoryArticlePort` and released `inventory_article_location_projection`. Owns effective Article/Assortment information, not stock quantities or prices. |
 | Stock | StockLevel projection and immutable StockMovement ledger | Authorized queries and manual opening/absolute correction. Exact thousandths; frozen unit; movement-ID replay. No valuation, receiving or unit conversion. |
 | Merchandising | Local Fixture, independent Company Planogram, Revision/Zone/Placement and immutable Assignment | Organization scope, Inventory Article/Assortment and Stock referenced-level public ports; browser print; no Stock writes or events. P4.4 DONE/CLOSED. |
+| Knowledge | Company-wide WikiArticle and immutable published/discarded WikiRevision | Authorized instruction discovery/read and explicit management/publication. No foreign business tables, Task evidence, readership tracking or events; [ADR 0019](../adr/0019-approved-operational-knowledge.md). P4.5 locally implemented; review/CI pending. |
 | Audit infrastructure | Append-only business audit | Shared transactional append and authorized reads. Does not decide business state; runtime grants do not protect against every privileged owner action. |
 | Event/plugin infrastructure | Organization outbox, delivery receipts/inbox and registry | Bounded local dispatch/retry/dead-letter/replay and approved external read clients. No executed plugin code or business-module write API. |
 
@@ -94,7 +95,7 @@ Public ports should express product dependencies without circular Domain ownersh
 
 | Future owner | Intended data/responsibility | Dependencies through contracts; excluded ownership |
 | --- | --- | --- |
-| Knowledge | WikiArticle, approved revisions, suggestions and review/publication | Tasks consumes pinned approved guidance; Knowledge never changes execution history. |
+| Knowledge extensions | Suggestions, separate review and Task guidance integration beyond P4.5 | A future approved contract may let Tasks pin revisions; current discovery/read never changes execution history. |
 | Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
 | Production / Recipes | Optional Article-linked Recipe revisions, ingredients/yield/instructions, production/batch evidence | Inventory owns Article identity; Stock applies physical effects; cost source and consumption model undecided. No duplicate manufactured product identity. |
 | Purchasing / Receiving | Suppliers, orders, receipt/source cost evidence | Article/unit references; authorized Stock commands for accepted physical receipts. Not Stock ledger owner or invented valuation. |

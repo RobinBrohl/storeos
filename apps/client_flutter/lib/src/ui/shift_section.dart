@@ -3,8 +3,13 @@ import 'package:storeos_api_contracts/api_contracts.dart';
 import '../application/shift_controller.dart';
 
 class ShiftSection extends StatefulWidget {
-  const ShiftSection({required this.controller, super.key});
+  const ShiftSection({
+    required this.controller,
+    this.knowledgeShortcut,
+    super.key,
+  });
   final ShiftController controller;
+  final VoidCallback? knowledgeShortcut;
   @override
   State<ShiftSection> createState() => _ShiftSectionState();
 }
@@ -93,6 +98,13 @@ class _ShiftSectionState extends State<ShiftSection> {
         const Text(
           'Alle Zeiten in UTC. Eine geplante Schicht ist kein Anwesenheitsnachweis.',
         ),
+        if (widget.knowledgeShortcut != null)
+          TextButton.icon(
+            key: const Key('work-knowledge-shortcut'),
+            onPressed: widget.knowledgeShortcut,
+            icon: const Icon(Icons.menu_book_outlined),
+            label: const Text('Wissen öffnen'),
+          ),
         if (c.busy) const LinearProgressIndicator(),
         if (c.error != null)
           Text(

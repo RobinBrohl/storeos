@@ -5,7 +5,10 @@ import 'package:shelf/shelf.dart';
 import '../platform/platform_database.dart';
 
 /// Transport-only helpers shared by the platform routers.
-Future<Map<String, dynamic>> readJson(Request request) async {
+Future<Map<String, dynamic>> readJson(
+  Request request, {
+  int limit = 16384,
+}) async {
   final contentType = request.headers['content-type'];
   if (contentType == null ||
       contentType.split(';').first.trim().toLowerCase() != 'application/json') {
@@ -15,7 +18,6 @@ Future<Map<String, dynamic>> readJson(Request request) async {
       'Expected JSON.',
     );
   }
-  const limit = 16384;
   final declared = int.tryParse(request.headers['content-length'] ?? '');
   if (declared != null && declared > limit) {
     throw const PlatformFailure(

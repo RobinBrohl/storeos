@@ -1,10 +1,16 @@
 # Actual implementation status
 
-Current source baseline verified 2026-10-04 against `main` at `73dca5a4899c1bacd48af12c2073e59fa6cd5797`.
-HEAD matches cached and live `origin/main`; tree/index were clean before documentation
-closure, with one intended worktree and no stash. P4.4 implementation `cd7669ed`,
+P4.5 starting source baseline verified 2026-10-04 against `main` at `ce00a241b967ab9242604e4d043a8241b3593f64`.
+HEAD matched cached and live `origin/main`; tree/index were clean before implementation,
+with one intended worktree and no stash. P4.4 implementation `cd7669ed`,
 migration 0016 and bounded CI portability fix `73dca5a4` are committed. Historical
 development/review/CI states are retained in the slice evidence.
+
+P4.5 Approved Operational Knowledge is **IMPLEMENTED LOCALLY**,
+**INDEPENDENT REVIEW PENDING**, **REMOTE CHANGED-COMMIT CI PENDING**. It remains
+uncommitted on `main` and is not DONE/CLOSED. Migration 0017 adds exactly two
+Knowledge tables; migrations 0001–0016 remain unchanged. [Local evidence](../development/phase-4-5-approved-operational-knowledge.md)
+and [ADR 0019](../adr/0019-approved-operational-knowledge.md) define the bounded slice.
 
 P4.3 Manual Stock Foundation is **DONE/CLOSED**. Foundation commit
 `e8ce8c319e2dd3051b402d252a0666f33b170fa3` and acceptance correction
@@ -63,8 +69,8 @@ advances current/latest pointer and Fixture version, and appends audit. Arbitrar
 direct runtime SQL can deliberately repoint a Fixture to its own older Assignment
 without advancing version, outside that supported-writer guarantee.
 
-Migration 0016 is the P4.4 migration; 0001–0015 have unchanged Git content, and no
-0017 exists. Historical raw checkout-byte fingerprints are unavailable; CRLF
+Migration 0016 is the P4.4 migration; 0001–0015 have unchanged Git content at that
+closure. P4.5 adds 0017 without changing 0001–0016. Historical raw checkout-byte fingerprints are unavailable; CRLF
 representations in 0005/0007/0008/0009 are qualified baseline evidence, not a P4.4
 defect. No old migration was rewritten or normalized. The failed first
 [CI run 37214855513](https://github.com/RobinBrohl/storeos/actions/runs/37214855513)
@@ -76,13 +82,13 @@ remains memory-only. See [ADR 0018](../adr/0018-local-planogram-execution.md).
 
 ## Planned and deferred scope
 
-Next: **fresh P4.5 capability selection required** after this documentation closure
-is committed. No P4.5 capability is preselected or ACTIVE.
+Next: independent P4.5 review and separately authorized changed-commit CI.
+P4.5 is locally implemented and remains review/CI pending.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
-| Workforce / Tasks / Wiki extension | PLANNED | Recurrence, recommendations, qualification workflows, approved Wiki guidance and swaps are future slices. Begun-work reconciliation remains open. |
+| Workforce / Tasks / Wiki extension | PLANNED | Recurrence, recommendations, qualification workflows, Task revision pins and swaps are future slices. Approved Knowledge discovery/read is implemented locally in P4.5; begun-work reconciliation remains open. |
 | Inventory / Stock / Purchasing / Production | PLANNED | Beyond existing Article/Assortment/manual Stock: units/conversions, receiving, inventory counts, batches, Recipe, production and valuation. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |

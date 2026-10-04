@@ -7,6 +7,36 @@ import 'package:storeos_client/src/data/http_platform_api.dart';
 import 'package:storeos_client/src/data/store_api.dart';
 
 void main() {
+  test(
+    'merchandising conflicts identify affected Article references and require review',
+    () async {
+      const article = '33333333-3333-4333-8333-333333333333';
+      final api = HttpPlatformApi(
+        baseUri: Uri.parse('http://127.0.0.1:8080'),
+        client: MockClient(
+          (request) async => http.Response(
+            jsonEncode({
+              'code': 'assortment_unavailable',
+              'message': 'Assortment unavailable: $article',
+            }),
+            409,
+          ),
+        ),
+      );
+      await expectLater(
+        api.post(
+          'test-token',
+          '/locations/$article/merchandising/fixtures/$article/assignments',
+          {},
+        ),
+        throwsA(
+          isA<StoreApiException>()
+              .having((e) => e.code, 'code', 'assortment_unavailable')
+              .having((e) => e.message, 'message', contains(article)),
+        ),
+      );
+    },
+  );
   test('valid plugin IDs with repeated dots remain addressable', () async {
     final requests = <http.Request>[];
     final api = HttpPlatformApi(

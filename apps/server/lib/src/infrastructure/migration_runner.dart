@@ -269,6 +269,32 @@ class MigrationRunner {
             'FROM $role',
           );
         }
+        if (known.containsKey('0016_local_planograms')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.merchandising_fixtures, $_schema.merchandising_planograms, $_schema.merchandising_planogram_revisions, $_schema.merchandising_planogram_zones, $_schema.merchandising_planogram_placements, $_schema.merchandising_planogram_assignments TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (name, kind, status, version, current_assignment_id, updated_at, retired_at, retired_by) ON $_schema.merchandising_fixtures TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status, version, updated_at, retired_at, retired_by) ON $_schema.merchandising_planograms TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (title, status, published_at, published_by, publish_operation_id, publish_expected_version, publication_version, discarded_at, discarded_by) ON $_schema.merchandising_planogram_revisions TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE, DELETE ON $_schema.merchandising_planogram_zones, $_schema.merchandising_planogram_placements TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.merchandising_planogram_assignments FROM $role',
+          );
+          await tx.execute(
+            'REVOKE DELETE, TRUNCATE ON $_schema.merchandising_fixtures, $_schema.merchandising_planograms, $_schema.merchandising_planogram_revisions FROM $role',
+          );
+          await tx.execute(
+            'REVOKE TRUNCATE ON $_schema.merchandising_planogram_zones, $_schema.merchandising_planogram_placements FROM $role',
+          );
+        }
         if (known.containsKey('0009_task_cancellation')) {
           await tx.execute(
             'GRANT UPDATE (resolution_kind) ON $_schema.task_blockings TO $role',

@@ -48,6 +48,9 @@ const _permissions = <String>[
   'inventory.articles.manage',
   'inventory.assortment.manage',
   'stock.levels.manage',
+  'merchandising.layouts.manage',
+  'merchandising.layouts.publish',
+  'merchandising.layouts.read',
   'tasks.templates.manage',
   'workforce.shifts.manage',
   'workforce.shifts.self.read',
@@ -69,6 +72,7 @@ List<String> permissionsForRole(String role) => switch (role) {
     'events.read',
   ],
   'employee' => const [
+    'merchandising.layouts.read',
     'context.read',
     'organization.read',
     'identity.self.password',

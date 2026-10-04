@@ -7,7 +7,7 @@
 # from byte-identical repository migration copies, seeds representative
 # pre-update evidence with owner SQL, creates an encrypted restore point with the
 # existing backup script, applies the real pending migrations (0011, 0012,
-# 0013, 0014 and 0015) through the production MigrationRunner, verifies preservation
+# 0013, 0014, 0015 and 0016) through the production MigrationRunner, verifies preservation
 # and the new protections, starts the current server against the upgraded database for a bounded HTTP
 # smoke, restores the pre-update restore point into a NEW isolated target and
 # verifies the recovered pre-update evidence and fencing. The normal StoreOS
@@ -18,6 +18,7 @@
 [CmdletBinding()]
 param(
     [string] $DartPath = 'dart',
+    [switch] $SkipPackageResolution,
     [string] $DockerPath = 'docker',
     [ValidateSet('none', 'prepare', 'upgrade', 'recovery')]
     # Test hook: abort after the named step to prove failure-path cleanup.
@@ -164,7 +165,15 @@ function Write-FixtureFailureDiagnostics {
             if (!(Test-Path -LiteralPath $file -PathType Leaf)) { continue }
             Write-Warning "Acceptance diagnostics: fixture-$mode.$stream.log"
             foreach ($line in (Get-Content -LiteralPath $file | Select-Object -Last 20)) {
-                Write-Warning "Acceptance | $line"
+                $masked = $line
+                foreach ($secret in $sensitiveValues) {
+                    foreach ($representation in @($secret, [Uri]::EscapeDataString($secret), [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($secret)))) {
+                        if ($representation) { $masked = $masked.Replace($representation, '[REDACTED]') }
+                    }
+                }
+                $masked = $masked -replace '(?i)Bearer\s+[A-Za-z0-9._~+/=-]+', 'Bearer [REDACTED]'
+                $masked = $masked -replace '(?i)postgres(?:ql)?://[^\s"<>]+', '[REDACTED_DATABASE_URL]'
+                Write-Warning "Acceptance | $masked"
             }
         }
     }
@@ -237,8 +246,10 @@ try {
     New-Item -ItemType Directory -Path $runDirectory -Force | Out-Null
     Push-Location $serverDirectory
     try {
-        & $dartTool pub get --enforce-lockfile
-        if ($LASTEXITCODE -ne 0) { throw 'Server package resolution failed.' }
+        if (!$SkipPackageResolution) {
+            & $dartTool pub get --enforce-lockfile
+            if ($LASTEXITCODE -ne 0) { throw 'Server package resolution failed.' }
+        } elseif (!(Test-Path -LiteralPath '.dart_tool/package_config.json')) { throw 'Cached package configuration required.' }
     } finally { Pop-Location }
 
     $env:STOREOS_UPDATE_MANIFEST = $manifestPath

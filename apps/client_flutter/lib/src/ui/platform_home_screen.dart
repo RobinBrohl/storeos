@@ -11,6 +11,8 @@ import '../application/stock_controller.dart';
 import 'article_section.dart';
 import 'assortment_section.dart';
 import 'stock_section.dart';
+import 'merchandising_section.dart';
+import '../application/merchandising_controller.dart';
 import 'change_password_dialog.dart';
 import 'platform_sections.dart';
 import 'employee_section.dart';
@@ -32,6 +34,7 @@ enum _Section {
   articles,
   assortment,
   stock,
+  merchandising,
   shifts,
   home,
 }
@@ -45,6 +48,7 @@ class PlatformHomeScreen extends StatefulWidget {
     this.articles,
     this.assortment,
     this.stock,
+    this.merchandising,
     this.shifts,
     this.home,
     required this.baseUri,
@@ -58,6 +62,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final ArticleController? articles;
   final ArticleAssortmentController? assortment;
   final StockController? stock;
+  final MerchandisingController? merchandising;
   final ShiftController? shifts, home;
   final Uri baseUri;
 
@@ -70,6 +75,9 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   List<_Section> get _available => [
     _Section.status,
+    if (widget.merchandising != null &&
+        widget.platform.allows('merchandising.layouts.read'))
+      _Section.merchandising,
     if (widget.shifts != null &&
         widget.platform.allows('workforce.shifts.manage'))
       _Section.shifts,
@@ -103,6 +111,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.articles => 'Artikel',
     _Section.assortment => 'Sortiment',
     _Section.stock => 'Bestand',
+    _Section.merchandising => 'Merchandising',
     _Section.people => 'Mitarbeiter',
     _Section.profile => 'Mein Profil',
     _Section.status => 'Status',
@@ -120,6 +129,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.articles => Icons.inventory_2_outlined,
     _Section.assortment => Icons.storefront_outlined,
     _Section.stock => Icons.warehouse_outlined,
+    _Section.merchandising => Icons.view_quilt_outlined,
     _Section.people => Icons.badge_outlined,
     _Section.profile => Icons.person_outline,
     _Section.status => Icons.monitor_heart_outlined,
@@ -139,6 +149,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.articles:
       case _Section.assortment:
       case _Section.stock:
+      case _Section.merchandising:
       case _Section.people:
       case _Section.profile:
       case _Section.status:
@@ -166,6 +177,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.articles:
       case _Section.assortment:
       case _Section.stock:
+      case _Section.merchandising:
         break;
       case _Section.people:
         widget.employees.loadEmployees();
@@ -204,6 +216,9 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.stock => StockSection(
       controller: widget.stock!,
       platform: widget.platform,
+    ),
+    _Section.merchandising => MerchandisingSection(
+      controller: widget.merchandising!,
     ),
     _Section.people => EmployeeSection(
       key: const ValueKey('employees'),
@@ -276,6 +291,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
                 section != _Section.articles &&
                 section != _Section.assortment &&
                 section != _Section.stock &&
+                section != _Section.merchandising &&
                 section != _Section.shifts &&
                 section != _Section.home)
               IconButton(

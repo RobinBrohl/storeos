@@ -1,11 +1,21 @@
 # StoreOS handover
 
 Start after [AGENTS.md](../AGENTS.md). Current source baseline: `main`,
-`f9c8b070f870cabbba3ae7b63bf16190b46aad8e`, verified 2026-10-04 with a clean
-tree/index, matching live `origin/main`, one worktree and no stash.
+`ed91a05ccbe9b61afaf92914c34f844aff64f638`, verified 2026-10-04 with a clean
+tree/index before P4.4 implementation, matching live `origin/main`, one worktree and no stash.
 P4.3 Manual Stock Foundation is **DONE/CLOSED**: the committed acceptance correction
 has independent targeted review **APPROVE**, **28/28 PASS**, and fully green
 [changed-commit CI](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
+
+P4.4 Local Planogram Execution is implemented locally on `main` from verified
+`ed91a05ccbe9b61afaf92914c34f844aff64f638`, entirely uncommitted. Status is
+**IMPLEMENTED LOCALLY / TARGETED REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**.
+Independent review required F01 optional Stock failure isolation and F02 reachable
+404 containment; both are remediated locally. F03 supported-writer integrity and
+F04 historical migration-byte qualifications remain explicit in the evidence.
+P4.4 is not DONE/CLOSED. The user selected
+the pasted P4.4 contract as the complete architecture. See [ADR 0018](adr/0018-local-planogram-execution.md)
+and [P4.4 development evidence](development/phase-4-4-local-planograms.md).
 
 Use [actual status](roadmap/status.md) for delivery, [vision](vision.md) for the
 product, [roadmap](roadmap/phases.md) for sequencing and [technical debt](development/technical-debt.md)
@@ -46,7 +56,7 @@ records the accepted correction and current-head CI.
 - Inventory owns Article/Assortment. Stock owns immutable movements and level
   projections; it reads the released inventory projection/port, not foreign tables.
   Existing stock survives Article/Assortment deactivation.
-- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0015 are
+- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0016 are
   append-only; no applied file edits, silent overwrite or evidence deletion.
 - Personnel decisions remain human. Task activity is not attendance or employee scoring.
 
@@ -69,8 +79,8 @@ complete contracts, explicit errors and negative HTTP tests. External API/SDK wo
 requires broader review. **M2 is closed by migration 0012**, not deferred.
 
 Other live items include scope consistency before multi-site execution, readiness's
-early-schema-only check, harness diagnostic redaction/refusal coverage and maintenance
-couplings. See [technical debt](development/technical-debt.md) for triggers and evidence;
+early-schema-only check and maintenance couplings. P4.4 locally addresses the touched
+harness diagnostic redaction and migration refusal coverage; independent review is pending. See [technical debt](development/technical-debt.md) for triggers and evidence;
 [risks](risks-and-open-questions.md) separates product/operator decisions.
 
 ## How to Run StoreOS
@@ -92,8 +102,8 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. Begin fresh P4.4 capability selection from the reconciled product vision and
-   real operator evidence. The next capability has not been chosen.
+1. Independently target-review the uncommitted P4.4 F01/F02 remediation and complete changed-commit
+   CI after an explicitly authorized commit. Do not mark P4.4 DONE before both gates.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

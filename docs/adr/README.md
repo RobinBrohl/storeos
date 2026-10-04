@@ -21,6 +21,7 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0015](0015-company-wide-article-master.md) | Company-wide article master foundation |
 | [0016](0016-article-location-assortment.md) | Article–location assortment membership |
 | [0017](0017-manual-stock-foundation.md) | Manual stock foundation (ledger, projection, immutable unit snapshot) |
+| [0018](0018-local-planogram-execution.md) | Local planogram execution: independent layouts and explicit immutable deployment |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).
 
@@ -29,8 +30,7 @@ Write new ADRs in English with Context, Decision, Alternatives, Consequences and
 An Accepted ADR records a chosen architectural direction, not proof that every
 consequence has been implemented, independently reviewed or verified by CI. Use
 [actual status](../roadmap/status.md) for those facts and [live debt](../development/technical-debt.md)
-for remaining findings. All 17 stable records above are retained; this documentation
-pass adds no irreversible decision or new speculative ADR.
+for remaining findings. Records 0001–0017 are retained. ADR 0018 records the user-selected P4.4 contract; independent review and changed-commit CI remain pending.
 
 Follow-up context: ADR 0015's location-availability boundary is implemented by
 ADR 0016; ADR 0016's first Stock consumer is implemented by ADR 0017. Manual Stock

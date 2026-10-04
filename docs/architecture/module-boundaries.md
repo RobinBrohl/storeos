@@ -1,6 +1,6 @@
 # Module boundaries
 
-Current implementation reconciled 2026-10-04 at `e8ce8c3`; future boundaries are
+P4.4 implementation is local and uncommitted from `ed91a05`; future boundaries are
 explicitly labeled below. [Status](../roadmap/status.md) owns delivery and
 [vision](../vision.md) owns product scope. A logical boundary does not require
 a separate process, Dart package or database schema.
@@ -8,7 +8,7 @@ a separate process, Dart package or database schema.
 ## Current placement and dependency rule
 
 `apps/server` is the composition root. Logical modules live in
-`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock}/`;
+`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock,merchandising}/`;
 platform/application/infrastructure components provide identity, authorization,
 transactions, audit and events. The `modules/` directory is reserved, not where
 today's business implementations are deployed.
@@ -34,6 +34,7 @@ share a transaction; events are added only when the use case needs them.
 | Tasks | TaskTemplate revisions, TaskInstance snapshots, execution state, step results, blockings, numeric attempts and command receipts | Task creation/execution/resolution/query ports. Does not update Workforce tables or own future HACCP records. |
 | Inventory | Company-wide Article and ArticleLocationAssortment | `InventoryArticlePort` and released `inventory_article_location_projection`. Owns effective Article/Assortment information, not stock quantities or prices. |
 | Stock | StockLevel projection and immutable StockMovement ledger | Authorized queries and manual opening/absolute correction. Exact thousandths; frozen unit; movement-ID replay. No valuation, receiving or unit conversion. |
+| Merchandising | Local Fixture, independent Company Planogram, Revision/Zone/Placement and immutable Assignment | Organization scope, Inventory Article/Assortment and Stock referenced-level public ports; browser print; no Stock writes or events. P4.4 review pending. |
 | Audit infrastructure | Append-only business audit | Shared transactional append and authorized reads. Does not decide business state; runtime grants do not protect against every privileged owner action. |
 | Event/plugin infrastructure | Organization outbox, delivery receipts/inbox and registry | Bounded local dispatch/retry/dead-letter/replay and approved external read clients. No executed plugin code or business-module write API. |
 
@@ -70,6 +71,17 @@ authorized transaction. It owns orchestration, not another copy of their data.
 There is no asynchronous task generator. Add an event only for a concrete consumer;
 it must not repeat the synchronous publication effects.
 
+## P4.4 local Merchandising boundary
+
+Merchandising now owns local Fixtures, independent Company Planograms, immutable
+published revisions with ordered Zones/Placements, and explicit append-only
+Assignments. The bounded implementation is recorded in [ADR 0018](../adr/0018-local-planogram-execution.md).
+Its repository touches only its six tables. Organization supplies configured-Location
+validation; Inventory supplies typed bounded Article/Assortment context and candidates;
+Stock supplies typed referenced current levels, missing versus zero and frozen units.
+No Stock writes, Tasks integration or outbox consumer exists. Local implementation
+is uncommitted and awaits independent review/changed-commit CI.
+
 ## Intentional future ownership
 
 These are **planned boundaries**, not existing modules or final schema decisions.
@@ -78,7 +90,7 @@ Public ports should express product dependencies without circular Domain ownersh
 | Future owner | Intended data/responsibility | Dependencies through contracts; excluded ownership |
 | --- | --- | --- |
 | Knowledge | WikiArticle, approved revisions, suggestions and review/publication | Tasks consumes pinned approved guidance; Knowledge never changes execution history. |
-| Merchandising | Fixture, Planogram revisions, organizational/location assignments, acknowledgement and deviations | Article references and authorized Assortment/Stock queries; Tasks owns rollout work. No foreign stock writes or general CAD. |
+| Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
 | Production / Recipes | Optional Article-linked Recipe revisions, ingredients/yield/instructions, production/batch evidence | Inventory owns Article identity; Stock applies physical effects; cost source and consumption model undecided. No duplicate manufactured product identity. |
 | Purchasing / Receiving | Suppliers, orders, receipt/source cost evidence | Article/unit references; authorized Stock commands for accepted physical receipts. Not Stock ledger owner or invented valuation. |
 | Sales integration | Canonical SalesSource/import/checkpoint, Sale/Line source references, mapping and import health | Core validates authority/identity and coordinates explicit Stock/report effects. Vendor adapter acquires/converts; checkout/payment/fiscal archive ownership separate. |

@@ -32,6 +32,7 @@
 // point into an isolated database. This fixture does not implement or prove
 // database downgrade, application downgrade or replacement activation.
 import 'dart:convert';
+import 'merchandising_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -59,6 +60,7 @@ const _expectedPendingMigrations = [
   '0013_article_master',
   '0014_location_assortment',
   '0015_manual_stock',
+  '0016_local_planograms',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1064,7 +1066,22 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       throw StateError('The stock audit evidence is incomplete.');
     }
 
+    await seedLocalPlanogram(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        token: adminToken,
+        body: body,
+        expected: status,
+      ),
+      locationId,
+    );
     await _writeJson(resultFile, {
+      'merchandising': {
+        'revisionCount': 2,
+        'assignmentCount': 2,
+        'pinnedPrint': true,
+      },
       'ready': true,
       'adminLogin': true,
       'workerLogin': true,

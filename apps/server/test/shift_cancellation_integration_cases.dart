@@ -816,6 +816,7 @@ void shiftCancellationTests() {
           '0013_article_master',
           '0014_location_assortment',
           '0015_manual_stock',
+          '0016_local_planograms',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

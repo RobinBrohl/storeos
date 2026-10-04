@@ -1,10 +1,11 @@
 # Documentation index
 
 Canonical sources reconciled 2026-10-04. Start with [HANDOVER](HANDOVER.md) after
-[AGENTS](../AGENTS.md). Current source baseline is `f9c8b07`; P4.3 Manual Stock
+[AGENTS](../AGENTS.md). P4.4 development baseline is `ed91a05`; P4.3 Manual Stock
 Foundation is **DONE/CLOSED**, with independent targeted review APPROVE, 28/28 PASS
 and all five jobs green in [changed-commit CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
 See the [final closure](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
+P4.4 is implemented locally and uncommitted; independent review and remote CI are pending.
 Do not infer delivery from a target architecture description or an Accepted ADR.
 
 ## Canonical sources
@@ -84,6 +85,7 @@ resolve current delivery and outstanding findings.
 - [phase-4-1-article-master](development/phase-4-1-article-master.md)
 - [phase-4-2-location-assortment](development/phase-4-2-location-assortment.md)
 - [phase-4-3-manual-stock](development/phase-4-3-manual-stock.md)
+- [phase-4-4-local-planograms](development/phase-4-4-local-planograms.md)
 
 ## Package entry points
 

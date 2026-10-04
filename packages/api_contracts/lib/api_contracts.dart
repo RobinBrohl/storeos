@@ -14,6 +14,7 @@ export 'src/json_numbers.dart';
 export 'src/articles.dart';
 export 'src/article_assortment.dart';
 export 'src/stock.dart';
+export 'src/merchandising.dart';
 
 class HealthResponse {
   const HealthResponse({required this.status});

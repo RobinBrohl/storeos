@@ -12,6 +12,7 @@
 [CmdletBinding()]
 param(
     [string] $DartPath = 'dart',
+    [switch] $SkipPackageResolution,
     [string] $DockerPath = 'docker',
     [ValidateSet('none', 'prepare', 'backup', 'restore', 'verify', 'corruption')]
     # Test hook: abort after the named step to prove failure-path cleanup.
@@ -147,7 +148,15 @@ function Write-FixtureFailureDiagnostics {
             if (!(Test-Path -LiteralPath $file -PathType Leaf)) { continue }
             Write-Warning "Acceptance diagnostics: $name.$stream.log"
             foreach ($line in (Get-Content -LiteralPath $file | Select-Object -Last 20)) {
-                Write-Warning "Acceptance | $line"
+                $masked = $line
+                foreach ($secret in $sensitiveValues) {
+                    foreach ($representation in @($secret, [Uri]::EscapeDataString($secret), [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($secret)))) {
+                        if ($representation) { $masked = $masked.Replace($representation, '[REDACTED]') }
+                    }
+                }
+                $masked = $masked -replace '(?i)Bearer\s+[A-Za-z0-9._~+/=-]+', 'Bearer [REDACTED]'
+                $masked = $masked -replace '(?i)postgres(?:ql)?://[^\s"<>]+', '[REDACTED_DATABASE_URL]'
+                Write-Warning "Acceptance | $masked"
             }
         }
     }
@@ -217,8 +226,10 @@ try {
     New-Item -ItemType Directory -Path $runDirectory -Force | Out-Null
     Push-Location $serverDirectory
     try {
-        & $dartTool pub get --enforce-lockfile
-        if ($LASTEXITCODE -ne 0) { throw 'Server package resolution failed.' }
+        if (!$SkipPackageResolution) {
+            & $dartTool pub get --enforce-lockfile
+            if ($LASTEXITCODE -ne 0) { throw 'Server package resolution failed.' }
+        } elseif (!(Test-Path -LiteralPath '.dart_tool/package_config.json')) { throw 'Cached package configuration required.' }
     } finally { Pop-Location }
 
     $env:STOREOS_BACKUP_MANIFEST = $manifestPath

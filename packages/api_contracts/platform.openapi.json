@@ -4221,6 +4221,2449 @@
           }
         ]
       }
+    },
+    "/api/v1/platform/locations/{locationId}/merchandising/fixtures": {
+      "get": {
+        "operationId": "listFixtures",
+        "description": "Requires merchandising.layouts.read. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Ascending UUID keyset; 50 items per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FixturePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createFixture",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fixture"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "already_exists. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFixture"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}": {
+      "get": {
+        "operationId": "getFixture",
+        "description": "Requires merchandising.layouts.read. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fixtureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fixture"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "invalid_lifecycle. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/edit": {
+      "post": {
+        "operationId": "editFixture",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fixtureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fixture"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "stale_version, invalid_lifecycle. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditFixture"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/retire": {
+      "post": {
+        "operationId": "retireFixture",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fixtureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fixture"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "stale_version, invalid_lifecycle. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LayoutVersionCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/planograms": {
+      "get": {
+        "operationId": "listPlanograms",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Ascending UUID keyset; 50 items per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanogramPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPlanogram",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Planogram"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "already_exists, invalid_lifecycle. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Origin Fixture not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanogram"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/planograms/{planogramId}": {
+      "get": {
+        "operationId": "getPlanogram",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planogramId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Planogram"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/planograms/{planogramId}/retire": {
+      "post": {
+        "operationId": "retirePlanogram",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planogramId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Planogram"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "stale_version, invalid_lifecycle. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LayoutVersionCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/planograms/{planogramId}/revisions": {
+      "get": {
+        "operationId": "listPlanogramRevisions",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planogramId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Ascending UUID keyset; 50 items per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanogramRevisionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPlanogramDraft",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planogramId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutDraftResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "already_exists, stale_version, invalid_lifecycle, draft_exists, article_unavailable, layout_identity_conflict. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLayoutDraft"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/planograms/{planogramId}/revisions/{revisionId}": {
+      "get": {
+        "operationId": "getPlanogramRevision",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planogramId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanogramRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/planograms/{planogramId}/revisions/{revisionId}/edit": {
+      "post": {
+        "operationId": "savePlanogramDraft",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planogramId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutDraftResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "stale_version, invalid_lifecycle, article_unavailable, layout_identity_conflict. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditLayoutDraft"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/planograms/{planogramId}/revisions/{revisionId}/discard": {
+      "post": {
+        "operationId": "discardPlanogramDraft",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planogramId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutDraftResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "stale_version, invalid_lifecycle. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LayoutVersionCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/planograms/{planogramId}/revisions/{revisionId}/publish": {
+      "post": {
+        "operationId": "publishPlanogramRevision",
+        "description": "Requires merchandising.layouts.publish. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Exact durable replay binds command kind, Company, actor, planogramId, revisionId and expectedVersion. Check committed identity before stale/retired state; returns original publication evidence. Same operationId with different binding: operation_conflict. Published layout immutable. Publication never assigns a Fixture; active same-Company Articles required, local Assortment not required. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planogramId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutPublishResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "stale_version, invalid_lifecycle, operation_conflict, invalid_layout, article_unavailable. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishLayout"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/merchandising/articles": {
+      "get": {
+        "operationId": "listLayoutArticleCandidates",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Ascending UUID keyset; 50 items per page."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockArticlePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/layout": {
+      "get": {
+        "operationId": "getAssignedLayout",
+        "description": "Requires merchandising.layouts.read. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fixtureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "invalid_lifecycle. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/assignments": {
+      "get": {
+        "operationId": "listFixtureAssignments",
+        "description": "Requires merchandising.layouts.manage. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fixtureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Ascending UUID keyset; 50 items per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanogramAssignmentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "assignFixtureLayout",
+        "description": "Requires merchandising.layouts.publish. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Exact durable replay binds command kind, Company, Location, actor, fixtureId, revisionId and expectedVersion. Late exact replay returns original evidence without restoring old assignment. Active target, active Planogram, published revision, active Articles and active target Assortment required. Matching-version already-current revision is a no-op and consumes no operation identity. Mutation and bounded audit atomic; no events. Draft save/edit use expectedVersion with no automatic rebase or durable receipt. Creation uses retained client resource UUID for authorized reconciliation. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fixtureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutAssignResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "stale_version, invalid_lifecycle, operation_conflict, article_unavailable, assortment_unavailable. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: existing 16384-byte HTTP ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignLayout"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/assignments/{assignmentId}/print-view": {
+      "get": {
+        "operationId": "getLayoutPrintView",
+        "description": "Requires merchandising.layouts.read. Server revalidates current session/Company and configured local Location. Admin: manage/publish/read; employee: only local active Fixtures/current assigned layouts/print; plugin clients: none. Authenticated JSON contains escaped standalone HTML/CSS, A4 landscape, pinned assignment/revision; no token URL or live Stock. Employee old assignment: assignment_changed. Admin historical assignment: explicit historical marking. Live Article identification as of generation; no print acknowledgment. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fixtureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutPrintView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, invalid_json (POST only): malformed UUID, text, layout, version, cursor or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "invalid_lifecycle, assignment_changed. Rejection commits nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -7307,6 +9750,952 @@
             "minLength": 1,
             "maxLength": 500,
             "description": "Required correction reason; non-blank after trimming."
+          }
+        }
+      },
+      "LayoutPlacement": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "articleId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facings": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "LayoutZone": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "placements"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "placements": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/LayoutPlacement"
+            }
+          }
+        }
+      },
+      "LayoutContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "zones"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "zones": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/LayoutZone"
+            }
+          }
+        },
+        "description": "Canonical UTF-8 JSON at most 12288 bytes; at most 100 placements overall. Array order defines contiguous 1-based ordinals. Zone and placement UUIDs unique within a revision. Published content requires non-empty zones with placements."
+      },
+      "CreateFixture": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "kind"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "shelf",
+              "refrigerated_case",
+              "counter",
+              "display"
+            ]
+          }
+        }
+      },
+      "EditFixture": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "name",
+          "kind"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "shelf",
+              "refrigerated_case",
+              "counter",
+              "display"
+            ]
+          }
+        }
+      },
+      "CreatePlanogram": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "authoringLocationId",
+          "originFixtureId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authoringLocationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "originFixtureId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "LayoutVersionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          }
+        }
+      },
+      "CreateLayoutDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "expectedVersion",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "content": {
+            "$ref": "#/components/schemas/LayoutContent"
+          }
+        }
+      },
+      "EditLayoutDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "content"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "content": {
+            "$ref": "#/components/schemas/LayoutContent"
+          }
+        }
+      },
+      "PublishLayout": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          }
+        }
+      },
+      "AssignLayout": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion",
+          "revisionId"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Fixture": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locationId",
+          "name",
+          "kind",
+          "status",
+          "version",
+          "currentAssignmentId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "retired"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "retiredAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "retiredBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "shelf",
+              "refrigerated_case",
+              "counter",
+              "display"
+            ]
+          },
+          "currentAssignmentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "Planogram": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "status",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "createdBy",
+          "retiredAt",
+          "retiredBy",
+          "authoringLocationId",
+          "originFixtureId",
+          "displayTitle"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "retired"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "retiredAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "retiredBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "authoringLocationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "originFixtureId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "displayTitle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          }
+        }
+      },
+      "PlanogramRevision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "planogramId",
+          "revisionNumber",
+          "status",
+          "title",
+          "createdAt",
+          "publishedAt",
+          "discardedAt",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "planogramId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "discarded"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "publishedBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "publishOperationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "publishExpectedVersion": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "publicationVersion": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "discardedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "discardedBy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "content": {
+            "$ref": "#/components/schemas/LayoutContent"
+          },
+          "articles": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/LayoutArticleContext"
+            },
+            "description": "Bounded live Article and configured-location assortment context; not revision content."
+          }
+        }
+      },
+      "PlanogramAssignment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "fixtureId",
+          "revisionId",
+          "appliedVersion",
+          "assignedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fixtureId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "appliedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "assignedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "assignedBy": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "FixturePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Fixture"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "PlanogramPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Planogram"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "PlanogramRevisionPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PlanogramRevision"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "PlanogramAssignmentPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PlanogramAssignment"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "StockArticlePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/StockArticle"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "LayoutDraftResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "planogram",
+          "revision"
+        ],
+        "properties": {
+          "planogram": {
+            "$ref": "#/components/schemas/Planogram"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/PlanogramRevision"
+          }
+        }
+      },
+      "LayoutPublishResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "appliedVersion",
+          "replayed"
+        ],
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/PlanogramRevision"
+          },
+          "appliedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LayoutAssignResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assignment",
+          "applied",
+          "appliedVersion",
+          "replayed"
+        ],
+        "properties": {
+          "assignment": {
+            "$ref": "#/components/schemas/PlanogramAssignment"
+          },
+          "applied": {
+            "type": "boolean"
+          },
+          "appliedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LayoutArticleContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sku",
+          "barcode",
+          "name",
+          "unit",
+          "isActive",
+          "assortmentIsActive"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "assortmentIsActive": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "stock": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "quantity",
+                  "stockUnit"
+                ],
+                "properties": {
+                  "quantity": {
+                    "type": "string"
+                  },
+                  "stockUnit": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 32
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "LayoutView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fixture",
+          "assignment",
+          "revision",
+          "articles",
+          "stockContextStatus",
+          "queriedAt",
+          "historical"
+        ],
+        "properties": {
+          "fixture": {
+            "$ref": "#/components/schemas/Fixture"
+          },
+          "assignment": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PlanogramAssignment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revision": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PlanogramRevision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "articles": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/LayoutArticleContext"
+            }
+          },
+          "queriedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "historical": {
+            "type": "boolean"
+          },
+          "stockContextStatus": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "description": "Availability of the batched optional Stock read. When available, article stock null means no recorded StockLevel; recorded zero remains a quantity. When unavailable, ignore null stock as a missing-level indication and retain the instruction."
+          }
+        }
+      },
+      "LayoutPrintView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assignmentId",
+          "revisionId",
+          "html"
+        ],
+        "properties": {
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "html": {
+            "type": "string"
           }
         }
       }

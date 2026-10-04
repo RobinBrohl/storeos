@@ -1,8 +1,8 @@
 # Actual implementation status
 
-Reconciled 2026-10-04 against `main` at `f9c8b070f870cabbba3ae7b63bf16190b46aad8e`.
+P4.4 development baseline verified 2026-10-04 against `main` at `ed91a05ccbe9b61afaf92914c34f844aff64f638`.
 HEAD matches cached and live `origin/main`; tree/index were clean before this
-documentation pass, with one worktree and no stash. Migrations remain 0001–0015.
+P4.4 implementation, with one worktree and no stash. Baseline migrations were 0001–0015; local implementation adds 0016.
 
 P4.3 Manual Stock Foundation is **DONE/CLOSED**. Foundation commit
 `e8ce8c319e2dd3051b402d252a0666f33b170fa3` and acceptance correction
@@ -49,8 +49,16 @@ semantics under the accepted threat model.
 Tracking is memory-only: browser reload, logout or client/session replacement cannot
 guarantee recovery of an unconfirmed adjustment. No durable offline recovery exists.
 
-Next: fresh P4.4 capability selection from the reconciled product vision. The next
-capability has not been chosen or declared active.
+P4.4 Local Planogram Execution is **IMPLEMENTED LOCALLY / TARGETED REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**:
+uncommitted on `main` from dynamically verified `ed91a05ccbe9b61afaf92914c34f844aff64f638`.
+The user selected the pasted product contract as the complete architecture, replacing
+the former unselected-capability statement. Migration 0016 is new; 0001–0015 have
+unchanged Git content. Historical literal byte identity is qualified by unavailable
+pre-implementation fingerprints and known CRLF checkout representations in 0005/0007/0008/0009.
+Independent review F01/F02 are remediated locally; targeted review and remote
+changed-commit CI remain pending. F03's raw-SQL pointer limitation is accepted under
+the supported-writer boundary. See [ADR 0018](../adr/0018-local-planogram-execution.md)
+and [development evidence](../development/phase-4-4-local-planograms.md). P4.3 closure above is unchanged.
 
 ## Planned and deferred scope
 

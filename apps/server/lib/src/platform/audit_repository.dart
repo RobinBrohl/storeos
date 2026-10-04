@@ -59,6 +59,7 @@ class AuditRepository {
       'blockingId',
       'operationId',
       'movementId',
+      'fixtureId',
       'oldVersion',
       'oldStatus',
       'oldStartsAt',

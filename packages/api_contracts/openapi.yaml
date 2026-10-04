@@ -7,6 +7,38 @@ servers:
   - url: http://127.0.0.1:8080
     description: Loopback development; use HTTPS for LAN deployments.
 paths:
+  /api/v1/platform/locations/{locationId}/merchandising/fixtures:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures'
+  /api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures~1{fixtureId}'
+  /api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/edit:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures~1{fixtureId}~1edit'
+  /api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/retire:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures~1{fixtureId}~1retire'
+  /api/v1/platform/merchandising/planograms:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1planograms'
+  /api/v1/platform/merchandising/planograms/{planogramId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1planograms~1{planogramId}'
+  /api/v1/platform/merchandising/planograms/{planogramId}/retire:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1planograms~1{planogramId}~1retire'
+  /api/v1/platform/merchandising/planograms/{planogramId}/revisions:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1planograms~1{planogramId}~1revisions'
+  /api/v1/platform/merchandising/planograms/{planogramId}/revisions/{revisionId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1planograms~1{planogramId}~1revisions~1{revisionId}'
+  /api/v1/platform/merchandising/planograms/{planogramId}/revisions/{revisionId}/edit:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1planograms~1{planogramId}~1revisions~1{revisionId}~1edit'
+  /api/v1/platform/merchandising/planograms/{planogramId}/revisions/{revisionId}/discard:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1planograms~1{planogramId}~1revisions~1{revisionId}~1discard'
+  /api/v1/platform/merchandising/planograms/{planogramId}/revisions/{revisionId}/publish:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1planograms~1{planogramId}~1revisions~1{revisionId}~1publish'
+  /api/v1/platform/merchandising/articles:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1merchandising~1articles'
+  /api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/layout:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures~1{fixtureId}~1layout'
+  /api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/assignments:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures~1{fixtureId}~1assignments'
+  /api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/assignments/{assignmentId}/print-view:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures~1{fixtureId}~1assignments~1{assignmentId}~1print-view'
   /api/v1/platform/context:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1context'
   /api/v1/platform/organization:

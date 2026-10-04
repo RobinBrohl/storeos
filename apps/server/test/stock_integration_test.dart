@@ -1561,7 +1561,10 @@ void main() {
         schemaName: f.schema,
         runtimeDatabaseUser: f.runtimeUser,
       );
-      expect(await runner.apply(), ['0015_manual_stock']);
+      expect(await runner.apply(), [
+        '0015_manual_stock',
+        '0016_local_planograms',
+      ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);
       final constraints = await f.owner.execute(

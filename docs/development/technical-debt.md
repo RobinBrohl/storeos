@@ -54,8 +54,8 @@ supported-writer semantics remain accepted limitations, not reopened findings.
 | L3 / F11 | ACTIVE | Session/plugin expiry creation uses app clock, validation DB clock. Align when identity/plugin code changes. |
 | L4 / F12 | DEFERRED | Company-wide admin shift reads vs configured-location execution paths. Resolve before multi-location execution/scoped roles; other named Locations already exist. |
 | L5 / F12 | DEFERRED | Unscoped existence/receipt probes, with downstream actor/company checks. Scope before a shared-schema multi-Company writer model. Current deployment is one Company per installation. |
-| L6 / F13 | ACTIVE | [Backup runner](../../scripts/backup/Run-BackupRestoreAcceptance.ps1) / [update runner](../../scripts/update/Run-UpdateRecoveryAcceptance.ps1) raw failure tails differ from masked capacity diagnostics. No observed disclosure; sanitize on next harness touch. Passing report-redaction tests cover JSON only. |
-| L7 / F14 | ACTIVE | [Migration runner](../../apps/server/lib/src/infrastructure/migration_runner.dart) lacks targeted unknown/non-prefix/invalid-name/empty refusal coverage. Add on runner/harness touch; no current production fault shown. |
+| L6 / F13 | LOCALLY ADDRESSED / REVIEW PENDING | P4.4 masks configured raw/URI/Base64 secret representations, Bearer tokens and PostgreSQL URLs in both touched harness failure tails. The actual diagnostic functions pass 10 assertions across both runners; report-redaction checks remain green. Independent P4.4 review is pending; see [evidence](phase-4-4-local-planograms.md). |
+| L7 / F14 | LOCALLY ADDRESSED / REVIEW PENDING | P4.4 adds four real PostgreSQL refusal cases for unknown applied migration, non-prefix, invalid filename and empty SQL, proving pending SQL is not applied. Existing checksum/rollback checks remain green. Independent P4.4 review is pending; see [evidence](phase-4-4-local-planograms.md). |
 | L8 | CLOSED in this documentation pass | [Module boundaries](../architecture/module-boundaries.md) now explicitly says no shift/task integration events exist; event examples are future contracts. |
 | L9 / F17 | DEFERRED | Organization setup is emittable but not subscribable; no current consumer needs it. Revisit subscription catalog on actual demand. |
 | L10 / F15 | ACTIVE on touch | Coordinator/UI density, raw-map parsing, safety fixture duplication and DDL column whitelists. Split/share only with demonstrated need; recheck whitelists for future columns. |
@@ -68,6 +68,15 @@ supported-writer semantics remain accepted limitations, not reopened findings.
 | Recovery-verify transients | OPEN evidence gap | [P4.1 evidence](phase-4-1-article-master.md) records two non-injected recovery-verify failures followed by passing reruns without explained root cause. Revisit when the harness is next exercised; do not reclassify them as capacity injections or claim universal flake-free recovery. |
 
 ## Other retained debt and gates
+
+P4.4 review F03 is an **accepted supported-writer limitation**, distinct from the
+older M3/F03 API debt above. The current-assignment composite FK protects Fixture,
+Company and Location ownership, but arbitrary runtime SQL can repoint a Fixture
+to its own older Assignment without advancing version. Only the supported Assign
+writer guarantees atomic evidence/pointer/version/audit and exact late replay.
+No “latest assignment against arbitrary SQL” guarantee is claimed. Revisit before
+adding another writer or strengthening that threat model; [ADR 0018](../adr/0018-local-planogram-execution.md)
+and [P4.4 evidence](phase-4-4-local-planograms.md) preserve the independent probe.
 
 Company-wide serialization remains deliberate; narrow it only with measured target
 hardware contention and renewed last-admin/revocation/race/evidence proofs. Client

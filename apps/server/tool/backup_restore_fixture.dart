@@ -16,6 +16,7 @@
 // the database name supplied through STOREOS_BACKUP_SOURCE_DATABASE or
 // STOREOS_BACKUP_TARGET_DATABASE.
 import 'dart:convert';
+import 'merchandising_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -46,6 +47,13 @@ const _connectionSettings = ConnectionSettings(
 /// compile-time constants, never user input.
 const _evidenceTables = <String, String>{
   'shifts': 'id',
+  'merchandising_fixtures': 'id',
+  'merchandising_planograms': 'id',
+  'merchandising_planogram_revisions': 'id',
+  'merchandising_planogram_zones': 'id',
+  'merchandising_planogram_placements': 'id',
+  'merchandising_planogram_assignments': 'id',
+
   'task_template_revisions': 'id',
   'task_instances': 'id',
   'task_step_results': 'instance_id, position, step_id',
@@ -317,6 +325,16 @@ Future<Map<String, String>> _seed(
       'companyName': 'Backup Acceptance Company',
       'locationName': 'Backup Acceptance Location',
     },
+  );
+  await seedLocalPlanogram(
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      token: adminToken,
+      body: body,
+      expected: status,
+    ),
+    locationId,
   );
   final employeeId = newUuid(), workerId = newUuid();
   final employee = await api.request(
@@ -637,6 +655,13 @@ Future<void> _assertSeededJourney(
     throw StateError('Expected exactly one active source plugin token.');
   }
   const expectedCounts = {
+    'merchandising_fixtures': 1,
+    'merchandising_planograms': 1,
+    'merchandising_planogram_revisions': 2,
+    'merchandising_planogram_zones': 2,
+    'merchandising_planogram_placements': 2,
+    'merchandising_planogram_assignments': 2,
+
     'shifts': 1,
     'task_template_revisions': 3,
     'task_instances': 3,

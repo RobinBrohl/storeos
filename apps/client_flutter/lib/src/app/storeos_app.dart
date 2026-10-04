@@ -6,6 +6,7 @@ import 'package:storeos_design_system/storeos_design_system.dart';
 import '../application/article_assortment_controller.dart';
 import '../application/article_controller.dart';
 import '../application/stock_controller.dart';
+import '../application/merchandising_controller.dart';
 import '../application/session_controller.dart';
 import '../application/platform_controller.dart';
 import '../application/employee_controller.dart';
@@ -40,6 +41,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   ArticleController? _articles;
   ArticleAssortmentController? _assortment;
   StockController? _stock;
+  MerchandisingController? _merchandising;
   ShiftController? _shifts, _home;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _wasAuthenticated = false;
@@ -71,6 +73,11 @@ class _StoreOsAppState extends State<StoreOsApp> {
         api,
       );
       _stock = StockController(_controller, _platformController!, api);
+      _merchandising = MerchandisingController(
+        _controller,
+        _platformController!,
+        api,
+      );
     }
   }
 
@@ -83,6 +90,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _articles?.dispose();
     _assortment?.dispose();
     _stock?.dispose();
+    _merchandising?.dispose();
     _employees?.dispose();
     _platformController?.dispose();
     _controller.dispose();
@@ -131,6 +139,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       articles: _articles,
                       assortment: _assortment,
                       stock: _stock,
+                      merchandising: _merchandising,
                       shifts: _shifts,
                       home: _home,
                       baseUri: widget.baseUri,

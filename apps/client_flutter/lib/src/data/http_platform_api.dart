@@ -31,6 +31,7 @@ class HttpPlatformApi implements PlatformApi {
       _uri(route, after: after, query: query),
       headers: {'Authorization': 'Bearer $token'},
     ),
+    route: route,
   );
 
   @override
@@ -47,6 +48,7 @@ class HttpPlatformApi implements PlatformApi {
       },
       body: jsonEncode(body),
     ),
+    route: route,
   );
 
   Uri _uri(String route, {String? after, Map<String, String>? query}) {
@@ -62,8 +64,9 @@ class HttpPlatformApi implements PlatformApi {
   }
 
   Future<Map<String, dynamic>> _request(
-    Future<http.Response> Function() send,
-  ) async {
+    Future<http.Response> Function() send, {
+    required String route,
+  }) async {
     late final http.Response response;
     try {
       response = await send().timeout(timeout);
@@ -80,20 +83,36 @@ class HttpPlatformApi implements PlatformApi {
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       String code = 'http_${response.statusCode}';
+      String? layoutMessage;
       try {
-        code = ApiError.fromJson(_object(response.body)).code;
+        final error = ApiError.fromJson(_object(response.body));
+        code = error.code;
+        if (route.contains('/merchandising/') && response.statusCode == 409) {
+          layoutMessage = switch (code) {
+            'article_unavailable' || 'assortment_unavailable' =>
+              'Artikel/Sortiment prüfen. ${error.message}',
+            'assignment_changed' => 'Zuweisung geändert. Neu laden und prüfen.',
+            _ => 'Zustand geändert ($code). Neu laden und prüfen.',
+          };
+        }
       } catch (_) {
         // The status code still determines the safe user-facing message.
       }
-      throw StoreApiException(code, switch (response.statusCode) {
-        401 => 'Die Sitzung ist nicht mehr gültig. Bitte erneut anmelden.',
-        403 => 'Für diese Aktion fehlt die Berechtigung.',
-        409 =>
-          'Der Datensatz wurde inzwischen geändert. Die Ansicht wird neu geladen.',
-        400 || 422 => 'Die Eingaben wurden vom Server abgelehnt.',
-        _ =>
-          'Der Standortserver hat einen Fehler gemeldet (${response.statusCode}).',
-      }, statusCode: response.statusCode);
+      throw StoreApiException(
+        code,
+        layoutMessage ??
+            switch (response.statusCode) {
+              401 =>
+                'Die Sitzung ist nicht mehr gültig. Bitte erneut anmelden.',
+              403 => 'Für diese Aktion fehlt die Berechtigung.',
+              409 =>
+                'Der Datensatz wurde inzwischen geändert. Die Ansicht wird neu geladen.',
+              400 || 422 => 'Die Eingaben wurden vom Server abgelehnt.',
+              _ =>
+                'Der Standortserver hat einen Fehler gemeldet (${response.statusCode}).',
+            },
+        statusCode: response.statusCode,
+      );
     }
     if (response.body.trim().isEmpty) return const {};
     try {

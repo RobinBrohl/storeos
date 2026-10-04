@@ -19,6 +19,59 @@ const _location = '22222222-2222-4222-8222-222222222222';
 final _testDatabase = Platform.environment['STOREOS_TEST_DATABASE'];
 
 void main() {
+  for (final refusal in [
+    'unknown',
+    'non-prefix',
+    'invalid-filename',
+    'empty',
+  ]) {
+    test(
+      'migration runner refuses $refusal without applying pending SQL',
+      () => _withSchema((connection, endpoint, schema) async {
+        final directory = await _migrationCopy();
+        try {
+          final runner = MigrationRunner(
+            connection: connection,
+            migrationsDirectory: directory,
+            schemaName: schema,
+          );
+          await runner.apply();
+          final pending = File('${directory.path}/0002_marker.sql');
+          await pending.writeAsString(
+            'CREATE TABLE {{schema}}.p44_refusal_marker (id integer);',
+          );
+          if (refusal == 'unknown') {
+            await connection.execute(
+              "INSERT INTO \"$schema\".schema_migrations(version,checksum) VALUES ('9999_unknown',repeat('a',64))",
+            );
+          } else if (refusal == 'non-prefix') {
+            await runner.apply();
+            await connection.execute(
+              'DELETE FROM "$schema".schema_migrations WHERE version=\'0001_platform_auth\'',
+            );
+            await File(
+              '${directory.path}/0003_never.sql',
+            ).writeAsString('CREATE TABLE {{schema}}.p44_never (id integer);');
+          } else if (refusal == 'invalid-filename') {
+            await File(
+              '${directory.path}/invalid.sql',
+            ).writeAsString('SELECT 1;');
+          } else {
+            await pending.writeAsString('  ');
+          }
+          await expectLater(runner.apply(), throwsA(isA<MigrationException>()));
+          final rows = await connection.execute(
+            "SELECT tablename FROM pg_tables WHERE schemaname='$schema' AND tablename IN ('p44_refusal_marker','p44_never')",
+          );
+          expect(rows.length, refusal == 'non-prefix' ? 1 : 0);
+        } finally {
+          await directory.delete(recursive: true);
+        }
+      }),
+      skip: _testDatabase == null ? 'STOREOS_TEST_DATABASE is not set' : false,
+    );
+  }
+
   test(
     'migration is idempotent and detects changed applied SQL',
     () => _withSchema((connection, endpoint, schema) async {
@@ -162,6 +215,7 @@ void main() {
             '0013_article_master',
             '0014_location_assortment',
             '0015_manual_stock',
+            '0016_local_planograms',
           ],
         );
         final account = await connection.execute(
@@ -586,6 +640,7 @@ void main() {
           '0013_article_master',
           '0014_location_assortment',
           '0015_manual_stock',
+          '0016_local_planograms',
         ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(

@@ -58,6 +58,7 @@ class AuditRepository {
       'inRange',
       'blockingId',
       'operationId',
+      'movementId',
       'oldVersion',
       'oldStatus',
       'oldStartsAt',

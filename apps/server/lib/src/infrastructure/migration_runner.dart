@@ -246,6 +246,29 @@ class MigrationRunner {
             '$_schema.article_location_assortment FROM $role',
           );
         }
+        if (known.containsKey('0015_manual_stock')) {
+          await tx.execute(
+            'GRANT SELECT ON '
+            '$_schema.inventory_article_location_projection TO $role',
+          );
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.stock_levels TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (quantity_scaled, version, updated_at) '
+            'ON $_schema.stock_levels TO $role',
+          );
+          await tx.execute(
+            'REVOKE DELETE, TRUNCATE ON $_schema.stock_levels FROM $role',
+          );
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.stock_movements TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.stock_movements '
+            'FROM $role',
+          );
+        }
         if (known.containsKey('0009_task_cancellation')) {
           await tx.execute(
             'GRANT UPDATE (resolution_kind) ON $_schema.task_blockings TO $role',

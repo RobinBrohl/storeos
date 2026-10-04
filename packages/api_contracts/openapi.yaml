@@ -47,6 +47,14 @@ paths:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1assortment~1{id}~1deactivate'
   /api/v1/platform/locations/{locationId}/assortment/{id}/reactivate:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1assortment~1{id}~1reactivate'
+  /api/v1/platform/locations/{locationId}/stock:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock'
+  /api/v1/platform/locations/{locationId}/stock/{levelId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}'
+  /api/v1/platform/locations/{locationId}/stock/{levelId}/adjust:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1adjust'
+  /api/v1/platform/locations/{locationId}/stock/{levelId}/movements:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1movements'
   /api/v1/platform/audit:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1audit'
   /api/v1/platform/events:

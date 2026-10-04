@@ -1,9 +1,10 @@
 # StoreOS handover
 
-Start here after [AGENTS.md](../AGENTS.md). Baseline: `d90dd7e`, status updated 2026-10-03.
-The committed baseline is clean; P1b.9 and P4.1 are committed and verified by
-remote CI (run 31 on `d90dd7e`). A P4.2 location-assortment slice is implemented
-in an uncommitted working tree; independent review and remote CI are pending.
+Start here after [AGENTS.md](../AGENTS.md). Baseline: `3bc27d5`, status updated 2026-10-03.
+The committed baseline is clean; P1b.9 and P4.1 are verified by remote CI
+(run 31 on `d90dd7e`), and P4.2 is committed as `3bc27d5` with its remote CI
+green. A P4.3 manual-stock-foundation slice is implemented in an uncommitted
+working tree on top of P4.2; independent review and remote CI are pending.
 This handover does not authorize the next feature.
 [Actual status](roadmap/status.md) and [verification](development/handover-verification.md)
 distinguish current evidence from plans.
@@ -102,21 +103,38 @@ purchasing, price or event behavior, and `unit` is a label without conversions.
 See
 [P4.1](development/phase-4-1-article-master.md) and
 [ADR 0015](adr/0015-company-wide-article-master.md).
-An uncommitted P4.2 slice (location assortment) adds
-`article_location_assortment` via migration `0014` and a Flutter **Sortiment**
-section: an explicit per-location freigabe of company articles with the
-capability `inventory.assortment.manage` (admin only), non-destructive
-lifecycle and audit. Membership state and global article state are independent;
-effective operational availability is the conjunction of both and is never
-stored. Article deactivation does not mutate assortment rows, and a globally
-inactive article cannot be newly enabled or reactivated. Local verification
-covers the enumerated suites, the Web release build and the extended
-`0010→0014` update/recovery acceptance; the numeric browser E2E was not run
-locally and is pending remote CI. There is still no stock, quantity, valuation,
-supplier, purchasing or price behavior. Independent review and remote CI are
-pending. See
+The P4.2 slice (location assortment) adds `article_location_assortment` via
+migration `0014` and a Flutter **Sortiment** section: an explicit per-location
+freigabe of company articles with the capability
+`inventory.assortment.manage` (admin only), non-destructive lifecycle and
+audit. Membership state and global article state are independent; effective
+operational availability is the conjunction of both and is never stored.
+Article deactivation does not mutate assortment rows, and a globally inactive
+article cannot be newly enabled or reactivated. It is committed as `3bc27d5`
+and its remote CI is green. See
 [P4.2](development/phase-4-2-location-assortment.md) and
 [ADR 0016](adr/0016-article-location-assortment.md).
+An uncommitted P4.3 slice (manual stock foundation) adds the logical `stock`
+module under `apps/server/lib/src/stock/` via additive migration `0015`:
+`stock_levels` (transactionally maintained current projection) and
+`stock_movements` (append-only authoritative ledger), one level per company
+article and location, opening plus absolute manual adjustment, exact scale-3
+decimal strings bounded to `999999999999.999`, an immutable `stockUnit`
+snapshot that prevents later `Article.unit` edits from reinterpreting history,
+client-generated `movementId` operation identity with exact replay and
+`operation_conflict`, `stock.levels.manage` (admin only), audit without
+quantity/note values, and the Flutter **Bestand** section. Inventory keeps
+Article and assortment and releases only the read-only
+`inventory_article_location_projection` view plus `InventoryArticlePort`;
+stock never joins inventory base tables and search is one complete
+keyset-paginated stock-level query. Existing stock stays readable and
+adjustable after article or assortment deactivation. There is still no
+receiving, waste, count, sale, transfer, valuation, supplier, purchasing, unit
+catalog or unit-conversion behavior. Local verification covers contracts 69,
+server 201, Flutter 181, the extended `0010→0015` update/recovery acceptance
+and the Web release build; independent review and remote CI are pending. See
+[P4.3](development/phase-4-3-manual-stock.md) and
+[ADR 0017](adr/0017-manual-stock-foundation.md).
 There is no automatic priority engine, timezone-aware recurring calendar, timekeeping,
 stock ledger or HACCP module. See [status](roadmap/status.md) before claiming completion.
 
@@ -126,7 +144,7 @@ stock ledger or HACCP module. See [status](roadmap/status.md) before claiming co
 | --- | --- |
 | `apps/server/bin/` | Explicit server, migration and bootstrap entry points |
 | `apps/server/lib/src/` | HTTP/configuration, application coordinators, identity/organization/people/workforce/tasks/inventory and platform persistence |
-| `apps/server/migrations/` | Append-only SQL history 0001–0014; `MigrationRunner` also applies runtime grants |
+| `apps/server/migrations/` | Append-only SQL history 0001–0015; `MigrationRunner` also applies runtime grants |
 | `apps/server/test/`, `tool/` | Unit and real PostgreSQL/HTTP tests; isolated browser fixtures |
 | `apps/client_flutter/lib/src/` | App composition, controllers, API adapters, UI |
 | `apps/client_flutter/test/`, `integration_test/`, `test_driver/` | Unit/widget tests and Web E2E |
@@ -253,8 +271,10 @@ screen or placeholder is not completion.
 
 ## Important Invariants
 
-- Never use floating point for money. Future stock changes use movement/ledger
-  semantics, not silent balance overwrite ([P4](roadmap/phases.md)).
+- Never use floating point for money. Stock uses an append-only movement ledger
+  as the authority and a transactionally maintained level projection; manual
+  quantities are exact scale-3 decimal strings, targets are non-negative, and
+  `stockUnit` snapshots are immutable ([P4](roadmap/phases.md), [ADR 0017](adr/0017-manual-stock-foundation.md)).
 - Numeric task input is an exact decimal string scaled to thousandths; do not round
   or reinterpret stored evidence. Published revisions and task snapshots are immutable.
 - Preserve IDs, replay identity, versions and historical evidence. Audit failure must

@@ -565,6 +565,7 @@ void cancellationTests() {
           '0012_published_shift_amendment',
           '0013_article_master',
           '0014_location_assortment',
+          '0015_manual_stock',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

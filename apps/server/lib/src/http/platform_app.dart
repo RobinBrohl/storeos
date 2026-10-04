@@ -5,11 +5,13 @@ import 'package:shelf/shelf.dart';
 import '../application/auth_service.dart';
 import '../inventory/article_assortment_service.dart';
 import '../inventory/article_service.dart';
+import '../stock/stock_service.dart';
 import '../platform/identity_service.dart';
 import '../platform/organization_service.dart';
 import '../platform/platform_database.dart';
 import 'article_assortment_routes.dart';
 import 'article_routes.dart';
+import 'stock_routes.dart';
 import 'platform_identity_routes.dart';
 import 'employee_routes.dart';
 import 'task_template_routes.dart';
@@ -31,6 +33,7 @@ Handler createPlatformHandler(AuthService auth, PlatformDatabase database) =>
             ArticleAssortmentService(database),
           ).router.call,
         )
+        .add(StockRoutes(auth, StockService(database)).router.call)
         .add(EmployeeRoutes(auth, EmployeeApplication(database)).router.call)
         .add(
           PlatformIdentityRoutes(

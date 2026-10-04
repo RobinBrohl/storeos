@@ -3,7 +3,7 @@
 // scripts/update/Run-UpdateRecoveryAcceptance.ps1 creates the database, grants
 // the restricted runtime role CONNECT and drops the database again. The owner
 // connection builds the pre-update schema and seed; the runtime role serves the
-// API only after the pending migrations (0011 through 0014) have been applied.
+// API only after the pending migrations (0011 through 0015) have been applied.
 //
 // Modes (STOREOS_UPDATE_MODE):
 //  - prepare: apply exactly migrations 0001-0010 from a byte-identical copy of
@@ -11,15 +11,18 @@
 //    evidence with owner SQL, capture stable projections and write the private
 //    run manifest plus a non-secret prepare result.
 //  - upgrade: apply the real repository migrations through the production
-//    MigrationRunner (only 0011 through 0014 may be pending), verify checksums,
+//    MigrationRunner (only 0011 through 0015 may be pending), verify checksums,
 //    idempotency, preservation of the pre-update projections, the new
 //    0011/0012 columns, constraints and the published-interval exclusion
-//    invariant, the 0013 article master and 0014 assortment schema/grants, and
-//    that the new database protections reject invalid writes.
+//    invariant, the 0013 article master, 0014 assortment and 0015 manual stock
+//    schema/grants, and that the new database protections reject invalid
+//    writes.
 //  - smoke: start the current server against the upgraded database with the
 //    restricted runtime role and run the bounded real HTTP smoke, including
-//    pre-execution cancellation of the all-open legacy published shift and a
-//    bounded interval amendment through the current API.
+//    pre-execution cancellation of the all-open legacy published shift, a
+//    bounded interval amendment, and an article/assortment/stock journey
+//    (open, adjust by movement id, read back and movement history) through the
+//    current API.
 //  - recovery: verify the isolated restore target from the pre-update encrypted
 //    restore point (exactly 0001-0010, unchanged pre-update evidence, fencing)
 //    and prove the upgraded source stayed independent. The current server is
@@ -55,6 +58,7 @@ const _expectedPendingMigrations = [
   '0012_published_shift_amendment',
   '0013_article_master',
   '0014_location_assortment',
+  '0015_manual_stock',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -495,6 +499,7 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
     final triggers = await _triggerNames(owner);
     final articleSchema = await _articleMasterSchema(owner, runtimeUser);
     final assortmentSchema = await _assortmentSchema(owner, runtimeUser);
+    final stockSchema = await _stockSchema(owner, runtimeUser);
 
     guard = await Connection.open(
       _ownerEndpoint(env, source),
@@ -563,6 +568,7 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
       'triggersPresent': triggers,
       'articleMasterSchema': articleSchema,
       'assortmentSchema': assortmentSchema,
+      'stockSchema': stockSchema,
       'invalidWritesRejected': rejected,
       'invalidWritesLeftNoChange': true,
     });
@@ -983,6 +989,81 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       throw StateError('The assortment creation audit evidence is incomplete.');
     }
 
+    final stockLevelId = newUuid();
+    final stockOpen = await api.request(
+      'POST',
+      '/api/v1/platform/locations/$locationId/stock',
+      token: adminToken,
+      expected: 201,
+      body: {
+        'id': stockLevelId,
+        'articleId': articleId,
+        'quantity': '12.5',
+        'note': null,
+      },
+    );
+    if (stockOpen['id'] != stockLevelId ||
+        stockOpen['articleId'] != articleId ||
+        stockOpen['stockUnit'] != 'Stk' ||
+        stockOpen['quantity'] != '12.5' ||
+        stockOpen['version'] != 1 ||
+        stockOpen['assortmentIsActive'] != true) {
+      throw StateError('The upgraded stock opening is wrong.');
+    }
+    final stockMovementId = newUuid();
+    final stockAdjusted = await api.request(
+      'POST',
+      '/api/v1/platform/locations/$locationId/stock/$stockLevelId/adjust',
+      token: adminToken,
+      body: {
+        'movementId': stockMovementId,
+        'expectedVersion': 1,
+        'quantity': '10',
+        'note': 'Update acceptance correction',
+      },
+    );
+    if (stockAdjusted['quantity'] != '10' || stockAdjusted['version'] != 2) {
+      throw StateError('The upgraded stock adjustment is wrong.');
+    }
+    final stockRead = await api.request(
+      'GET',
+      '/api/v1/platform/locations/$locationId/stock/$stockLevelId',
+      token: adminToken,
+    );
+    final stockHistory = await api.request(
+      'GET',
+      '/api/v1/platform/locations/$locationId/stock/$stockLevelId/movements',
+      token: adminToken,
+    );
+    final historyItems = (stockHistory['items'] as List)
+        .cast<Map<String, dynamic>>();
+    if (stockRead['quantity'] != '10' ||
+        stockRead['version'] != 2 ||
+        historyItems.length != 2 ||
+        historyItems.first['kind'] != 'adjustment' ||
+        historyItems.first['id'] != stockMovementId ||
+        historyItems.first['delta'] != '-2.5' ||
+        historyItems.first['balanceAfter'] != '10' ||
+        historyItems.first['balanceVersion'] != 2 ||
+        historyItems.last['kind'] != 'opening' ||
+        historyItems.last['balanceAfter'] != '12.5') {
+      throw StateError('The upgraded stock read-back is wrong.');
+    }
+    final stockAudits = await owner.execute(
+      Sql.named(
+        'SELECT action FROM $_schema.audit_entries '
+        'WHERE entity_id = @id AND action IN (@opened, @adjusted)',
+      ),
+      parameters: {
+        'id': stockLevelId,
+        'opened': 'stock.level.opened',
+        'adjusted': 'stock.level.adjusted',
+      },
+    );
+    if (stockAudits.length != 2) {
+      throw StateError('The stock audit evidence is incomplete.');
+    }
+
     await _writeJson(resultFile, {
       'ready': true,
       'adminLogin': true,
@@ -1032,6 +1113,13 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         'auditVerified': true,
       },
       'assortment': {'created': true, 'readBack': true, 'auditVerified': true},
+      'stock': {
+        'opened': true,
+        'adjusted': true,
+        'readBack': true,
+        'movementHistory': 2,
+        'auditVerified': true,
+      },
       'auditVerified': true,
       'correlationShared': true,
     });
@@ -2369,6 +2457,80 @@ Future<Map<String, bool>> _assortmentSchema(
   };
   if (result.values.any((value) => !value)) {
     throw StateError('The assortment schema probe failed.');
+  }
+  return result;
+}
+
+Future<Map<String, bool>> _stockSchema(
+  Connection owner,
+  String runtimeUser,
+) async {
+  final view = await owner.execute(
+    "SELECT to_regclass('$_schema.inventory_article_location_projection')::text AS name",
+  );
+  final levels = await owner.execute(
+    "SELECT to_regclass('$_schema.stock_levels')::text AS name",
+  );
+  final movements = await owner.execute(
+    "SELECT to_regclass('$_schema.stock_movements')::text AS name",
+  );
+  final constraints = await owner.execute(
+    "SELECT conname FROM pg_constraint WHERE conrelid IN "
+    "('$_schema.stock_levels'::regclass, "
+    "'$_schema.stock_movements'::regclass)",
+  );
+  final names = constraints.map((row) => row.single! as String).toSet();
+  final levelUpdate = await owner.execute(
+    Sql.named(
+      'SELECT column_name FROM information_schema.column_privileges '
+      "WHERE table_schema = '$_schema' AND table_name = 'stock_levels' "
+      "AND grantee = @grantee AND privilege_type = 'UPDATE'",
+    ),
+    parameters: {'grantee': runtimeUser},
+  );
+  final levelColumns = levelUpdate.map((row) => row.single! as String).toSet();
+  final movementGrants = await owner.execute(
+    Sql.named(
+      'SELECT privilege_type FROM information_schema.role_table_grants '
+      "WHERE table_schema = '$_schema' AND table_name = 'stock_movements' "
+      'AND grantee = @grantee',
+    ),
+    parameters: {'grantee': runtimeUser},
+  );
+  final movementPrivileges = movementGrants
+      .map((row) => row.single! as String)
+      .toSet();
+  final viewGrants = await owner.execute(
+    Sql.named(
+      'SELECT privilege_type FROM information_schema.role_table_grants '
+      "WHERE table_schema = '$_schema' AND "
+      "table_name = 'inventory_article_location_projection' "
+      'AND grantee = @grantee',
+    ),
+    parameters: {'grantee': runtimeUser},
+  );
+  final viewPrivileges = viewGrants.map((row) => row.single! as String).toSet();
+  final result = <String, bool>{
+    'projectionViewPresent': view.single.single != null,
+    'levelTablePresent': levels.single.single != null,
+    'movementTablePresent': movements.single.single != null,
+    'scopeUniquePresent': names.contains('stock_levels_scope_unique'),
+    'movementScopeFkPresent': names.contains('stock_movements_level_fk'),
+    'movementVersionUniquePresent': names.contains(
+      'stock_movements_level_version_unique',
+    ),
+    'levelUpdateColumnsExact':
+        levelColumns.length == 3 &&
+        levelColumns.containsAll({'quantity_scaled', 'version', 'updated_at'}),
+    'movementAppendOnly':
+        movementPrivileges.containsAll({'SELECT', 'INSERT'}) &&
+        !movementPrivileges.contains('UPDATE') &&
+        !movementPrivileges.contains('DELETE') &&
+        !movementPrivileges.contains('TRUNCATE'),
+    'projectionSelectGranted': viewPrivileges.contains('SELECT'),
+  };
+  if (result.values.any((value) => !value)) {
+    throw StateError('The manual stock schema probe failed.');
   }
   return result;
 }

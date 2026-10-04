@@ -21,14 +21,24 @@ grants, and create and read a real HTTP article on the upgraded server. The
 historical `0010→0011` and `0010→0012` evidence above is unchanged; remote CI
 run 31 on `d90dd7e` passed.
 
-Update (2026-10-03, P4.2 working tree, uncommitted): the same runner and fixture
-now apply exactly `0011`–`0014`, additionally probe the
+Update (2026-10-03, committed with P4.2 as `3bc27d5`): the same runner and
+fixture apply exactly `0011`–`0014`, additionally probe the
 `article_location_assortment` table, its pair/page indexes and runtime grants,
 and create and read a real HTTP assortment membership on the upgraded server.
 A local acceptance run (`fb710b7ac2c249a9`) passed with intact isolated recovery
 fencing and a sanitized report; the historical `0010→0011`, `0010→0012` and
-`0010→0013` evidence above is unchanged. Independent review and remote CI for
-this extension are pending.
+`0010→0013` evidence above is unchanged. The remote CI run for the committed
+slice passed.
+
+Update (2026-10-03, P4.3 working tree, uncommitted): the same runner and fixture
+now apply exactly `0011`–`0015`, additionally probe `stock_levels`,
+`stock_movements`, the released `inventory_article_location_projection` view,
+the scope/version constraints and the append-only runtime grants, run a real
+HTTP stock journey (open, adjust by movement id, read back, movement history)
+and verify its audit evidence on the upgraded server. A local acceptance run
+passed with intact isolated recovery fencing and a sanitized report; the
+historical `0010→0011` through `0010→0014` evidence above is unchanged.
+Independent review and remote CI for this extension are pending.
 
 This slice proves the supported single-site update/recovery contract on populated
 pre-update data. It is an acceptance and operating-evidence slice: it changes no

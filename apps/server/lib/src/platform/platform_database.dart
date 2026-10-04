@@ -47,6 +47,7 @@ const _permissions = <String>[
   'people.manage',
   'inventory.articles.manage',
   'inventory.assortment.manage',
+  'stock.levels.manage',
   'tasks.templates.manage',
   'workforce.shifts.manage',
   'workforce.shifts.self.read',

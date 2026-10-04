@@ -1049,6 +1049,7 @@ void main() {
       expect(await runner.apply(), [
         '0013_article_master',
         '0014_location_assortment',
+        '0015_manual_stock',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);
@@ -2001,7 +2002,10 @@ void main() {
         schemaName: f.schema,
         runtimeDatabaseUser: f.runtimeUser,
       );
-      expect(await runner.apply(), ['0014_location_assortment']);
+      expect(await runner.apply(), [
+        '0014_location_assortment',
+        '0015_manual_stock',
+      ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);
       final indexes = await f.owner.execute(

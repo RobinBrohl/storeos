@@ -3867,6 +3867,360 @@
           }
         }
       }
+    },
+    "/api/v1/platform/locations/{locationId}/stock": {
+      "get": {
+        "operationId": "listStockLevels",
+        "description": "Requires stock.levels.manage (admin only), current session and company scope. Lists one location's stock levels with the live company-article projection. The search is one complete stock-level query joined against the inventory-released article/location projection and keyset-paginated over the stock level id, at most 50 entries; there is no pre-truncated article candidate set, so every matching level stays reachable through pagination. A level whose article or assortment membership was deactivated afterwards remains visible with its live activity flags. after is the last stock level UUID and a malformed value returns 400 invalid_cursor. q is a literal case-insensitive article name/SKU search where %, _ and backslash are literal characters. Unknown or foreign locations return 404. Reads do not modify state or audit.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockLevelPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID of the last stock level. Stable ascending ID order; 50 rows per page. A malformed value returns 400 invalid_cursor."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Literal case-insensitive search over the joined article name and SKU; %, _ and backslash are literal characters."
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createStockLevel",
+        "description": "Requires stock.levels.manage (admin only), current session and company scope. Opens the first recorded on-hand quantity for one company article and the route's company location: version 1, exactly one server-generated opening movement with balanceVersion 1, and the immutable stockUnit snapshot of the current normalized Article.unit. The gate requires the article to exist (404 not_found), be globally active (409 article_inactive) and have an active assortment membership at the location (409 not_in_assortment for an absent or inactive membership). The quantity is an exact decimal string scaled to thousandths, 0 to 999999999999.999; note is an optional key whose non-null value must be trimmed, non-empty, at most 500 runes and free of control characters. The client-supplied id is the reconciliation key: a duplicate id or an existing (company, location, article) level returns 409 already_exists with zero writes; an existing level must be adjusted instead of reopened. A later Article.unit edit never changes an opened level's stockUnit. Writes and audit commit atomically; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStockLevel"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock/{levelId}": {
+      "get": {
+        "operationId": "getStockLevel",
+        "description": "Requires stock.levels.manage (admin only), current session, company scope and the route location. Returns one stock level including levels whose article or assortment membership was deactivated afterwards; both live activity flags stay visible and the immutable stockUnit is returned next to the live Article.unit. Unknown ids, ids of another location and unknown or foreign locations return 404 without an existence leak. Reads do not modify state or audit.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "levelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock/{levelId}/adjust": {
+      "post": {
+        "operationId": "adjustStockLevel",
+        "description": "Requires stock.levels.manage (admin only), current session, company scope and the route location. Absolute manual correction of the on-hand quantity. movementId is the operation identity and is checked before any stale-version handling: an exact replay (same level, company, location, actor, expectedVersion, target quantity and note) returns 200 with the current authoritative level and writes no new movement, version bump or audit, even after later movements advanced the level. Reusing the same movementId with any different level, scope, actor, expectedVersion, target or note returns 409 operation_conflict with zero writes. A real adjustment stores delta = target - current together with balanceAfter and the new balanceVersion; note is the required correction reason (non-empty, at most 500 runes). A matching-version request whose target equals the current quantity is a no-op without movement, version bump or audit. A stale expectedVersion returns 409 stock_conflict. Targets are non-negative; there is no negative-stock behavior. Writes and audit commit atomically; no domain events.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockLevel"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "413": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "415": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "levelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustStockLevel"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock/{levelId}/movements": {
+      "get": {
+        "operationId": "listStockMovements",
+        "description": "Requires stock.levels.manage (admin only), current session, company scope and the route location. Returns the immutable movement history of the route-scoped stock level, ordered by balanceVersion descending, at most 50 rows per page; after is the decimal balanceVersion of the last returned movement and a malformed or out-of-range value returns 400 invalid_cursor. Ordering never uses recordedAt. Each movement exposes delta and balanceAfter as exact decimal strings and inherits the level's immutable stockUnit; there is no unit per movement. Unknown level ids and ids of another location return 404. Reads do not modify state or audit.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed server state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockMovementPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "./openapi.yaml#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "levelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "The balanceVersion of the last returned movement. Strictly descending balanceVersion order; 50 rows per page. A malformed value returns 400 invalid_cursor."
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -6676,6 +7030,283 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 9007199254740990
+          }
+        }
+      },
+      "StockArticle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sku",
+          "barcode",
+          "name",
+          "unit",
+          "isActive"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "StockLevel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locationId",
+          "articleId",
+          "stockUnit",
+          "quantity",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "article",
+          "assortmentIsActive"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stockUnit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "description": "Immutable unit-label snapshot taken at opening."
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact decimal, no exponent, grouping or rounding; 0 to 999999999999.999. Canonical responses remove leading/trailing zeros."
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "article": {
+            "$ref": "#/components/schemas/StockArticle"
+          },
+          "assortmentIsActive": {
+            "type": "boolean",
+            "description": "Live membership state. Effective availability is article.isActive && assortmentIsActive, computed by the client and deliberately not stored."
+          }
+        }
+      },
+      "StockLevelPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/StockLevel"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "StockMovement": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "delta",
+          "balanceAfter",
+          "balanceVersion",
+          "recordedAt",
+          "recordedBy",
+          "note"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "opening",
+              "adjustment"
+            ]
+          },
+          "delta": {
+            "type": "string",
+            "pattern": "^-?[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact signed decimal delta as thousandths; zero never carries a sign."
+          },
+          "balanceAfter": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact decimal balance after this movement; 0 to 999999999999.999."
+          },
+          "balanceVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recordedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "StockMovementPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/StockMovement"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Decimal balanceVersion of the last returned movement when another page exists."
+          }
+        }
+      },
+      "CreateStockLevel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "articleId",
+          "quantity",
+          "note"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact opening quantity, 0 to 999999999999.999; a negative target is invalid."
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Optional open note; when present it must be non-blank after trimming."
+          }
+        }
+      },
+      "AdjustStockLevel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "movementId",
+          "expectedVersion",
+          "quantity",
+          "note"
+        ],
+        "properties": {
+          "movementId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Client-generated operation identity; exact replays are idempotent and any other reuse is 409 operation_conflict."
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Absolute non-negative target quantity, 0 to 999999999999.999."
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required correction reason; non-blank after trimming."
           }
         }
       }

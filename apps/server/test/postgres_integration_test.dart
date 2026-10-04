@@ -161,6 +161,7 @@ void main() {
             '0012_published_shift_amendment',
             '0013_article_master',
             '0014_location_assortment',
+            '0015_manual_stock',
           ],
         );
         final account = await connection.execute(
@@ -584,6 +585,7 @@ void main() {
           '0012_published_shift_amendment',
           '0013_article_master',
           '0014_location_assortment',
+          '0015_manual_stock',
         ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(

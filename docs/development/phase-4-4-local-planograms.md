@@ -1,7 +1,10 @@
 # P4.4 Local Planogram Execution — local development evidence
 
-Date: 2026-10-04. Delivery: **IMPLEMENTED LOCALLY / TARGETED REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**.
-No commit, push or branch change was made. This is not a DONE/CLOSED declaration.
+Date: 2026-10-04. Current delivery: **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**.
+Implementation is committed at `cd7669ed7de2751d4dc97c2724a0d11d9f674f51`; the CI correction is uncommitted.
+Earlier sections preserve historical implementation/remediation evidence. The
+appended CI failure remediation section supersedes their pending-review/uncommitted
+disposition. This is not a DONE/CLOSED declaration.
 
 ## Authoritative contract and baseline
 
@@ -340,3 +343,142 @@ REMOTE CHANGED-COMMIT CI PENDING**, entirely uncommitted. F01/F02 require target
 review of the final code. F03 remains the accepted supported-writer limitation;
 F04 remains a baseline-evidence qualification. No additional production scope
 or migration was introduced.
+
+## Changed-commit CI failure remediation — 2026-10-04
+
+Current disposition: **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**.
+The independent targeted review returned APPROVE. Implementation commit
+`cd7669ed7de2751d4dc97c2724a0d11d9f674f51` is on `main`; this bounded CI fix remains
+uncommitted. No commit, push, branch change or DONE/CLOSED declaration was made
+during this remediation.
+
+The first changed-commit [CI run 37214855513](https://github.com/RobinBrohl/storeos/actions/runs/37214855513)
+failed in [Dart job 111473178499](https://github.com/RobinBrohl/storeos/actions/runs/37214855513/job/111473178499).
+The other four jobs succeeded. The authenticated job log was read without exposing
+credentials. Both real journey variants failed at process creation, before any
+Flutter client assertion:
+
+```text
+ProcessException: No such file or directory
+  Command: C:/dev/flutter/bin/cache/dart-sdk/bin/dart.exe C:/dev/flutter/bin/cache/flutter_tools.snapshot test --no-pub test/merchandising_http_journey.dart
+  dart:io                                          Process.run
+  test/merchandising_integration_test.dart 552:40  main.<fn>.<fn>
+  ===== asynchronous gap ===========================
+  test/merchandising_fixture.dart 389:5            withMerchandisingFixture
+```
+
+Root cause classification: **CI CONFIGURATION**, with a nonportable test launcher.
+The Ubuntu Dart job provisioned only Dart 3.13.4, while the journeys unconditionally
+invoked a developer's Windows Dart executable and Flutter snapshot. Flutter and
+the client's resolved dependencies were also absent from that job. Expected 409
+responses elsewhere were not failing replay assertions.
+
+The exact server command is `dart test` from `apps/server`, with default Dart test
+concurrency and no repository concurrency override. CI uses PostgreSQL 17 Alpine,
+loopback port 5432, owner `storeos_owner`, runtime role `storeos`, database
+`storeos_test`, file-backed credentials and fixed configured Company/Location
+IDs `11111111-1111-4111-8111-111111111111` /
+`22222222-2222-4222-8222-222222222222`. The migration/bootstrap steps precede it.
+
+Before source edits, the full command was reproduced with the cached Linux
+Dart 3.13.4 server image, complete current source/test/tool/OpenAPI read-only mounts,
+the PostgreSQL container's loopback network, a temporary `_test` database and the
+same runtime role. Result: **217 PASS / 2 FAIL**, exclusively the two journey
+variants, with the identical stack above. Two preliminary container attempts also
+hit that launcher failure, but had unrelated reproduction-configuration failures
+(missing tool/OpenAPI mounts, then a non-loopback capacity-test host); they are not
+counted as clean CI-equivalent reproductions.
+
+### Parallelism and Stock fault injection
+
+Isolation is a fresh UUID schema per fixture, not a database per test. Test files
+can share the database, owner and runtime role. Each fixture has its own pool,
+HTTP server on loopback port 0, accounts, resources and cleanup. Fixed Company/
+Location IDs repeat only inside different schemas; schema-qualified tables and
+schema-scoped advisory lock keys prevent those identities from colliding. The two
+journeys in one Dart test file execute sequentially; unrelated test files can
+overlap. Child process environment maps do not mutate the parent environment.
+
+Stock failure uses `REVOKE SELECT ON "<unique-schema>".stock_levels FROM "<runtime-role>"`,
+with a matching table-specific GRANT in `finally`. It changes that table's ACL,
+not role membership, default privileges or access to another schema's table.
+Other fixtures' REVOKE/TRUNCATE/cleanup statements are likewise schema-qualified.
+No global reset, shared server or teardown race was found.
+
+A separate real PostgreSQL probe kept two fixtures alive in one temporary database
+with the same role and fixed Company identity. After the outage fixture's REVOKE,
+its runtime SELECT failed with SQLSTATE `42501`; the peer's runtime SELECT passed,
+and `has_table_privilege` returned `[false, true]`. Restoring access made the
+outage fixture readable again. **1 probe PASS**; excluded from package totals.
+This disproves the proposed cross-test permission interference mechanism.
+
+### Bounded correction
+
+- The real journey launcher now uses `flutter` / `flutter.bat` from PATH, honors
+  the existing `STOREOS_FLUTTER_EXECUTABLE` override and uses the Windows shell for
+  the batch launcher. Its real HTTP/PostgreSQL/Flutter assertions are unchanged.
+- The Dart CI job now provisions the repository's existing Flutter 3.47.5 pin
+  (bundled Dart 3.13.4) and resolves the client with `flutter pub get --enforce-lockfile`
+  before server checks. The full `dart test` command and concurrency are unchanged.
+- Production code, permissions, Stock injection, replay/no-op semantics, timeouts,
+  migration files, manifests and lockfiles are unchanged. No local dependency
+  installation/upgrade, retry, sleep, serialization or fake-only replacement was added.
+- Handover/status records reconcile the approved review, committed implementation
+  and failed CI attempt. Architecture/ADR/debt decisions are unchanged; F01/F02
+  remain closed, F03 retains the accepted supported-writer limitation, and F04
+  retains its historical migration-byte qualification.
+
+### Fresh verification and limits
+
+Post-fix execution used the already installed Windows Flutter 3.47.5 / Dart
+3.13.4 SDKs, existing locked dependencies and PostgreSQL 17 Alpine. Migration
+application through 0016 and bootstrap passed in a fresh temporary database
+before the full command. Database/role/file-backed credential semantics matched
+CI; platform and temporary database name differed. No local package resolution
+or installation was performed.
+
+| Command / check | Fresh result |
+| --- | --- |
+| `dart test` in `apps/server`, default concurrency | **3 consecutive runs: 219 PASS each, 0 failed, 0 skipped** |
+| `dart test test/merchandising_integration_test.dart --name 'real Flutter / HTTP / PostgreSQL journey' --reporter expanded` | 2 PASS together |
+| `dart test test/merchandising_integration_test.dart --name 'Stock unavailable=false' --reporter expanded` | 1 PASS independently |
+| `dart test test/merchandising_integration_test.dart --name 'Stock unavailable=true' --reporter expanded` | 1 PASS independently |
+| `dart test test/merchandising_integration_test.dart --reporter expanded` | 14 real PostgreSQL integrations PASS |
+| `dart test` in `packages/api_contracts` | 75 PASS |
+| `flutter test --no-pub` in `apps/client_flutter` | 241 PASS |
+| `flutter test --no-pub` in `packages/design_system` | 2 PASS |
+| Distinct package suite total | **537 PASS, 0 failed, 0 skipped**; repeated/filtered executions are additional runs |
+| Real peer-fixture permission-isolation probe | 1 PASS; outside package total |
+| `dart analyze` in all four packages | All clean |
+| `dart format --output=none --set-exit-if-changed .` in all four packages | Final checks: 27/109/5/55 files, 0 changes |
+| Cached offline `rhysd/actionlint:1.7.7 .github/workflows/ci.yml` | PASS |
+| `docker compose config --quiet` | PASS |
+| `flutter build web --release --no-pub --no-web-resources-cdn` | PASS |
+| `git diff --check` | PASS |
+| Migration/dependency/production integrity | All 16 raw migration hashes unchanged during this remediation; no production, migration, pubspec or lockfile diff; no 0017 |
+| Cleanup | All run-owned temporary databases removed; no normal StoreOS database writes |
+
+Runs one and three exercised Flutter PATH lookup; run two exercised the existing
+absolute executable override. Each full server run also executed both nested real
+Flutter journeys (one client test per variant); those nested tests are excluded
+from the package total. The joint, independent and targeted server selections
+also executed their corresponding nested journeys. All filtered runs retain the
+real permission fault, immutable publication/replay, late Assignment pointer,
+session/print and Stock non-mutation assertions.
+
+The first no-output format check requested a layout-only change to the launcher's
+argument list after the test runs. The pinned formatter applied it; the final
+format check is clean. No executable behavior changed. Ignored local logs/probe
+helpers retain the evidence without credential values.
+
+Unverified: the corrected Ubuntu Flutter execution and a new changed-commit CI
+run. No Linux Flutter SDK was already available locally, and none was installed.
+Local Windows passes do not establish remote CI success. The existing failed
+changed-commit run remains the remote result until an explicitly authorized
+commit/push and successful CI. Print/device/hardware acceptance, backup/update
+acceptance and numeric browser E2E were not rerun for this launcher/configuration
+fix; their earlier evidence and unchanged scope remain intact.
+
+Recommendation: the bounded correction is ready for an explicitly authorized
+commit and subsequent changed-commit CI. P4.4 stays **IMPLEMENTED / REVIEW APPROVED /
+CHANGED-COMMIT CI NOT YET GREEN** until that gate passes.

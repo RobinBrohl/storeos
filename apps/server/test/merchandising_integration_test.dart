@@ -550,14 +550,11 @@ void main() {
         }
         try {
           final result = await Process.run(
-            'C:/dev/flutter/bin/cache/dart-sdk/bin/dart.exe',
-            [
-              'C:/dev/flutter/bin/cache/flutter_tools.snapshot',
-              'test',
-              '--no-pub',
-              'test/merchandising_http_journey.dart',
-            ],
+            Platform.environment['STOREOS_FLUTTER_EXECUTABLE'] ??
+                (Platform.isWindows ? 'flutter.bat' : 'flutter'),
+            ['test', '--no-pub', 'test/merchandising_http_journey.dart'],
             workingDirectory: '../client_flutter',
+            runInShell: Platform.isWindows,
             environment: {
               'STOREOS_PLANOGRAM_JOURNEY_URL': f.base,
               'STOREOS_PLANOGRAM_JOURNEY_PASSWORD': merchandisingTestPassword,

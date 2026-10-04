@@ -1,8 +1,9 @@
 # Actual implementation status
 
-P4.4 development baseline verified 2026-10-04 against `main` at `ed91a05ccbe9b61afaf92914c34f844aff64f638`.
-HEAD matches cached and live `origin/main`; tree/index were clean before this
-P4.4 implementation, with one worktree and no stash. Baseline migrations were 0001–0015; local implementation adds 0016.
+Current baseline verified 2026-10-04 against `main` at `cd7669ed7de2751d4dc97c2724a0d11d9f674f51`.
+HEAD matches cached `origin/main`; tree/index were clean before CI remediation,
+with one worktree and no stash. P4.4 implementation and migration 0016 are committed;
+the bounded CI correction is uncommitted. The historical development baseline is recorded in the slice evidence.
 
 P4.3 Manual Stock Foundation is **DONE/CLOSED**. Foundation commit
 `e8ce8c319e2dd3051b402d252a0666f33b170fa3` and acceptance correction
@@ -49,14 +50,18 @@ semantics under the accepted threat model.
 Tracking is memory-only: browser reload, logout or client/session replacement cannot
 guarantee recovery of an unconfirmed adjustment. No durable offline recovery exists.
 
-P4.4 Local Planogram Execution is **IMPLEMENTED LOCALLY / TARGETED REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**:
-uncommitted on `main` from dynamically verified `ed91a05ccbe9b61afaf92914c34f844aff64f638`.
+P4.4 Local Planogram Execution is **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**:
+committed on `main` at `cd7669ed7de2751d4dc97c2724a0d11d9f674f51`; independent targeted review returned APPROVE.
 The user selected the pasted product contract as the complete architecture, replacing
 the former unselected-capability statement. Migration 0016 is new; 0001–0015 have
 unchanged Git content. Historical literal byte identity is qualified by unavailable
 pre-implementation fingerprints and known CRLF checkout representations in 0005/0007/0008/0009.
-Independent review F01/F02 are remediated locally; targeted review and remote
-changed-commit CI remain pending. F03's raw-SQL pointer limitation is accepted under
+Independent review F01/F02 are closed. The first changed-commit
+[CI run](https://github.com/RobinBrohl/storeos/actions/runs/37214855513) failed in
+the Dart job because the real Flutter journeys used a Windows-only launcher on
+Ubuntu and Flutter/client dependencies were not provisioned in that job. The
+CI-only correction is uncommitted; its changed-commit CI remains pending. P4.4 is
+not DONE/CLOSED. F03's raw-SQL pointer limitation is accepted under
 the supported-writer boundary. See [ADR 0018](../adr/0018-local-planogram-execution.md)
 and [development evidence](../development/phase-4-4-local-planograms.md). P4.3 closure above is unchanged.
 

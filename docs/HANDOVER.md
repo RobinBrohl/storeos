@@ -1,15 +1,19 @@
 # StoreOS handover
 
 Start after [AGENTS.md](../AGENTS.md). Current source baseline: `main`,
-`ed91a05ccbe9b61afaf92914c34f844aff64f638`, verified 2026-10-04 with a clean
-tree/index before P4.4 implementation, matching live `origin/main`, one worktree and no stash.
+`cd7669ed7de2751d4dc97c2724a0d11d9f674f51`, verified 2026-10-04 with a clean
+tree/index before CI remediation, matching cached `origin/main`, one worktree and no stash.
 P4.3 Manual Stock Foundation is **DONE/CLOSED**: the committed acceptance correction
 has independent targeted review **APPROVE**, **28/28 PASS**, and fully green
 [changed-commit CI](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
 
-P4.4 Local Planogram Execution is implemented locally on `main` from verified
-`ed91a05ccbe9b61afaf92914c34f844aff64f638`, entirely uncommitted. Status is
-**IMPLEMENTED LOCALLY / TARGETED REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**.
+P4.4 Local Planogram Execution is committed on `main` at `cd7669ed7de2751d4dc97c2724a0d11d9f674f51`.
+Status is **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**.
+Independent targeted review returned APPROVE. The first changed-commit
+[CI run](https://github.com/RobinBrohl/storeos/actions/runs/37214855513) failed in
+the Dart job: both real Flutter journeys used a Windows-only launcher on Ubuntu,
+and the job provisioned only Dart. The portable launcher and pinned Flutter/client
+CI setup correction are uncommitted; changed-commit CI for that correction is pending.
 Independent review required F01 optional Stock failure isolation and F02 reachable
 404 containment; both are remediated locally. F03 supported-writer integrity and
 F04 historical migration-byte qualifications remain explicit in the evidence.
@@ -102,8 +106,9 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. Independently target-review the uncommitted P4.4 F01/F02 remediation and complete changed-commit
-   CI after an explicitly authorized commit. Do not mark P4.4 DONE before both gates.
+1. Review the bounded uncommitted P4.4 CI correction and complete changed-commit
+   CI after an explicitly authorized commit/push. Independent targeted review is
+   already APPROVE; do not mark P4.4 DONE before changed-commit CI is green.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

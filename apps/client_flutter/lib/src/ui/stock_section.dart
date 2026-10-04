@@ -98,7 +98,9 @@ class _StockSectionState extends State<StockSection> {
                             child: Text(location.name ?? location.id),
                           ),
                       ],
-                      onChanged: controller.busy
+                      onChanged:
+                          controller.busy ||
+                              controller.pendingAdjustment != null
                           ? null
                           : (value) {
                               if (value != null) {
@@ -117,20 +119,36 @@ class _StockSectionState extends State<StockSection> {
               ),
             ],
             if (controller.busy) const LinearProgressIndicator(),
-            if (controller.conflict)
+            if (controller.adjustmentDecisionRequired)
               Card(
-                color: Theme.of(context).colorScheme.errorContainer,
+                color: controller.adjustmentAbandoned
+                    ? Theme.of(context).colorScheme.secondaryContainer
+                    : Theme.of(context).colorScheme.errorContainer,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Konflikt: Der Serverstand wurde inzwischen geändert.',
+                      Text(
+                        controller.adjustmentAbandoned
+                            ? 'Lokale Nachverfolgung beendet. Ob die Korrektur '
+                                  'gespeichert wurde, ist weiterhin unklar. '
+                                  'Serverstand prüfen und neu entscheiden.'
+                            : 'Konflikt: Korrektur abgelehnt. Serverstand prüfen und neu entscheiden.',
                       ),
+                      if (controller.lastAdjustment case final command?)
+                        Text(
+                          'Standort: ${command.locationId}\n'
+                          'Bestand: ${command.levelId}\n'
+                          'Operation: ${command.movementId}\n'
+                          'Version: ${command.input.expectedVersion} · '
+                          'Ziel: ${command.input.quantity} · ${command.input.note}',
+                        ),
                       TextButton(
                         key: const Key('stock-reload'),
-                        onPressed: controller.busy ? null : controller.load,
+                        onPressed: controller.busy
+                            ? null
+                            : controller.prepareNewAdjustment,
                         child: const Text('Serverstand neu laden'),
                       ),
                     ],
@@ -148,12 +166,24 @@ class _StockSectionState extends State<StockSection> {
                       const Text(
                         'Nicht bestätigte Korrektur: genau diese Operation kann unverändert erneut gesendet werden.',
                       ),
+                      Text(
+                        'Standort: ${controller.pendingAdjustment!.locationId}\n'
+                        'Bestand: ${controller.pendingAdjustment!.levelId}\n'
+                        'Operation: ${controller.pendingAdjustment!.movementId}\n'
+                        'Ziel: ${controller.pendingAdjustment!.input.quantity} · '
+                        '${controller.pendingAdjustment!.input.note}',
+                      ),
                       TextButton(
                         key: const Key('stock-retry-adjustment'),
                         onPressed: controller.busy
                             ? null
                             : controller.retryPendingAdjustment,
                         child: const Text('Erneut senden'),
+                      ),
+                      TextButton(
+                        key: const Key('stock-abandon-adjustment'),
+                        onPressed: controller.busy ? null : _abandon,
+                        child: const Text('Lokale Nachverfolgung beenden…'),
                       ),
                     ],
                   ),
@@ -169,6 +199,8 @@ class _StockSectionState extends State<StockSection> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(notice, key: const Key('stock-notice')),
               ),
+            if (controller.refreshError case final warning?)
+              Text(warning, key: const Key('stock-refresh-error')),
             if (controller.selectedLocationId != null) ...[
               Wrap(
                 spacing: 12,
@@ -297,7 +329,9 @@ class _StockSectionState extends State<StockSection> {
           children: [
             TextButton(
               key: ValueKey('stock-adjust-${item.id}'),
-              onPressed: controller.busy ? null : () => _adjust(item),
+              onPressed: controller.adjustmentBlocked
+                  ? null
+                  : () => _adjust(item),
               child: const Text('Korrigieren'),
             ),
             TextButton(
@@ -312,11 +346,18 @@ class _StockSectionState extends State<StockSection> {
   }
 
   Future<void> _open() async {
+    final sessionIdentity = controller.session.sessionIdentity;
+    final locationId = controller.selectedLocationId;
     final article = await showDialog<ArticleAssortmentDto>(
       context: context,
       builder: (context) => _OpenStockDialog(controller: controller),
     );
-    if (mounted && article != null) await controller.openStock(article);
+    if (mounted &&
+        article != null &&
+        identical(sessionIdentity, controller.session.sessionIdentity) &&
+        locationId == controller.selectedLocationId) {
+      await controller.openStock(article);
+    }
   }
 
   Future<void> _adjust(StockLevelDto level) async {
@@ -324,6 +365,39 @@ class _StockSectionState extends State<StockSection> {
       context: context,
       builder: (context) => _AdjustDialog(controller: controller, level: level),
     );
+  }
+
+  Future<void> _abandon() async {
+    final sessionIdentity = controller.session.sessionIdentity;
+    final pending = controller.pendingAdjustment;
+    final abandon = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nur lokale Nachverfolgung beenden?'),
+        content: const Text(
+          'Dies bricht keine Serveranfrage ab und macht keine '
+          'Korrektur rückgängig. Es beweist nicht, dass die Korrektur '
+          'nicht gespeichert wurde. Danach den Serverstand laden.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Behalten'),
+          ),
+          TextButton(
+            key: const Key('stock-confirm-abandon'),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Lokale Nachverfolgung beenden'),
+          ),
+        ],
+      ),
+    );
+    if (mounted &&
+        abandon == true &&
+        identical(sessionIdentity, controller.session.sessionIdentity) &&
+        identical(pending, controller.pendingAdjustment)) {
+      controller.abandonPendingAdjustment();
+    }
   }
 
   Future<void> _history(StockLevelDto level) async {
@@ -344,9 +418,22 @@ class _OpenStockDialog extends StatefulWidget {
 
 class _OpenStockDialogState extends State<_OpenStockDialog> {
   final TextEditingController _search = TextEditingController();
+  late Object? _sessionIdentity;
+  late String? _locationId;
   List<ArticleAssortmentDto>? _results;
   String? _error;
   bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sessionIdentity = widget.controller.session.sessionIdentity;
+    _locationId = widget.controller.selectedLocationId;
+  }
+
+  bool get _currentContext =>
+      identical(_sessionIdentity, widget.controller.session.sessionIdentity) &&
+      _locationId == widget.controller.selectedLocationId;
 
   @override
   void dispose() {
@@ -356,21 +443,21 @@ class _OpenStockDialogState extends State<_OpenStockDialog> {
 
   Future<void> _run() async {
     final query = _search.text.trim();
-    if (query.isEmpty || _busy) return;
+    if (query.isEmpty || _busy || !_currentContext) return;
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
       final results = await widget.controller.searchOpenCandidates(query);
-      if (mounted) {
+      if (mounted && _currentContext) {
         setState(() {
           _results = results;
           _busy = false;
         });
       }
     } catch (_) {
-      if (mounted) {
+      if (mounted && _currentContext) {
         setState(() {
           _error = 'Die Sortimentsartikel konnten nicht geladen werden.';
           _busy = false;
@@ -380,7 +467,14 @@ class _OpenStockDialogState extends State<_OpenStockDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: widget.controller,
+    builder: (context, _) => _currentContext
+        ? _buildDialog(context)
+        : _changedStockContextDialog(context),
+  );
+
+  Widget _buildDialog(BuildContext context) => AlertDialog(
     title: const Text('Bestand erfassen'),
     scrollable: true,
     content: SizedBox(
@@ -466,6 +560,38 @@ class _AdjustDialog extends StatefulWidget {
 class _AdjustDialogState extends State<_AdjustDialog> {
   final TextEditingController _quantity = TextEditingController();
   final TextEditingController _note = TextEditingController();
+  late StockLevelDto _level;
+  late Object? _sessionIdentity;
+  StockAdjustmentResult? _result;
+  bool _sending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _level = widget.level;
+    _sessionIdentity = widget.controller.session.sessionIdentity;
+  }
+
+  bool get _currentContext =>
+      identical(_sessionIdentity, widget.controller.session.sessionIdentity) &&
+      _level.locationId == widget.controller.selectedLocationId;
+
+  Future<void> _submit() async {
+    if (_sending || !_currentContext) return;
+    setState(() => _sending = true);
+    final controller = widget.controller;
+    final result = controller.pendingAdjustment != null
+        ? await controller.retryPendingAdjustment()
+        : await controller.adjust(_level, _quantity.text, _note.text);
+    if (!mounted || !_currentContext) return;
+    setState(() {
+      _sending = false;
+      _result = result;
+    });
+    if (_currentContext && result.confirmed && !result.refreshFailed) {
+      Navigator.pop(context);
+    }
+  }
 
   @override
   void dispose() {
@@ -475,55 +601,107 @@ class _AdjustDialogState extends State<_AdjustDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final level = widget.level;
-    return AlertDialog(
-      title: Text('Bestand korrigieren · ${level.article.name}'),
-      scrollable: true,
-      content: SizedBox(
-        width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Aktuell: ${level.quantity} ${level.stockUnit}'),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('stock-adjust-quantity'),
-              controller: _quantity,
-              decoration: InputDecoration(
-                labelText: 'Neue Menge (${level.stockUnit})',
-                helperText: 'Absoluter Zielwert, z. B. 12.5',
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: widget.controller,
+    builder: (context, _) {
+      if (!_currentContext) return _changedStockContextDialog(context);
+      final level = _level;
+      final controller = widget.controller;
+      final locked =
+          _sending ||
+          controller.busy ||
+          controller.pendingAdjustment != null ||
+          controller.adjustmentDecisionRequired ||
+          (_result?.confirmed ?? false) ||
+          !_currentContext;
+      return AlertDialog(
+        title: Text('Bestand korrigieren · ${level.article.name}'),
+        scrollable: true,
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Aktuell: ${level.quantity} ${level.stockUnit}'),
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('stock-adjust-quantity'),
+                controller: _quantity,
+                enabled: !locked,
+                decoration: InputDecoration(
+                  labelText: 'Neue Menge (${level.stockUnit})',
+                  helperText: 'Absoluter Zielwert, z. B. 12.5',
+                  errorText: controller.quantityError,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('stock-adjust-note'),
-              controller: _note,
-              decoration: const InputDecoration(
-                labelText: 'Begründung der Korrektur',
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('stock-adjust-note'),
+                controller: _note,
+                enabled: !locked,
+                decoration: InputDecoration(
+                  labelText: 'Begründung der Korrektur',
+                  errorText: controller.noteError,
+                ),
               ),
+              if (controller.error case final message?)
+                Text(message, key: const Key('stock-adjust-error')),
+              if (controller.refreshError case final message?)
+                Text(message, key: const Key('stock-adjust-refresh-error')),
+              if (_result?.confirmed ?? false) Text(controller.notice ?? ''),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            key: const Key('stock-adjust-close'),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Schließen'),
+          ),
+          if (controller.adjustmentDecisionRequired && _currentContext)
+            TextButton(
+              key: const Key('stock-adjust-new-decision'),
+              onPressed: controller.busy
+                  ? null
+                  : () async {
+                      await controller.prepareNewAdjustment();
+                      if (!mounted ||
+                          !_currentContext ||
+                          controller.adjustmentDecisionRequired) {
+                        return;
+                      }
+                      final latest = controller.items?.where(
+                        (item) => item.id == _level.id,
+                      );
+                      if (latest == null || latest.isEmpty) return;
+                      setState(() {
+                        _level = latest.first;
+                        _result = null;
+                      });
+                    },
+              child: const Text('Serverstand laden und neu entscheiden'),
             ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          key: const Key('stock-adjust-submit'),
-          onPressed: () async {
-            final controller = widget.controller;
-            await controller.adjust(level, _quantity.text, _note.text);
-            if (context.mounted) Navigator.pop(context);
-          },
-          child: const Text('Korrigieren'),
-        ),
-      ],
-    );
-  }
+          FilledButton(
+            key: const Key('stock-adjust-submit'),
+            onPressed:
+                _sending ||
+                    controller.busy ||
+                    controller.adjustmentDecisionRequired ||
+                    (_result?.confirmed ?? false) ||
+                    !_currentContext
+                ? null
+                : _submit,
+            child: Text(
+              controller.pendingAdjustment != null
+                  ? 'Unverändert erneut senden'
+                  : 'Korrigieren',
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }
 
 class _HistoryDialog extends StatefulWidget {
@@ -535,6 +713,8 @@ class _HistoryDialog extends StatefulWidget {
 }
 
 class _HistoryDialogState extends State<_HistoryDialog> {
+  late Object? _sessionIdentity;
+  late String? _locationId;
   List<StockMovementDto>? _items;
   String? _cursor;
   String? _error;
@@ -543,10 +723,17 @@ class _HistoryDialogState extends State<_HistoryDialog> {
   @override
   void initState() {
     super.initState();
+    _sessionIdentity = widget.controller.session.sessionIdentity;
+    _locationId = widget.controller.selectedLocationId;
     _load();
   }
 
+  bool get _currentContext =>
+      identical(_sessionIdentity, widget.controller.session.sessionIdentity) &&
+      _locationId == widget.controller.selectedLocationId;
+
   Future<void> _load() async {
+    if (!_currentContext) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -556,14 +743,14 @@ class _HistoryDialogState extends State<_HistoryDialog> {
         widget.level,
         after: _cursor,
       );
-      if (!mounted) return;
+      if (!mounted || !_currentContext) return;
       setState(() {
         _items = [...?_items, ...page.items];
         _cursor = page.nextCursor;
         _busy = false;
       });
     } catch (_) {
-      if (mounted) {
+      if (mounted && _currentContext) {
         setState(() {
           _error = 'Der Verlauf konnte nicht geladen werden.';
           _busy = false;
@@ -573,7 +760,14 @@ class _HistoryDialogState extends State<_HistoryDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: widget.controller,
+    builder: (context, _) => _currentContext
+        ? _buildDialog(context)
+        : _changedStockContextDialog(context),
+  );
+
+  Widget _buildDialog(BuildContext context) {
     final unit = widget.level.stockUnit;
     return AlertDialog(
       title: Text('Verlauf · ${widget.level.article.name}'),
@@ -640,3 +834,19 @@ class _HistoryDialogState extends State<_HistoryDialog> {
         '${two(local.hour)}:${two(local.minute)}';
   }
 }
+
+Widget _changedStockContextDialog(BuildContext context) => AlertDialog(
+  key: const Key('stock-context-changed'),
+  title: const Text('Sitzung oder Standort geändert'),
+  content: const Text(
+    'Dieser Dialog gehört zum vorherigen Kontext. Bitte schließen und '
+    'den Serverstand neu laden. Eine Serverkorrektur wird dadurch weder '
+    'abgebrochen noch rückgängig gemacht.',
+  ),
+  actions: [
+    TextButton(
+      onPressed: () => Navigator.pop(context),
+      child: const Text('Schließen'),
+    ),
+  ],
+);

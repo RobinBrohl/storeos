@@ -13,13 +13,17 @@ has a stated trigger. Documentation correction does not close a runtime defect.
 
 | ID | State | Evidence and required next action |
 | --- | --- | --- |
-| F01 | ACTIVE / MEDIUM | [StockController](../../apps/client_flutter/lib/src/application/stock_controller.dart): pending adjustment assigned before busy guard; [stock dialog](../../apps/client_flutter/lib/src/ui/stock_section.dart): duplicate submission possible. Guard before identity mutation, disable submit while pending and retain the exact command until reconciliation/discard. Reproduce double submission + lost response/read-back failure in a meaningful regression. |
-| F06 | ACTIVE / LOW | [Stock client test](../../apps/client_flutter/test/stock_test.dart) fake ignores stale-version enforcement after another mutation. Correct it to match [StockService](../../apps/server/lib/src/stock/stock_service.dart): committed receipt replay first; unsent stale command must conflict. |
-| F07 | ACTIVE / LOW | Stock dialog closes regardless of validation/network outcome because adjustment returns void. Make result/error handling explicit, retain input and apply shared note bounds (500 runes/control-character rules) in the authorized fix. |
+| F01 | ACTIVE / correction implemented; review/CI pending | [StockController](../../apps/client_flutter/lib/src/application/stock_controller.dart) acquires the synchronous guard before validation/UUID creation; immutable actor/session/location/level identity survives navigation and uncertainty. Initial replacement fencing failed independent review R1; the targeted follow-up now publishes session changes immediately and checks live identity at request/result boundaries. Held-status regressions pass; targeted fix review and CI remain pending. |
+| F06 | ACTIVE / correction implemented; review/CI pending | [Stock fake/tests](../../apps/client_flutter/test/stock_test.dart) now check committed replay/conflicting identity before new-command version/no-op semantics. Committed late replay and unused stale conflict have distinct regressions; movements and audit effects are counted. |
+| F07 | ACTIVE / correction implemented; review/CI pending | Dialog uses typed outcomes, retains invalid/failed input, applies shared note bounds and locks uncertain payloads. It auto-closes only for confirmed mutation/replay/no-op; confirmed refresh failure requires acknowledgement and cannot offer write retry. |
+| R1 | ACTIVE / fix implemented; targeted review/CI pending | Same-account and different-actor replacement while status is held pending now invalidate local retries immediately; old results/failures and old dialog content are fenced. The new regression failed before the fix and passes after it. |
+| R2 | ACTIVE / fix implemented; targeted review/CI pending | Stock HTTP 413/415 body-parser failures now return definitive rejection with no pending retry or location lock; controller/widget regressions pass. |
+| R3 | ACTIVE / fix implemented; targeted review/CI pending | Local abandonment has a separate decision-required state and explicitly unknown commit wording; no server rejection is claimed. Explicit reload remains required before a new correction. |
 
 The server guards versions and strict movement identity. F01 demonstrates unreliable
 client reconciliation, not silent ledger overwrite or duplicate stock corruption.
-No Dart or test correction was made by the documentation pass.
+The earlier documentation pass made no code correction; the focused uncommitted
+correction is recorded in the [P4.3 phase follow-up](phase-4-3-manual-stock.md).
 
 ## Original medium findings
 
@@ -48,7 +52,7 @@ No Dart or test correction was made by the documentation pass.
 | L11/L12 / F17 | DEFERRED | Plain result/blocking pairing is insert-time; execution receipts use runtime grants rather than an all-role immutability trigger. No supported-writer anomaly demonstrated. Re-prove before second writers or company-lock narrowing. |
 | F08 | ACTIVE | [AuthStore readiness](../../apps/server/lib/src/infrastructure/auth_store.dart) checks migrations 0001–0004, not current full binary schema. Migrate-before-start mitigates; correct on deployment/health automation touch without automatic runtime DDL. |
 | F09 | ACTIVE on touch | Article/Assortment/Stock filter controls remount empty while retained query filters data. Keep view/controller state coherent on relevant UI touch. |
-| F10 | ACTIVE | Published-shift UI prohibition copy and Stock OpenAPI note optionality remain wrong. OpenAPI and UI are excluded from this documentation-only pass. |
+| F10 | ACTIVE / partial correction implemented | Stock opening-note OpenAPI descriptions now state required key / nullable value; schema and decoder unchanged. Published-shift UI prohibition copy remains outside this correction. |
 | F16 | ACTIVE acceptance gap | No physical device/new goods UI accessibility acceptance; agree supported hardware and verify it before device/pilot claims. |
 | F17 legacy versions | DEFERRED | Older expected-version paths lack consistent Web-safe upper bounds. Carry on relevant contract touch; no realistic version-growth failure demonstrated. |
 | Recovery-verify transients | OPEN evidence gap | [P4.1 evidence](phase-4-1-article-master.md) records two non-injected recovery-verify failures followed by passing reruns without explained root cause. Revisit when the harness is next exercised; do not reclassify them as capacity injections or claim universal flake-free recovery. |

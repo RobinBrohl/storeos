@@ -17,12 +17,54 @@ class StockMovementPageResult {
   final String? nextCursor;
 }
 
+enum StockAdjustmentOutcome {
+  confirmedMutation,
+  confirmedNoOp,
+  invalidInput,
+  unconfirmed,
+  conflict,
+  rejected,
+  ignored,
+}
+
+class StockAdjustmentResult {
+  const StockAdjustmentResult(this.outcome, {this.refreshFailed = false});
+
+  final StockAdjustmentOutcome outcome;
+  final bool refreshFailed;
+  bool get confirmed =>
+      outcome == StockAdjustmentOutcome.confirmedMutation ||
+      outcome == StockAdjustmentOutcome.confirmedNoOp;
+}
+
+/// Memory-only immutable identity, including the original authorization scope.
+class PendingStockAdjustment {
+  const PendingStockAdjustment({
+    required this.epoch,
+    required this.sessionIdentity,
+    required this.actorId,
+    required this.locationId,
+    required this.levelId,
+    required this.input,
+  });
+
+  final int epoch;
+  final Object sessionIdentity;
+  final String actorId, locationId, levelId;
+  final StockAdjustInput input;
+  String get movementId => input.movementId;
+}
+
 /// Manual stock controller. A real adjustment sends one newly generated
 /// `movementId`; retrying the same ambiguous command reuses it. A lost
-/// response is only confirmed when the movement with that exact id exists, so
-/// another actor's same-quantity adjustment is never attributed.
+/// response remains unconfirmed until an exact retry receives a valid response.
 class StockController extends ChangeNotifier {
-  StockController(this.session, this.platform, this.api) {
+  StockController(
+    this.session,
+    this.platform,
+    this.api, {
+    String Function()? movementIdFactory,
+  }) : _newMovementId = movementIdFactory ?? _uuid {
     session.addListener(_sessionChanged);
     _sessionChanged();
   }
@@ -30,15 +72,22 @@ class StockController extends ChangeNotifier {
   final SessionController session;
   final PlatformController platform;
   final PlatformApi api;
+  final String Function() _newMovementId;
 
   List<StockLevelDto>? items;
   String? selectedLocationId, nextCursor, error, notice;
   String search = '';
   bool busy = false, conflict = false;
-  Map<String, dynamic>? pendingAdjustment;
+  bool adjustmentAbandoned = false;
+  PendingStockAdjustment? _pendingAdjustment;
+  PendingStockAdjustment? get pendingAdjustment => _pendingAdjustment;
+  PendingStockAdjustment? _lastAdjustment;
+  PendingStockAdjustment? get lastAdjustment => _lastAdjustment;
+  StockAdjustmentResult? adjustmentResult;
+  String? quantityError, noteError, refreshError;
   bool _disposed = false;
   int _epoch = 0;
-  String? _userId;
+  Object? _sessionIdentity;
   Completer<void>? _idle;
 
   Future<void> get whenIdle => _idle?.future ?? Future<void>.value();
@@ -63,17 +112,28 @@ class StockController extends ChangeNotifier {
   }
 
   void _sessionChanged() {
-    if (_userId == session.user?.id) return;
-    _userId = session.user?.id;
+    if (identical(_sessionIdentity, session.sessionIdentity)) return;
+    final discardedPending = _pendingAdjustment != null;
+    _sessionIdentity = session.sessionIdentity;
     _epoch++;
     items = null;
     selectedLocationId = null;
     nextCursor = null;
     error = notice = null;
+    if (discardedPending && session.isAuthenticated) {
+      notice =
+          'Sitzung geändert. Die lokale Wiederholungsverfolgung wurde beendet. '
+          'Eine Serverkorrektur wurde dadurch weder abgebrochen noch '
+          'rückgängig gemacht. Bitte Serverstand neu laden.';
+    }
     search = '';
     busy = false;
     conflict = false;
-    pendingAdjustment = null;
+    adjustmentAbandoned = false;
+    _pendingAdjustment = null;
+    _lastAdjustment = null;
+    adjustmentResult = null;
+    quantityError = noteError = refreshError = null;
     _idle = null;
     _notify();
   }
@@ -83,7 +143,10 @@ class StockController extends ChangeNotifier {
   }
 
   bool _current(int epoch) =>
-      !_disposed && epoch == _epoch && session.isAuthenticated;
+      !_disposed &&
+      epoch == _epoch &&
+      session.isAuthenticated &&
+      identical(_sessionIdentity, session.sessionIdentity);
   void _requireCurrent(int epoch) {
     if (!_current(epoch)) {
       throw const StoreApiException('stale_session', 'Session changed.');
@@ -130,6 +193,7 @@ class StockController extends ChangeNotifier {
     error = notice = null;
     _notify();
     try {
+      _requireCurrent(epoch);
       await action(epoch);
     } on StoreApiException catch (failure) {
       if (_current(epoch)) {
@@ -173,18 +237,22 @@ class StockController extends ChangeNotifier {
 
   Future<void> selectLocation(String locationId) {
     if (selectedLocationId == locationId) return Future<void>.value();
+    if (busy || pendingAdjustment != null) {
+      return Future<void>.value();
+    }
     selectedLocationId = locationId;
     items = null;
     nextCursor = null;
     error = notice = null;
     conflict = false;
-    pendingAdjustment = null;
+    adjustmentAbandoned = false;
     return load();
   }
 
   Future<void> load() => _run((epoch) async {
-    conflict = false;
     await _reload(epoch);
+    _requireCurrent(epoch);
+    refreshError = null;
   });
 
   Future<void> setSearch(String value) {
@@ -213,9 +281,6 @@ class StockController extends ChangeNotifier {
     _requireCurrent(epoch);
     final locationId = selectedLocationId;
     if (locationId == null) return;
-    items = null;
-    nextCursor = null;
-    _notify();
     final json = await _get(epoch, _route(locationId), query: _query());
     _appendPage(epoch, json, replace: true);
   }
@@ -248,15 +313,17 @@ class StockController extends ChangeNotifier {
   /// articles are excluded deterministically; articles that already carry a
   /// level are returned but must be shown disabled.
   Future<List<ArticleAssortmentDto>> searchOpenCandidates(String query) async {
+    final epoch = _epoch;
     final trimmed = query.trim();
     if (trimmed.isEmpty || !_current(_epoch) || selectedLocationId == null) {
       return const [];
     }
     final json = await _get(
-      _epoch,
+      epoch,
       '/locations/$selectedLocationId/assortment',
       query: {'q': trimmed, 'active': 'true'},
     );
+    _requireCurrent(epoch);
     final raw = json['items'];
     if (raw is! List) throw const FormatException();
     return raw
@@ -300,127 +367,221 @@ class StockController extends ChangeNotifier {
         reconciled.articleId == input['articleId'] &&
         reconciled.locationId == locationId) {
       await _reload(epoch);
+      _requireCurrent(epoch);
       notice = 'Bestand wurde angelegt und erneut geladen.';
       return;
     }
     if (failure != null) throw failure;
     await _reload(epoch);
+    _requireCurrent(epoch);
     notice = 'Bestand angelegt.';
   });
 
-  /// Applies an absolute manual correction with a fresh operation id.
-  Future<void> adjust(StockLevelDto level, String quantity, String note) {
-    final trimmed = note.trim();
-    late final String canonical;
-    try {
-      canonical = stockQuantityText(stockQuantity(quantity.trim()));
-    } on FormatException {
-      error = 'Menge: maximal 12 Vor- und 3 Nachkommastellen, nicht negativ.';
-      _notify();
-      return Future<void>.value();
-    }
-    if (trimmed.isEmpty) {
-      error = 'Eine Begründung ist erforderlich.';
-      _notify();
-      return Future<void>.value();
-    }
-    pendingAdjustment = {
-      'movementId': _uuid(),
-      'levelId': level.id,
-      'expectedVersion': level.version,
-      'quantity': canonical,
-      'note': trimmed,
-    };
-    return _applyPendingAdjustment();
-  }
+  bool get adjustmentDecisionRequired => conflict || adjustmentAbandoned;
+  bool get adjustmentBlocked =>
+      busy || pendingAdjustment != null || adjustmentDecisionRequired;
 
-  /// Retries the exact ambiguous command with the same movementId.
-  Future<void> retryPendingAdjustment() => _applyPendingAdjustment();
+  /// Acquires the guard synchronously, before validation or UUID creation.
+  Future<StockAdjustmentResult> adjust(
+    StockLevelDto level,
+    String quantity,
+    String note,
+  ) => _submitAdjustment(level: level, quantity: quantity, note: note);
 
-  Future<void> _applyPendingAdjustment() => _run((epoch) async {
+  Future<StockAdjustmentResult> retryPendingAdjustment() => _submitAdjustment();
+
+  /// Discards local tracking only; it neither cancels nor reverses a write.
+  void abandonPendingAdjustment() {
+    if (busy || pendingAdjustment == null) return;
+    _pendingAdjustment = null;
+    adjustmentResult = null;
+    error = null;
+    notice =
+        'Lokale Nachverfolgung beendet. Eine Serverkorrektur wird dadurch '
+        'nicht abgebrochen oder rückgängig gemacht. Ob sie gespeichert wurde, '
+        'ist weiterhin unklar. Bitte Serverstand laden.';
     conflict = false;
-    final locationId = selectedLocationId;
-    final pending = pendingAdjustment;
-    if (locationId == null || pending == null) return;
-    Object? failure;
-    try {
-      await _post(epoch, '${_route(locationId)}/${pending['levelId']}/adjust', {
-        'movementId': pending['movementId'],
-        'expectedVersion': pending['expectedVersion'],
-        'quantity': pending['quantity'],
-        'note': pending['note'],
-      });
-    } catch (error) {
-      failure = error;
-    }
-    _requireCurrent(epoch);
-    if (failure != null) {
-      await _reconcileAdjustment(epoch, locationId, pending, failure);
-      return;
-    }
-    pendingAdjustment = null;
-    await _reload(epoch);
-    notice = 'Bestand korrigiert.';
-  });
-
-  Future<void> _reconcileAdjustment(
-    int epoch,
-    String locationId,
-    Map<String, dynamic> pending,
-    Object failure,
-  ) async {
-    StockLevelDto? current;
-    try {
-      current = StockLevelDto.fromJson(
-        await _get(epoch, '${_route(locationId)}/${pending['levelId']}'),
-      );
-    } catch (_) {
-      // Keep the original failure.
-    }
-    if (current != null &&
-        await _movementExists(
-          epoch,
-          locationId,
-          pending['levelId'] as String,
-          pending['movementId'] as String,
-        )) {
-      pendingAdjustment = null;
-      await _reload(epoch);
-      notice = 'Bestand korrigiert und erneut geladen.';
-      return;
-    }
-    if (current != null && current.version == pending['expectedVersion']) {
-      // Not applied (or a server-side no-op): the command may be retried.
-      throw failure;
-    }
-    if (current != null &&
-        current.version > (pending['expectedVersion'] as int)) {
-      conflict = true;
-      error =
-          'Der Bestand wurde inzwischen anderweitig geändert. Bitte den Serverstand neu laden; die eigene Korrektur ist nicht bestätigt.';
-      return;
-    }
-    throw failure;
+    adjustmentAbandoned = true;
+    _notify();
   }
 
-  Future<bool> _movementExists(
-    int epoch,
-    String locationId,
-    String levelId,
-    String movementId,
-  ) async {
+  /// An explicit reload starts a new decision after conflict or abandonment.
+  Future<void> prepareNewAdjustment() async {
+    if (busy || pendingAdjustment != null) return;
+    await _run((epoch) async {
+      await _reload(epoch);
+      _requireCurrent(epoch);
+      conflict = false;
+      adjustmentAbandoned = false;
+      adjustmentResult = null;
+      error = refreshError = null;
+    });
+  }
+
+  Future<StockAdjustmentResult> _submitAdjustment({
+    StockLevelDto? level,
+    String? quantity,
+    String? note,
+  }) async {
+    const ignored = StockAdjustmentResult(StockAdjustmentOutcome.ignored);
+    if (busy || !_current(_epoch) || !canManage || selectedLocationId == null) {
+      return ignored;
+    }
+    final retry = level == null;
+    if ((!retry && (pendingAdjustment != null || adjustmentDecisionRequired)) ||
+        (retry && pendingAdjustment == null)) {
+      return ignored;
+    }
+    final epoch = _epoch;
+    final idle = Completer<void>();
+    _idle = idle;
+    busy = true;
     try {
-      final json = await _get(
-        epoch,
-        '${_route(locationId)}/$levelId/movements',
-      );
-      final raw = json['items'];
-      if (raw is! List) return false;
-      return raw.any(
-        (item) => (item as Map<String, dynamic>)['id'] == movementId,
-      );
-    } catch (_) {
-      return false;
+      if (!retry) {
+        error = notice = refreshError = null;
+        quantityError = noteError = null;
+        String? canonical, normalized;
+        try {
+          canonical = stockQuantityText(stockQuantity(quantity!.trim()));
+        } on FormatException {
+          quantityError =
+              'Menge: maximal 12 Vor- und 3 Nachkommastellen, nicht negativ.';
+        }
+        try {
+          normalized = normalizeStockAdjustNote(note);
+        } on FormatException {
+          noteError =
+              'Eine Begründung ist erforderlich: maximal 500 Zeichen, '
+              'eine Zeile, keine Steuerzeichen.';
+        }
+        if (quantityError != null || noteError != null) {
+          error = quantityError ?? noteError;
+          return adjustmentResult = const StockAdjustmentResult(
+            StockAdjustmentOutcome.invalidInput,
+          );
+        }
+        if (level.locationId != selectedLocationId ||
+            level.version < 1 ||
+            level.version > maxIncrementableJsonSafeInteger) {
+          error =
+              'Der Bestand passt nicht zum aktuellen Standort oder zur '
+              'unterstützten Version. Bitte Serverstand laden.';
+          return adjustmentResult = const StockAdjustmentResult(
+            StockAdjustmentOutcome.rejected,
+          );
+        }
+        _pendingAdjustment = PendingStockAdjustment(
+          epoch: epoch,
+          sessionIdentity: _sessionIdentity!,
+          actorId: session.user!.id,
+          locationId: level.locationId,
+          levelId: level.id,
+          input: StockAdjustInput(
+            movementId: _newMovementId(),
+            expectedVersion: level.version,
+            quantity: canonical!,
+            note: normalized!,
+          ),
+        );
+        _lastAdjustment = pendingAdjustment;
+      }
+      final pending = pendingAdjustment!;
+      if (pending.epoch != epoch ||
+          !identical(pending.sessionIdentity, session.sessionIdentity) ||
+          pending.actorId != session.user?.id ||
+          pending.locationId != selectedLocationId) {
+        return ignored;
+      }
+      error = notice = refreshError = null;
+      adjustmentResult = null;
+      _notify();
+      StockLevelDto confirmed;
+      try {
+        confirmed = StockLevelDto.fromJson(
+          await _post(
+            epoch,
+            '${_route(pending.locationId)}/${pending.levelId}/adjust',
+            pending.input.toJson(),
+          ),
+        );
+        _requireCurrent(epoch);
+        if (confirmed.id != pending.levelId ||
+            confirmed.locationId != pending.locationId ||
+            confirmed.version < pending.input.expectedVersion ||
+            (confirmed.version == pending.input.expectedVersion &&
+                confirmed.quantity != pending.input.quantity)) {
+          throw const FormatException('Unexpected adjustment response.');
+        }
+      } catch (failure) {
+        if (!_current(epoch)) return ignored;
+        if (failure is StoreApiException &&
+            (failure.code == 'stock_conflict' ||
+                failure.code == 'operation_conflict')) {
+          _pendingAdjustment = null;
+          conflict = true;
+          error =
+              '${failure.code}: Korrektur abgelehnt '
+              '(Operation ${pending.movementId}). Serverstand laden und '
+              'bewusst neu entscheiden.';
+          return adjustmentResult = const StockAdjustmentResult(
+            StockAdjustmentOutcome.conflict,
+          );
+        }
+        if (failure is StoreApiException &&
+            const {
+              400,
+              401,
+              403,
+              404,
+              405,
+              409,
+              413,
+              415,
+              422,
+            }.contains(failure.statusCode)) {
+          _pendingAdjustment = null;
+          error = failure.message;
+          return adjustmentResult = const StockAdjustmentResult(
+            StockAdjustmentOutcome.rejected,
+          );
+        }
+        error =
+            'Die eigene Korrektur ist nicht bestätigt. Genau diese '
+            'Operation unverändert erneut senden.';
+        return adjustmentResult = const StockAdjustmentResult(
+          StockAdjustmentOutcome.unconfirmed,
+        );
+      }
+      _pendingAdjustment = null;
+      final outcome = confirmed.version == pending.input.expectedVersion
+          ? StockAdjustmentOutcome.confirmedNoOp
+          : StockAdjustmentOutcome.confirmedMutation;
+      adjustmentResult = StockAdjustmentResult(outcome);
+      notice = outcome == StockAdjustmentOutcome.confirmedNoOp
+          ? 'Menge bereits unverändert. Keine Bestandsbewegung aufgezeichnet.'
+          : 'Bestandkorrektur bestätigt.';
+      items = [
+        for (final item in items ?? <StockLevelDto>[])
+          if (item.id == confirmed.id) confirmed else item,
+      ];
+      try {
+        await _reload(epoch);
+        _requireCurrent(epoch);
+      } catch (_) {
+        if (!_current(epoch)) return ignored;
+        refreshError =
+            'Korrektur bestätigt; die Bestandsliste konnte nicht '
+            'aktualisiert werden. Bitte erneut laden.';
+        adjustmentResult = StockAdjustmentResult(outcome, refreshFailed: true);
+      }
+      return adjustmentResult!;
+    } finally {
+      if (_current(epoch)) {
+        busy = false;
+        _notify();
+      }
+      if (identical(_idle, idle)) _idle = null;
+      idle.complete();
     }
   }
 
@@ -439,6 +600,7 @@ class StockController extends ChangeNotifier {
       '${_route(locationId)}/${level.id}/movements',
       after: after,
     );
+    _requireCurrent(epoch);
     final raw = json['items'];
     if (raw is! List) throw const FormatException();
     final cursor = json['nextCursor'];

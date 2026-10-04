@@ -4,6 +4,15 @@ Assessed 2026-10-04 against `main` at `e8ce8c319e2dd3051b402d252a0666f33b170fa3`
 Locally cached `origin/main` matches; no fetch or current-head remote CI verification
 was performed. The working tree was clean before the documentation reconciliation.
 
+P4.3 corrective follow-up started clean on `22b600b`, matching the verified live
+remote head with baseline CI green. The initial correction had 474 passing package
+tests plus a real controller/API/PostgreSQL journey. Independent review identified
+R1/R2/R3; their targeted fixes are implemented uncommitted, with fix review and
+changed-commit remote CI pending. Fresh verification has **491 passing package
+tests**, the real PostgreSQL Stock suite/client journey and a release Web build.
+Current verification is recorded in the
+[slice follow-up](../development/phase-4-3-manual-stock.md).
+
 **DONE** means the bounded delivered scope below; **ACTIVE** means current work or
 unresolved acceptance; **PLANNED** means no active delivered slice. Implementation,
 commit, review and CI are separate facts. [Phase records](../README.md#slice-contracts-and-evidence)
@@ -31,12 +40,15 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 
 | Scope | Delivery | What exists | What remains |
 | --- | --- | --- | --- |
-| P4.3 manual Stock | ACTIVE | Implemented and committed `e8ce8c3`; migration 0015 / ADR 0017; level + immutable movement ledger, opening/absolute correction, exact thousandths, frozen unit, authorization/audit, server replay contract and Flutter **Bestand**. | F01/F06/F07 stock pending-command identity, dialog validation/outcome and misleading mock coverage. Independent acceptance review and current-head remote CI are not established. [Slice](../development/phase-4-3-manual-stock.md), [live debt](../development/technical-debt.md). |
+| P4.3 manual Stock | ACTIVE | Foundation committed `e8ce8c3`; migration 0015 / ADR 0017. Focused F01/F06/F07 correction and R1/R2/R3 follow-up implemented uncommitted on `22b600b`: guarded immutable scoped retries, immediate session fencing, typed outcomes, definitive 413/415 rejection, separate refresh warnings, retained dialog input, neutral abandonment and faithful fake semantics. Server semantics unchanged. | Targeted fix review pending; changed-commit remote CI pending. Baseline `22b600b` remote CI is green and does not validate these edits. [Slice](../development/phase-4-3-manual-stock.md), [live debt](../development/technical-debt.md). |
 
 The server supports strict movement-ID replay with actor/payload checks. The client
-does not preserve that identity reliably under duplicate dialog submissions;
-do not describe the whole retry journey as accepted. No known silent overwrite
-or ledger corruption was demonstrated.
+now preserves that identity in the local correction, including duplicate submissions
+and exact retries. R1's replacement-status window is fixed with immediate context
+publication and independent live-identity checks. The whole journey remains acceptance
+ACTIVE pending targeted fix review and CI.
+Tracking is memory-only: browser reload, logout or client/session replacement cannot
+guarantee recovery of an unconfirmed adjustment. No durable offline recovery exists.
 
 ## Planned and deferred scope
 

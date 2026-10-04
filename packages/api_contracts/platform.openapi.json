@@ -3942,7 +3942,7 @@
       },
       "post": {
         "operationId": "createStockLevel",
-        "description": "Requires stock.levels.manage (admin only), current session and company scope. Opens the first recorded on-hand quantity for one company article and the route's company location: version 1, exactly one server-generated opening movement with balanceVersion 1, and the immutable stockUnit snapshot of the current normalized Article.unit. The gate requires the article to exist (404 not_found), be globally active (409 article_inactive) and have an active assortment membership at the location (409 not_in_assortment for an absent or inactive membership). The quantity is an exact decimal string scaled to thousandths, 0 to 999999999999.999; note is an optional key whose non-null value must be trimmed, non-empty, at most 500 runes and free of control characters. The client-supplied id is the reconciliation key: a duplicate id or an existing (company, location, article) level returns 409 already_exists with zero writes; an existing level must be adjusted instead of reopened. A later Article.unit edit never changes an opened level's stockUnit. Writes and audit commit atomically; no domain events.",
+        "description": "Requires stock.levels.manage (admin only), current session and company scope. Opens the first recorded on-hand quantity for one company article and the route's company location: version 1, exactly one server-generated opening movement with balanceVersion 1, and the immutable stockUnit snapshot of the current normalized Article.unit. The gate requires the article to exist (404 not_found), be globally active (409 article_inactive) and have an active assortment membership at the location (409 not_in_assortment for an absent or inactive membership). The quantity is an exact decimal string scaled to thousandths, 0 to 999999999999.999; note is a required key whose value may be null; a non-null value must be trimmed, non-empty, at most 500 runes and free of control characters. The client-supplied id is the reconciliation key: a duplicate id or an existing (company, location, article) level returns 409 already_exists with zero writes; an existing level must be adjusted instead of reopened. A later Article.unit edit never changes an opened level's stockUnit. Writes and audit commit atomically; no domain events.",
         "security": [
           {
             "session": []
@@ -7273,7 +7273,7 @@
             ],
             "minLength": 1,
             "maxLength": 500,
-            "description": "Optional open note; when present it must be non-blank after trimming."
+            "description": "Required key with a nullable value; a non-null note must be non-blank after trimming."
           }
         }
       },

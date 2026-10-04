@@ -13,6 +13,7 @@ class SessionController extends ChangeNotifier {
   final DateTime Function() _now;
 
   SessionResponse? _session;
+  Object? _sessionIdentity;
   SystemStatusResponse? _status;
   DateTime? _checkedAt;
   String? _error;
@@ -26,6 +27,9 @@ class SessionController extends ChangeNotifier {
   bool get isAuthenticated => _session != null;
   bool get isBusy => _busy;
   SessionUser? get user => _session?.user;
+
+  /// Opaque identity changes even when the same account replaces its session.
+  Object? get sessionIdentity => _sessionIdentity;
   SystemStatusResponse? get status => _status;
   DateTime? get checkedAt => _checkedAt;
   String? get error => _error;
@@ -198,7 +202,9 @@ class SessionController extends ChangeNotifier {
         );
       }
       _session = session;
+      _sessionIdentity = Object();
       _scheduleExpiry(session);
+      _notify();
       await _loadStatus();
     } on StoreApiException catch (error) {
       if (!_disposed) _error = error.message;
@@ -328,6 +334,7 @@ class SessionController extends ChangeNotifier {
     _expiryTimer?.cancel();
     _expiryTimer = null;
     _session = null;
+    _sessionIdentity = null;
     _status = null;
     _checkedAt = null;
   }

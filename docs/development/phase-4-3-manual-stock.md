@@ -217,3 +217,153 @@ in [technical debt](technical-debt.md). The strict server replay/version contrac
 is implemented; no silent ledger overwrite was demonstrated. Earlier local test
 and update/recovery outcomes remain the original runs, not independent approval
 or current-head remote CI. See [actual status](../roadmap/status.md).
+
+## Acceptance correction — 2026-10-04
+
+Correction implemented; independent review pending; changed-commit remote CI pending.
+P4.3 remains **ACTIVE**. Work stays uncommitted directly on `main`.
+
+Baseline was verified dynamically: clean `main` at
+`22b600bb3483cfcf4e114c8303c3ca5e1db63522`, matching the live remote head,
+one worktree, no stash, foundation and documentation reconciliation committed,
+and migration chain 0001–0015 unchanged. Baseline
+[CI run 37192907355](https://github.com/RobinBrohl/storeos/actions/runs/37192907355)
+was completed successfully; it does not cover the uncommitted correction.
+
+### Client behavior
+
+- The synchronous submission guard precedes validation and movement-ID allocation.
+  A duplicate call cannot clear state, allocate an ID or replace payload.
+- Shared quantity/note validation precedes command creation, including 500-rune,
+  single-line/control/surrogate and incrementable-version bounds. Invalid input
+  sends no request and stays visible with field errors.
+- One immutable command binds actor, opaque session identity and epoch, Location, StockLevel,
+  movementId, expectedVersion, canonical quantity and normalized note.
+- Outcomes distinguish confirmed mutation/replay, confirmed no-op, invalid input,
+  unconfirmed, conflict and rejection. Ignored duplicate/context-invalid calls do
+  not change the active result. Refresh failure is a separate dimension.
+- Only a valid direct response to the submitted identity confirms the command.
+  Quantity, version and history-page absence are never reconciliation evidence.
+  A transport/HTTP-timeout/5xx/malformed response retains uncertainty for exact retry.
+- Exact retries preserve all identity/payload fields. `stock_conflict` proves the
+  retained operation was not committed; `operation_conflict` rejects that identity.
+  Both clear uncertainty, preserve diagnostic/input context and require explicit
+  authoritative reload/new decision. No rebase or automatic ID replacement occurs.
+- A successful mutation/replay clears pending tracking before list refresh. A
+  failed refresh keeps confirmation, the response level and a reload warning;
+  it offers no write retry. Confirmed no-op records no fabricated evidence.
+- The dialog retains invalid/failed input, disables duplicate sends, locks an
+  uncertain payload, and auto-closes only for confirmation without a refresh
+  warning. Refresh warnings require explicit acknowledgement.
+- Pending tracking survives dialog close, Stock section remount and failed reads.
+  Location switching is blocked until resolution or explicit local abandonment.
+  Abandonment neither cancels a server request nor reverses/proves non-commit.
+  The initial session-fencing implementation had a replacement-status window;
+  independent review R1 rejected its completeness claim. The targeted follow-up
+  below adds immediate context publication and independent live-identity checks.
+
+Tracking remains memory-only. Browser reload, logout and client/session replacement
+cannot guarantee recovery of an unconfirmed adjustment. This is not durable offline
+recovery, a persistent command store or an offline queue.
+
+### Fake, contract and production scope
+
+The fake checks committed replay/actor/scope/payload conflict before new-command
+version checks, then no-op or atomic modeled movement/audit effects. Another actor's
+write uses that same fake service path. Committed late replay and unused stale retry
+are separate regressions; real production semantics remain authoritative.
+
+Only two Stock opening-note OpenAPI descriptions changed: the `note` key is required
+and its value may be null. Required keys, nullable behavior, decoder, routes and JSON
+shapes remain unchanged. No production server, persisted model, migration, runtime
+grant, authorization, audit/event, dependency or lockfile change was made.
+
+### Initial correction verification (before targeted R1–R3 fixes)
+
+- Stock controller/widget suite: **37 passed**, with controlled completers and no
+  timing sleeps for held-request/duplicate/session regressions.
+- Existing real PostgreSQL Stock suite: **20 passed**, preserving replay, no-op,
+  stale conflicts, actor/scope/payload rejection, atomic evidence, grants and
+  migration 0015 upgrade/rollback checks.
+- Real Flutter controller/HTTP/PostgreSQL journey: **1 client test + 1 fixture test
+  passed**. A lost committed response replays after a later write; a never-sent
+  stale ID conflicts even after the same target is reached; no-op and confirmed
+  mutation with failed refresh retain their correct meanings. Database verification
+  found exactly **5 movements, 4 adjustment audits, version 5**, with ledger invariant
+  intact. All fixtures used new isolated test databases/roles and cleaned them up.
+- Final full `scripts/dev.ps1 check`: **474 passed** (69 contracts, 201 server,
+  202 Flutter, 2 design-system), no skipped tests; all four analyzers and
+  176-file format checks plus Compose quiet validation pass. Web release build
+  passes with `--no-pub --no-web-resources-cdn`. The required check uses existing
+  dependencies with Flutter `--no-pub`; no installation or upgrade occurs.
+- `git diff --check` passes. Migrations 0001–0015 and dependency/lockfiles are unchanged.
+
+The real journey reuses the existing Stock suite's isolated fixture. With the
+documented test database/runtime environment and an installed matching Flutter SDK:
+
+```powershell
+cd apps/server
+dart test tool/stock_client_journey.dart --reporter expanded
+```
+
+It explicitly invokes `apps/client_flutter/test/stock_http_journey.dart`; ordinary
+server test discovery does not require a Flutter SDK. No Stock browser harness
+already exists. Browser-level Stock E2E, numeric browser E2E, backup/update wrappers
+and physical-device acceptance were not run for this correction; the bounded real
+controller/HTTP/database journey, widget regressions and Web build provide the
+freshly executed client evidence.
+
+## Targeted review corrections — 2026-10-04 (R1–R3)
+
+R1, R2 and R3 are implemented locally; targeted fix review and changed-commit CI
+remain pending. P4.3 remains **ACTIVE**, with no commit or branch change.
+
+- **R1:** Installing a new session publishes its opaque identity immediately,
+  before awaiting status. Stock binds every pending command to that identity and
+  its epoch, compares the live identity before sending and after async boundaries,
+  and ignores old-session outcomes. Replacement discards local pending/diagnostic
+  state and requires an authoritative reload; it does not cancel or reverse a
+  server operation. Stock opening, adjustment and history dialogs hide old-context
+  content and cannot publish stale callbacks into the replacement context.
+- **R2:** HTTP 413/415 are definitive body-parser rejections: no uncertain pending
+  retry remains, input stays editable, and location selection is not locked.
+  Transport/timeout/malformed/5xx uncertainty remains conservative.
+- **R3:** Local abandonment uses a separate decision-required state, never a
+  server-conflict/rejection label. Its message says the original commit outcome
+  remains unknown. New adjustments require an explicit reload/new decision.
+
+The same-account held-status regression failed on the reviewed implementation:
+retry returned `unconfirmed` instead of being ignored. Old-result/failure, 413/415
+and abandonment regressions also reproduced the review findings before the fixes.
+All **54 Stock controller/widget tests** now pass, including held replacement
+status for both accounts, original-token assertions, late result/failure fencing,
+old-dialog data isolation, stale abandonment confirmation, definitive rejections
+and neutral abandonment semantics. This adds 17 cases to the reviewed suite and
+extends its existing abandonment test.
+No arbitrary timing sleeps are used.
+
+Fresh verification for this follow-up:
+
+- Real PostgreSQL Stock integration suite: **20 passed**.
+- Existing real controller/HTTP/PostgreSQL journey: **1 client + 1 fixture test
+  passed**, with exactly **5 movements, 4 adjustment audits, version 5** and the
+  ledger invariant intact. Production server and journey code were unchanged.
+- Final `scripts/dev.ps1 check`: **491 passed** (69 contracts, 201 server,
+  219 Flutter, 2 design-system), with no skipped tests. All four analyzers,
+  176-file format checks and Compose quiet validation pass. This final check ran
+  after the last session-bound callback guard and stale-confirmation regression.
+- Final client analysis/full tests and release Web build also pass. Flutter
+  analyze/test/build invocations use `--no-pub`; a process-local wrapper supplies
+  that flag to the unchanged development script. The Web build uses
+  `--no-web-resources-cdn`. No dependency installation or upgrade was performed.
+- Both verification runs used new isolated test databases and owner/runtime roles.
+  Fixtures, their databases/roles and temporary password files were removed;
+  the normal StoreOS database was untouched. Logs remain under ignored
+  `.local/p43-r123/`.
+- `git diff --check` passes. Migrations 0001–0015, dependency/lockfiles, production
+  server behavior, schema and runtime grants remain unchanged.
+
+Browser-level Stock/numeric E2E, backup/update wrappers and physical-device
+acceptance were not run for this follow-up. The initial verification above remains
+historical evidence for the earlier correction; this follow-up does not establish
+independent approval or changed-commit CI.

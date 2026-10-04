@@ -1699,6 +1699,50 @@ void main() {
 
 Object get _skip => _url == null ? 'STOREOS_TEST_DATABASE is not set' : false;
 
+/// Opt-in bridge using this suite's isolated HTTP/database fixture and the
+/// actual Flutter controller/adapters. Normal server tests need no Flutter SDK.
+Future<void> runStockClientJourney() => _withFixture((f) async {
+  final article = await f.stockArticle(sku: 'CLIENT-JOURNEY');
+  final level = await f.openStock(article.id, quantity: '7');
+  final result = await Process.run(
+    Platform.isWindows ? 'flutter.bat' : 'flutter',
+    [
+      'test',
+      '--no-pub',
+      'test/stock_http_journey.dart',
+      '--reporter',
+      'expanded',
+    ],
+    workingDirectory: '../client_flutter',
+    runInShell: Platform.isWindows,
+    environment: {
+      'STOREOS_STOCK_JOURNEY_URL': f.base,
+      'STOREOS_STOCK_JOURNEY_LOCATION': _home,
+    },
+  );
+  stdout.write(result.stdout);
+  stderr.write(result.stderr);
+  expect(result.exitCode, 0, reason: 'Real Flutter stock journey failed.');
+  final current = await f.level(level.id);
+  expect(current.quantity, '22');
+  expect(current.version, 5);
+  final movements = await f.movements(level.id);
+  expect(movements.items, hasLength(5));
+  expect(movements.items.map((m) => m.id).toSet(), hasLength(5));
+  expect(
+    (await f.owner.execute(
+      'SELECT count(*) FROM "${f.schema}".audit_entries '
+      "WHERE action='stock.level.adjusted'",
+    )).single.first,
+    4,
+  );
+  await f.assertLedgerInvariant(level.id);
+  stdout.writeln(
+    'Real client/API/PostgreSQL journey passed: '
+    '5 movements, 4 adjustment audits, version 5; isolated fixture removed.',
+  );
+});
+
 Future<Directory> _migrationCopy({
   required String replace,
   required String sql,

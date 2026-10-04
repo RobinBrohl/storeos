@@ -1,6 +1,6 @@
 # Current technical debt
 
-Living disposition register, reconciled 2026-10-04 against `f9c8b07`.
+Living disposition register, reconciled 2026-10-04 against source baseline `73dca5a4`.
 The [2026-10-04 audit](project-health-audit-2026-10-04.md) preserves original
 findings F01–F19; the [2026-10-02 report](milestone-health-check-2026-10-02.md)
 preserves M1–M4/L1–L12 at its old baseline. Product and operator decisions belong
@@ -35,6 +35,25 @@ subsequent committed correction and accepted closure are recorded in the
 required absent regression. Memory-only recovery and raw runtime-role SQL outside
 supported-writer semantics remain accepted limitations, not reopened findings.
 
+## Final P4.4 finding dispositions
+
+P4.4 Local Planogram Execution is **DONE/CLOSED**. Implementation `cd7669ed`,
+bounded remediation, independent targeted **APPROVE** and fully green
+[CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802)
+at portability-fix commit `73dca5a4` establish closure; no P4.4 remediation is active
+absent regression. These P4.4 IDs are separate from the older findings below.
+
+| ID | Final disposition | Evidence / retained boundary |
+| --- | --- | --- |
+| P4.4 F01 MEDIUM | CLOSED | Optional Stock failure isolation preserves assigned instructions; typed unavailable/absent/zero context, real permission-outage HTTP/PostgreSQL/Flutter journeys, targeted APPROVE and green CI. |
+| P4.4 F02 MEDIUM | CLOSED | Reachable 404 response sets are documented and matched by all-20 configured-Location and missing-origin HTTP regressions; targeted APPROVE and green CI. M3 remains endpoint-contained, not globally closed. |
+| P4.4 F03 MEDIUM | ACCEPTED LIMITATION / NON-BLOCKER | Database scope/ownership, append-only Assignment and immutable published content remain protected. Supported Assign guarantees atomic insertion/current/latest pointer/Fixture version/audit advancement; arbitrary runtime SQL can deliberately select the same Fixture's older Assignment without advancing version. Revisit before another writer or stronger raw-SQL guarantees. |
+| P4.4 F04 INFO | QUALIFIED BASELINE EVIDENCE / NON-BLOCKER | 0001–0015 retain identical Git content; 0016 is new. Historical raw checkout-byte fingerprints are unavailable; known CRLF representations in 0005/0007/0008/0009 are baseline qualification, not a P4.4 defect. No old migration was normalized or rewritten. |
+
+The [final closure](phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04)
+preserves the CHANGES REQUIRED review, remediation, APPROVE and failed CI history.
+Physical printer/device/accessibility and operator gates remain separate.
+
 ## Original medium findings
 
 | ID | State | Current disposition / trigger |
@@ -54,8 +73,8 @@ supported-writer semantics remain accepted limitations, not reopened findings.
 | L3 / F11 | ACTIVE | Session/plugin expiry creation uses app clock, validation DB clock. Align when identity/plugin code changes. |
 | L4 / F12 | DEFERRED | Company-wide admin shift reads vs configured-location execution paths. Resolve before multi-location execution/scoped roles; other named Locations already exist. |
 | L5 / F12 | DEFERRED | Unscoped existence/receipt probes, with downstream actor/company checks. Scope before a shared-schema multi-Company writer model. Current deployment is one Company per installation. |
-| L6 / F13 | LOCALLY ADDRESSED / REVIEW PENDING | P4.4 masks configured raw/URI/Base64 secret representations, Bearer tokens and PostgreSQL URLs in both touched harness failure tails. The actual diagnostic functions pass 10 assertions across both runners; report-redaction checks remain green. Independent P4.4 review is pending; see [evidence](phase-4-4-local-planograms.md). |
-| L7 / F14 | LOCALLY ADDRESSED / REVIEW PENDING | P4.4 adds four real PostgreSQL refusal cases for unknown applied migration, non-prefix, invalid filename and empty SQL, proving pending SQL is not applied. Existing checksum/rollback checks remain green. Independent P4.4 review is pending; see [evidence](phase-4-4-local-planograms.md). |
+| L6 / F13 | CLOSED in touched P4.4 harnesses | P4.4 masks configured raw/URI/Base64 secret representations, Bearer tokens and PostgreSQL URLs in both touched harness failure tails. The actual diagnostic functions pass 10 assertions across both runners; report-redaction checks remain green. Independent review APPROVE and green changed-commit CI complete the bounded acceptance; see [closure](phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04). |
+| L7 / F14 | CLOSED | P4.4 adds four real PostgreSQL refusal cases for unknown applied migration, non-prefix, invalid filename and empty SQL, proving pending SQL is not applied. Existing checksum/rollback checks remain green. Independent review APPROVE and green changed-commit CI complete acceptance; see [closure](phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04). |
 | L8 | CLOSED in this documentation pass | [Module boundaries](../architecture/module-boundaries.md) now explicitly says no shift/task integration events exist; event examples are future contracts. |
 | L9 / F17 | DEFERRED | Organization setup is emittable but not subscribable; no current consumer needs it. Revisit subscription catalog on actual demand. |
 | L10 / F15 | ACTIVE on touch | Coordinator/UI density, raw-map parsing, safety fixture duplication and DDL column whitelists. Split/share only with demonstrated need; recheck whitelists for future columns. |

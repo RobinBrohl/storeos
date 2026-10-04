@@ -1,11 +1,17 @@
 # Documentation index
 
 Canonical sources reconciled 2026-10-04. Start with [HANDOVER](HANDOVER.md) after
-[AGENTS](../AGENTS.md). P4.4 development baseline is `ed91a05`; P4.3 Manual Stock
+[AGENTS](../AGENTS.md). Current source baseline is `73dca5a4`; P4.3 Manual Stock
 Foundation is **DONE/CLOSED**, with independent targeted review APPROVE, 28/28 PASS
 and all five jobs green in [changed-commit CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
 See the [final closure](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
-P4.4 is implemented locally and uncommitted; independent review and remote CI are pending.
+P4.4 Local Planogram Execution is **DONE/CLOSED**, with targeted review APPROVE,
+qualified migration-byte evidence and all five jobs green in
+[changed-commit CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802).
+The [P4.4 final closure](development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04)
+preserves the full review/remediation/failed-CI chronology. No active P4.4 remediation
+remains absent regression; fresh P4.5 capability selection is required after the
+documentation closure is committed.
 Do not infer delivery from a target architecture description or an Accepted ADR.
 
 ## Canonical sources

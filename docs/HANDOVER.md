@@ -1,25 +1,27 @@
 # StoreOS handover
 
 Start after [AGENTS.md](../AGENTS.md). Current source baseline: `main`,
-`cd7669ed7de2751d4dc97c2724a0d11d9f674f51`, verified 2026-10-04 with a clean
-tree/index before CI remediation, matching cached `origin/main`, one worktree and no stash.
+`73dca5a4899c1bacd48af12c2073e59fa6cd5797`, verified 2026-10-04 with a clean
+tree/index before documentation closure, matching cached and live `origin/main`,
+one intended worktree and no stash.
 P4.3 Manual Stock Foundation is **DONE/CLOSED**: the committed acceptance correction
 has independent targeted review **APPROVE**, **28/28 PASS**, and fully green
 [changed-commit CI](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
 
-P4.4 Local Planogram Execution is committed on `main` at `cd7669ed7de2751d4dc97c2724a0d11d9f674f51`.
-Status is **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**.
-Independent targeted review returned APPROVE. The first changed-commit
-[CI run](https://github.com/RobinBrohl/storeos/actions/runs/37214855513) failed in
-the Dart job: both real Flutter journeys used a Windows-only launcher on Ubuntu,
-and the job provisioned only Dart. The portable launcher and pinned Flutter/client
-CI setup correction are uncommitted; changed-commit CI for that correction is pending.
-Independent review required F01 optional Stock failure isolation and F02 reachable
-404 containment; both are remediated locally. F03 supported-writer integrity and
-F04 historical migration-byte qualifications remain explicit in the evidence.
-P4.4 is not DONE/CLOSED. The user selected
-the pasted P4.4 contract as the complete architecture. See [ADR 0018](adr/0018-local-planogram-execution.md)
-and [P4.4 development evidence](development/phase-4-4-local-planograms.md).
+P4.4 Local Planogram Execution is **DONE/CLOSED**. Implementation `cd7669ed`
+and bounded CI portability fix `73dca5a4` are committed on `main`. Closure combines
+the independent full CHANGES REQUIRED review, F01/F02 remediation, targeted
+**APPROVE**, acceptance 1–49 PASS / 50A PASS / 50B QUALIFIED / 51–68 PASS,
+and fully green [changed-commit CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802)
+for the exact source baseline above. All five jobs succeeded. Migration/update/
+recovery, backup/restore, real Flutter/HTTP/PostgreSQL journeys and browser print
+acceptance are recorded in the [final closure](development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04).
+Browser evidence does not establish physical printer/device or accessibility acceptance.
+F01/F02 are **CLOSED**; F03 is an **ACCEPTED LIMITATION / NON-BLOCKER** and F04 is
+**QUALIFIED BASELINE EVIDENCE / NON-BLOCKER**. No P4.4 remediation remains active
+absent regression. The first failed [CI run 37214855513](https://github.com/RobinBrohl/storeos/actions/runs/37214855513)
+is retained as historical CI configuration evidence. No production code change
+was required for that fix. [ADR 0018](adr/0018-local-planogram-execution.md) remains unchanged in decision.
 
 Use [actual status](roadmap/status.md) for delivery, [vision](vision.md) for the
 product, [roadmap](roadmap/phases.md) for sequencing and [technical debt](development/technical-debt.md)
@@ -41,6 +43,11 @@ records the accepted correction and current-head CI.
   dialog/fake correction `f9c8b07`, migration chain ending at `0015_manual_stock.sql`
   ([ADR 0017](adr/0017-manual-stock-foundation.md)). Ledger and adjustment retry
   semantics are accepted; no active P4.3 remediation gate remains absent regression.
+- P4.4 Local Planogram Execution is **DONE/CLOSED**: independent Company Planograms,
+  local Fixtures, immutable published revisions, explicit append-only Assignments,
+  target-Location Assortment validation and browser HTML/CSS print. The migration
+  chain ends at `0016_local_planograms.sql`; 0001–0015 retain identical Git content,
+  with historical raw checkout-byte evidence qualified rather than asserted.
 - Highest broadly completed foundation remains P1; later slices do not mean all
   intervening roadmap domains are complete. P2 has bounded recovery/capacity tooling,
   not device queues, distributed sync, HA or automatic restore activation.
@@ -83,8 +90,9 @@ complete contracts, explicit errors and negative HTTP tests. External API/SDK wo
 requires broader review. **M2 is closed by migration 0012**, not deferred.
 
 Other live items include scope consistency before multi-site execution, readiness's
-early-schema-only check and maintenance couplings. P4.4 locally addresses the touched
-harness diagnostic redaction and migration refusal coverage; independent review is pending. See [technical debt](development/technical-debt.md) for triggers and evidence;
+early-schema-only check and maintenance couplings. P4.4 closes the touched
+harness diagnostic redaction and migration refusal findings with review and CI
+evidence. See [technical debt](development/technical-debt.md) for triggers and evidence;
 [risks](risks-and-open-questions.md) separates product/operator decisions.
 
 ## How to Run StoreOS
@@ -106,9 +114,9 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. Review the bounded uncommitted P4.4 CI correction and complete changed-commit
-   CI after an explicitly authorized commit/push. Independent targeted review is
-   already APPROVE; do not mark P4.4 DONE before changed-commit CI is green.
+1. After this documentation closure is committed, perform a **fresh P4.5 capability
+   selection** from product direction and operator evidence. No P4.5 capability is
+   selected or ACTIVE; no further P4.4 remediation is active absent regression.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

@@ -4,6 +4,15 @@ StoreOS is a local-first, self-hosted operating system for retail and gastronomy
 
 The current implementation is a single-site online Flutter Web client, a Dart modular monolith and PostgreSQL. The bounded employee journey and platform administration are delivered. P4.3 Manual Stock Foundation is DONE/CLOSED, including the accepted adjustment retry correction, independent targeted review APPROVE, 28/28 PASS and green changed-commit CI. See [actual status](docs/roadmap/status.md) and the [closure record](docs/development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04) for evidence and remaining operational boundaries.
 
+P4.4 Local Planogram Execution is **DONE/CLOSED**: reusable Company Planograms,
+local Fixtures, immutable published revisions, explicit Assignments and browser
+HTML/CSS printing. Independent targeted review APPROVE and all five jobs in
+[changed-commit CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802)
+complete the [closure evidence](docs/development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04).
+The migration chain ends at 0016. Browser print verification does not establish
+physical printer/device acceptance. Fresh P4.5 capability selection follows once
+this documentation closure is committed; no capability is preselected.
+
 ## Start locally
 
 Use the repository-pinned SDK versions and existing lockfiles. The complete commands, bootstrap procedure, checks and secret-file conventions are in [local development](docs/development/local-development.md).

@@ -1,10 +1,12 @@
 # P4.4 Local Planogram Execution — local development evidence
 
-Date: 2026-10-04. Current delivery: **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**.
-Implementation is committed at `cd7669ed7de2751d4dc97c2724a0d11d9f674f51`; the CI correction is uncommitted.
-Earlier sections preserve historical implementation/remediation evidence. The
-appended CI failure remediation section supersedes their pending-review/uncommitted
-disposition. This is not a DONE/CLOSED declaration.
+Date: 2026-10-04. Current delivery: **P4.4 LOCAL PLANOGRAM EXECUTION — DONE/CLOSED**.
+Implementation `cd7669ed7de2751d4dc97c2724a0d11d9f674f51` and CI portability fix
+`73dca5a4899c1bacd48af12c2073e59fa6cd5797` are committed on `main`. Independent
+targeted review is APPROVE; all five jobs in changed-commit CI run 37217071802 are
+green. No active remediation remains absent regression. The [final closure](#final-documentation-closure--2026-10-04)
+supersedes pending/uncommitted dispositions in the historical sections below,
+which preserve the implementation, full review, remediation and failed CI chronology.
 
 ## Authoritative contract and baseline
 
@@ -123,11 +125,11 @@ the remediation reassessment below supersedes those claims.
 | 59 | PASS | Meaningful browser print verification | 100 rows/10 zones, pagination, escaping, actual adapter |
 | 60 | PASS | Full repository regression green | Four suites, analyzers/format, Compose, Web build and acceptance |
 
-## Scope and verification limits
+## Original scope and verification limits (historical)
 
 No HQ rollout, bulk assignment, templates/lineage, CAD/geometry, dimensions, images, approvals, schedules, Stock mutation, Tasks integration, replenishment, POS, analytics, AI, offline queue, configurable RBAC or product PDF generation exists. The historical numeric Guided Work browser E2E and opt-in capacity measurement were not rerun; relevant P4.4 browser printing and all package regression tests were run. Native device/printer hardware and remote changed-commit CI were not verified. Memory-only uncertain tracking does not survive browser reload/session replacement; server evidence and authoritative review remain the recovery boundary.
 
-## Review state
+## Original review state (historical)
 
 Implementation stays uncommitted on main for targeted review. P4.3 historical closure/evidence is unchanged. Complete targeted review and changed-commit CI after an explicitly authorized commit before marking P4.4 DONE.
 
@@ -138,7 +140,7 @@ returned **CHANGES REQUIRED**: 56/60 PASS, with 36, 50, 55 and 56 failing that
 review's literal expectations. This is historical evidence, not an approval of
 this remediation.
 
-| Finding | Historical observation | Current disposition |
+| Finding | Historical observation | Disposition at remediation |
 | --- | --- | --- |
 | F01 MEDIUM | Revoking runtime SELECT on StockLevel made assigned layout HTTP 503, while pinned print remained 200. Stock was awaited as a mandatory dependency and the UI could not distinguish unavailable from absent. | Remediated locally; targeted review pending. |
 | F02 MEDIUM | Create Planogram with nonexistent origin Fixture returned undocumented 404. The shared configured-Location gate also reached missing 404 declarations on collection/create routes. | Remediated locally; all 20 operation response sets re-audited. |
@@ -262,7 +264,7 @@ hardware capacity, native-device/accessibility/physical-printer acceptance and
 remote changed-commit CI. These are outside this bounded remediation or pending
 delivery/operator gates; none is counted as a skipped package test.
 
-### Current acceptance reassessment (1–68)
+### Post-remediation acceptance reassessment (1–68, historical)
 
 Each row is reassessed against actual source and the final test evidence; this
 local assessment does not replace independent targeted review.
@@ -344,9 +346,20 @@ review of the final code. F03 remains the accepted supported-writer limitation;
 F04 remains a baseline-evidence qualification. No additional production scope
 or migration was introduced.
 
-## Changed-commit CI failure remediation — 2026-10-04
+## Independent targeted review APPROVE — 2026-10-04
 
-Current disposition: **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**.
+The authoritative targeted independent review supplied for final reconciliation
+returned **APPROVE** after bounded F01/F02 remediation. Accepted results are
+**1–49 PASS, 50A PASS, 50B QUALIFIED, 51–68 PASS**, with no commit blockers.
+F01/F02 are CLOSED. F03 remains an ACCEPTED LIMITATION / NON-BLOCKER, and F04
+remains QUALIFIED BASELINE EVIDENCE / NON-BLOCKER. This approval supersedes the
+historical targeted-review-pending assessment above; it does not erase the full
+review's CHANGES REQUIRED result. The implementation was then committed as
+`cd7669ed7de2751d4dc97c2724a0d11d9f674f51` before its first changed-commit CI run.
+
+## Changed-commit CI failure remediation — 2026-10-04 (historical)
+
+Disposition at this remediation: **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**.
 The independent targeted review returned APPROVE. Implementation commit
 `cd7669ed7de2751d4dc97c2724a0d11d9f674f51` is on `main`; this bounded CI fix remains
 uncommitted. No commit, push, branch change or DONE/CLOSED declaration was made
@@ -482,3 +495,106 @@ fix; their earlier evidence and unchanged scope remain intact.
 Recommendation: the bounded correction is ready for an explicitly authorized
 commit and subsequent changed-commit CI. P4.4 stays **IMPLEMENTED / REVIEW APPROVED /
 CHANGED-COMMIT CI NOT YET GREEN** until that gate passes.
+
+## Final documentation closure — 2026-10-04
+
+**P4.4 LOCAL PLANOGRAM EXECUTION = DONE/CLOSED. No active remediation remains
+absent regression.** This documentation reconciliation changes no implementation,
+test, migration, script, CI workflow, contract or dependency. No branch change,
+commit or push is performed by this closure pass.
+
+### Verified current source and CI baseline
+
+Before documentation edits: `main`, clean tree/index, HEAD and cached/live
+`origin/main` all equal `73dca5a4899c1bacd48af12c2073e59fa6cd5797`, no stash and
+exactly one intended worktree (`C:/dev/storeos`). Implementation `cd7669ed` and
+bounded CI portability fix `73dca5a4` are present. The latter changes the test
+launcher and Dart CI provisioning, with no production StoreOS code change.
+There are no dependency/lockfile changes across the P4.4 implementation and fix.
+
+Live read-only GitHub API verification confirms [CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802),
+attempt 1, **completed / success**, for exact HEAD
+`73dca5a4899c1bacd48af12c2073e59fa6cd5797`. This independently verifies the user's
+confirmation that all CI jobs are green.
+
+| Job | Job ID | Status / conclusion |
+| --- | --- | --- |
+| dart | [111479638149](https://github.com/RobinBrohl/storeos/actions/runs/37217071802/job/111479638149) | completed / success |
+| flutter | [111479638152](https://github.com/RobinBrohl/storeos/actions/runs/37217071802/job/111479638152) | completed / success |
+| numeric-guided-work-e2e | [111479638175](https://github.com/RobinBrohl/storeos/actions/runs/37217071802/job/111479638175) | completed / success |
+| backup-restore-acceptance | [111479638132](https://github.com/RobinBrohl/storeos/actions/runs/37217071802/job/111479638132) | completed / success |
+| update-recovery-acceptance | [111479637994](https://github.com/RobinBrohl/storeos/actions/runs/37217071802/job/111479637994) | completed / success |
+
+### Authoritative chronology and closure basis
+
+1. P4.4 Local Planogram Execution was selected. Final architecture refinement
+   chose independent Company-scoped Planogram, Location-scoped Fixture, immutable
+   published Revision, explicit append-only Assignment, target-Location Assortment
+   validation at assignment and browser HTML/CSS printing (ADR 0018).
+2. Initial local implementation and verification completed; the original evidence
+   and acceptance assessment above remain historical.
+3. Independent full review returned **CHANGES REQUIRED** with F01 optional Stock
+   blocking retrieval, F02 missing reachable OpenAPI 404s, F03 supported-writer
+   current/latest pointer boundary and F04 qualified historical migration bytes.
+4. Bounded F01/F02 remediation passed real fault/HTTP/client regressions. F03 was
+   accepted as a supported-writer limitation; F04 retained baseline qualification.
+5. Targeted independent review returned **APPROVE**: 1–49 PASS, 50A PASS,
+   50B QUALIFIED, 51–68 PASS; no commit blockers. Implementation was committed.
+6. First changed-commit [CI run 37214855513](https://github.com/RobinBrohl/storeos/actions/runs/37214855513)
+   failed only in Dart at implementation commit `cd7669ed`. Both real Flutter
+   journey variants attempted a Windows SDK path on Ubuntu and failed before
+   Flutter assertions. CI-equivalent reproduction classified this as
+   **CI CONFIGURATION / nonportable test launcher**.
+7. Portable `flutter` / `flutter.bat` launching, preserving the executable override,
+   pinned Flutter 3.47.5 provisioning and locked client dependency resolution were
+   added and committed as `73dca5a4`. No production code change was required.
+8. Subsequent exact changed-commit CI run **37217071802 is fully green**. The
+   earlier failure remains evidence; it is superseded as the current CI gate.
+9. Final documentation closure records **DONE/CLOSED** on that verified baseline.
+
+Closure rests on completed implementation, independent full review, bounded
+remediation, targeted APPROVE and green changed-commit CI, together with the
+recorded migration/update/recovery, backup/restore, real Flutter/HTTP/PostgreSQL
+normal/outage journeys and browser print acceptance. Remediation acceptance
+records 537 package tests PASS with no failures/skips, browser renderer/adapter
+verification (10 zones / 100 placements / 20 A4 landscape pages), backup run
+`16757cf8c8a844cb` and update/recovery run `5917329bd10048fb` through migration 0016.
+Final CI additionally verifies Ubuntu execution and the backup/update jobs;
+this documentation pass does not rerun software regression or browser print.
+
+### Final findings and evidence qualifications
+
+| Finding | Final disposition |
+| --- | --- |
+| F01 MEDIUM | CLOSED — optional Stock failure isolation accepted by targeted review and green CI |
+| F02 MEDIUM | CLOSED — reachable 404 containment accepted by targeted review and green CI |
+| F03 MEDIUM | ACCEPTED LIMITATION / NON-BLOCKER — supported-writer boundary retained |
+| F04 INFO | QUALIFIED BASELINE EVIDENCE / NON-BLOCKER — historical raw-byte proof unavailable |
+
+Database guarantees include ownership/scope integrity, append-only Assignment
+evidence, immutable published content and cross-Fixture/Company/Location protection.
+Supported application Assign guarantees current/latest Assignment pointer
+advancement, Fixture version advancement, Assignment insert and audit as one atomic
+transition. Arbitrary direct runtime SQL can deliberately repoint a Fixture to
+one of its own older Assignments without advancing Fixture version. This remains
+outside the supported-writer guarantee; no latest-pointer database guarantee is
+claimed. ADR 0018's decision is unchanged.
+
+The migration chain ends at `0016_local_planograms.sql`, the P4.4 migration;
+there is no 0017. All 15 migration blob IDs for 0001–0015 match the pre-P4.4
+`ed91a05` baseline. No old migration was rewritten for CRLF normalization.
+Historical pre-P4.4 raw checkout-byte fingerprints were unavailable; known CRLF
+working-tree representations for 0005/0007/0008/0009 are baseline qualification,
+not a P4.4 defect. Literal historical raw-byte identity is not asserted.
+
+Browser print verification is browser/rendering evidence only. Physical printer
+fidelity, physical-device and accessibility acceptance are unverified. P4.4 does
+not deliver offline behavior, HQ/central multi-location rollout, product PDF
+generation, Stock mutation or Tasks/Guided Work integration. Uncertain-command
+tracking remains memory-only. Broader M1/operator gates, endpoint-contained M3
+and global M4 debt remain as recorded in the live debt register; M2 stays closed.
+
+After this documentation closure is committed, the next action is **fresh P4.5
+capability selection**. No P4.5 capability is selected or ACTIVE.
+
+**P4.4 DONE/CLOSED. No active remediation.**

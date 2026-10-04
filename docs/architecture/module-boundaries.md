@@ -1,6 +1,6 @@
 # Module boundaries
 
-P4.4 implementation is local and uncommitted from `ed91a05`; future boundaries are
+P4.4 Local Planogram Execution is DONE/CLOSED at source baseline `73dca5a4`; future boundaries are
 explicitly labeled below. [Status](../roadmap/status.md) owns delivery and
 [vision](../vision.md) owns product scope. A logical boundary does not require
 a separate process, Dart package or database schema.
@@ -34,7 +34,7 @@ share a transaction; events are added only when the use case needs them.
 | Tasks | TaskTemplate revisions, TaskInstance snapshots, execution state, step results, blockings, numeric attempts and command receipts | Task creation/execution/resolution/query ports. Does not update Workforce tables or own future HACCP records. |
 | Inventory | Company-wide Article and ArticleLocationAssortment | `InventoryArticlePort` and released `inventory_article_location_projection`. Owns effective Article/Assortment information, not stock quantities or prices. |
 | Stock | StockLevel projection and immutable StockMovement ledger | Authorized queries and manual opening/absolute correction. Exact thousandths; frozen unit; movement-ID replay. No valuation, receiving or unit conversion. |
-| Merchandising | Local Fixture, independent Company Planogram, Revision/Zone/Placement and immutable Assignment | Organization scope, Inventory Article/Assortment and Stock referenced-level public ports; browser print; no Stock writes or events. P4.4 review pending. |
+| Merchandising | Local Fixture, independent Company Planogram, Revision/Zone/Placement and immutable Assignment | Organization scope, Inventory Article/Assortment and Stock referenced-level public ports; browser print; no Stock writes or events. P4.4 DONE/CLOSED. |
 | Audit infrastructure | Append-only business audit | Shared transactional append and authorized reads. Does not decide business state; runtime grants do not protect against every privileged owner action. |
 | Event/plugin infrastructure | Organization outbox, delivery receipts/inbox and registry | Bounded local dispatch/retry/dead-letter/replay and approved external read clients. No executed plugin code or business-module write API. |
 
@@ -79,8 +79,13 @@ Assignments. The bounded implementation is recorded in [ADR 0018](../adr/0018-lo
 Its repository touches only its six tables. Organization supplies configured-Location
 validation; Inventory supplies typed bounded Article/Assortment context and candidates;
 Stock supplies typed referenced current levels, missing versus zero and frozen units.
-No Stock writes, Tasks integration or outbox consumer exists. Local implementation
-is uncommitted and awaits independent review/changed-commit CI.
+No Stock writes, Tasks integration or outbox consumer exists. P4.4 is DONE/CLOSED
+with independent review APPROVE and green changed-commit CI; see [closure evidence](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04).
+Database constraints/triggers protect ownership/scope, append-only Assignments and
+immutable published content. Current/latest pointer and Fixture version advancement,
+Assignment insert and audit are one supported-writer atomic transition. Arbitrary
+direct runtime SQL can repoint to the same Fixture's older Assignment without
+advancing version; this accepted F03 boundary is retained in ADR 0018.
 
 ## Intentional future ownership
 

@@ -10,7 +10,7 @@ The first verified journey is:
 
 `Company → Location → Employee → Shift → TaskTemplate → TaskInstance → Employee Home → Guided Work → Completion → Audit Log`
 
-Its bounded online implementation exists through P1b.9. Automatic next-work recommendations, general rescheduling, shift swaps and device-offline writes remain future capabilities. Article, location Assortment and manual Stock provide the goods foundation; P4.3 is DONE/CLOSED, including the accepted stock client correction recorded in the [phase closure](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04). The next capability awaits fresh selection.
+Its bounded online implementation exists through P1b.9. Automatic next-work recommendations, general rescheduling, shift swaps and device-offline writes remain future capabilities. Article, location Assortment and manual Stock provide the goods foundation; P4.3 is DONE/CLOSED, including the accepted stock client correction recorded in the [phase closure](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04). P4.4 Local Planogram Execution is DONE/CLOSED per its [final closure](development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04). Fresh P4.5 capability selection is required after documentation closure is committed; no next capability is preselected.
 
 ## Local operation and ownership
 
@@ -59,6 +59,13 @@ A Recipe alone cannot produce trustworthy cost or margin. Cost calculation needs
 Production owns production orders, batch/yield evidence and labels; Stock owns their physical ledger effects. The product must explicitly decide between finished-goods stocking and ingredient consumption on sale for each supported model. It must not consume ingredients and finished goods twice. Allergen and safety information requires verified sources and responsible approval.
 
 ## Fixtures and Planograms
+
+Delivered P4.4 uses Location-scoped Fixtures, independent Company Planograms,
+immutable published revisions, explicit append-only Assignments and target-Location
+Assortment checks at assignment. Browser HTML/CSS A4 landscape print and optional
+live Stock context are accepted. The extensions below remain vision: no HQ rollout,
+Tasks/Guided Work integration or product PDF generation is delivered, and browser
+rendering evidence establishes no physical printer/device or accessibility acceptance.
 
 A generic **Fixture** represents a shelf, display, refrigerator or service counter. Optional dimensions, zones, slots and facings provide useful structure without forcing every counter into a shelf grid or CAD model.
 

@@ -1,6 +1,6 @@
 # ADR 0018: Local planogram execution
 
-Status: Accepted product contract; implemented locally, targeted review pending, remote changed-commit CI pending.
+Status: Accepted product contract; P4.4 DONE/CLOSED, targeted independent review APPROVE and green changed-commit CI. See [final closure evidence](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04); the architectural decision and supported-writer boundary are unchanged.
 Date: 2026-10-04
 
 ## Context

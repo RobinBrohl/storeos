@@ -30,7 +30,7 @@ Write new ADRs in English with Context, Decision, Alternatives, Consequences and
 An Accepted ADR records a chosen architectural direction, not proof that every
 consequence has been implemented, independently reviewed or verified by CI. Use
 [actual status](../roadmap/status.md) for those facts and [live debt](../development/technical-debt.md)
-for remaining findings. Records 0001–0017 are retained. ADR 0018 records the user-selected P4.4 contract; independent review and changed-commit CI remain pending.
+for remaining findings. Records 0001–0017 are retained. ADR 0018 records the user-selected P4.4 contract; delivery is DONE/CLOSED with targeted review APPROVE and green changed-commit CI per the [final closure](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04). Its supported-writer decision remains intact.
 
 Follow-up context: ADR 0015's location-availability boundary is implemented by
 ADR 0016; ADR 0016's first Stock consumer is implemented by ADR 0017. Manual Stock

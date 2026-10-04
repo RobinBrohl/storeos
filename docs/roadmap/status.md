@@ -1,9 +1,10 @@
 # Actual implementation status
 
-Current baseline verified 2026-10-04 against `main` at `cd7669ed7de2751d4dc97c2724a0d11d9f674f51`.
-HEAD matches cached `origin/main`; tree/index were clean before CI remediation,
-with one worktree and no stash. P4.4 implementation and migration 0016 are committed;
-the bounded CI correction is uncommitted. The historical development baseline is recorded in the slice evidence.
+Current source baseline verified 2026-10-04 against `main` at `73dca5a4899c1bacd48af12c2073e59fa6cd5797`.
+HEAD matches cached and live `origin/main`; tree/index were clean before documentation
+closure, with one intended worktree and no stash. P4.4 implementation `cd7669ed`,
+migration 0016 and bounded CI portability fix `73dca5a4` are committed. Historical
+development/review/CI states are retained in the slice evidence.
 
 P4.3 Manual Stock Foundation is **DONE/CLOSED**. Foundation commit
 `e8ce8c319e2dd3051b402d252a0666f33b170fa3` and acceptance correction
@@ -36,8 +37,9 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P1b.9 published-shift interval amendment | DONE | Only starts/ends before any task begins; no task regeneration or employee/template reassignment. Migration 0012 / ADR 0014; committed `f37dd6b`. M2 overlap exclusion is implemented. | [Slice](../development/phase-1b-9-shift-amendment.md) records review and remote CI. |
 | P4.1 Company-wide Article | DONE | SKU, optional opaque barcode, unit label, activation lifecycle, audit and Web UI. Migration 0013 / ADR 0015; `a4aeecd` with `d0fcf43`/`d90dd7e` corrections. | [Slice](../development/phase-4-1-article-master.md) records remote CI run 31 on `d90dd7e`. |
 | P4.2 location Assortment | DONE | Membership with independent activation and effective availability; no quantity/price. Migration 0014 / ADR 0016; committed `3bc27d5`. | Historical remote CI is recorded in the prior handover/status and [update follow-up](../development/phase-2-update-recovery-acceptance.md); not rechecked online here. |
-| P2 bounded recovery/capacity tooling | DONE | Encrypted restore, opt-in concurrent-work measurement and forward-only update/isolated recovery acceptance. | [Restore](../development/phase-2-restore-acceptance.md), [capacity](../development/phase-2-capacity-measurement.md), [update](../development/phase-2-update-recovery-acceptance.md). Dated extensions cover migrations through 0015; no automatic replacement activation/downgrade. |
+| P2 bounded recovery/capacity tooling | DONE | Encrypted restore, opt-in concurrent-work measurement and forward-only update/isolated recovery acceptance. | [Restore](../development/phase-2-restore-acceptance.md), [capacity](../development/phase-2-capacity-measurement.md), [update](../development/phase-2-update-recovery-acceptance.md). [P4.4 acceptance](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04) extends migration/recovery and backup evidence through 0016; no automatic replacement activation/downgrade. |
 | P4.3 manual Stock | DONE / CLOSED | Foundation `e8ce8c3`; migration 0015 / ADR 0017. Acceptance correction committed `f9c8b07`: immutable scoped retries, immediate session fencing, typed outcomes, definitive 413/415 rejection, separate refresh warnings, retained dialog input, neutral abandonment and faithful fake semantics. Server semantics unchanged. | Independent targeted review APPROVE, 28/28 PASS; changed-commit [CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795), all five jobs green. [Slice closure](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04); F01/F06/F07 and R1/R2/R3 CLOSED. |
+| P4.4 Local Planogram Execution | DONE / CLOSED | Implementation `cd7669ed`; CI portability fix `73dca5a4`; migration 0016 / ADR 0018. Company Planogram, Location Fixture, immutable published Revision, explicit append-only Assignment, target Assortment validation and browser HTML/CSS print. | Full independent review, bounded F01/F02 remediation, targeted APPROVE; 1–49 PASS, 50A PASS, 50B QUALIFIED, 51–68 PASS, no blockers. All five jobs green in [CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802). [Final closure](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04) records real journeys, browser print and backup/update/recovery acceptance. |
 
 ## Accepted manual Stock boundaries
 
@@ -50,22 +52,32 @@ semantics under the accepted threat model.
 Tracking is memory-only: browser reload, logout or client/session replacement cannot
 guarantee recovery of an unconfirmed adjustment. No durable offline recovery exists.
 
-P4.4 Local Planogram Execution is **IMPLEMENTED / REVIEW APPROVED / CHANGED-COMMIT CI NOT YET GREEN**:
-committed on `main` at `cd7669ed7de2751d4dc97c2724a0d11d9f674f51`; independent targeted review returned APPROVE.
-The user selected the pasted product contract as the complete architecture, replacing
-the former unselected-capability statement. Migration 0016 is new; 0001–0015 have
-unchanged Git content. Historical literal byte identity is qualified by unavailable
-pre-implementation fingerprints and known CRLF checkout representations in 0005/0007/0008/0009.
-Independent review F01/F02 are closed. The first changed-commit
-[CI run](https://github.com/RobinBrohl/storeos/actions/runs/37214855513) failed in
-the Dart job because the real Flutter journeys used a Windows-only launcher on
-Ubuntu and Flutter/client dependencies were not provisioned in that job. The
-CI-only correction is uncommitted; its changed-commit CI remains pending. P4.4 is
-not DONE/CLOSED. F03's raw-SQL pointer limitation is accepted under
-the supported-writer boundary. See [ADR 0018](../adr/0018-local-planogram-execution.md)
-and [development evidence](../development/phase-4-4-local-planograms.md). P4.3 closure above is unchanged.
+## Accepted Local Planogram boundaries
+
+P4.4 is **DONE/CLOSED**, with no active remediation absent regression. F01/F02 are
+**CLOSED**; F03 is an **ACCEPTED LIMITATION / NON-BLOCKER** and F04 is
+**QUALIFIED BASELINE EVIDENCE / NON-BLOCKER**. Database guarantees cover scope/
+ownership, immutable published content, append-only Assignment evidence and cross-
+Fixture/Company/Location protection. Supported Assign atomically inserts Assignment,
+advances current/latest pointer and Fixture version, and appends audit. Arbitrary
+direct runtime SQL can deliberately repoint a Fixture to its own older Assignment
+without advancing version, outside that supported-writer guarantee.
+
+Migration 0016 is the P4.4 migration; 0001–0015 have unchanged Git content, and no
+0017 exists. Historical raw checkout-byte fingerprints are unavailable; CRLF
+representations in 0005/0007/0008/0009 are qualified baseline evidence, not a P4.4
+defect. No old migration was rewritten or normalized. The failed first
+[CI run 37214855513](https://github.com/RobinBrohl/storeos/actions/runs/37214855513)
+and its CI configuration root cause remain in the [development history](../development/phase-4-4-local-planograms.md).
+Browser print acceptance covers rendering/adapter behavior only. Physical devices,
+accessibility, offline queues, HQ rollout, PDF generation, Stock mutation and
+Tasks/Guided Work integration are outside this slice. Uncertain command tracking
+remains memory-only. See [ADR 0018](../adr/0018-local-planogram-execution.md).
 
 ## Planned and deferred scope
+
+Next: **fresh P4.5 capability selection required** after this documentation closure
+is committed. No P4.5 capability is preselected or ACTIVE.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |

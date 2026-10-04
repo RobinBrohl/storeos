@@ -7,7 +7,7 @@ that all lower-numbered domains ship before higher-numbered ones.
 
 A new slice needs a real use case, owner, permission/audit/error contract and
 bounded acceptance. This document proposes sequencing; it does not authorize
-parallel implementation or allocate speculative P4.4/P4.5 numbers.
+parallel implementation or preselect a P4.5 capability.
 
 ## Near-term implementation direction
 
@@ -17,13 +17,21 @@ jobs green in [CI run 37199144795](https://github.com/RobinBrohl/storeos/actions
 No active P4.3 remediation gate remains absent regression; see the
 [phase closure](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
 
-Next: fresh P4.4 capability selection from the reconciled product vision and real
+P4.4 Local Planogram Execution is **DONE/CLOSED**: implementation `cd7669ed`,
+bounded CI portability fix `73dca5a4`, targeted review APPROVE and all five jobs
+green in [CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802).
+Migration 0016, real journeys, browser print and backup/update/recovery acceptance
+are recorded in the [final closure](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04).
+No P4.4 remediation remains active absent regression.
+
+Next, after this documentation closure is committed: fresh P4.5 capability selection
+from the reconciled product vision and real
 operator evidence. Select **one** bounded useful slice after assessing its source
 contracts and prerequisites. The next capability has not been chosen; the domain
-directions below do not declare a P4.4 implementation or rank its candidates.
+directions below do not preselect or mark any P4.5 capability ACTIVE.
 
 M3 containment applies to every new API. M1 gates the adoption of a real-user
-proxy deployment. Wider RBAC, remote access, Wiki, Planograms, Recipes, Menus and
+proxy deployment. Wider RBAC, remote access, Wiki, Planogram extensions, Recipes, Menus and
 communications remain domain/dependency direction rather than a fixed sequence.
 
 ## D0 – Dokumentation und Repository-Grundlage
@@ -88,11 +96,13 @@ including the committed and accepted adjustment retry correction. Future
 units/conversions, Suppliers, orders, receiving, batches/expiry, inventory counts,
 transfers and valuation require
 separate slices; a frozen unit label suffices for current manual stock.
-[ADRs 0015–0017](../adr/README.md).
+[ADRs 0015–0018](../adr/README.md).
 
-Planograms use generic Fixtures, immutable revisions, organizational assignments,
-tasks/feedback and print. Editing/printing does not require a complete warehouse
-system; live stock information uses Stock's public query contract.
+P4.4 Local Planogram Execution is **DONE/CLOSED**: Location Fixtures, independent
+Company Planograms, immutable published revisions, explicit append-only Assignments,
+target-Location Assortment validation and browser print. Live optional Stock context
+uses Stock's public read port. Higher-level rollout, tasks/feedback and PDF output
+remain future scope; browser verification establishes no physical printer acceptance.
 
 External sales ingest can precede receiving/valuation and the StoreOS checkout.
 It owns source/import/mapping/health; physical Stock effects additionally need

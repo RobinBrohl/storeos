@@ -1,6 +1,6 @@
 # Architekturüberblick
 
-Status: target architecture. The implemented single-site/Web scope includes P0, P1, P1b.1–P1b.9, Article, location Assortment and P4.3 manual Stock DONE/CLOSED with its accepted correction; see [actual status](../roadmap/status.md). Client offline queues, native runners, automatic work recommendations and enterprise synchronization described below are not implemented.
+Status: target architecture. The implemented single-site/Web scope includes P0, P1, P1b.1–P1b.9, Article, location Assortment, P4.3 manual Stock DONE/CLOSED with its accepted correction and P4.4 Local Planogram Execution DONE/CLOSED; see [actual status](../roadmap/status.md). P4.4 delivers independent Company Planograms, local Fixtures, immutable published revisions, explicit Assignments and browser printing through migration 0016; [closure evidence](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04) preserves its qualifications. Client offline queues, native runners, automatic work recommendations and enterprise synchronization described below are not implemented.
 
 ## Ausgangspunkt
 

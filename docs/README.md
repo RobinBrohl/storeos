@@ -1,9 +1,10 @@
 # Documentation index
 
-Canonical sources reconciled 2026-10-04. Start with [HANDOVER](HANDOVER.md) after
-[AGENTS](../AGENTS.md). Current baseline is `eef2f1e`; P4.6 is implemented locally,
-independent review remediation complete / targeted review pending and remote
-changed-commit CI pending. See [ADR 0020](adr/0020-task-knowledge-guidance.md)
+Canonical sources reconciled 2026-10-05. Start with [HANDOVER](HANDOVER.md) after
+[AGENTS](../AGENTS.md). Current baseline is `15679bf`; P4.6 is **DONE/CLOSED**,
+with targeted review APPROVE, 64/64 PASS, focused Codex Security SECURITY APPROVE
+and all five jobs green in [changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549).
+See [ADR 0020](adr/0020-task-knowledge-guidance.md)
 and [P4.6 evidence](development/phase-4-6-task-knowledge-guidance.md). P4.3 Manual Stock
 Foundation is **DONE/CLOSED**, with independent targeted review APPROVE, 28/28 PASS
 and all five jobs green in [changed-commit CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
@@ -19,7 +20,8 @@ with independent adversarial review APPROVE, 60/60 PASS and all five jobs green 
 See [final evidence](development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
 and [ADR 0019](adr/0019-approved-operational-knowledge.md). Current migration chain
 ends at 0018; no active P4.5 remediation remains. F01/F02 are LOW non-blocking follow-ups.
-P4.6 targeted review/CI remain pending; P4.7 is not selected.
+No active P4.6 remediation remains. Next is fresh P4.7 capability selection after
+the documentation closure commit; P4.7 is not selected or ACTIVE.
 Do not infer delivery from a target architecture description or an Accepted ADR.
 
 ## Canonical sources

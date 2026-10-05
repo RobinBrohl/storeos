@@ -55,8 +55,8 @@ Werte sind nur über die berechtigte Versuchshistorie verfügbar, nicht im Audit
 
 ## Assigned Knowledge guidance (P4.6)
 
-P4.6 is implemented locally, with independent review remediation complete /
-targeted review pending and changed-commit CI pending.
+P4.6 is **DONE/CLOSED**, with bounded F01 remediation, targeted review APPROVE,
+64/64 PASS, focused Codex Security SECURITY APPROVE and green changed-commit CI.
 Task content schema 3 retains confirmation/numeric semantics and adds required,
 nullable `knowledgeGuidance`, containing exactly `articleId` and `revisionId`.
 Schemas 1/2 and their persisted snapshots/receipts remain unchanged.

@@ -1,18 +1,22 @@
 # StoreOS handover
 
-Start after [AGENTS.md](../AGENTS.md). P4.6 Guided Operation is **IMPLEMENTED LOCALLY**,
-**INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING**,
-**REMOTE CHANGED-COMMIT CI PENDING**. The original independent review was
-**CHANGES REQUIRED** with one LOW commit blocker, F01. Its bounded correction
-separates selection-time `guidance_selection_unavailable` from fresh-publication
-`guidance_unavailable`; committed replay remains unchanged. The implementation
-is uncommitted/unstaged on `main`, from baseline `eef2f1eaf778300a10869539b8e94041113b9a07`,
-verified clean and matching cached/live origin, with one worktree and no stash.
-All five jobs in [exact-baseline CI 37231793151](https://github.com/RobinBrohl/storeos/actions/runs/37231793151)
-were green. The migration chain now ends at 0018; 0001–0017 are unchanged. See
-[P4.6 evidence](development/phase-4-6-task-knowledge-guidance.md) and
-[ADR 0020](adr/0020-task-knowledge-guidance.md). No commit, push, branch/dependency
-change or normal database migration occurred. P4.7 is not selected.
+Start after [AGENTS.md](../AGENTS.md). P4.6 Guided Operation — Task + approved
+Knowledge revision pinning is **DONE/CLOSED** at implementation commit
+`15679bf3c81f50ca31e4995d5b958d7c27e5284d`. The first independent review returned
+**CHANGES REQUIRED** with exactly one LOW commit blocker, F01. Bounded remediation
+separates draft selection `guidance_selection_unavailable` from fresh-publication
+`guidance_unavailable`; committed replay returns original evidence after current
+authorization. Targeted independent review **APPROVE**, **64/64 PASS**, focused
+Codex Security **SECURITY APPROVE** and all five jobs green in
+[changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549)
+establish closure. Real Flutter/HTTP/PostgreSQL and Chrome journeys, backup/restore,
+update/recovery and full regression are recorded. Before closure edits, `main`
+was clean and matched cached/live origin, with one worktree and no stash.
+The migration chain ends at 0018; 0001–0017 are unchanged. See
+[P4.6 evidence](development/phase-4-6-task-knowledge-guidance.md#final-documentation-closure--2026-10-05)
+and [ADR 0020](adr/0020-task-knowledge-guidance.md). No active P4.6 remediation remains.
+This closure changes documentation only; no commit, push, branch/dependency change
+or database operation occurred. P4.7 is not selected.
 
 P4.5 Approved Operational Knowledge is **DONE/CLOSED**:
 independent adversarial review **APPROVE**, **60/60 PASS**, and all five jobs green
@@ -75,8 +79,14 @@ records the accepted correction and current-head CI.
   retirement and strict publication replay. Migration 0017 adds two tables;
   0001–0016 retain identical Git content. Independent review APPROVE, 60/60 PASS,
   real Flutter/HTTP/PostgreSQL and Chrome journeys, backup/update/recovery, full
-  regression and green changed-commit CI establish closure. No Task evidence
-  integration or events exist. F01/F02 remain LOW, non-blocking follow-ups.
+  regression and green changed-commit CI establish closure. At P4.5 closure, no Task
+  evidence integration existed; P4.6 adds exact pins. No Knowledge events exist.
+  F01/F02 remain LOW, non-blocking follow-ups.
+- P4.6 Guided Operation is **DONE/CLOSED**: optional concrete KnowledgeGuidance in
+  schema-3 Templates and immutable Task snapshots, exact contextual historical read,
+  scoped authorization and literal text rendering. No acknowledgment or execution
+  mutation on read. Migration 0018; targeted APPROVE, 64/64 PASS, SECURITY APPROVE
+  and green changed-commit CI. Native-device/accessibility acceptance is not claimed.
 - Highest broadly completed foundation remains P1; later slices do not mean all
   intervening roadmap domains are complete. P2 has bounded recovery/capacity tooling,
   not device queues, distributed sync, HA or automatic restore activation.
@@ -96,7 +106,7 @@ records the accepted correction and current-head CI.
 - Inventory owns Article/Assortment. Stock owns immutable movements and level
   projections; it reads the released inventory projection/port, not foreign tables.
   Existing stock survives Article/Assortment deactivation.
-- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0017 are
+- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0018 are
   append-only; no applied file edits, silent overwrite or evidence deletion.
 - Personnel decisions remain human. Task activity is not attendance or employee scoring.
 
@@ -143,8 +153,8 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. Target-review the P4.6 F01 remediation and its fresh local acceptance evidence; changed-commit CI remains
-   pending. Do not mark P4.6 DONE/CLOSED or select P4.7.
+1. After the documentation closure commit, perform fresh P4.7 capability selection.
+   No P4.7 capability is preselected or ACTIVE; no active P4.6 remediation remains.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

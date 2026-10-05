@@ -1,6 +1,6 @@
 # Development roadmap
 
-Reconciled 2026-10-04. [Status](status.md) owns actual delivery; [vision](../vision.md)
+Reconciled 2026-10-05. [Status](status.md) owns actual delivery; [vision](../vision.md)
 owns long-term capabilities. The legacy D0/P0–P12 labels below remain stable
 navigation for existing phase records. They are domain groupings, not a promise
 that all lower-numbered domains ship before higher-numbered ones.
@@ -31,11 +31,16 @@ jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/
 retains the selection, local implementation, independent review and CI chronology.
 No active P4.5 remediation remains; F01/F02 are LOW non-blocking follow-ups.
 
-P4.6 Guided Operation is implemented locally, independent review remediation complete / targeted review pending and remote
-changed-commit CI pending. [ADR 0020](../adr/0020-task-knowledge-guidance.md) pins exact
-Knowledge revisions through Templates and Tasks; retirement preserves historical
-contextual access. See [evidence](../development/phase-4-6-task-knowledge-guidance.md).
-P4.6 is not DONE/CLOSED. P4.7 is not selected.
+P4.6 Guided Operation — Task + approved Knowledge revision pinning is **DONE/CLOSED**:
+implementation `15679bf`, migration 0018, full independent CHANGES REQUIRED review,
+bounded F01 remediation, targeted APPROVE, 64/64 PASS, focused Codex Security
+SECURITY APPROVE and all five jobs green in
+[changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549).
+[ADR 0020](../adr/0020-task-knowledge-guidance.md) pins exact Knowledge revisions
+through Templates and Tasks; retirement preserves authorized contextual history.
+See [final closure](../development/phase-4-6-task-knowledge-guidance.md#final-documentation-closure--2026-10-05).
+No active P4.6 remediation remains. Next is fresh P4.7 capability selection after
+the documentation closure commit; no P4.7 capability is selected or ACTIVE.
 
 M3 containment applies to every new API. M1 gates the adoption of a real-user
 proxy deployment. Wider RBAC, remote access, Knowledge extensions, Planogram extensions, Recipes, Menus and
@@ -91,9 +96,9 @@ active authoritative writers for the same aggregate.
 ## P3 – Workforce und Wissensabläufe erweitern
 
 Planned: skills, qualification validity, recurrence, dependencies/windows,
-handover, justified absences, training and Task-pinned Wiki guidance. Company-wide
-approved Knowledge discovery/read is delivered by P4.5; exact Task pinning is implemented
-locally in P4.6, with independent review remediation complete / targeted review pending and changed-commit CI pending. Boards may
+handover, justified absences and training. Company-wide approved Knowledge
+discovery/read is delivered by P4.5; exact Task-pinned Knowledge revision guidance
+is delivered by P4.6 (DONE/CLOSED). Boards may
 provide a bounded durable communication slice before Chat. Recommendations start
 with deterministic rules/reasons and human decisions; preserve breaks/ongoing work
 and minimize HR data.

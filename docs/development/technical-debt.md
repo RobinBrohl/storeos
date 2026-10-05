@@ -81,8 +81,11 @@ P4.6 F01 remediation (2026-10-05): the original independent CHANGES REQUIRED rev
 found one LOW commit blocker in the selection/publication error contract. Draft
 create/replacement now uses `guidance_selection_unavailable`; only fresh publication
 uses `guidance_unavailable`. OpenAPI inventories the actual touched responses; clone
-and exact replay retain their prior behavior. Independent review remediation is
-complete; targeted review and changed-commit CI remain pending. Global M3/M4 remain open.
+and exact replay retain their prior behavior. F01 is **CLOSED** by bounded remediation,
+targeted review **APPROVE**, **64/64 PASS**, focused Codex Security **SECURITY APPROVE**
+and all five jobs green in [changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549).
+P4.6 is **DONE/CLOSED**, with no active remediation. This F01 is distinct from the
+still-open P4.5 mounted standalone search follow-up. Global M3/M4 remain open.
 
 ## Original medium findings
 

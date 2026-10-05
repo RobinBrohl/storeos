@@ -1,8 +1,10 @@
 # ADR 0020: Task guidance pins an approved Knowledge revision
 
-Status: Accepted implementation decision; P4.6 IMPLEMENTED LOCALLY,
-INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING,
-REMOTE CHANGED-COMMIT CI PENDING. Original review: CHANGES REQUIRED, F01 LOW commit blocker.
+Status: Accepted implementation decision; P4.6 **DONE/CLOSED**. Original review:
+CHANGES REQUIRED, F01 LOW commit blocker; bounded remediation completed, targeted
+review APPROVE, 64/64 PASS, focused Codex Security SECURITY APPROVE and green
+[changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549).
+No active remediation; [closure evidence](../development/phase-4-6-task-knowledge-guidance.md#final-documentation-closure--2026-10-05).
 
 ## Context
 
@@ -43,4 +45,4 @@ Restores must retain both module histories and constraints. Apply migration 0018
 
 ## Open Questions
 
-Targeted F01 review and changed-commit CI remain pending. Emergency withdrawal/reconciliation, native-device/accessibility acceptance and offline recovery need separate contracts. P4.7 is not selected.
+Emergency withdrawal/reconciliation, native-device/accessibility acceptance and offline recovery need separate contracts. P4.7 is not selected; next is fresh capability selection after the documentation closure commit.

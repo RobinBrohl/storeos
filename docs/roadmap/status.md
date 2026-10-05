@@ -1,23 +1,23 @@
 # Actual implementation status
 
 P4.6 Guided Operation — Task + approved Knowledge revision pinning is
-**IMPLEMENTED LOCALLY**,
-**INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING**,
-**REMOTE CHANGED-COMMIT CI PENDING**. The original independent review returned
-**CHANGES REQUIRED** for F01 (LOW, commit blocker): publication-only
-`guidance_unavailable` was reused for draft selection. The bounded remediation uses
-`guidance_selection_unavailable` for create/replacement selection and preserves
-fresh-publication errors and committed replay. Fresh verification and all 64
-reassessed criteria are recorded in the development evidence.
-Uncommitted/unstaged on `main`, from verified baseline
-`eef2f1eaf778300a10869539b8e94041113b9a07`, matching cached/live origin with clean
-tree/index, one worktree and no stash. All five jobs in
-[exact-baseline CI 37231793151](https://github.com/RobinBrohl/storeos/actions/runs/37231793151)
-passed. Migration 0018 adds concrete schema-3 pins, atomic fresh publication and
-contextual historical reads. Migrations 0001–0017 and dependencies/lockfiles are unchanged.
-See [ADR 0020](../adr/0020-task-knowledge-guidance.md) and
-[development evidence](../development/phase-4-6-task-knowledge-guidance.md).
-P4.6 is not DONE/CLOSED. P4.7 is not selected.
+**DONE/CLOSED** at implementation commit
+`15679bf3c81f50ca31e4995d5b958d7c27e5284d` on `main`. Before documentation closure,
+HEAD matched cached and live `origin/main`; tree/index were clean, with one intended
+worktree and no stash. The first independent adversarial review returned
+**CHANGES REQUIRED** for exactly one actionable issue: F01, LOW but commit-blocking,
+selection-time reuse of publication-only `guidance_unavailable`. Bounded remediation
+is complete; targeted independent review **APPROVE**, **64/64 PASS**, focused Codex
+Security **SECURITY APPROVE** and all five successful jobs in
+[changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549)
+establish closure. No confirmed/probable vulnerability or security commit blocker
+remained; no active P4.6 remediation remains. Migration 0018 adds concrete schema-3
+pins and bounded Task/Knowledge reference integrity; 0001–0017 and dependencies/
+lockfiles remain unchanged, with no 0019. Real Flutter/HTTP/PostgreSQL and Chrome
+journeys, backup/restore, update/recovery and full regression are preserved in
+[final evidence](../development/phase-4-6-task-knowledge-guidance.md#final-documentation-closure--2026-10-05).
+See [ADR 0020](../adr/0020-task-knowledge-guidance.md). Next is fresh P4.7 capability
+selection after the documentation closure commit; no P4.7 capability is selected or ACTIVE.
 
 P4.5 starting source baseline verified 2026-10-04 against `main` at `ce00a241b967ab9242604e4d043a8241b3593f64`.
 HEAD matched cached and live `origin/main`; tree/index were clean before implementation,
@@ -72,6 +72,7 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P4.3 manual Stock | DONE / CLOSED | Foundation `e8ce8c3`; migration 0015 / ADR 0017. Acceptance correction committed `f9c8b07`: immutable scoped retries, immediate session fencing, typed outcomes, definitive 413/415 rejection, separate refresh warnings, retained dialog input, neutral abandonment and faithful fake semantics. Server semantics unchanged. | Independent targeted review APPROVE, 28/28 PASS; changed-commit [CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795), all five jobs green. [Slice closure](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04); F01/F06/F07 and R1/R2/R3 CLOSED. |
 | P4.4 Local Planogram Execution | DONE / CLOSED | Implementation `cd7669ed`; CI portability fix `73dca5a4`; migration 0016 / ADR 0018. Company Planogram, Location Fixture, immutable published Revision, explicit append-only Assignment, target Assortment validation and browser HTML/CSS print. | Full independent review, bounded F01/F02 remediation, targeted APPROVE; 1–49 PASS, 50A PASS, 50B QUALIFIED, 51–68 PASS, no blockers. All five jobs green in [CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802). [Final closure](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04) records real journeys, browser print and backup/update/recovery acceptance. |
 | P4.5 Approved Operational Knowledge | DONE / CLOSED | Implementation 93072a4; migration 0017 / ADR 0019. Company-scoped WikiArticle, one active draft, immutable published/discarded WikiRevision, current published pointer, terminal retirement and strict publication replay. Plain text, Company-wide audience; no Task evidence or events. | Independent adversarial review APPROVE, 60/60 PASS; all five jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360). [Final closure](../development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04) records real journeys, Chrome workflow, backup/update/recovery and full regression. F01/F02 LOW non-blocking follow-ups. |
+| P4.6 Guided Operation — Task + approved Knowledge revision pinning | DONE / CLOSED | Implementation `15679bf`; migration 0018 / ADR 0020. Optional concrete schema-3 Article/Revision pin, frozen Template content, immutable Task snapshot and exact contextual historical read; no copied Knowledge text or readership evidence. | Full independent CHANGES REQUIRED review, bounded F01 remediation, targeted APPROVE, 64/64 PASS, focused Codex Security SECURITY APPROVE; all five jobs green in [changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549). [Final closure](../development/phase-4-6-task-knowledge-guidance.md#final-documentation-closure--2026-10-05) records real journeys, Chrome, backup/update/recovery and full regression. No active remediation. |
 
 ## Accepted manual Stock boundaries
 
@@ -113,7 +114,8 @@ NON-BLOCKING FOLLOW-UP**, not commit blockers; see [technical debt](../developme
 Capabilities are `knowledge.articles.read`, `knowledge.articles.manage` and
 `knowledge.articles.publish`. Admin has all three; employee has read only.
 Viewer, auditor and approved plugin tokens have none; roles remain fixed.
-Employees read only active Articles' current published revisions. Search uses only
+Standalone employees read only active Articles' current published revisions;
+P4.6 adds the narrowly authorized exact Task-context exception below. Search uses only
 their current published titles, filters visibility before pagination and treats
 %, _ and backslash literally. Draft/discarded/historical titles and retired
 Articles do not leak through discovery or employee management access.
@@ -124,18 +126,58 @@ reversal. Late v1 replay leaves v2 current; replay after retirement leaves the
 Article retired. Conflicting operation reuse returns `operation_conflict`.
 No hard delete, readership tracking, generic receipt table or events/outbox exist.
 At P4.5 closure, Task schema, snapshots, publication and execution were unchanged.
-P4.6 now locally implements exact assigned-revision evidence, review/CI pending.
+P4.6 is DONE/CLOSED and adds exact assigned-revision evidence.
 Knowledge discovery/navigation still creates no readership evidence.
 Native-device/accessibility acceptance and durable offline recovery are not claimed.
 
+## Accepted Guided Operation boundaries
+
+P4.6 is **DONE/CLOSED**. Optional KnowledgeGuidance stores only `articleId` and
+`revisionId`; schema 3 explicitly permits null, and schemas 1/2/old content remain
+unchanged. Draft selection captures an exact approved revision; Template publication
+freezes it, fresh Shift publication revalidates and materializes it into immutable
+Task content, and execution resolves the stored pin. Publishing Knowledge v2 leaves
+retained Template/Task v1 pins and contextual reads at v1.
+
+Retirement after work publication keeps the Article retired and unavailable through
+standalone employee discovery, while legitimate contextual v1 reads and Task
+execution/completion continue. Retirement before fresh Template/Shift publication
+rejects that publication. Retirement is not emergency withdrawal.
+
+Employees need a valid current session, active Employee link, Company/Location/work
+visibility, own visible Shift/Task, Task self-read and Knowledge read. Managers need
+existing authorized Shift/Task scope plus Knowledge read. The endpoint derives both
+IDs from stored Task content; clients cannot select arbitrary historical revisions.
+Viewer/auditor/plugin credentials are denied. Guided Template authoring/publication
+and Shift publication require their existing Task/Shift authorization plus Knowledge
+read where guidance exists. No configurable RBAC or general history browser is added.
+
+Draft create/replacement failure uses `guidance_selection_unavailable`; unusable
+retained guidance at fresh Template/Shift publication uses `guidance_unavailable`.
+Committed replay requires fresh auth/scope and returns original evidence without
+either later-lifecycle availability error: original Template evidence or Shift/Task
+IDs, unchanged pins, no duplicate Tasks or audit.
+
+Opening Assigned instruction neither starts/completes work nor confirms a step,
+satisfies numeric input, acknowledges reading or creates a receipt/event/audit.
+Completion retains immutable Knowledge identity. Text renders literally, without
+content-generated active links/images, HTML/script execution or rich Markdown;
+this is literal rendering, not a general sanitizer. Mutation audit may contain
+`knowledgeArticleId`/`knowledgeRevisionId`, never title/body/full content in audit/logs.
+Tasks owns selection and snapshots, Knowledge owns content/lifecycle/exact validation
+and contextual resolution, and Workforce owns Shift publication context. Public
+ports preserve repository ownership. No Planogram/per-step/multiple/generic guidance,
+read acknowledgment, native-device/accessibility acceptance or offline queue is claimed.
+
 ## Planned and deferred scope
 
-Next: targeted P4.6 F01 review and changed-commit CI. P4.7 is not selected.
+Next: fresh P4.7 capability selection after the documentation closure commit.
+No P4.7 capability is selected or ACTIVE; no active P4.6 remediation remains.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
-| Workforce / Tasks / Wiki extension | MIXED | P4.6 Task pins are implemented locally, review/CI pending. Recurrence, recommendations, qualification workflows and swaps remain future slices; begun-work reconciliation remains open. |
+| Workforce / Tasks / Wiki extension | MIXED | P4.6 exact Task pins are DONE/CLOSED. Recurrence, recommendations, qualification workflows and swaps remain future slices; begun-work reconciliation remains open. |
 | Inventory / Stock / Purchasing / Production | PLANNED | Beyond existing Article/Assortment/manual Stock: units/conversions, receiving, inventory counts, batches, Recipe, production and valuation. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |

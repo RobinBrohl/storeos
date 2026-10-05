@@ -7,14 +7,17 @@ import '../platform/platform_database.dart';
 import '../platform/platform_input.dart';
 import 'task_template.dart';
 import 'task_template_repository.dart';
+import '../knowledge/knowledge_guidance_port.dart';
 
 class TaskTemplateService {
   TaskTemplateService(this.database)
     : _repository = TaskTemplateRepository(database.schema, database.companyId),
-      _organization = OrganizationService(database);
+      _organization = OrganizationService(database),
+      _knowledge = KnowledgeGuidancePort(database);
   final PlatformDatabase database;
   final TaskTemplateRepository _repository;
   final OrganizationService _organization;
+  final KnowledgeGuidancePort _knowledge;
   Future<T> _run<T>(
     SessionPrincipal principal,
     Future<T> Function(TxSession, PlatformActor) action,
@@ -36,6 +39,43 @@ class TaskTemplateService {
         422,
         'empty_template',
         'A published template needs a step.',
+      );
+    } on ServerException catch (error) {
+      if (error.code == '23505' &&
+          const {
+            'task_templates_pkey',
+            'task_template_revisions_pkey',
+            'task_template_revisions_template_id_revision_number_key',
+            'task_templates_one_draft',
+          }.contains(error.constraintName)) {
+        throw const PlatformFailure(
+          409,
+          'template_conflict',
+          'Template state changed.',
+        );
+      }
+      throw PlatformFailure(
+        error.code?.startsWith('08') == true ||
+                const {
+                  '42501',
+                  '55P03',
+                  '57014',
+                  '57P01',
+                  '53300',
+                }.contains(error.code)
+            ? 503
+            : 500,
+        error.code?.startsWith('08') == true ||
+                const {
+                  '42501',
+                  '55P03',
+                  '57014',
+                  '57P01',
+                  '53300',
+                }.contains(error.code)
+            ? 'database_unavailable'
+            : 'internal_error',
+        'Template database operation failed.',
       );
     }
   }
@@ -140,6 +180,9 @@ class TaskTemplateService {
     final content = _content(input);
     return _run(principal, (tx, actor) async {
       await _organization.requireConfiguredLocation(tx, locationId);
+      if (content.knowledgeGuidance case final pin?) {
+        await _knowledge.validatePublication(tx, actor, pin, selection: true);
+      }
       if (await _repository.find(tx, id) != null ||
           await _repository.revisionIdExists(tx, revisionId)) {
         throw const PlatformFailure(
@@ -179,6 +222,9 @@ class TaskTemplateService {
         throw TemplateStateConflict();
       }
       final source = await _revision(tx, id, template.publishedId!);
+      if (source.content.knowledgeGuidance != null) {
+        _knowledge.requireRead(actor);
+      }
       await _repository.addRevision(
         tx,
         id,
@@ -228,6 +274,10 @@ class TaskTemplateService {
     return _run(principal, (tx, actor) async {
       final template = await _get(tx, id);
       final revision = await _revision(tx, id, revisionId);
+      if (revision.content.knowledgeGuidance != null ||
+          content?.knowledgeGuidance != null) {
+        _knowledge.requireRead(actor);
+      }
       if (publish && revision.repeatsPublication(version)) {
         return _result(tx, id, revisionId);
       }
@@ -236,16 +286,33 @@ class TaskTemplateService {
       final fields = <String>[];
       if (publish) {
         revision.requirePublishable();
+        if (revision.content.knowledgeGuidance case final pin?) {
+          await _knowledge.validatePublication(tx, actor, pin);
+        }
         await _repository.publish(tx, revision, actor.id, version);
       } else {
+        if (content!.knowledgeGuidance case final pin?) {
+          if (!pin.sameAs(revision.content.knowledgeGuidance)) {
+            await _knowledge.validatePublication(
+              tx,
+              actor,
+              pin,
+              selection: true,
+            );
+          }
+        }
         if (jsonEncode(revision.content.toJson()) ==
-            jsonEncode(content!.toJson())) {
+            jsonEncode(content.toJson())) {
           return _result(tx, id, revisionId);
         }
         if (revision.content.title != content.title) fields.add('title');
         if (jsonEncode(revision.content.toJson()['steps']) !=
             jsonEncode(content.toJson()['steps'])) {
           fields.add('steps');
+        }
+        if (jsonEncode(revision.content.knowledgeGuidance?.toJson()) !=
+            jsonEncode(content.knowledgeGuidance?.toJson())) {
+          fields.add('knowledgeGuidance');
         }
         await _repository.edit(tx, revision, content);
       }
@@ -281,6 +348,10 @@ class TaskTemplateService {
       'revisionNumber': revision.view.number,
       'version': template.version,
       'status': revision.view.status,
+      if (revision.content.knowledgeGuidance case final pin?) ...{
+        'knowledgeArticleId': pin.articleId,
+        'knowledgeRevisionId': pin.revisionId,
+      },
       if (fields.isNotEmpty) 'changedFields': fields,
     },
   );

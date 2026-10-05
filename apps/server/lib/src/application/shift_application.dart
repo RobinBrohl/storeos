@@ -10,6 +10,7 @@ import '../platform/platform_input.dart';
 import '../tasks/task_instance_service.dart';
 import '../tasks/task_execution_service.dart';
 import '../workforce/workforce_service.dart';
+import '../knowledge/knowledge_guidance_port.dart';
 
 /// Coordinates public ports, authorization and one shared local transaction.
 class ShiftApplication {
@@ -19,7 +20,8 @@ class ShiftApplication {
       _execution = TaskExecutionService(database),
       _people = PeopleService(database),
       _links = EmployeeLinks(database),
-      _organization = OrganizationService(database);
+      _organization = OrganizationService(database),
+      _knowledge = KnowledgeGuidancePort(database);
   final PlatformDatabase database;
   final WorkforceService _workforce;
   final TaskInstanceService _tasks;
@@ -27,6 +29,7 @@ class ShiftApplication {
   final PeopleService _people;
   final EmployeeLinks _links;
   final OrganizationService _organization;
+  final KnowledgeGuidancePort _knowledge;
   Future<Map<String, dynamic>> _run(
     SessionPrincipal p,
     String permission,
@@ -45,6 +48,30 @@ class ShiftApplication {
         422,
         'shift_not_publishable',
         'Select tasks and a shift that has not ended.',
+      );
+    } on ServerException catch (error) {
+      if ((error.code == '23505' && error.constraintName == 'shifts_pkey') ||
+          (error.code == '23P01' &&
+              error.constraintName == 'shifts_published_no_overlap')) {
+        throw const PlatformFailure(
+          409,
+          'shift_conflict',
+          'Shift state changed.',
+        );
+      }
+      final unavailable =
+          error.code?.startsWith('08') == true ||
+          const {
+            '42501',
+            '55P03',
+            '57014',
+            '57P01',
+            '53300',
+          }.contains(error.code);
+      throw PlatformFailure(
+        unavailable ? 503 : 500,
+        unavailable ? 'database_unavailable' : 'internal_error',
+        'Work database operation failed.',
       );
     }
   }
@@ -210,6 +237,13 @@ class ShiftApplication {
       _require(actor, 'tasks.instances.read');
       final shift = await _workforce.get(tx, id);
       if (await _workforce.checkPublication(tx, id, version)) {
+        final tasks = await _tasks.forShifts(tx, [id]);
+        for (final task in tasks) {
+          final stored = await _tasks.detail(tx, id, task.id);
+          if (stored.content?.knowledgeGuidance != null) {
+            _knowledge.requireRead(actor);
+          }
+        }
         return _detail(tx, shift);
       }
       await _eligible(tx, shift.locationId, shift.draft);
@@ -375,6 +409,38 @@ class ShiftApplication {
       final employee = await _self(tx, actor);
       return _execution.running(tx, employee, actor.locationId, cursor);
     });
+  }
+
+  Future<Map<String, dynamic>> knowledge(
+    SessionPrincipal p,
+    String shiftId,
+    String taskId, {
+    bool self = true,
+  }) {
+    shiftId = requireUuid({'id': shiftId}, 'id');
+    taskId = requireUuid({'id': taskId}, 'id');
+    return _run(
+      p,
+      self ? 'workforce.shifts.self.read' : 'workforce.shifts.manage',
+      (tx, actor) async {
+        _require(
+          actor,
+          self ? 'tasks.instances.self.read' : 'tasks.instances.read',
+        );
+        _knowledge.requireRead(actor);
+        await _visible(tx, actor, shiftId, self);
+        final task = await _tasks.detail(tx, shiftId, taskId);
+        final pin = task.content?.knowledgeGuidance;
+        if (pin == null) {
+          throw const PlatformFailure(
+            404,
+            'not_found',
+            'Task has no assigned instruction.',
+          );
+        }
+        return (await _knowledge.readTaskPin(tx, actor, task.id, pin)).toJson();
+      },
+    );
   }
 
   Future<Map<String, dynamic>> execution(

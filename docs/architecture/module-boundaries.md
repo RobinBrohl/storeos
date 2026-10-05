@@ -1,7 +1,9 @@
 # Module boundaries
 
 P4.4 Local Planogram Execution and P4.5 Approved Operational Knowledge are DONE/CLOSED
-at current source baseline `93072a4`; future boundaries are
+at P4.6 starting source baseline `eef2f1e`. P4.6 Task-to-Knowledge guidance is
+implemented locally, with independent review remediation complete / targeted review
+pending and changed-commit CI pending; future boundaries are
 explicitly labeled below. [Status](../roadmap/status.md) owns delivery and
 [vision](../vision.md) owns product scope. A logical boundary does not require
 a separate process, Dart package or database schema.
@@ -96,7 +98,7 @@ Public ports should express product dependencies without circular Domain ownersh
 
 | Future owner | Intended data/responsibility | Dependencies through contracts; excluded ownership |
 | --- | --- | --- |
-| Knowledge extensions | Suggestions, separate review and Task guidance integration beyond P4.5 | A future approved contract may let Tasks pin revisions; current discovery/read never changes execution history. |
+| Knowledge extensions | Suggestions and separate review beyond P4.5; concrete Task guidance in local P4.6 | [ADR 0020](../adr/0020-task-knowledge-guidance.md) adds a Knowledge-owned exact-pin port. Tasks establish visibility first; Knowledge never queries Tasks and Task repositories never query Knowledge. Review/CI pending. Reads never change execution history. |
 | Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
 | Production / Recipes | Optional Article-linked Recipe revisions, ingredients/yield/instructions, production/batch evidence | Inventory owns Article identity; Stock applies physical effects; cost source and consumption model undecided. No duplicate manufactured product identity. |
 | Purchasing / Receiving | Suppliers, orders, receipt/source cost evidence | Article/unit references; authorized Stock commands for accepted physical receipts. Not Stock ledger owner or invented valuation. |

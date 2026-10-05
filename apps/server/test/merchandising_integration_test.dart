@@ -1177,7 +1177,11 @@ void main() {
             schemaName: f.schema,
             runtimeDatabaseUser: f.runtimeUser,
           ).apply(),
-          ['0016_local_planograms', '0017_approved_operational_knowledge'],
+          [
+            '0016_local_planograms',
+            '0017_approved_operational_knowledge',
+            '0018_task_knowledge_guidance',
+          ],
         );
         await f.assertLedgerInvariant(level.id);
         await fixture(f);

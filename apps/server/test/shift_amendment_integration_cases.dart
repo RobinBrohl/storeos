@@ -922,7 +922,8 @@ void shiftAmendmentTests() {
               )).single.first
               as String,
           (await f.owner.execute(
-                'SELECT jsonb_agg(to_jsonb(t) ORDER BY id)::text '
+                'SELECT jsonb_agg((to_jsonb(t)-ARRAY[\'knowledge_article_id\','
+                '\'knowledge_revision_id\',\'knowledge_revision_state\']) ORDER BY id)::text '
                 'FROM "${f.schema}".task_instances t',
               )).single.first
               as String,
@@ -946,9 +947,11 @@ void shiftAmendmentTests() {
           '0015_manual_stock',
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
+          '0018_task_knowledge_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
+        await _expectLegacyGuidanceNull(f);
 
         final readPristine =
             (await f.call('GET', '/shifts/${pristine.id}')).body['shift']

@@ -323,6 +323,50 @@ class _ShiftSectionState extends State<ShiftSection> {
           if (c.task?.content != null) ...[
             const Divider(),
             Text(c.task!.title, style: Theme.of(context).textTheme.titleLarge),
+            if (c.task!.content!.knowledgeGuidance != null) ...[
+              TextButton(
+                key: const Key('assigned-instruction'),
+                onPressed: c.busy ? null : c.openInstruction,
+                child: const Text('Zugewiesene Anleitung'),
+              ),
+              if (c.instructionOpen)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (c.busy) const LinearProgressIndicator(),
+                        if (c.instructionError case final error?)
+                          Text(error, key: const Key('instruction-error')),
+                        if (c.taskKnowledge case final instruction?) ...[
+                          Text(instruction.title),
+                          Text(
+                            'Zugewiesene Revision ${instruction.revisionNumber} · ${instruction.publishedAt.toLocal()}',
+                          ),
+                          if (instruction.superseded)
+                            const Text(
+                              'Historische Revision · eine neuere Anleitung ist veröffentlicht.',
+                            ),
+                          if (instruction.articleRetired)
+                            const Text(
+                              'Artikel stillgelegt · die zugewiesene Revision bleibt für diese Aufgabe erhalten.',
+                            ),
+                          SelectableText(
+                            instruction.body,
+                            key: const Key('task-instruction-body'),
+                          ),
+                        ],
+                        TextButton(
+                          key: const Key('return-to-task'),
+                          onPressed: c.busy ? null : c.closeInstruction,
+                          child: const Text('Zurück zur Aufgabe'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
             if (c.execution != null)
               Text(
                 '${c.taskStatus(c.execution!.status)} · ${c.execution!.results.length}/${c.task!.content!.steps.length} bestätigt',
@@ -582,10 +626,16 @@ class _ShiftSectionState extends State<ShiftSection> {
     const Text(
       'Ausgewählte Revisionen · maximal zehn · Reihenfolge ist Aufgabenreihenfolge',
     ),
+    TextButton(
+      onPressed: c.busy || c.selections.isEmpty ? null : c.reviewGuidance,
+      child: const Text('Anleitungsreferenzen prüfen'),
+    ),
     for (var i = 0; i < c.selections.length; i++)
       ListTile(
         title: Text('Vorlage ${c.selections[i].templateId}'),
-        subtitle: Text('Revision ${c.selections[i].revisionId}'),
+        subtitle: Text(
+          'Revision ${c.selections[i].revisionId}${c.guidanceIdentity(c.selections[i].revisionId)}',
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

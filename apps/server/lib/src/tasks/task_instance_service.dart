@@ -3,15 +3,18 @@ import 'package:storeos_api_contracts/api_contracts.dart';
 import '../platform/platform_database.dart';
 import 'task_template_repository.dart';
 import 'task_instance_repository.dart';
+import '../knowledge/knowledge_guidance_port.dart';
 
 /// Tasks owns selection validation and snapshots; no workforce table access.
 class TaskInstanceService {
   TaskInstanceService(this.database)
     : _templates = TaskTemplateRepository(database.schema, database.companyId),
-      _instances = TaskInstanceRepository(database.schema, database.companyId);
+      _instances = TaskInstanceRepository(database.schema, database.companyId),
+      _knowledge = KnowledgeGuidancePort(database);
   final PlatformDatabase database;
   final TaskTemplateRepository _templates;
   final TaskInstanceRepository _instances;
+  final KnowledgeGuidancePort _knowledge;
   Future<List<TaskTemplateContent>> validateSelections(
     TxSession tx,
     String location,
@@ -46,6 +49,13 @@ class TaskInstanceService {
     required List<ShiftTemplateSelection> selections,
   }) async {
     final contents = await validateSelections(tx, locationId, selections);
+    // Validate the complete selection before materialization, within the same
+    // authorized Company transaction that serializes Knowledge retirement.
+    for (final content in contents) {
+      if (content.knowledgeGuidance case final pin?) {
+        await _knowledge.validatePublication(tx, actor, pin);
+      }
+    }
     for (var i = 0; i < selections.length; i++) {
       final id = newUuid();
       await _instances.insert(
@@ -71,6 +81,10 @@ class TaskInstanceService {
           'revisionId': selections[i].revisionId,
           'version': 1,
           'status': 'open',
+          if (contents[i].knowledgeGuidance case final pin?) ...{
+            'knowledgeArticleId': pin.articleId,
+            'knowledgeRevisionId': pin.revisionId,
+          },
         },
       );
     }

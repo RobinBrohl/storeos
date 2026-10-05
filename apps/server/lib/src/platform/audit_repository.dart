@@ -43,6 +43,8 @@ class AuditRepository {
       'accountId',
       'employeeId',
       'revisionId',
+      'knowledgeArticleId',
+      'knowledgeRevisionId',
       'revisionIds',
       'shiftId',
       'sku',

@@ -53,12 +53,46 @@ SQL-Invarianten verhindern Bestätigungen ohne passenden erfolgreichen Versuch s
 verwaiste Versuche. Audit und Receipt werden in derselben Transaktion geschrieben.
 Werte sind nur über die berechtigte Versuchshistorie verfügbar, nicht im Audit/Log.
 
-## Future Wiki and Planogram guidance
+## Assigned Knowledge guidance (P4.6)
 
-Tasks may pin approved Wiki revisions and assigned published Planogram revisions
-as guidance. Knowledge/Merchandising own publication, assignment and content;
+P4.6 is implemented locally, with independent review remediation complete /
+targeted review pending and changed-commit CI pending.
+Task content schema 3 retains confirmation/numeric semantics and adds required,
+nullable `knowledgeGuidance`, containing exactly `articleId` and `revisionId`.
+Schemas 1/2 and their persisted snapshots/receipts remain unchanged.
+
+Draft selection captures the current approved revision; publication freezes the
+explicit selection. Template and Shift publication validate same-Company published
+revision and active Article atomically. A newer publication leaves retained older
+published pins valid while the Article stays active. Task snapshots retain identity
+without copying Knowledge title/body. Generated columns/composite FKs and the
+published Template correspondence guard protect durable identity, never Article activity.
+
+Create/replacement selection invalidity returns 422 `guidance_selection_unavailable`.
+Fresh Template/Shift publication of an unusable retained pin returns 422
+`guidance_unavailable`. Unchanged retained editing/cloning and committed replay do
+not perform fresh selection; committed replay returns neither availability error.
+
+Tasks/Workforce first authorize the visible Shift/Task, then use the Knowledge-owned
+port to read its stored pin. Contextual employee reads require current session,
+active Employee link, configured execution Location, own visible Task and Knowledge
+read. Manager reads require existing authorized Task scope and Knowledge read.
+Clients cannot supply a historical revision. Current supersession/retirement indicators
+are separate from exact frozen instruction content.
+
+Retirement is not emergency withdrawal: it blocks fresh publication, while already
+published Tasks remain readable and executable. Exact publication replay returns
+committed evidence after fresh authorization. The plain-text instruction panel creates
+no acknowledgment or Task mutation and returns to the same execution state.
+See [ADR 0020](../adr/0020-task-knowledge-guidance.md) and
+[P4.6 evidence](../development/phase-4-6-task-knowledge-guidance.md).
+
+## Future guidance extensions
+
+Assigned published Planogram revision guidance remains a separate future contract.
+Knowledge/Merchandising own publication, assignment and content;
 Tasks owns execution, feedback/evidence linkage and permissions. Employee suggestions
 or deviations require authorized review; they do not silently republish instructions.
 Live Article/Assortment/Stock drill-down is a separate authorized query with freshness,
 not a replacement of the pinned execution content. Print/PDF identifies the selected
-revision. None of these content integrations exists in current task schema.
+revision. P4.6 adds no Planogram guidance, feedback workflow or live drill-down integration.

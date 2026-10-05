@@ -194,6 +194,7 @@ void cancellationTests() {
           'GRANT ${entry.value} ON "${f.schema}".${entry.key} TO "${f.runtimeUser}"',
         );
         expect(await snapshot(), before);
+        await _expectLegacyGuidanceNull(f);
       }
       final race = await Future.wait([
         f.call('POST', '$admin/cancel', body: command, expected: null),
@@ -547,7 +548,9 @@ void cancellationTests() {
             'task_blockings',
           ])
             (await f.owner.execute(
-                  'SELECT jsonb_agg(${table == 'task_blockings' ? "to_jsonb(t)-'resolution_kind'-'numeric_attempt_id'" : "to_jsonb(t)-'numeric_attempt_id'-'cancelled_at'-'cancelled_by'"} ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
+                  'SELECT jsonb_agg((${table == 'task_blockings' ? "to_jsonb(t)-'resolution_kind'-'numeric_attempt_id'" : "to_jsonb(t)-'numeric_attempt_id'-'cancelled_at'-'cancelled_by'"}'
+                  '-ARRAY[\'knowledge_article_id\',\'knowledge_revision_id\','
+                  '\'knowledge_revision_state\']) ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
                 )).single.first
                 as String,
         ];
@@ -568,9 +571,11 @@ void cancellationTests() {
           '0015_manual_stock',
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
+          '0018_task_knowledge_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
+        await _expectLegacyGuidanceNull(f);
         final history = (await f.call(
           'GET',
           '${p.root}/blockings',

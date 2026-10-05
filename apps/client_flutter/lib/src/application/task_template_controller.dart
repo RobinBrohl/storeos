@@ -23,11 +23,16 @@ class TaskTemplateController extends ChangeNotifier {
   String? nextCursor, revisionCursor, error, notice;
   String title = '';
   List<TemplateStep> steps = [];
+  KnowledgeGuidance? knowledgeGuidance;
+  PublishedWikiDto? guidancePreview;
+  List<PublishedWikiDto>? guidanceChoices;
+  String? guidanceCursor;
+  int _contentSchema = 1;
   bool busy = false, confirmed = false, conflict = false;
   int editorGeneration = 0, _epoch = 0;
   bool _disposed = false;
-  String? _userId,
-      _createId,
+  Object? _identity;
+  String? _createId,
       _createRevisionId,
       _createKey,
       _newRevisionId,
@@ -58,9 +63,11 @@ class TaskTemplateController extends ChangeNotifier {
       ? 'Zuerst unter Organisation einen Standort einrichten.'
       : null;
   Map<String, dynamic> _editorJson() => {
-    'schemaVersion': steps.any((s) => s.type == 'number')
+    'schemaVersion': _contentSchema == 3
+        ? 3
+        : steps.any((s) => s.type == 'number')
         ? 2
-        : revision?.content?.schemaVersion ?? 1,
+        : _contentSchema,
     'title': title,
     'steps': steps
         .map(
@@ -73,14 +80,15 @@ class TaskTemplateController extends ChangeNotifier {
           },
         )
         .toList(),
+    if (_contentSchema == 3) 'knowledgeGuidance': knowledgeGuidance?.toJson(),
   };
   void _notify() {
     if (!_disposed) notifyListeners();
   }
 
   void _sessionChanged() {
-    if (_userId == session.user?.id) return;
-    _userId = session.user?.id;
+    if (identical(_identity, session.sessionIdentity)) return;
+    _identity = session.sessionIdentity;
     _epoch++;
     templates = null;
     nextCursor = null;
@@ -102,11 +110,19 @@ class TaskTemplateController extends ChangeNotifier {
     conflict = false;
     title = '';
     steps = [];
+    knowledgeGuidance = null;
+    guidancePreview = null;
+    guidanceChoices = null;
+    guidanceCursor = null;
+    _contentSchema = 1;
     editorGeneration++;
   }
 
   bool _current(int epoch) =>
-      !_disposed && epoch == _epoch && session.isAuthenticated;
+      !_disposed &&
+      epoch == _epoch &&
+      session.isAuthenticated &&
+      identical(_identity, session.sessionIdentity);
   void _guard(int epoch) {
     if (!_current(epoch)) {
       throw const StoreApiException(
@@ -259,6 +275,11 @@ class TaskTemplateController extends ChangeNotifier {
   void _resetEditor() {
     title = revision!.content!.title;
     steps = [...revision!.content!.steps];
+    _contentSchema = revision!.content!.schemaVersion;
+    knowledgeGuidance = revision!.content!.knowledgeGuidance;
+    guidancePreview = null;
+    guidanceChoices = null;
+    guidanceCursor = null;
     conflict = false;
     editorGeneration++;
   }
@@ -278,6 +299,77 @@ class TaskTemplateController extends ChangeNotifier {
       _notify();
     }
   }
+
+  Future<void> loadGuidance({bool more = false}) => _run((epoch) async {
+    if (!platform.allows('knowledge.articles.read') ||
+        revision?.isDraft != true ||
+        conflict) {
+      return;
+    }
+    final raw = await _get(
+      epoch,
+      '/knowledge/articles',
+      after: more ? guidanceCursor : null,
+    );
+    guidanceChoices = [
+      if (more) ...guidanceChoices ?? [],
+      ...(raw['items'] as List).map(
+        (item) => PublishedWikiDto.fromJson(item as Map<String, dynamic>),
+      ),
+    ];
+    guidanceCursor = raw['nextCursor'] as String?;
+  });
+
+  void selectGuidance(PublishedWikiDto item) {
+    if (!editable ||
+        !_current(_epoch) ||
+        !(guidanceChoices?.contains(item) ?? false)) {
+      return;
+    }
+    knowledgeGuidance = KnowledgeGuidance.fromJson({
+      'articleId': item.articleId,
+      'revisionId': item.revisionId,
+    });
+    _contentSchema = 3;
+    guidancePreview = item;
+    guidanceChoices = null;
+    guidanceCursor = null;
+    notice = null;
+    _notify();
+  }
+
+  void clearGuidance() {
+    if (!editable || !_current(_epoch)) return;
+    knowledgeGuidance = null;
+    guidancePreview = null;
+    guidanceChoices = null;
+    _notify();
+  }
+
+  Future<void> previewGuidance() => _run((epoch) async {
+    final pin = knowledgeGuidance;
+    if (pin == null) return;
+    guidancePreview = null;
+    final revision = WikiRevisionDto.fromJson(
+      await _get(
+        epoch,
+        '/knowledge/manage/articles/${pin.articleId}/revisions/${pin.revisionId}',
+      ),
+    );
+    if (revision.articleId != pin.articleId ||
+        revision.id != pin.revisionId ||
+        revision.status != 'published') {
+      throw const FormatException();
+    }
+    guidancePreview = PublishedWikiDto.fromJson({
+      'articleId': pin.articleId,
+      'revisionId': pin.revisionId,
+      'revisionNumber': revision.revisionNumber,
+      'title': revision.content.title,
+      'body': revision.content.body,
+      'publishedAt': revision.publishedAt!,
+    });
+  });
 
   void setInstruction(String id, String value) {
     if (!editable) return;
@@ -486,6 +578,10 @@ class TaskTemplateController extends ChangeNotifier {
     FormatException(:final message) when message.isNotEmpty => message,
     StoreApiException(code: 'empty_template') =>
       'Für die Freigabe ist mindestens ein vollständiger Schritt erforderlich.',
+    StoreApiException(code: 'guidance_selection_unavailable') =>
+      'Die ausgewählte Anleitung ist für diesen Entwurf nicht verfügbar. Bitte eine aktuelle freigegebene Revision auswählen; Ihre Eingaben bleiben erhalten.',
+    StoreApiException(code: 'guidance_unavailable') =>
+      'Die zugewiesene Anleitung ist für neue Arbeit nicht mehr verfügbar. Bitte entfernen oder ersetzen; die Revision wird nicht automatisch gewechselt.',
     StoreApiException(statusCode: 404) =>
       'Die Vorlage oder Revision ist nicht verfügbar.',
     StoreApiException(:final message) => message,

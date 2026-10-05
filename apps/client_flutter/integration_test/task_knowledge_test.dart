@@ -1,0 +1,286 @@
+import 'dart:js_interop';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:storeos_client/main.dart' as app;
+import 'knowledge_test.dart' show login, section, wait;
+
+@JS('eval')
+external bool browserPredicate(String expression);
+
+const literal =
+    '<script>window.storeosGuidanceInjected=true</script>\n<a href="https://invalid.example/p46">literal link</a>\n<img src="https://invalid.example/p46" onerror="window.storeosGuidanceInjected=true">\n# Markdown **plain** [link](https://invalid.example/p46)';
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  testWidgets(
+    'Chrome manager authoring and employee historical plain-text execution',
+    (tester) async {
+      app.main();
+      await login(tester, 'test_admin');
+      await section(tester, 'Wissen');
+      await tap(tester, find.text('Verwalten'));
+      await tap(tester, find.byKey(const Key('knowledge-create')));
+      await wait(
+        tester,
+        () => find.byKey(const Key('knowledge-title')).evaluate().isNotEmpty,
+      );
+      await tester.enterText(
+        find.byKey(const Key('knowledge-title')),
+        'Browser instruction v1',
+      );
+      await tester.enterText(find.byKey(const Key('knowledge-body')), literal);
+      await tap(tester, find.byKey(const Key('knowledge-save')));
+      await wait(
+        tester,
+        () => find.text('Gespeicherter Entwurf.').evaluate().isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('knowledge-publish')));
+      await wait(
+        tester,
+        () =>
+            find.byKey(const Key('knowledge-new-draft')).evaluate().isNotEmpty,
+      );
+      await section(tester, 'Arbeitsvorlagen');
+      await tap(tester, find.byKey(const Key('create-template')));
+      await wait(
+        tester,
+        () => find.byKey(const Key('new-template-title')).evaluate().isNotEmpty,
+      );
+      await tester.enterText(
+        find.byKey(const Key('new-template-title')),
+        'Browser guided work',
+      );
+      await tap(tester, find.text('Anlegen'));
+      await wait(
+        tester,
+        () => find.text('Revision 1 · Entwurf').evaluate().isNotEmpty,
+      );
+      await tap(tester, find.text('Schritt hinzufügen'));
+      await enter(tester, prefix('instruction-').first, 'Confirm normal work');
+      await tap(tester, find.text('Zahlenschritt hinzufügen'));
+      await enter(tester, prefix('instruction-').last, 'Record normal number');
+      await enter(tester, prefix('unit-'), 'C');
+      await enter(tester, prefix('minimum-'), '1');
+      await enter(tester, prefix('maximum-'), '5');
+      await tap(tester, find.byKey(const Key('choose-guidance')));
+      await tap(
+        tester,
+        find.widgetWithText(ListTile, 'Browser instruction v1'),
+      );
+      await tap(tester, find.text('Zugewiesene Revision ansehen'));
+      await wait(
+        tester,
+        () => find
+            .byKey(const Key('template-guidance-body'))
+            .evaluate()
+            .isNotEmpty,
+      );
+      expect(
+        tester
+            .widget<SelectableText>(
+              find.byKey(const Key('template-guidance-body')),
+            )
+            .data,
+        literal,
+      );
+      await tap(tester, find.byKey(const Key('save-template')));
+      await show(tester, find.text('Entwurf gespeichert und bestätigt.'));
+      await wait(
+        tester,
+        () => find
+            .text('Entwurf gespeichert und bestätigt.')
+            .evaluate()
+            .isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('publish-template')));
+      await tap(tester, find.text('Bestätigen'));
+      await show(tester, find.text('Revision 1 · Freigegeben'));
+      await wait(
+        tester,
+        () => find.text('Revision 1 · Freigegeben').evaluate().isNotEmpty,
+      );
+      await section(tester, 'Schichten');
+      await tap(tester, find.byKey(const Key('new-shift')));
+      await tap(tester, find.byType(DropdownButtonFormField<String>));
+      await tap(tester, find.text('Guided worker').last);
+      final now = DateTime.now().toUtc();
+      await enter(tester, prefix('start-'), now.toIso8601String());
+      await enter(
+        tester,
+        prefix('end-'),
+        now.add(const Duration(hours: 1)).toIso8601String(),
+      );
+      await tap(tester, find.text('Revision wählen: Browser guided work'));
+      await tap(
+        tester,
+        find.text('Revision 1: Browser guided work hinzufügen'),
+      );
+      await tap(tester, find.byKey(const Key('save-shift')));
+      await show(tester, find.byKey(const Key('publish-shift')));
+      await wait(
+        tester,
+        () => find.byKey(const Key('publish-shift')).evaluate().isNotEmpty,
+      );
+      await tap(tester, find.text('Anleitungsreferenzen prüfen'));
+      await wait(
+        tester,
+        () => find.textContaining('WikiArticle').evaluate().isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('publish-shift')));
+      await tap(tester, find.text('Bestätigen'));
+      await show(tester, find.text('Schicht · Veröffentlicht'));
+      await wait(
+        tester,
+        () => find.text('Schicht · Veröffentlicht').evaluate().isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('logout-button')));
+      await login(tester, 'guided_worker');
+      await section(tester, 'Meine Arbeit');
+      await tap(tester, prefix('shift-').first);
+      await tap(tester, prefix('task-').first);
+      await tap(tester, find.byKey(const Key('assigned-instruction')));
+      await verifyLiteral(tester);
+      await tap(tester, find.byKey(const Key('return-to-task')));
+      await tap(tester, find.byKey(const Key('start-task')));
+      await show(tester, find.byKey(const Key('confirm-step')));
+      await wait(
+        tester,
+        () => find.byKey(const Key('confirm-step')).evaluate().isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('confirm-step')));
+      await show(tester, find.byKey(const Key('record-number')));
+      await wait(
+        tester,
+        () => find.byKey(const Key('record-number')).evaluate().isNotEmpty,
+      );
+      await enter(tester, prefix('number-'), '3');
+      await tap(tester, find.byKey(const Key('record-number')));
+      await show(tester, find.byKey(const Key('complete-task')));
+      await wait(
+        tester,
+        () => find.byKey(const Key('complete-task')).evaluate().isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('complete-task')));
+      await show(tester, find.byKey(const Key('execution-status')));
+      await wait(
+        tester,
+        () =>
+            tester
+                .widget<Text>(find.byKey(const Key('execution-status')))
+                .data ==
+            'Abgeschlossen · 2/2 bestätigt',
+      );
+      await tap(tester, find.byKey(const Key('logout-button')));
+      await login(tester, 'test_admin');
+      await section(tester, 'Wissen');
+      await tap(tester, find.text('Verwalten'));
+      await tap(
+        tester,
+        find.widgetWithText(ListTile, 'Browser instruction v1'),
+      );
+      await tap(tester, find.byKey(const Key('knowledge-new-draft')));
+      await wait(
+        tester,
+        () => find.byKey(const Key('knowledge-body')).evaluate().isNotEmpty,
+      );
+      await tester.enterText(
+        find.byKey(const Key('knowledge-body')),
+        'Browser replacement v2',
+      );
+      await tap(tester, find.byKey(const Key('knowledge-save')));
+      await wait(
+        tester,
+        () => find.text('Gespeicherter Entwurf.').evaluate().isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('knowledge-publish')));
+      await wait(
+        tester,
+        () =>
+            find.byKey(const Key('knowledge-new-draft')).evaluate().isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('knowledge-retire')));
+      await show(tester, find.text('RETIRED ARTICLE'));
+      await wait(
+        tester,
+        () => find.text('RETIRED ARTICLE').evaluate().isNotEmpty,
+      );
+      await tap(tester, find.byKey(const Key('logout-button')));
+      await login(tester, 'guided_worker');
+      await section(tester, 'Meine Arbeit');
+      await tap(tester, prefix('shift-').first);
+      await tap(tester, prefix('task-').first);
+      await tap(tester, find.byKey(const Key('assigned-instruction')));
+      await verifyLiteral(tester);
+      expect(find.textContaining('Historische Revision'), findsOneWidget);
+      expect(find.textContaining('Artikel stillgelegt'), findsOneWidget);
+      expect(find.text('Browser replacement v2'), findsNothing);
+    },
+  );
+}
+
+Finder prefix(String value) => find.byWidgetPredicate(
+  (widget) =>
+      widget.key is ValueKey<String> &&
+      (widget.key as ValueKey<String>).value.startsWith(value),
+);
+Future<void> enter(WidgetTester tester, Finder finder, String text) async {
+  if (finder.evaluate().isEmpty) await tester.scrollUntilVisible(finder, 200);
+  await tester.ensureVisible(finder);
+  await tester.enterText(finder, text);
+  await tester.pump();
+}
+
+Future<void> tap(WidgetTester tester, Finder target) async {
+  await show(tester, target);
+  await tester.tap(target);
+  await tester.pump();
+}
+
+Future<void> show(WidgetTester tester, Finder target) async {
+  await wait(
+    tester,
+    () => find.byType(LinearProgressIndicator).evaluate().isEmpty,
+  );
+  await tester.pumpAndSettle();
+  if (target.evaluate().isEmpty) {
+    final scroll = find
+        .descendant(
+          of: find.byType(ListView).last,
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    tester.state<ScrollableState>(scroll).position.jumpTo(0);
+    await tester.pump();
+    await tester.scrollUntilVisible(target, 150, scrollable: scroll);
+  }
+  await wait(tester, () => target.evaluate().isNotEmpty);
+  await tester.ensureVisible(target);
+  await tester.pumpAndSettle();
+}
+
+Future<void> verifyLiteral(WidgetTester tester) async {
+  await wait(
+    tester,
+    () => find.byKey(const Key('task-instruction-body')).evaluate().isNotEmpty,
+  );
+  await tester.ensureVisible(find.byKey(const Key('task-instruction-body')));
+  expect(
+    tester
+        .widget<SelectableText>(find.byKey(const Key('task-instruction-body')))
+        .data,
+    literal,
+  );
+  expect(browserPredicate('globalThis.storeosGuidanceInjected !== true'), true);
+  expect(
+    browserPredicate(
+      'document.querySelectorAll("a[href*=\\"invalid.example/p46\\"], img[src*=\\"invalid.example/p46\\"], img[onerror], script").length === Array.from(document.scripts).filter(s => !s.textContent.includes("storeosGuidanceInjected")).length',
+    ),
+    true,
+  );
+  expect(
+    browserPredicate(
+      '!Array.from(document.scripts).some(s => s.textContent.includes("storeosGuidanceInjected"))',
+    ),
+    true,
+  );
+}

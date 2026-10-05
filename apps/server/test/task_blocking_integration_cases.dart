@@ -596,7 +596,7 @@ void blockingTests() {
         Future<List<String>> snapshot() async => [
           for (final table in ['task_instances', 'task_execution_commands'])
             (await f.owner.execute(
-                  'SELECT jsonb_agg(${table == 'task_instances' ? "to_jsonb(t)-ARRAY['cancelled_at','cancelled_by']" : 'to_jsonb(t)'} ORDER BY ${table == 'task_instances' ? 'id' : 'operation_id'})::text FROM "${f.schema}".$table t',
+                  'SELECT jsonb_agg(${table == 'task_instances' ? "to_jsonb(t)-ARRAY['cancelled_at','cancelled_by','knowledge_article_id','knowledge_revision_id','knowledge_revision_state']" : 'to_jsonb(t)'} ORDER BY ${table == 'task_instances' ? 'id' : 'operation_id'})::text FROM "${f.schema}".$table t',
                 )).single.first
                 as String,
         ];
@@ -618,9 +618,16 @@ void blockingTests() {
           '0015_manual_stock',
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
+          '0018_task_knowledge_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
+        expect(
+          (await f.owner.execute(
+            'SELECT count(*) FROM "${f.schema}".task_instances WHERE knowledge_article_id IS NOT NULL OR knowledge_revision_id IS NOT NULL OR knowledge_revision_state IS NOT NULL',
+          )).single.first,
+          0,
+        );
         expect(
           (await f.owner.execute(
             'SELECT accepted_version FROM "${f.schema}".task_step_results',

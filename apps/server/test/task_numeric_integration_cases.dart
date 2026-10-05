@@ -103,7 +103,9 @@ void numericTests() {
             'task_execution_commands',
           ])
             (await f.owner.execute(
-              'SELECT jsonb_agg(${table == 'task_instances' ? "to_jsonb(t)-'numeric_attempt_id'-'cancelled_at'-'cancelled_by'" : "to_jsonb(t)-'numeric_attempt_id'"} ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
+              'SELECT jsonb_agg((${table == 'task_instances' ? "to_jsonb(t)-'numeric_attempt_id'-'cancelled_at'-'cancelled_by'" : "to_jsonb(t)-'numeric_attempt_id'"}'
+              '-ARRAY[\'knowledge_article_id\',\'knowledge_revision_id\','
+              '\'knowledge_revision_state\']) ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
             )).single.first,
         ];
         final before = await snapshot();
@@ -122,9 +124,11 @@ void numericTests() {
           '0015_manual_stock',
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
+          '0018_task_knowledge_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
+        await _expectLegacyGuidanceNull(f);
         expect(
           (await f.call(
             'POST',

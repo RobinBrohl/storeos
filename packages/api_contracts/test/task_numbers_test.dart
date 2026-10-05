@@ -135,7 +135,7 @@ void main() {
       );
       expect(
         schemas['TaskTemplateContent']['properties']['schemaVersion']['enum'],
-        [1, 2],
+        [1, 2, 3],
       );
     },
   );

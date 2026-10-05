@@ -217,6 +217,65 @@ class _TaskTemplateSectionState extends State<TaskTemplateSection> {
                   onChanged: c.setTitle,
                 ),
                 const SizedBox(height: 16),
+                const Text('Freigegebene Anleitung (optional)'),
+                if (c.knowledgeGuidance case final pin?) ...[
+                  Text(
+                    'WikiArticle ${pin.articleId} · WikiRevision ${pin.revisionId}',
+                    key: const Key('template-guidance-pin'),
+                  ),
+                  TextButton(
+                    onPressed: c.busy ? null : c.previewGuidance,
+                    child: const Text('Zugewiesene Revision ansehen'),
+                  ),
+                  if (c.editable)
+                    TextButton(
+                      onPressed: c.clearGuidance,
+                      child: const Text('Anleitung entfernen'),
+                    ),
+                ],
+                if (c.editable)
+                  TextButton(
+                    key: const Key('choose-guidance'),
+                    onPressed: c.loadGuidance,
+                    child: const Text(
+                      'Freigegebene Anleitung wählen / ersetzen',
+                    ),
+                  ),
+                for (final item in c.guidanceChoices ?? [])
+                  ListTile(
+                    title: Text(item.title),
+                    subtitle: Text(
+                      'Revision ${item.revisionNumber} · ${item.publishedAt}',
+                    ),
+                    onTap: c.editable ? () => c.selectGuidance(item) : null,
+                  ),
+                if (c.guidanceChoices?.isEmpty == true)
+                  const Text('Keine freigegebenen Anleitungen verfügbar.'),
+                if (c.guidanceCursor != null)
+                  TextButton(
+                    onPressed: c.busy ? null : () => c.loadGuidance(more: true),
+                    child: const Text('Weitere Anleitungen'),
+                  ),
+                if (c.guidancePreview case final preview?)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(preview.title),
+                          Text(
+                            'Zugewiesene Revision ${preview.revisionNumber} · ${preview.publishedAt}',
+                          ),
+                          SelectableText(
+                            preview.body,
+                            key: const Key('template-guidance-body'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 16),
                 for (final (index, step) in c.steps.indexed)
                   Card(
                     key: ValueKey(step.id),

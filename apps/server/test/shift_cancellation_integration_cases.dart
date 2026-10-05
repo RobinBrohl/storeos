@@ -630,7 +630,7 @@ void shiftCancellationTests() {
         'POST',
         '/shifts/${p.id}/cancel',
         body: _cancelCommand(2),
-        expected: 503,
+        expected: 500,
       );
       final state = (await f.call('GET', '/shifts/${p.id}')).body;
       expect(state['shift']['status'], 'published');
@@ -681,7 +681,7 @@ void shiftCancellationTests() {
         'POST',
         '/shifts/${p.id}/cancel',
         body: _cancelCommand(2),
-        expected: 503,
+        expected: 500,
       );
       final shift = (await f.owner.execute(
         'SELECT status, version, cancelled_at, cancelled_by, '
@@ -793,7 +793,9 @@ void shiftCancellationTests() {
               )).single.first
               as String,
           (await f.owner.execute(
-                'SELECT jsonb_agg((to_jsonb(t)-ARRAY[\'cancelled_at\',\'cancelled_by\']) '
+                'SELECT jsonb_agg((to_jsonb(t)-ARRAY[\'cancelled_at\',\'cancelled_by\','
+                '\'knowledge_article_id\',\'knowledge_revision_id\','
+                '\'knowledge_revision_state\']) '
                 'ORDER BY id)::text FROM "${f.schema}".task_instances t',
               )).single.first
               as String,
@@ -818,9 +820,11 @@ void shiftCancellationTests() {
           '0015_manual_stock',
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
+          '0018_task_knowledge_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
+        await _expectLegacyGuidanceNull(f);
 
         final refused = await f.call(
           'POST',

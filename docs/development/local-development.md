@@ -126,6 +126,6 @@ Stop processes with Ctrl+C and stop the database without removing its volume. Vo
 
 The numeric browser runner is `./scripts/e2e/Run-NumericGuidedWork.ps1 -ChromeDriverPath '<matching chromedriver path>'`. It requires a dedicated `*_test` database, explicitly supplied owner/runtime configuration and a matching Chrome/ChromeDriver; it does not load the normal site's configuration. See [numeric verification](phase-1b-7-numeric-verification.md) for isolation, diagnostics and lifecycle boundaries.
 
-Update/recovery acceptance uses `./scripts/update/Run-UpdateRecoveryAcceptance.ps1` and an isolated database. The current fixture probes the migration chain through 0015. See [update/recovery](phase-2-update-recovery-acceptance.md) for exact supported scenarios and failure injection; recovery is an isolated restore point, not a down migration or automatic replacement activation.
+Update/recovery acceptance uses `./scripts/update/Run-UpdateRecoveryAcceptance.ps1` and an isolated database. The current fixture probes the migration chain through 0018, including completed historical guidance. See [update/recovery](phase-2-update-recovery-acceptance.md) and [P4.6 evidence](phase-4-6-task-knowledge-guidance.md); recovery is an isolated restore point, not a down migration or automatic replacement activation.
 
 Some wrapper commands resolve dependencies unconditionally. Inspect the wrapper before using it in a task that forbids installs; use existing SDK package commands with `--no-pub` where appropriate instead.

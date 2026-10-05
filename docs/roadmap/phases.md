@@ -7,7 +7,7 @@ that all lower-numbered domains ship before higher-numbered ones.
 
 A new slice needs a real use case, owner, permission/audit/error contract and
 bounded acceptance. This document proposes sequencing; it does not authorize
-parallel implementation or preselect a P4.6 capability.
+parallel implementation or preselect a subsequent capability.
 
 ## Near-term implementation direction
 
@@ -31,10 +31,11 @@ jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/
 retains the selection, local implementation, independent review and CI chronology.
 No active P4.5 remediation remains; F01/F02 are LOW non-blocking follow-ups.
 
-Next, after this documentation closure is committed: fresh P4.6 capability selection
-from the reconciled product vision and real operator evidence. Select **one**
-bounded useful slice after assessing its source contracts and prerequisites.
-No P4.6 capability is preselected or ACTIVE.
+P4.6 Guided Operation is implemented locally, independent review remediation complete / targeted review pending and remote
+changed-commit CI pending. [ADR 0020](../adr/0020-task-knowledge-guidance.md) pins exact
+Knowledge revisions through Templates and Tasks; retirement preserves historical
+contextual access. See [evidence](../development/phase-4-6-task-knowledge-guidance.md).
+P4.6 is not DONE/CLOSED. P4.7 is not selected.
 
 M3 containment applies to every new API. M1 gates the adoption of a real-user
 proxy deployment. Wider RBAC, remote access, Knowledge extensions, Planogram extensions, Recipes, Menus and
@@ -91,7 +92,8 @@ active authoritative writers for the same aggregate.
 
 Planned: skills, qualification validity, recurrence, dependencies/windows,
 handover, justified absences, training and Task-pinned Wiki guidance. Company-wide
-approved Knowledge discovery/read is delivered by P4.5; Task pinning remains future. Boards may
+approved Knowledge discovery/read is delivered by P4.5; exact Task pinning is implemented
+locally in P4.6, with independent review remediation complete / targeted review pending and changed-commit CI pending. Boards may
 provide a bounded durable communication slice before Chat. Recommendations start
 with deterministic rules/reasons and human decisions; preserve breaks/ongoing work
 and minimize HR data.

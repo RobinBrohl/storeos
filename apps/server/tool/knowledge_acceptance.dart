@@ -105,15 +105,16 @@ Future<void> seedApprovedKnowledge(KnowledgeAcceptanceRequest request) async {
 Future<void> verifyKnowledgeEvidence(
   Connection owner,
   String schema,
-  String runtime,
-) async {
+  String runtime, {
+  int additionalPublished = 0,
+}) async {
   final s = '"${schema.replaceAll('"', '""')}"',
       role = '"${runtime.replaceAll('"', '""')}"';
   final states = await owner.execute(
     'SELECT status,count(*) FROM $s.knowledge_revisions GROUP BY status ORDER BY status',
   );
   final counts = {for (final row in states) row[0] as String: row[1] as int};
-  if (counts['published'] != 3 ||
+  if (counts['published'] != 3 + additionalPublished ||
       counts['discarded'] != 2 ||
       counts['draft'] != 1) {
     throw StateError('Knowledge evidence states incomplete.');
@@ -127,7 +128,7 @@ Future<void> verifyKnowledgeEvidence(
   final evidence = await owner.execute(
     'SELECT count(*) FROM $s.knowledge_revisions WHERE status=\'published\' AND publish_operation_id IS NOT NULL AND publication_version=publish_expected_version+1',
   );
-  if (evidence.single.first != 3) {
+  if (evidence.single.first != 3 + additionalPublished) {
     throw StateError('Knowledge publication evidence missing.');
   }
   final audit = await owner.execute(

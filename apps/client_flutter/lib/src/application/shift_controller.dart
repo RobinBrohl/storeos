@@ -30,6 +30,17 @@ class ShiftController extends ChangeNotifier {
   List<TaskInstanceDto> tasks = [];
   TaskInstanceDto? task;
   TaskExecutionDto? execution;
+  TaskKnowledgeDto? taskKnowledge;
+  bool instructionOpen = false;
+  String? instructionError;
+  final Map<String, KnowledgeGuidance?> selectionGuidance = {};
+  String guidanceIdentity(String revision) {
+    final pin = selectionGuidance[revision];
+    return pin == null
+        ? ''
+        : '\nWikiArticle ${pin.articleId} · WikiRevision ${pin.revisionId}';
+  }
+
   List<TaskInstanceDto> running = [];
   List<TaskInstanceDto>? blocked, cancelled;
   String? cancelledCursor;
@@ -115,6 +126,9 @@ class ShiftController extends ChangeNotifier {
   void _clearExecution() {
     executionGeneration++;
     execution = null;
+    taskKnowledge = null;
+    instructionOpen = false;
+    instructionError = null;
     blockings = [];
     blockingCursor = null;
     reason = numberInput = '';
@@ -131,7 +145,8 @@ class ShiftController extends ChangeNotifier {
   bool busy = false, editingNew = false, conflict = false, unconfirmed = false;
   int generation = 0, _epoch = 0;
   bool _disposed = false;
-  String? _user, _newId, _pendingRoute;
+  Object? _identity;
+  String? _newId, _pendingRoute;
   Map<String, dynamic>? _pendingBody;
   String? get reloadId => selected?.id ?? _pendingBody?['id'] as String?;
   String get root => self ? '/employee-home/shifts' : '/shifts';
@@ -209,8 +224,8 @@ class ShiftController extends ChangeNotifier {
   }
 
   void _sessionChanged() {
-    if (_user == session.user?.id) return;
-    _user = session.user?.id;
+    if (identical(_identity, session.sessionIdentity)) return;
+    _identity = session.sessionIdentity;
     _epoch++;
     items = null;
     cursor = null;
@@ -231,6 +246,7 @@ class ShiftController extends ChangeNotifier {
     employeeId = locationId = null;
     startsAt = endsAt = '';
     selections = [];
+    selectionGuidance.clear();
     busy = editingNew = conflict = unconfirmed = false;
     _newId = _pendingRoute = null;
     _pendingBody = null;
@@ -239,8 +255,15 @@ class ShiftController extends ChangeNotifier {
     _notify();
   }
 
-  bool _current(int e) => !_disposed && e == _epoch && session.isAuthenticated;
+  bool _current(int e) =>
+      !_disposed &&
+      e == _epoch &&
+      session.isAuthenticated &&
+      identical(_identity, session.sessionIdentity);
   Future<Map<String, dynamic>> _get(int e, String path, {String? after}) async {
+    if (!_current(e)) {
+      throw const StoreApiException('stale_session', 'Sitzung beendet.');
+    }
     final result = await session.authorized(
       (token) => api.get(token, path, after: after),
     );
@@ -295,6 +318,7 @@ class ShiftController extends ChangeNotifier {
   }
 
   void _accept(Map<String, dynamic> raw) {
+    selectionGuidance.clear();
     final shift = ShiftDto.fromJson(raw['shift'] as Map<String, dynamic>);
     _check(shift);
     selected = shift;
@@ -339,6 +363,58 @@ class ShiftController extends ChangeNotifier {
     await _loadNumbers(e);
     executionConflict = false;
   });
+
+  Future<void> openInstruction() => _run((e) async {
+    final selectedTask = task, shift = selected;
+    if (selectedTask?.content?.knowledgeGuidance == null || shift == null) {
+      return;
+    }
+    instructionOpen = true;
+    taskKnowledge = null;
+    instructionError = null;
+    _notify();
+    try {
+      final result = TaskKnowledgeDto.fromJson(
+        await _get(e, '$root/${shift.id}/tasks/${selectedTask!.id}/knowledge'),
+      );
+      final pin = selectedTask.content!.knowledgeGuidance!;
+      if (result.taskId != selectedTask.id ||
+          result.articleId != pin.articleId ||
+          result.revisionId != pin.revisionId) {
+        throw const FormatException();
+      }
+      taskKnowledge = result;
+    } catch (error) {
+      if (_current(e)) instructionError = _message(error);
+    }
+  });
+  Future<void> reviewGuidance() => _run((e) async {
+    selectionGuidance.clear();
+    for (final selection in selections) {
+      final raw = await _get(
+        e,
+        '/task-templates/${selection.templateId}/revisions/${selection.revisionId}',
+      );
+      final revision = TemplateRevisionDto.fromJson(
+        raw['revision'] as Map<String, dynamic>,
+      );
+      if (revision.id != selection.revisionId ||
+          revision.templateId != selection.templateId ||
+          revision.isDraft) {
+        throw const FormatException();
+      }
+      selectionGuidance[selection.revisionId] =
+          revision.content?.knowledgeGuidance;
+    }
+  });
+  void closeInstruction() {
+    if (busy || !_current(_epoch)) return;
+    instructionOpen = false;
+    taskKnowledge = null;
+    instructionError = null;
+    _notify();
+  }
+
   Future<void> _loadRunning(int e, {bool more = false}) async {
     final raw = await _get(
       e,
@@ -607,6 +683,7 @@ class ShiftController extends ChangeNotifier {
   });
   void newDraft() {
     if (self || busy || unconfirmed) return;
+    selectionGuidance.clear();
     _clearExecution();
     selected = null;
     tasks = [];
@@ -886,6 +963,8 @@ class ShiftController extends ChangeNotifier {
       'Das neue Ende muss nach der aktuellen Serverzeit liegen.',
     StoreApiException(code: 'invalid_selection') =>
       'Nur veröffentlichte Vorlagenrevisionen dieses Standorts sind erlaubt.',
+    StoreApiException(code: 'guidance_unavailable') =>
+      'Eine zugewiesene Anleitung ist für neue Arbeit nicht mehr verfügbar. Bitte die Vorlagenauswahl prüfen; bestehende Aufgaben behalten ihre Revision.',
     StoreApiException(:final message) => message,
     _ => 'Anfrage fehlgeschlagen. Bitte erneut laden.',
   };

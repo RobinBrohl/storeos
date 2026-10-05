@@ -1,5 +1,24 @@
 # Actual implementation status
 
+P4.6 Guided Operation — Task + approved Knowledge revision pinning is
+**IMPLEMENTED LOCALLY**,
+**INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING**,
+**REMOTE CHANGED-COMMIT CI PENDING**. The original independent review returned
+**CHANGES REQUIRED** for F01 (LOW, commit blocker): publication-only
+`guidance_unavailable` was reused for draft selection. The bounded remediation uses
+`guidance_selection_unavailable` for create/replacement selection and preserves
+fresh-publication errors and committed replay. Fresh verification and all 64
+reassessed criteria are recorded in the development evidence.
+Uncommitted/unstaged on `main`, from verified baseline
+`eef2f1eaf778300a10869539b8e94041113b9a07`, matching cached/live origin with clean
+tree/index, one worktree and no stash. All five jobs in
+[exact-baseline CI 37231793151](https://github.com/RobinBrohl/storeos/actions/runs/37231793151)
+passed. Migration 0018 adds concrete schema-3 pins, atomic fresh publication and
+contextual historical reads. Migrations 0001–0017 and dependencies/lockfiles are unchanged.
+See [ADR 0020](../adr/0020-task-knowledge-guidance.md) and
+[development evidence](../development/phase-4-6-task-knowledge-guidance.md).
+P4.6 is not DONE/CLOSED. P4.7 is not selected.
+
 P4.5 starting source baseline verified 2026-10-04 against `main` at `ce00a241b967ab9242604e4d043a8241b3593f64`.
 HEAD matched cached and live `origin/main`; tree/index were clean before implementation,
 with one intended worktree and no stash. P4.4 implementation `cd7669ed`,
@@ -13,7 +32,7 @@ one intended worktree. Independent adversarial review **APPROVE**, **60/60 PASS*
 and all five successful jobs in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360)
 establish closure alongside real Flutter/HTTP/PostgreSQL and Chrome journeys,
 backup/restore, update/recovery and full regression. Migration 0017 adds exactly
-two Knowledge-owned tables; 0001–0016 remain unchanged, no 0018 exists and no
+two Knowledge-owned tables; 0001–0016 remained unchanged at that closure and no
 dependency/lockfile changes were introduced. No active P4.5 remediation remains.
 [Final evidence](../development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
 and [ADR 0019](../adr/0019-approved-operational-knowledge.md) define the bounded slice.
@@ -104,20 +123,19 @@ original evidence without duplicate audit, version/pointer changes or retirement
 reversal. Late v1 replay leaves v2 current; replay after retirement leaves the
 Article retired. Conflicting operation reuse returns `operation_conflict`.
 No hard delete, readership tracking, generic receipt table or events/outbox exist.
-TaskTemplate schema, Task snapshots, Shift publication, Task execution and Task
-evidence were unchanged. Knowledge navigation creates no Task evidence and cannot
-prove which revision informed a completed Task; that is future Guided Operation work.
+At P4.5 closure, Task schema, snapshots, publication and execution were unchanged.
+P4.6 now locally implements exact assigned-revision evidence, review/CI pending.
+Knowledge discovery/navigation still creates no readership evidence.
 Native-device/accessibility acceptance and durable offline recovery are not claimed.
 
 ## Planned and deferred scope
 
-Next, after this closure is committed: fresh P4.6 capability selection is required.
-No P4.6 capability is preselected or ACTIVE.
+Next: targeted P4.6 F01 review and changed-commit CI. P4.7 is not selected.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
-| Workforce / Tasks / Wiki extension | PLANNED | Recurrence, recommendations, qualification workflows, Task revision pins and swaps are future slices. Approved Knowledge discovery/read is DONE/CLOSED in P4.5; begun-work reconciliation remains open. |
+| Workforce / Tasks / Wiki extension | MIXED | P4.6 Task pins are implemented locally, review/CI pending. Recurrence, recommendations, qualification workflows and swaps remain future slices; begun-work reconciliation remains open. |
 | Inventory / Stock / Purchasing / Production | PLANNED | Beyond existing Article/Assortment/manual Stock: units/conversions, receiving, inventory counts, batches, Recipe, production and valuation. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |

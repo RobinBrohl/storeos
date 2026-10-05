@@ -16,6 +16,129 @@ const account = '33333333-3333-4333-8333-333333333333';
 
 void main() {
   test(
+    'selection failure preserves local edit input and saved draft',
+    () async {
+      final f = await _Fixture.create();
+      addTearDown(f.dispose);
+      await f.ready();
+      final saved = f.api.copy(f.api.records[f.c.revision!.id]!);
+      final version = f.c.selected!.version;
+      await f.c.loadGuidance();
+      final selected = f.c.guidanceChoices!.last;
+      f.c.selectGuidance(selected);
+      f.c.setTitle('Local draft input');
+      final step = f.c.steps.single.id;
+      f.c.setInstruction(step, 'Local step input');
+      f.api.retired = true;
+      await f.c.save();
+      expect(f.c.error, contains('für diesen Entwurf nicht verfügbar'));
+      expect(f.c.error, contains('Eingaben bleiben erhalten'));
+      expect(f.c.error, isNot(contains('für neue Arbeit')));
+      expect(f.c.title, 'Local draft input');
+      expect(f.c.steps.single.instruction, 'Local step input');
+      expect(f.c.knowledgeGuidance!.revisionId, selected.revisionId);
+      expect(f.c.revision!.isDraft, true);
+      expect(f.c.revision!.content!.knowledgeGuidance, isNull);
+      expect(f.c.dirty, true);
+      expect(f.c.editable, true);
+      expect(f.c.canPublish, false);
+      expect(f.c.selected!.version, version);
+      expect(f.api.records[f.c.revision!.id], saved);
+      f.api.retired = false;
+      await f.c.save();
+      expect(f.c.error, isNull);
+      expect(f.c.dirty, false);
+      expect(f.c.knowledgeGuidance!.revisionId, selected.revisionId);
+    },
+  );
+  test(
+    'guidance selects, previews exact revision, retains, replaces and clears without publishing unsaved state',
+    () async {
+      final f = await _Fixture.create();
+      addTearDown(f.dispose);
+      await f.ready();
+      await f.c.loadGuidance();
+      final first = f.c.guidanceChoices!.first;
+      f.c.selectGuidance(first);
+      expect(f.c.canPublish, false);
+      await f.c.previewGuidance();
+      expect(f.c.guidancePreview!.revisionId, first.revisionId);
+      expect(f.c.guidancePreview!.body, '<script>literal</script>');
+      await f.c.save();
+      expect(f.c.dirty, false);
+      expect(f.c.canPublish, true);
+      f.c.setTitle('Unrelated change');
+      await f.c.save();
+      expect(f.c.knowledgeGuidance!.revisionId, first.revisionId);
+      await f.c.loadGuidance();
+      final replacement = f.c.guidanceChoices!.last;
+      f.c.selectGuidance(replacement);
+      await f.c.save();
+      expect(f.c.knowledgeGuidance!.revisionId, replacement.revisionId);
+      f.c.clearGuidance();
+      expect(f.c.canPublish, false);
+      await f.c.save();
+      expect(f.c.revision!.content!.schemaVersion, 3);
+      expect(f.c.knowledgeGuidance, isNull);
+      await f.c.loadGuidance();
+      f.c.selectGuidance(f.c.guidanceChoices!.first);
+      await f.c.save();
+      f.api.retired = true;
+      final saved = f.api.copy(f.api.records[f.c.revision!.id]!);
+      final version = f.c.selected!.version;
+      await f.c.publish();
+      expect(f.c.error, contains('nicht mehr verfügbar'));
+      expect(f.c.error, contains('für neue Arbeit'));
+      expect(f.c.error, contains('entfernen oder ersetzen'));
+      expect(f.c.revision!.isDraft, true);
+      expect(f.c.knowledgeGuidance!.revisionId, first.revisionId);
+      expect(f.c.selected!.version, version);
+      expect(f.api.records[f.c.revision!.id], saved);
+      expect(f.c.dirty, false);
+      expect(f.c.editable, true);
+    },
+  );
+  for (final actor in ['test', 'replacement']) {
+    for (final surface in ['picker', 'preview']) {
+      test(
+        '$actor replacement fences pending $surface and cached guidance',
+        () async {
+          final f = await _Fixture.create();
+          addTearDown(f.dispose);
+          await f.ready();
+          await f.c.loadGuidance();
+          f.c.selectGuidance(f.c.guidanceChoices!.first);
+          final cached = f.c.guidancePreview!;
+          f.api.guidancePending = Completer<Map<String, dynamic>>();
+          f.api.guidanceStarted = Completer<void>();
+          final pending = surface == 'picker'
+              ? f.c.loadGuidance()
+              : f.c.previewGuidance();
+          await f.api.guidanceStarted!.future;
+          await f.session.signIn(username: actor, password: 'test');
+          expect(f.c.guidanceChoices, isNull);
+          expect(f.c.guidancePreview, isNull);
+          expect(f.c.knowledgeGuidance, isNull);
+          f.api.guidancePending!.complete(
+            surface == 'picker'
+                ? {
+                    'items': [cached.toJson()],
+                    'nextCursor': null,
+                  }
+                : f.api.knowledgeRevision(cached),
+          );
+          await pending;
+          expect(f.c.guidanceChoices, isNull);
+          expect(f.c.guidancePreview, isNull);
+          expect(f.c.selected, isNull);
+          expect(f.c.error, isNull);
+          f.c.selectGuidance(cached);
+          expect(f.c.knowledgeGuidance, isNull);
+        },
+      );
+    }
+  }
+  test(
     'numeric template editing validates bounds, publishes schema 2 and preserves immutable revisions',
     () async {
       final f = await _Fixture.create();
@@ -374,9 +497,11 @@ class _Session implements StoreApi {
   Future<SessionResponse> login(LoginRequest request) async => SessionResponse(
     token: 'token',
     expiresAt: DateTime.now().add(const Duration(hours: 1)),
-    user: const SessionUser(
-      id: account,
-      username: 'test',
+    user: SessionUser(
+      id: request.username == 'test'
+          ? account
+          : 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      username: request.username,
       companyId: company,
       locationId: location,
     ),
@@ -408,6 +533,34 @@ class _Api implements PlatformApi {
   int requests = 0;
   final cursors = <String>[];
   Completer<Map<String, dynamic>>? pending;
+  Completer<Map<String, dynamic>>? guidancePending;
+  Completer<void>? guidanceStarted;
+  bool retired = false;
+  final knowledge = [
+    for (final n in [1, 2])
+      PublishedWikiDto.fromJson({
+        'articleId': '88888888-8888-4888-8888-888888888888',
+        'revisionId': n == 1
+            ? '99999999-9999-4999-8999-999999999999'
+            : 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        'revisionNumber': n,
+        'title': 'Instruction $n',
+        'body': '<script>literal</script>',
+        'publishedAt': '2026-09-27T00:00:00Z',
+      }),
+  ];
+  Map<String, dynamic> knowledgeRevision(PublishedWikiDto pin) => {
+    'id': pin.revisionId,
+    'companyId': company,
+    'articleId': pin.articleId,
+    'revisionNumber': pin.revisionNumber,
+    'status': 'published',
+    'content': {'title': pin.title, 'body': pin.body},
+    'createdAt': time,
+    'createdBy': account,
+    'publishedAt': time,
+    'publishedBy': account,
+  };
   static const time = '2026-09-27T00:00:00Z';
   Map<String, dynamic> copy(Map<String, dynamic> value) =>
       jsonDecode(jsonEncode(value)) as Map<String, dynamic>;
@@ -429,6 +582,7 @@ class _Api implements PlatformApi {
           'context.read',
           'organization.read',
           if (role == 'admin') 'tasks.templates.manage',
+          if (role == 'admin') 'knowledge.articles.read',
         ],
       };
     }
@@ -442,6 +596,21 @@ class _Api implements PlatformApi {
     }
     if (failGet) {
       throw const StoreApiException('network_unavailable', 'Nicht erreichbar.');
+    }
+    if (route.startsWith('/knowledge/')) {
+      if (guidancePending != null) {
+        guidanceStarted?.complete();
+        return guidancePending!.future;
+      }
+      if (route == '/knowledge/articles') {
+        return {
+          'items': retired ? [] : knowledge.map((k) => k.toJson()).toList(),
+          'nextCursor': null,
+        };
+      }
+      return knowledgeRevision(
+        knowledge.singleWhere((k) => route.endsWith(k.revisionId)),
+      );
     }
     if (after != null) cursors.add(after);
     if (route == '/task-templates') {
@@ -498,6 +667,30 @@ class _Api implements PlatformApi {
     Map<String, dynamic> body,
   ) async {
     requests++;
+    if (retired &&
+        (route == '/task-templates' || route.endsWith('/edit')) &&
+        body['content']['knowledgeGuidance'] != null &&
+        jsonEncode(body['content']['knowledgeGuidance']) !=
+            jsonEncode(
+              route == '/task-templates'
+                  ? null
+                  : records[route.split(
+                      '/',
+                    )[4]]!['content']['knowledgeGuidance'],
+            )) {
+      throw const StoreApiException(
+        'guidance_selection_unavailable',
+        'Selected instruction unavailable.',
+        statusCode: 422,
+      );
+    }
+    if (retired && route.endsWith('/publish')) {
+      throw const StoreApiException(
+        'guidance_unavailable',
+        'Assigned instruction unavailable.',
+        statusCode: 422,
+      );
+    }
     if (pending case final pending?) return pending.future;
     String rid;
     if (route == '/task-templates') {

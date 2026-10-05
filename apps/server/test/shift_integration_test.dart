@@ -243,7 +243,7 @@ void main() {
         'POST',
         '/shifts/${p.id}/publish',
         body: {'expectedVersion': 1},
-        expected: 503,
+        expected: 500,
       );
       expect((await f.call('GET', '/shifts/${p.id}')).body['tasks'], isEmpty);
       expect(
@@ -461,7 +461,7 @@ void main() {
           'POST',
           '/shifts/${p.id}/publish',
           body: {'expectedVersion': 1},
-          expected: 503,
+          expected: 500,
         );
         await f.owner.execute(
           'DROP TRIGGER reject_audit ON "${f.schema}".audit_entries',
@@ -790,7 +790,9 @@ void main() {
           'audit_entries',
         ])
           (await f.owner.execute(
-                'SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY id),\'[]\'::jsonb)::text FROM "${f.schema}".$table t',
+                'SELECT COALESCE(jsonb_agg((to_jsonb(t)-ARRAY[\'knowledge_article_id\','
+                '\'knowledge_revision_id\',\'knowledge_revision_state\']) ORDER BY id),'
+                '\'[]\'::jsonb)::text FROM "${f.schema}".$table t',
               )).single.first
               as String,
       ];
@@ -814,9 +816,11 @@ void main() {
         '0015_manual_stock',
         '0016_local_planograms',
         '0017_approved_operational_knowledge',
+        '0018_task_knowledge_guidance',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);
+      await _expectLegacyGuidanceNull(f);
       await f.call('POST', '/shifts', body: p.input, expected: 201);
       await f.call(
         'POST',
@@ -831,6 +835,20 @@ void main() {
 Map<String, dynamic> _draft(Map<String, dynamic> input) => Map.from(input)
   ..remove('id')
   ..remove('locationId');
+
+Future<void> _expectLegacyGuidanceNull(_Fixture f) async {
+  for (final table in ['task_template_revisions', 'task_instances']) {
+    expect(
+      (await f.owner.execute(
+        'SELECT count(*) FROM "${f.schema}".$table '
+        'WHERE knowledge_article_id IS NOT NULL OR knowledge_revision_id IS NOT NULL '
+        'OR knowledge_revision_state IS NOT NULL',
+      )).single.first,
+      0,
+      reason: 'Migration 0018 must not assign guidance to legacy $table rows.',
+    );
+  }
+}
 
 class _Plan {
   _Plan(this.employee, this.template, this.input);

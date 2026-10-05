@@ -3,7 +3,7 @@
 // scripts/update/Run-UpdateRecoveryAcceptance.ps1 creates the database, grants
 // the restricted runtime role CONNECT and drops the database again. The owner
 // connection builds the pre-update schema and seed; the runtime role serves the
-// API only after the pending migrations (0011 through 0015) have been applied.
+// API only after the pending migrations (0011 through 0018) have been applied.
 //
 // Modes (STOREOS_UPDATE_MODE):
 //  - prepare: apply exactly migrations 0001-0010 from a byte-identical copy of
@@ -11,7 +11,7 @@
 //    evidence with owner SQL, capture stable projections and write the private
 //    run manifest plus a non-secret prepare result.
 //  - upgrade: apply the real repository migrations through the production
-//    MigrationRunner (only 0011 through 0015 may be pending), verify checksums,
+//    MigrationRunner (only 0011 through 0018 may be pending), verify checksums,
 //    idempotency, preservation of the pre-update projections, the new
 //    0011/0012 columns, constraints and the published-interval exclusion
 //    invariant, the 0013 article master, 0014 assortment and 0015 manual stock
@@ -34,6 +34,7 @@
 import 'dart:convert';
 import 'merchandising_acceptance.dart';
 import 'knowledge_acceptance.dart';
+import 'task_guidance_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -63,6 +64,7 @@ const _expectedPendingMigrations = [
   '0015_manual_stock',
   '0016_local_planograms',
   '0017_approved_operational_knowledge',
+  '0018_task_knowledge_guidance',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1087,13 +1089,118 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         expected: status,
       ),
     );
-    await verifyKnowledgeEvidence(owner, _schema, runtimeUser);
+    {
+      Future<Map<String, dynamic>> guidanceRequest(
+        String method,
+        String route,
+        Map<String, dynamic>? body,
+        int status,
+      ) => api.request(
+        method,
+        route,
+        token: adminToken,
+        body: body,
+        expected: status,
+      );
+      final guidance = await seedGuidanceInstruction(guidanceRequest);
+      final template = newUuid(),
+          revision = newUuid(),
+          shift = newUuid(),
+          step = newUuid();
+      await api.request(
+        'POST',
+        '/api/v1/platform/task-templates',
+        token: adminToken,
+        expected: 201,
+        body: {
+          'id': template,
+          'revisionId': revision,
+          'locationId': locationId,
+          'content': {
+            'schemaVersion': 3,
+            'title': 'Update guided work',
+            'steps': [
+              {
+                'id': step,
+                'type': 'confirmation',
+                'instruction': 'Normal confirmation',
+              },
+            ],
+            'knowledgeGuidance': guidance.toJson(),
+          },
+        },
+      );
+      await api.request(
+        'POST',
+        '/api/v1/platform/task-templates/$template/revisions/$revision/publish',
+        token: adminToken,
+        body: {'expectedVersion': 1},
+      );
+      final begins = DateTime.now().toUtc();
+      await api.request(
+        'POST',
+        '/api/v1/platform/shifts',
+        token: adminToken,
+        expected: 201,
+        body: {
+          'id': shift,
+          'locationId': locationId,
+          'employeeId': manifest['employeeId'],
+          'startsAt': begins.toIso8601String(),
+          'endsAt': begins.add(const Duration(hours: 1)).toIso8601String(),
+          'selections': [
+            {'templateId': template, 'revisionId': revision},
+          ],
+        },
+      );
+      final published = await api.request(
+        'POST',
+        '/api/v1/platform/shifts/$shift/publish',
+        token: adminToken,
+        body: {'expectedVersion': 1},
+      );
+      final guidedTask = published['tasks'][0]['id'];
+      await replaceAndRetireGuidance(guidanceRequest, guidance);
+      final read = await api.request(
+        'GET',
+        '/api/v1/platform/employee-home/shifts/$shift/tasks/$guidedTask/knowledge',
+        token: workerToken,
+      );
+      if (read['revisionId'] != guidance.revisionId ||
+          read['body'] != guidanceAcceptanceBody ||
+          read['articleRetired'] != true) {
+        throw StateError('Updated guidance read changed.');
+      }
+      var version = 1;
+      for (final suffix in ['start', 'steps/$step/confirm', 'complete']) {
+        await api.request(
+          'POST',
+          '/api/v1/platform/employee-home/shifts/$shift/tasks/$guidedTask/$suffix',
+          token: workerToken,
+          body: {'operationId': newUuid(), 'expectedVersion': version++},
+        );
+      }
+      await verifyGuidanceEvidence(owner, _schema, runtimeUser);
+      await verifyKnowledgeEvidence(
+        owner,
+        _schema,
+        runtimeUser,
+        additionalPublished: 2,
+      );
+    }
     await _writeJson(resultFile, {
       'knowledge': {
         'migration': '0017_approved_operational_knowledge',
-        'articleCount': 2,
-        'revisionCount': 6,
+        'articleCount': 3,
+        'revisionCount': 8,
         'replayVerified': true,
+        'runtimeProtections': true,
+      },
+      'guidance': {
+        'migration': '0018_task_knowledge_guidance',
+        'completedPinnedTask': true,
+        'historicalRevision': 1,
+        'articleRetired': true,
         'runtimeProtections': true,
       },
       'merchandising': {

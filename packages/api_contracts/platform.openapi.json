@@ -1358,8 +1358,105 @@
               }
             }
           },
-          "default": {
-            "$ref": "./openapi.yaml#/components/responses/Error"
+          "400": {
+            "description": "invalid_json: expected a JSON object. invalid_request: malformed fields, identifiers or version. invalid_template_content: malformed or unsupported bounded Template content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired, revoked or invalid session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: Company or tasks.templates.manage capability denied; guided selection/retention/publication/replay also requires knowledge.articles.read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: Location is missing or not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "already_exists: Template or Revision identity already exists. template_conflict: supported database identity/state conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: JSON request exceeds the 16384-byte transport ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: expected application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: internal or database integrity failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: database unavailable or supported infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "guidance_selection_unavailable: selected instruction is unavailable for draft authoring; select an active Article current published revision. No Template, Revision or audit is created on failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -1499,8 +1596,95 @@
               }
             }
           },
-          "default": {
-            "$ref": "./openapi.yaml#/components/responses/Error"
+          "400": {
+            "description": "invalid_json: expected a JSON object. invalid_request: malformed fields, identifiers or version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired, revoked or invalid session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: Company or tasks.templates.manage capability denied; guided selection/retention/publication/replay also requires knowledge.articles.read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: Template or Revision not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "template_conflict: version, draft/publication state or Revision identity conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: JSON request exceeds the 16384-byte transport ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: expected application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: internal or database integrity failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: database unavailable or supported infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -1608,8 +1792,105 @@
               }
             }
           },
-          "default": {
-            "$ref": "./openapi.yaml#/components/responses/Error"
+          "400": {
+            "description": "invalid_json: expected a JSON object. invalid_request: malformed fields, identifiers or version. invalid_template_content: malformed or unsupported bounded Template content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired, revoked or invalid session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: Company or tasks.templates.manage capability denied; guided selection/retention/publication/replay also requires knowledge.articles.read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: Template or Revision not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "template_conflict: version, draft/publication state or Revision identity conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: JSON request exceeds the 16384-byte transport ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: expected application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: internal or database integrity failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: database unavailable or supported infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "guidance_selection_unavailable: a new or replacement instruction is unavailable for draft authoring; select an active Article current published revision. Saved draft/version/audit remain unchanged on failure; unchanged retained pins are not reselected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -1672,8 +1953,105 @@
               }
             }
           },
-          "default": {
-            "$ref": "./openapi.yaml#/components/responses/Error"
+          "400": {
+            "description": "invalid_json: expected a JSON object. invalid_request: malformed fields, identifiers or version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired, revoked or invalid session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: Company or tasks.templates.manage capability denied; guided selection/retention/publication/replay also requires knowledge.articles.read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: Template or Revision not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "template_conflict: version, draft/publication state or Revision identity conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: JSON request exceeds the 16384-byte transport ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: expected application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: internal or database integrity failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: database unavailable or supported infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "empty_template: a published Template needs a step. guidance_unavailable: exact retained instruction cannot be used for fresh publication; explicitly review/remove/replace it. Exact committed publication replay precedes fresh lifecycle validation and returns original evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -1920,8 +2298,105 @@
               }
             }
           },
-          "default": {
-            "$ref": "./openapi.yaml#/components/responses/Error"
+          "400": {
+            "description": "invalid_json: expected a JSON object. invalid_request: malformed fields, identifiers or version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired, revoked or invalid session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: Company or workforce.shifts.manage/tasks.instances.read capability denied; guided publication/replay also requires knowledge.articles.read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: Shift, Location or Employee not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "shift_conflict: version, state or supported publication conflict. shift_overlap: overlapping published Shift.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: JSON request exceeds the 16384-byte transport ceiling.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: expected application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: internal or database integrity failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: database unavailable or supported infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "shift_not_publishable, employee_unavailable or invalid_selection: fresh Shift publication validation failed. guidance_unavailable: exact retained instruction cannot be used for fresh publication; explicitly review/remove/replace it. Exact committed publication replay precedes fresh lifecycle validation and returns original evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -8048,6 +8523,212 @@
           }
         }
       }
+    },
+    "/api/v1/platform/shifts/{id}/tasks/{task}/knowledge": {
+      "get": {
+        "operationId": "managerTaskKnowledge",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "description": "No query parameters or client-selected Revision. Authorize current session and task scope, then resolve the stored immutable pin. Requires existing manager Shift/Task scope. Requires knowledge.articles.read. Historical published content remains available after supersession or retirement. No execution-window requirement. No current-content substitution.",
+        "responses": {
+          "200": {
+            "description": "Assigned published revision.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskKnowledge"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: malformed UUID; invalid_query: query parameters are forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: Company or required capability denied; plugin access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: invisible/mismatched Task/Shift or absent guidance; employee_unavailable: no active Employee context.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: retained instruction or database integrity failure. No substitution.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unavailable database, timeout or infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{task}/knowledge": {
+      "get": {
+        "operationId": "employeeTaskKnowledge",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "description": "No query parameters or client-selected Revision. Authorize current session and task scope, then resolve the stored immutable pin. Requires current active own Employee link and configured Location; published own Shift visibility. Requires knowledge.articles.read. Historical published content remains available after supersession or retirement. No execution-window requirement. No current-content substitution.",
+        "responses": {
+          "200": {
+            "description": "Assigned published revision.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskKnowledge"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: malformed UUID; invalid_query: query parameters are forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: Company or required capability denied; plugin access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: invisible/mismatched Task/Shift or absent guidance; employee_unavailable: no active Employee context.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: retained instruction or database integrity failure. No substitution.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unavailable database, timeout or infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -9172,7 +9853,8 @@
             "type": "integer",
             "enum": [
               1,
-              2
+              2,
+              3
             ]
           },
           "title": {
@@ -9186,9 +9868,19 @@
             "items": {
               "$ref": "#/components/schemas/TemplateStep"
             }
+          },
+          "knowledgeGuidance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/KnowledgeGuidance"
+              }
+            ]
           }
         },
-        "description": "Text must contain valid Unicode scalar values; isolated UTF-16 surrogates are rejected. Normalized compact UTF-8 JSON is limited to 8192 bytes. Step IDs must be unique. Empty steps are allowed only in drafts; publication requires at least one step.",
+        "description": "Text must contain valid Unicode scalar values; isolated UTF-16 surrogates are rejected. Normalized compact UTF-8 JSON is limited to 8192 bytes. Step IDs must be unique. Empty steps are allowed only in drafts; publication requires at least one step. Schema 3 requires nullable knowledgeGuidance, storing only exact Article and published Revision IDs. Schemas 1/2 forbid guidance and are unchanged.",
         "allOf": [
           {
             "if": {
@@ -9205,6 +9897,27 @@
                     "$ref": "#/components/schemas/ConfirmationStep"
                   }
                 }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "schemaVersion": {
+                  "const": 3
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "knowledgeGuidance"
+              ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "knowledgeGuidance"
+                ]
               }
             }
           }
@@ -12557,6 +13270,74 @@
             ]
           }
         }
+      },
+      "KnowledgeGuidance": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "articleId",
+          "revisionId"
+        ],
+        "properties": {
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "TaskKnowledge": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "taskId",
+          "articleId",
+          "revisionId",
+          "revisionNumber",
+          "title",
+          "body",
+          "publishedAt",
+          "superseded",
+          "articleRetired"
+        ],
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "superseded": {
+            "type": "boolean"
+          },
+          "articleRetired": {
+            "type": "boolean"
+          }
+        },
+        "description": "Exact stored task pin. Frozen content is separate from current supersession/retirement indicators. Reading creates no acknowledgment or task transition."
       }
     }
   }

@@ -16,10 +16,14 @@ instructions, one active draft, immutable published/discarded revisions, termina
 retirement and strict publication replay. Independent adversarial review APPROVE,
 60/60 PASS and all five jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360)
 complete the [closure evidence](docs/development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04).
-The migration chain ends at 0017; 0001–0016 are unchanged and no 0018 exists.
+P4.6 Guided Operation is **IMPLEMENTED LOCALLY**,
+**INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING**,
+**REMOTE CHANGED-COMMIT CI PENDING**: exact approved Knowledge revision pins in
+schema-3 Templates/Tasks and contextual historical panels. Migration chain ends
+at 0018; 0001–0017 are unchanged. See [P4.6 evidence](docs/development/phase-4-6-task-knowledge-guidance.md)
+and [ADR 0020](docs/adr/0020-task-knowledge-guidance.md).
 No active P4.5 remediation remains; F01/F02 are LOW non-blocking follow-ups.
-No Task evidence integration or native-device/accessibility acceptance is claimed.
-Fresh P4.6 capability selection follows after this closure commit; none is preselected.
+Native-device/accessibility acceptance is not claimed. P4.7 is not selected.
 
 ## Start locally
 

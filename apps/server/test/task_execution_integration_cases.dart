@@ -206,7 +206,7 @@ void executionTests() {
         );
         Future<String> snapshot() async =>
             (await f.owner.execute(
-                  'SELECT (to_jsonb(t)-ARRAY[\'started_at\',\'started_by\',\'completed_at\',\'completed_by\',\'cancelled_at\',\'cancelled_by\'])::text FROM "${f.schema}".task_instances t',
+                  'SELECT (to_jsonb(t)-ARRAY[\'started_at\',\'started_by\',\'completed_at\',\'completed_by\',\'cancelled_at\',\'cancelled_by\',\'knowledge_article_id\',\'knowledge_revision_id\',\'knowledge_revision_state\'])::text FROM "${f.schema}".task_instances t',
                 )).single.first
                 as String;
         final before = await snapshot();
@@ -228,9 +228,16 @@ void executionTests() {
           '0015_manual_stock',
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
+          '0018_task_knowledge_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);
+        expect(
+          (await f.owner.execute(
+            'SELECT knowledge_article_id,knowledge_revision_id,knowledge_revision_state FROM "${f.schema}".task_instances',
+          )).single.toList(),
+          [null, null, null],
+        );
         final token = await _linkedAccount(f, p.employee, 'upgrade_executor');
         final root = '/employee-home/shifts/${p.id}/tasks/$id';
         final started = (await f.call(

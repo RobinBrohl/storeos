@@ -70,6 +70,20 @@ follow-ups, not commit blockers; neither was implemented during closure.
 The accepted raw-runtime-SQL/supported-writer boundary, memory-only uncertain-command
 recovery, physical-device/accessibility gaps and operator gates remain unchanged.
 
+P4.6 implementation evidence (2026-10-04): its new contextual Task instruction
+browser test asserts literal script/link/image-handler/Markdown text, absence of
+payload-created link/image/script elements and no payload execution in actual Chrome.
+This strengthens the new consumer surface; it does not globally close P4.5 F02 or
+alter the untouched mounted Knowledge search follow-up F01. M3/M4 are contained
+locally through explicit contextual response sets and named-constraint error mapping;
+unexpected integrity failures remain 500, supported infrastructure failures 503.
+P4.6 F01 remediation (2026-10-05): the original independent CHANGES REQUIRED review
+found one LOW commit blocker in the selection/publication error contract. Draft
+create/replacement now uses `guidance_selection_unavailable`; only fresh publication
+uses `guidance_unavailable`. OpenAPI inventories the actual touched responses; clone
+and exact replay retain their prior behavior. Independent review remediation is
+complete; targeted review and changed-commit CI remain pending. Global M3/M4 remain open.
+
 ## Original medium findings
 
 | ID | State | Current disposition / trigger |

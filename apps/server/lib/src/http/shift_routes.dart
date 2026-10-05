@@ -3,6 +3,7 @@ import 'package:shelf_router/shelf_router.dart';
 import '../application/auth_service.dart';
 import '../application/shift_application.dart';
 import 'api_support.dart';
+import '../platform/platform_database.dart';
 
 class ShiftRoutes {
   ShiftRoutes(AuthService auth, ShiftApplication app) {
@@ -144,6 +145,28 @@ class ShiftRoutes {
     );
     for (final self in [false, true]) {
       final path = self ? '/api/v1/platform/employee-home/shifts' : root;
+      router.get('$path/<id>/tasks/<task>/knowledge', (
+        Request r,
+        String id,
+        String task,
+      ) async {
+        if (r.url.hasQuery) {
+          throw const PlatformFailure(
+            400,
+            'invalid_query',
+            'Task instruction reads accept no query parameters.',
+          );
+        }
+        return jsonResponse(
+          200,
+          await app.knowledge(
+            await auth.authenticate(bearerToken(r)),
+            id,
+            task,
+            self: self,
+          ),
+        );
+      });
       router.get(
         self
             ? '/api/v1/platform/employee-home/blocked-tasks'

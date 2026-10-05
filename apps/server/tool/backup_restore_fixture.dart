@@ -18,6 +18,7 @@
 import 'dart:convert';
 import 'merchandising_acceptance.dart';
 import 'knowledge_acceptance.dart';
+import 'task_guidance_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -189,6 +190,7 @@ Future<void> _prepare(Map<String, String> env, String source) async {
       'runId': source.substring('storeos_backup_accept_'.length),
       'sourceDatabase': source,
       ...ids,
+      'workerRecoveryPassword': workerPassword,
       'snapshot': snapshot.toJson(),
     });
     stdout.writeln('backup_restore_fixture_prepared');
@@ -247,8 +249,20 @@ Future<void> _verify(Map<String, String> env, String source) async {
     if (!restored.sameEvidence(current)) {
       throw StateError('Restored evidence differs from the source.');
     }
-    await verifyKnowledgeEvidence(sourceOwner, _schema, runtimeUser);
-    await verifyKnowledgeEvidence(targetOwner, _schema, runtimeUser);
+    await verifyKnowledgeEvidence(
+      sourceOwner,
+      _schema,
+      runtimeUser,
+      additionalPublished: 2,
+    );
+    await verifyKnowledgeEvidence(
+      targetOwner,
+      _schema,
+      runtimeUser,
+      additionalPublished: 2,
+    );
+    await verifyGuidanceEvidence(sourceOwner, _schema, runtimeUser);
+    await verifyGuidanceEvidence(targetOwner, _schema, runtimeUser);
 
     final sourceSessions = await _activeSessions(sourceOwner, _schema);
     final restoredSessions = await _activeSessions(targetOwner, _schema);
@@ -280,6 +294,18 @@ Future<void> _verify(Map<String, String> env, String source) async {
     await _requireRuntimeTargetRejected(
       _runtimeEndpoint(env, target, runtimeUser, runtimePassword),
     );
+    await verifyRestoredGuidanceRead(
+      _ownerEndpoint(env, target),
+      _schema,
+      expected['companyId'] as String,
+      expected['locationId'] as String,
+      'backup_accept_worker',
+      expected['workerRecoveryPassword'] as String,
+    );
+    if (await _activeSessions(targetOwner, _schema) != 0 ||
+        await _runtimeConnect(targetOwner, runtimeUser)) {
+      throw StateError('Restore verification changed fencing.');
+    }
 
     await _writeJson(resultFile, {
       'runId': expected['runId'],
@@ -295,6 +321,14 @@ Future<void> _verify(Map<String, String> env, String source) async {
       'sourceRuntimeConnect': sourceConnect,
       'restoredRuntimeConnect': restoredConnect,
       'restoredRuntimeConnectionRejected': true,
+      'guidance': {
+        'schemaVersion': 3,
+        'historicalRevision': 1,
+        'completedPinPreserved': true,
+        'contextualReadVerified': true,
+        'arbitraryHistoryDenied': true,
+        'runtimeProtections': true,
+      },
     });
     stdout.writeln('backup_restore_fixture_verified');
   } finally {
@@ -400,6 +434,7 @@ Future<Map<String, String>> _seed(
         'instruction': 'Confirm open work',
       },
     ],
+    schemaVersion: 1,
   );
   final numberStepId = newUuid();
   final blockedTemplate = await _publishTemplate(
@@ -419,6 +454,19 @@ Future<Map<String, String>> _seed(
     ],
   );
   final acceptedNumberStepId = newUuid(), confirmationStepId = newUuid();
+  Future<Map<String, dynamic>> guidanceRequest(
+    String method,
+    String route,
+    Map<String, dynamic>? body,
+    int status,
+  ) => api.request(
+    method,
+    route,
+    token: adminToken,
+    body: body,
+    expected: status,
+  );
+  final guidance = await seedGuidanceInstruction(guidanceRequest);
   final completedTemplate = await _publishTemplate(
     api,
     adminToken,
@@ -439,6 +487,8 @@ Future<Map<String, String>> _seed(
         'instruction': 'Confirm completed work',
       },
     ],
+    schemaVersion: 3,
+    guidance: guidance.toJson(),
   );
 
   final shiftId = newUuid();
@@ -500,6 +550,16 @@ Future<Map<String, String>> _seed(
     body: {'username': workerUser, 'password': workerPassword},
   );
   final workerToken = workerLogin['token'] as String;
+  await replaceAndRetireGuidance(guidanceRequest, guidance);
+  final assigned = await api.request(
+    'GET',
+    '$root/employee-home/shifts/$shiftId/tasks/$completedTaskId/knowledge',
+    token: workerToken,
+  );
+  if (assigned['revisionId'] != guidance.revisionId ||
+      assigned['articleRetired'] != true) {
+    throw StateError('Seed contextual guidance did not retain v1.');
+  }
   await _execute(api, workerToken, shiftId, inProgressTaskId, 'start', {
     'operationId': newUuid(),
     'expectedVersion': 1,
@@ -618,8 +678,10 @@ Future<Map<String, String>> _publishTemplate(
   String token,
   String locationId,
   String title,
-  List<Map<String, dynamic>> steps,
-) async {
+  List<Map<String, dynamic>> steps, {
+  int schemaVersion = 2,
+  Map<String, dynamic>? guidance,
+}) async {
   final templateId = newUuid(), revisionId = newUuid();
   await api.request(
     'POST',
@@ -630,7 +692,12 @@ Future<Map<String, String>> _publishTemplate(
       'id': templateId,
       'revisionId': revisionId,
       'locationId': locationId,
-      'content': {'schemaVersion': 2, 'title': title, 'steps': steps},
+      'content': {
+        'schemaVersion': schemaVersion,
+        'title': title,
+        'steps': steps,
+        if (schemaVersion == 3) 'knowledgeGuidance': guidance,
+      },
     },
   );
   await api.request(
@@ -669,8 +736,8 @@ Future<void> _assertSeededJourney(
     throw StateError('Expected exactly one active source plugin token.');
   }
   const expectedCounts = {
-    'knowledge_articles': 2,
-    'knowledge_revisions': 6,
+    'knowledge_articles': 3,
+    'knowledge_revisions': 8,
     'merchandising_fixtures': 1,
     'merchandising_planograms': 1,
     'merchandising_planogram_revisions': 2,

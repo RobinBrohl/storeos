@@ -265,6 +265,11 @@ class TaskExecutionService {
         'blockingId': ?blockingId,
         'attemptId': ?attemptId,
         'inRange': ?inRange,
+        if (command == 'complete' &&
+            task.content?.knowledgeGuidance != null) ...{
+          'knowledgeArticleId': task.content!.knowledgeGuidance!.articleId,
+          'knowledgeRevisionId': task.content!.knowledgeGuidance!.revisionId,
+        },
       },
     );
     await _repository.remember(

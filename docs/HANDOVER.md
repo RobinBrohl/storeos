@@ -1,18 +1,29 @@
 # StoreOS handover
 
-Start after [AGENTS.md](../AGENTS.md). Current source baseline: `main`,
-`93072a476f93e8fb14da357b0a4b747435369376`, verified 2026-10-04 before documentation
-edits with a clean tree/index, matching cached and live `origin/main`, one intended
-worktree and no stash. P4.5 Approved Operational Knowledge is **DONE/CLOSED**:
+Start after [AGENTS.md](../AGENTS.md). P4.6 Guided Operation is **IMPLEMENTED LOCALLY**,
+**INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING**,
+**REMOTE CHANGED-COMMIT CI PENDING**. The original independent review was
+**CHANGES REQUIRED** with one LOW commit blocker, F01. Its bounded correction
+separates selection-time `guidance_selection_unavailable` from fresh-publication
+`guidance_unavailable`; committed replay remains unchanged. The implementation
+is uncommitted/unstaged on `main`, from baseline `eef2f1eaf778300a10869539b8e94041113b9a07`,
+verified clean and matching cached/live origin, with one worktree and no stash.
+All five jobs in [exact-baseline CI 37231793151](https://github.com/RobinBrohl/storeos/actions/runs/37231793151)
+were green. The migration chain now ends at 0018; 0001–0017 are unchanged. See
+[P4.6 evidence](development/phase-4-6-task-knowledge-guidance.md) and
+[ADR 0020](adr/0020-task-knowledge-guidance.md). No commit, push, branch/dependency
+change or normal database migration occurred. P4.7 is not selected.
+
+P4.5 Approved Operational Knowledge is **DONE/CLOSED**:
 independent adversarial review **APPROVE**, **60/60 PASS**, and all five jobs green
 in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360)
-for that exact implementation commit. The migration chain ends at
-`0017_approved_operational_knowledge.sql`; 0001–0016 are unchanged and no 0018 exists.
+for that exact implementation commit. Its closure migration chain ended at
+`0017_approved_operational_knowledge.sql`; 0001–0016 were unchanged at that closure.
 No active P4.5 remediation remains. F01/F02 are LOW, non-blocking follow-ups retained
 in [technical debt](development/technical-debt.md#p45-low-non-blocking-follow-ups).
 See [P4.5 evidence](development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
 and [ADR 0019](adr/0019-approved-operational-knowledge.md). Browser acceptance does
-not establish native-device or accessibility acceptance. This closure pass makes
+not establish native-device or accessibility acceptance. That P4.5 closure pass made
 no implementation change, commit, push or branch change.
 
 P4.3 Manual Stock Foundation is **DONE/CLOSED**: the committed acceptance correction
@@ -132,9 +143,8 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. After this documentation closure is committed, perform fresh P4.6 capability
-   selection from real operator evidence and the reconciled product vision.
-   No P4.6 capability is preselected or ACTIVE; no active P4.5 remediation remains.
+1. Target-review the P4.6 F01 remediation and its fresh local acceptance evidence; changed-commit CI remains
+   pending. Do not mark P4.6 DONE/CLOSED or select P4.7.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

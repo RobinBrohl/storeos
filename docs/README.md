@@ -1,7 +1,10 @@
 # Documentation index
 
 Canonical sources reconciled 2026-10-04. Start with [HANDOVER](HANDOVER.md) after
-[AGENTS](../AGENTS.md). Current source baseline is `93072a4`; P4.3 Manual Stock
+[AGENTS](../AGENTS.md). Current baseline is `eef2f1e`; P4.6 is implemented locally,
+independent review remediation complete / targeted review pending and remote
+changed-commit CI pending. See [ADR 0020](adr/0020-task-knowledge-guidance.md)
+and [P4.6 evidence](development/phase-4-6-task-knowledge-guidance.md). P4.3 Manual Stock
 Foundation is **DONE/CLOSED**, with independent targeted review APPROVE, 28/28 PASS
 and all five jobs green in [changed-commit CI run 37199144795](https://github.com/RobinBrohl/storeos/actions/runs/37199144795).
 See the [final closure](development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
@@ -14,9 +17,9 @@ remains absent regression. P4.5 Approved Operational Knowledge is **DONE/CLOSED*
 with independent adversarial review APPROVE, 60/60 PASS and all five jobs green in
 [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360).
 See [final evidence](development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
-and [ADR 0019](adr/0019-approved-operational-knowledge.md). Migration chain ends at
-0017; no active P4.5 remediation remains. F01/F02 are LOW non-blocking follow-ups.
-After this closure commit, fresh P4.6 capability selection is required; none is preselected.
+and [ADR 0019](adr/0019-approved-operational-knowledge.md). Current migration chain
+ends at 0018; no active P4.5 remediation remains. F01/F02 are LOW non-blocking follow-ups.
+P4.6 targeted review/CI remain pending; P4.7 is not selected.
 Do not infer delivery from a target architecture description or an Accepted ADR.
 
 ## Canonical sources

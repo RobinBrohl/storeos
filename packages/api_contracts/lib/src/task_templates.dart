@@ -7,14 +7,21 @@ class TaskTemplateContent {
     required this.title,
     required List<TemplateStep> steps,
     this.schemaVersion = 1,
+    this.knowledgeGuidance,
   }) : steps = List.unmodifiable(steps);
   final int schemaVersion;
   final String title;
   final List<TemplateStep> steps;
+  final KnowledgeGuidance? knowledgeGuidance;
   factory TaskTemplateContent.fromJson(Map<String, dynamic> json) {
-    _keys(json, {'schemaVersion', 'title', 'steps'});
+    _keys(json, {
+      'schemaVersion',
+      'title',
+      'steps',
+      if (json['schemaVersion'] == 3) 'knowledgeGuidance',
+    });
     if (json['schemaVersion'] is! int ||
-        !{1, 2}.contains(json['schemaVersion']) ||
+        !{1, 2, 3}.contains(json['schemaVersion']) ||
         json['steps'] is! List) {
       throw const FormatException('Ungültiges Inhaltsschema.');
     }
@@ -43,6 +50,9 @@ class TaskTemplateContent {
       title: title,
       steps: steps,
       schemaVersion: json['schemaVersion'] as int,
+      knowledgeGuidance: json['knowledgeGuidance'] == null
+          ? null
+          : KnowledgeGuidance.fromJson(_object(json['knowledgeGuidance'])),
     );
     if (utf8.encode(jsonEncode(value.toJson())).length > 8192) {
       throw const FormatException(
@@ -55,6 +65,85 @@ class TaskTemplateContent {
     'schemaVersion': schemaVersion,
     'title': title,
     'steps': steps.map((s) => s.toJson()).toList(),
+    if (schemaVersion == 3) 'knowledgeGuidance': knowledgeGuidance?.toJson(),
+  };
+}
+
+/// Exact approved Knowledge identity. Scope comes from the owning work context.
+class KnowledgeGuidance {
+  const KnowledgeGuidance({required this.articleId, required this.revisionId});
+  final String articleId, revisionId;
+  factory KnowledgeGuidance.fromJson(Map<String, dynamic> json) {
+    _keys(json, {'articleId', 'revisionId'});
+    return KnowledgeGuidance(
+      articleId: _id(json, 'articleId'),
+      revisionId: _id(json, 'revisionId'),
+    );
+  }
+  Map<String, dynamic> toJson() => {
+    'articleId': articleId,
+    'revisionId': revisionId,
+  };
+  bool sameAs(KnowledgeGuidance? other) =>
+      other != null &&
+      articleId == other.articleId &&
+      revisionId == other.revisionId;
+}
+
+/// Safe historical instruction resolved by the server from an authorized task.
+class TaskKnowledgeDto {
+  const TaskKnowledgeDto({
+    required this.taskId,
+    required this.articleId,
+    required this.revisionId,
+    required this.revisionNumber,
+    required this.title,
+    required this.body,
+    required this.publishedAt,
+    required this.superseded,
+    required this.articleRetired,
+  });
+  final String taskId, articleId, revisionId, title, body;
+  final int revisionNumber;
+  final DateTime publishedAt;
+  final bool superseded, articleRetired;
+  factory TaskKnowledgeDto.fromJson(Map<String, dynamic> json) {
+    _keys(json, {
+      'taskId',
+      'articleId',
+      'revisionId',
+      'revisionNumber',
+      'title',
+      'body',
+      'publishedAt',
+      'superseded',
+      'articleRetired',
+    });
+    if (json['superseded'] is! bool || json['articleRetired'] is! bool) {
+      throw const FormatException('Invalid instruction lifecycle.');
+    }
+    return TaskKnowledgeDto(
+      taskId: _id(json, 'taskId'),
+      articleId: _id(json, 'articleId'),
+      revisionId: _id(json, 'revisionId'),
+      revisionNumber: _positive(json, 'revisionNumber'),
+      title: _text(json, 'title'),
+      body: _text(json, 'body'),
+      publishedAt: _time(json, 'publishedAt'),
+      superseded: json['superseded'] as bool,
+      articleRetired: json['articleRetired'] as bool,
+    );
+  }
+  Map<String, dynamic> toJson() => {
+    'taskId': taskId,
+    'articleId': articleId,
+    'revisionId': revisionId,
+    'revisionNumber': revisionNumber,
+    'title': title,
+    'body': body,
+    'publishedAt': publishedAt.toUtc().toIso8601String(),
+    'superseded': superseded,
+    'articleRetired': articleRetired,
   };
 }
 

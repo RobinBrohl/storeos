@@ -89,10 +89,57 @@ See [ADR 0020](../adr/0020-task-knowledge-guidance.md) and
 
 ## Future guidance extensions
 
-Assigned published Planogram revision guidance remains a separate future contract.
+Assigned exact Planogram deployment guidance is delivered in P4.7 below. Future feedback, deviation and media workflows require separate contracts.
 Knowledge/Merchandising own publication, assignment and content;
 Tasks owns execution, feedback/evidence linkage and permissions. Employee suggestions
 or deviations require authorized review; they do not silently republish instructions.
 Live Article/Assortment/Stock drill-down is a separate authorized query with freshness,
 not a replacement of the pinned execution content. Print/PDF identifies the selected
 revision. P4.6 adds no Planogram guidance, feedback workflow or live drill-down integration.
+
+## Assigned Planogram deployment guidance (P4.7)
+
+P4.7 is **DONE/CLOSED**. Schema 4 supports independent nullable `knowledgeGuidance`
+and `planogramGuidance`; schemas 1–3 remain unchanged. One Template may retain one
+optional concrete PlanogramGuidance with exactly `fixtureId`, `assignmentId` and
+`revisionId`. There is no generic guidance/reference framework.
+
+Fixture identifies the physical target and Location; Assignment identifies the exact
+deployment occurrence; Revision freezes the published structure. Explicit selection
+captures F/A1/R1, Template publication validates and freezes it, and fresh Shift
+publication revalidates it and copies it into immutable Task content. After F/A2/R2,
+the existing Task resolves A1/R1 while standalone Merchandising shows A2/R2. Publishing
+R2 alone leaves A1/R1 valid. Returning R1 as A3 does not revive A1. No automatic rebase
+occurs. Retirement blocks fresh publication but preserves authorized historical Task
+evidence; it is not emergency withdrawal.
+
+Current Company, configured execution Location and capability/resource authorization
+precede every retained read and committed replay. Management/Template work Location
+must equal the currently configured Location; mismatch is `403 forbidden`. Employees
+need a valid session, active Employee link, own visible Shift/Task, Task self-read and
+Merchandising read. Managers need legitimate scoped Shift/Task access and Merchandising
+read. The server derives the exact tuple from stored content; this is no general
+Assignment/Revision history browser. Returning legitimately to the work Location
+restores access if all normal authorization passes.
+
+Committed Template/Shift replay may return original evidence after reassignment or
+retirement only after current authorization. It bypasses fresh lifecycle validation,
+never current Location scope, and duplicates neither Tasks nor audit nor changes pins.
+Selection failure is `422 planogram_selection_unavailable`; fresh retained-pin failure
+is `422 planogram_guidance_unavailable`. The removed unreachable selector
+`409 invalid_lifecycle` stays removed; reachable Template/Shift conflicts remain.
+
+Frozen evidence includes F/A/R, Zones, placements, Article identities, ordering and
+facings. Fixture descriptors, Article labels/status, Assortment, optional Stock,
+lifecycle indicators and query time are explicitly current enrichment. Missing,
+zero and unavailable Stock remain distinct; supported optional failure preserves
+retained layout. No Stock writes are introduced. Knowledge lifecycle/authorization
+remains independent from the Planogram pin.
+
+Opening Assigned layout does not start, confirm, record numeric input, complete,
+acknowledge or track readership, emit an event or mutate Task execution. Returning
+preserves execution state; completion retains the immutable tuple. Migration 0019
+protects durable scope/identity and Template correspondence without encoding current
+Assignment, active lifecycle or transient configured Location in permanent FKs.
+See [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md) and
+[P4.7 closure evidence](../development/phase-4-7-task-planogram-guidance.md#final-documentation-closure--2026-10-05).

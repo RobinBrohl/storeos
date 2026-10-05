@@ -1,6 +1,17 @@
 # StoreOS handover
 
-P4.7 Task + exact Planogram Assignment execution pinning is **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW APPROVE / SECURITY REMEDIATION COMPLETE / TARGETED SECURITY RE-REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING** on `main`, uncommitted and unstaged. The verified starting HEAD was `a0ed6346f7453c8f4e170aee43af8d775677f97b`, matching cached/live origin; all five exact-HEAD jobs succeeded in [baseline CI 37290533013](https://github.com/RobinBrohl/storeos/actions/runs/37290533013). New migration 0019 adds schema 4 and durable Fixture/Assignment/Revision integrity; migrations 0001–0018 and dependencies/lockfiles are unchanged. Existing P4.1–P4.6 closure remains intact. No P4.8 capability is selected.
+P4.7 Task + exact Planogram Assignment execution pinning is **DONE/CLOSED** at implementation commit
+`ccfa3df78f141da9577e988a9f8ddfb21ca4df1f` on `main`. Before documentation closure, HEAD matched cached and live
+`origin/main`; the tree/index were clean, with no stash and one intended worktree.
+Initial independent review **CHANGES REQUIRED** led to bounded LOW F01/F02 remediation
+and targeted **APPROVE**; final product acceptance is **80/80 PASS**. Initial Codex Security
+**SECURITY CHANGES REQUIRED** identified LOW/CWE-863 configured work-Location scope F01;
+bounded runtime authorization remediation is complete and the supplied targeted security
+re-review returned **SECURITY APPROVE**. All five exact-HEAD jobs succeeded in
+[changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). Migration 0019 completes the 0001–0019 chain;
+0001–0018 and dependencies/lockfiles are unchanged. No active P4.7 remediation remains.
+Existing P4.1–P4.6 closure remains intact. Next after the documentation closure commit:
+fresh P4.8 capability selection; no P4.8 capability is selected or ACTIVE.
 
 See [P4.7 evidence](development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](adr/0021-task-planogram-assignment-guidance.md). Fresh selection/publication requires the exact current eligible Assignment. Historical Task reads keep the stored tuple after reassignment and terminal retirement; opening either guidance panel is read-only. All business acceptance writes used isolated databases; the normal StoreOS database was untouched.
 
@@ -159,7 +170,7 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. Obtain targeted security re-review of the bounded P4.7 Security F01 remediation. Independent normal review APPROVE is preserved; remote changed-commit CI remains pending until a user-authorized commit/push. No P4.8 capability is preselected. No active P4.6 remediation remains.
+1. After the documentation closure commit, perform fresh P4.8 capability selection. P4.7 is DONE/CLOSED with no active remediation; no P4.8 capability is preselected.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

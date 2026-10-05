@@ -87,6 +87,27 @@ and all five jobs green in [changed-commit CI 37287951549](https://github.com/Ro
 P4.6 is **DONE/CLOSED**, with no active remediation. This F01 is distinct from the
 still-open P4.5 mounted standalone search follow-up. Global M3/M4 remain open.
 
+## P4.7 closed delivery findings
+
+P4.7 is **DONE/CLOSED** at `ccfa3df`, with **80/80 PASS** and all five jobs successful
+in [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). Initial independent **CHANGES REQUIRED** identified LOW
+F01 (unreachable selector 409) and F02 (incomplete backup acceptance evidence).
+Both are CLOSED after bounded remediation and targeted **APPROVE**. The backup
+finding established incomplete evidence, not restore corruption.
+
+Separate Codex Security **SECURITY CHANGES REQUIRED** found LOW/CWE-863 Security F01,
+configured management/Template work-Location scope omission. Explicit runtime
+Location authorization now precedes retained reads/enrichment and committed replay;
+supplied targeted re-review returned **SECURITY APPROVE**. No cross-Company or employee
+IDOR vulnerability was established. No active P4.7 remediation or security commit
+blocker remains. See [closure history](phase-4-7-task-planogram-guidance.md#final-documentation-closure--2026-10-05).
+
+M1's proxy/login-limiter pilot gate, closed M2, local containment of M3, broader M4,
+P4.5 LOW F01/F02 follow-ups, accepted supported-writer/raw-SQL boundary, memory-only
+uncertain-command recovery and physical-device/accessibility/operator gaps retain
+their existing dispositions. P4.7's literal Chrome surfaces strengthen local evidence
+without closing unrelated global debt.
+
 ## Original medium findings
 
 | ID | State | Current disposition / trigger |

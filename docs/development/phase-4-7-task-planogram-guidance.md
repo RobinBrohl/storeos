@@ -2,9 +2,12 @@
 
 Date: 2026-10-05.
 
-**IMPLEMENTED LOCALLY / INDEPENDENT REVIEW APPROVE / SECURITY REMEDIATION COMPLETE / TARGETED SECURITY RE-REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING.**
+**DONE/CLOSED** at implementation `ccfa3df78f141da9577e988a9f8ddfb21ca4df1f`;
+**80/80 PASS**, targeted independent **APPROVE**, targeted Codex Security
+**SECURITY APPROVE** and green [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784).
+No active P4.7 remediation remains.
 
-This record covers implementation verification on uncommitted, unstaged `main`. Independent normal review APPROVE and the subsequent Codex Security SECURITY CHANGES REQUIRED verdict are supplied review evidence; targeted security re-review remains pending. The 80 product criteria retain their original numbering, with separate security evidence below. This remediation invoked no new security scan, dependency install/upgrade, branch switch, staging, commit, push or GitHub mutation. P4.8 is not selected.
+This record preserves the original implementation and both remediation histories. The final closure below supersedes their historical pending states. Targeted security approval is supplied review evidence from the closure request; Git/GitHub baseline and CI are dynamically verified. The 80 product criteria retain their original numbering; Security F01 is a separate closed delivery gate, not criterion 81. P4.8 is not selected.
 
 ## Verified starting baseline
 
@@ -197,12 +200,12 @@ All 80 rows below are reassessed against final contracts/source and new executio
 including schema, tuple, replay, authorization, frozen/live and session tests.
 Criterion 63 now proves accurate reachable contracts. Criterion 70 retains its
 narrower original historical-pin/read PASS and now proves the entire broader backup
-gate. Criterion 77 uses exact final source. Status is **IMPLEMENTED LOCALLY /
+gate. Criterion 77 uses exact final source. Status at the normal-remediation checkpoint was **IMPLEMENTED LOCALLY /
 INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING / REMOTE
 CHANGED-COMMIT CI PENDING**, never DONE/CLOSED. Targeted independent review,
-separately requested security review and remote changed-commit CI remain gates.
+separately requested security review and remote changed-commit CI remained gates at that checkpoint.
 
-## Codex Security F01 and bounded security remediation — 2026-10-05
+## Codex Security F01 and bounded security remediation — 2026-10-05 (historical)
 
 After the initial implementation, independent **CHANGES REQUIRED** review for
 normal-review F01/F02 and bounded normal remediation, the supplied targeted
@@ -262,15 +265,15 @@ the full four-package regression/analyzers/format/Web/Compose, P4.7/P4.6/Knowled
 Chrome, numeric E2E, print, backup/restore, update/recovery and diagnostic/crypto
 harnesses. Historical counts above describe their earlier source, not this pass.
 
-Current delivery is **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW APPROVE / SECURITY
+Delivery at the security-remediation checkpoint was **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW APPROVE / SECURITY
 REMEDIATION COMPLETE / TARGETED SECURITY RE-REVIEW PENDING / REMOTE CHANGED-COMMIT
 CI PENDING**. The original **80/80 PASS** product matrix is reassessed for regression;
 Security F01 is an additional delivery gate, not an 81st product criterion.
-This record does not claim independent security closure or DONE/CLOSED.
+That checkpoint did not claim independent security closure or DONE/CLOSED; final closure below supersedes it.
 
-## Acceptance criteria (final security remediation source)
+## Acceptance criteria (final security remediation source; checkpoint history)
 
-Evidence abbreviations refer to production contract tests, `apps/server/test/task_planogram_integration_test.dart`, `apps/client_flutter/test/task_template_test.dart`, `apps/client_flutter/test/task_planogram_test.dart`, the real HTTP journey/browser test and final security remediation regression/acceptance runs above. Each row states its own result and decisive proof. Independent normal review APPROVE is preserved; targeted security re-review remains pending.
+Evidence abbreviations refer to production contract tests, `apps/server/test/task_planogram_integration_test.dart`, `apps/client_flutter/test/task_template_test.dart`, `apps/client_flutter/test/task_planogram_test.dart`, the real HTTP journey/browser test and final security remediation regression/acceptance runs above. Each row states its own result and decisive proof. At this checkpoint, independent normal review APPROVE was preserved and targeted security re-review remained pending; final closure below supersedes the pending status.
 
 | # | Criterion | Local result | Evidence |
 | --- | --- | --- | --- |
@@ -355,10 +358,173 @@ Evidence abbreviations refer to production contract tests, `apps/server/test/tas
 | 79 | No unrelated P4.8 capability added. | PASS | Bounded diff inspection; excluded capabilities absent; no P4.8 selected. |
 | 80 | Normal StoreOS database remains untouched. | PASS | Strict generated database identities, owned-resource cleanup and normal database identity check. |
 
-## Repository and residual boundaries
+## Repository and residual boundaries (historical remediation checkpoint)
 
-Final read-only Git checks confirm `main` at unchanged HEAD/cached/live origin `a0ed6346f7453c8f4e170aee43af8d775677f97b`, empty index, no stash and one worktree. The complete implementation remains unstaged/uncommitted; nothing was pushed. Only migration 0019 is new; all 18 predecessors retain identical Git content (line-ending-normalized comparison against HEAD), and no dependency/lockfile changed. Local documentation links and `git diff --check` pass.
+At that checkpoint, final read-only Git checks confirmed `main` at unchanged HEAD/cached/live origin `a0ed6346f7453c8f4e170aee43af8d775677f97b`, empty index, no stash and one worktree. The complete implementation was then unstaged/uncommitted; nothing had been pushed. Only migration 0019 is new; all 18 predecessors retain identical Git content (line-ending-normalized comparison against HEAD), and no dependency/lockfile changed. Local documentation links and `git diff --check` pass.
 
 Read-only PostgreSQL catalog verification from `postgres` found the normal `storeos` database present and no P4.7/backup/update/recovery run databases left. The original healthy PostgreSQL container remains. No ChromeDriver or acceptance/E2E listeners remain on their owned ports. Latest backup/update run directories contain only sanitized `report.json`; keys, dumps and private manifests were removed. Normal StoreOS business data was never migrated or written by these runs. Ignored test logs/reports and the release build are retained as intentional verification artifacts.
 
-P4.7 does not add Stock writes, events/outbox, generic guidance, per-step/multiple Planograms, read acknowledgment, photo/deviation workflows, printing extensions, recurrence, emergency withdrawal, offline queues, synchronization or a P4.8 capability. Existing supported-writer and physical-device/accessibility/operator limits remain as documented in prior accepted slices. Targeted security re-review and remote changed-commit CI are the remaining delivery gates; independent normal review APPROVE and the Security F01 chronology are preserved.
+P4.7 does not add Stock writes, events/outbox, generic guidance, per-step/multiple Planograms, read acknowledgment, photo/deviation workflows, printing extensions, recurrence, emergency withdrawal, offline queues, synchronization or a P4.8 capability. Existing supported-writer and physical-device/accessibility/operator limits remain as documented in prior accepted slices. At that checkpoint, targeted security re-review and remote changed-commit CI were the remaining delivery gates; independent normal review APPROVE and the Security F01 chronology are preserved.
+
+## Final documentation closure — 2026-10-05
+
+### Verified closure baseline and CI
+
+P4.7 Task + exact Planogram Assignment execution pinning is **DONE/CLOSED**.
+Implementation commit **`ccfa3df78f141da9577e988a9f8ddfb21ca4df1f`** is present at HEAD on `main`.
+Before these documentation edits, tree/index were clean, no stash existed and exactly
+one intended worktree existed at `C:/dev/storeos`. HEAD equalled cached `origin/main`
+and live `refs/heads/main`, verified with read-only Git remote access. GitHub Actions
+API verified the latest exact-HEAD changed-commit **CI run 37377829784**, completed
+successfully: `dart`, `flutter`, `numeric-guided-work-e2e`,
+`backup-restore-acceptance`, `update-recovery-acceptance` all succeeded.
+See [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). Baseline CI 37290533013 above remains historical evidence only.
+
+The migration chain contains exactly 0001–0019, ending at
+`0019_task_planogram_guidance.sql`; no 0020 exists. Git comparison against predecessor
+`a0ed6346f7453c8f4e170aee43af8d775677f97b` confirms migrations 0001–0018 and
+manifest/dependency/lockfile content unchanged. Migration 0019 is also unchanged
+by the bounded security remediation and this closure. No active P4.7 remediation remains.
+
+### Selection and full delivery chronology
+
+1. Fresh capability selection evaluated Task + Planogram execution pinning,
+   Inventory Count / Cycle Count, Recipe / Manufactured Article, Supplier /
+   Purchasing / Goods Receipt, Shift Swap / Transfer, HACCP Operational Log and
+   External POS / Sales Ingestion. Task + exact Planogram Assignment execution
+   pinning was selected; this selection chronology is supplied by the closure request.
+2. Architecture selected concrete PlanogramGuidance with exact Fixture + Assignment
+   + PlanogramRevision identity, schema 4 preserving schemas 1–3, historical Task
+   contextual access and current-deployment standalone Merchandising. No generic
+   InstructionReference or guidance abstraction was introduced.
+3. Initial local implementation added migration 0019 and reported **80/80 PASS**.
+4. First independent adversarial review returned **CHANGES REQUIRED**: LOW commit
+   blockers normal F01 (unreachable selector `409 invalid_lifecycle`) and normal F02
+   (incomplete requested Article/Assortment/Stock/Planogram backup evidence).
+5. Bounded normal remediation removed that selector 409, retained selection-specific
+   422, expanded Article/Assortment/Stock restore proof, added Planogram historical
+   denials and restored database protection probes. Targeted independent review
+   returned **APPROVE**; final product acceptance remained **80/80 PASS**.
+6. Focused Codex Security review returned **SECURITY CHANGES REQUIRED** for separate
+   Security F01, **LOW / CWE-863**, configured work-Location authorization omission
+   affecting management/Template retained paths. No cross-Company or employee-IDOR
+   vulnerability was established.
+7. Bounded security remediation added explicit configured work-Location enforcement
+   with existing `403 forbidden`, covering Template management, manager Task context,
+   committed replay and authorization before Article/Assortment/Stock enrichment.
+   Migration 0019 remained unchanged. Supplied targeted Codex Security re-review
+   returned **SECURITY APPROVE**; Security F01 is CLOSED with no security commit blocker.
+8. Final local regression remained green and implementation was committed as
+   `ccfa3df78f141da9577e988a9f8ddfb21ca4df1f`. Its changed-commit CI is fully green as dynamically verified above.
+
+Both initial negative verdicts remain part of history. Review verdicts are supplied
+review evidence, not new reviews performed by this documentation pass. Criterion 78
+above records truthful pending status at its original checkpoint; this closure
+supersedes that status without renumbering or inventing criterion 81.
+
+### Final contract and authorization
+
+One TaskTemplate may carry one optional concrete PlanogramGuidance containing
+exactly `fixtureId`, `assignmentId`, `revisionId`. Schema 4 independently permits
+nullable Knowledge and Planogram guidance; schemas 1–3 remain unchanged. Fixture
+supplies physical target/Location, Assignment the exact deployment occurrence and
+Revision immutable structure. Revision alone cannot distinguish multiple Fixtures
+or repeated deployments; Fixture alone follows changing current Assignment.
+A1/R1 → A2/R2 → A3/R1 never makes A1 current again.
+
+Lifecycle: current F/A1/R1 → explicit Template selection → validated/frozen Template
+publication → fresh Shift revalidation and immutable Task copy → exact Task A1/R1
+execution. Later F/A2/R2 leaves existing Task at A1/R1 and standalone Merchandising
+at A2/R2. No automatic upgrade/rebase occurs. Publishing R2 alone leaves A1/R1
+valid while A1 remains current. Actual reassignment or relevant lifecycle invalidation
+blocks fresh work. Reassignment and Planogram/Fixture retirement preserve authorized
+historical committed Tasks. Retirement is not emergency withdrawal.
+
+Historical durability never bypasses current authorization. Management/Template
+retained access requires same Company, work Location equal to currently configured
+execution Location and existing capability/resource scope. A manager configured for
+A cannot read/publish/replay B work; legitimately returning to B restores access if
+all normal authorization passes. Configured Location is runtime authorization,
+not a permanent retained foreign key.
+
+Employee contextual access requires current valid session, active Employee link,
+correct Company/configured Location, own visible Shift and Task, stored exact pin,
+Task self-read and Merchandising read. Manager reads require authorized Shift/Task
+scope, configured Location and Merchandising read. Server derives F/A/R from stored
+content; clients choose no historical IDs. Neither path is a general history browser.
+
+Committed Template/Shift replay first requires current authentication and Company/
+Location/capability scope, then may return original committed evidence after
+reassignment/retirement without fresh lifecycle validation. It neither duplicates
+Tasks/audit nor alters pins. Lifecycle changes may be ignored; current configured
+Location mismatch may not. Selection failure is `422 planogram_selection_unavailable`;
+fresh retained-pin failure is `422 planogram_guidance_unavailable`; wrong configured
+Location is `403 forbidden`. Removed selector `409 invalid_lifecycle` remains absent;
+reachable Template/Shift 409 conflicts remain.
+
+Frozen evidence retains Fixture/Assignment/Revision, published Zones, placements,
+Article identities, order/facings and structure. Current enrichment includes Fixture
+descriptor, Article label/status, Assortment, optional Stock, reassigned/retired
+indicators and query timestamp. Live labels/Stock are not historical evidence.
+Missing, zero and unavailable Stock are distinct; supported optional failures leave
+retained layout visible. P4.7 adds no Stock mutation. Knowledge and Planogram pins,
+lifecycles and authorization remain independent.
+
+Opening Assigned layout does not start work, confirm a step, record numeric input,
+complete, acknowledge, track readership, emit an event or mutate execution state.
+Returning preserves state; completion keeps the immutable exact tuple. Generated
+columns derive from source content, bind Company/Location/F/A/R and protect Template/
+Task correspondence and immutable guidance. They are not independently writable
+truth. No broad runtime grants or SECURITY DEFINER addition exists. These guarantees
+retain the accepted supported-writer boundary, not arbitrary privileged-SQL protection.
+
+### Final acceptance and evidence limits
+
+Final frozen-source evidence in `.local/p47-security-final-summary.json` records
+**691** standard suite tests: contracts **105**, server/PostgreSQL **298**, Flutter
+**286**, design system **2**; three opt-in browser skips were each run separately.
+Focused configured-Location proof passed with **20** cross-Location denials;
+P4.7 PostgreSQL/HTTP passed **41/41**. All four analyzers/formats, Web release,
+Compose, six diagnostic/crypto harnesses and full regression passed. Final source
+fingerprint remained unchanged across those checks. Product acceptance is
+**80/80 PASS**; separate Security F01 delivery gate is now closed.
+
+Final backup acceptance `.local/backup-acceptance/6aec2def91674933/report.json`
+compared **20 evidence tables / 2 sequences**: schemas 1–4, retained F/A1/R1,
+current A2/R2, Knowledge guidance, Article, Location Assortment, non-empty Stock,
+attributable StockMovement, execution evidence, receipts and audit. Restored
+historical contextual reads/current projection, five Planogram-specific historical
+denials, four configured-Location denials, 14 tuple/snapshot/immutability/runtime
+rejections, six generated columns, session/plugin revocation and runtime DB fencing
+passed. Initial F02 was incomplete acceptance evidence, not corrupted backup.
+
+Final update/recovery `.local/update-recovery/ee87be9f2dd24b9e/report.json` passed.
+Clean migration through 0019, populated 0018→0019 and failed-0019 rollback preserve
+predecessor content, schema-4 pins, Knowledge/Planogram/Stock evidence, receipts and
+audit. Isolated recovery/fencing remains supported; no downgrade support is claimed.
+
+Real Flutter/HTTP/PostgreSQL and P4.7 Chrome workflows passed; P4.6 and Knowledge
+Chrome regressions each passed. Dynamic strings remain literal/non-executable in
+new P4.7 surfaces. Planogram print regression passed **100 placements / 20 A4
+landscape pages / 10 Zones**, Unicode, escaping and layout checks. No physical-printer,
+native-device or accessibility acceptance is claimed. This documentation pass reran
+no software regression or business/database acceptance.
+
+### Residual state and next action
+
+M1 proxy/login-limiter pilot gate, closed M2, local M3 containment, broader M4 taxonomy
+debt, accepted supported-writer/raw-SQL boundary, memory-only uncertain-command
+recovery, physical-device/accessibility/operator gaps and P4.5 LOW F01/F02 follow-ups
+retain their dispositions. No unrelated debt is reopened or closed.
+
+Closure validation passed `git diff --check`, status/stat/diff inspection, local
+documentation link targets, unchanged predecessor migration Git blobs, original
+criteria 1–80 (all PASS), current-status reconciliation and the documentation-only
+allowlist. Index remains empty; no untracked files, stash or additional worktree exists.
+Software regression was not rerun for this documentation-only closure.
+
+This pass changes documentation only, unstaged/uncommitted on `main`, without branch
+creation/switch, production/test/migration/script/CI/OpenAPI/dependency edits, commit
+or push. P4.7 is canonically **DONE/CLOSED**, with no active remediation. Next action
+after the documentation closure commit is **fresh P4.8 capability selection**;
+no P4.8 capability is preselected or ACTIVE.

@@ -1,6 +1,6 @@
 # ADR 0021: Task Planogram Assignment guidance
 
-Status: Accepted contract; implemented locally, independent review APPROVE, security remediation complete, targeted security re-review and remote changed-commit CI pending.
+Status: Accepted implementation decision; P4.7 **DONE/CLOSED** at `ccfa3df`. Targeted independent APPROVE, 80/80 PASS, targeted SECURITY APPROVE and green [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784); no active remediation.
 Date: 2026-10-05
 
 ## Context
@@ -39,4 +39,4 @@ Apply migration 0019 before deploying schema-4-aware server/client binaries toge
 
 ## Open Questions
 
-No unresolved implementation decision remains within this slice. Independent normal review APPROVE followed the F01/F02 remediation. Codex Security subsequently required bounded Security F01 remediation for omitted configured work Location scope; targeted security re-review and changed-commit remote CI remain pending. Emergency withdrawal, offline writes, multi-site synchronization, rollout acknowledgment and physical device/accessibility acceptance require separate contracts or acceptance.
+No unresolved implementation decision remains within this slice. Independent normal review APPROVE followed the F01/F02 remediation. Codex Security subsequently required bounded Security F01 remediation for omitted configured work Location scope; bounded remediation is complete and supplied targeted re-review returned SECURITY APPROVE. Exact-HEAD changed-commit CI is green; no active P4.7 remediation remains. Emergency withdrawal, offline writes, multi-site synchronization, rollout acknowledgment and physical device/accessibility acceptance require separate contracts or acceptance.

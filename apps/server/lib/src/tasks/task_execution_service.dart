@@ -270,6 +270,13 @@ class TaskExecutionService {
           'knowledgeArticleId': task.content!.knowledgeGuidance!.articleId,
           'knowledgeRevisionId': task.content!.knowledgeGuidance!.revisionId,
         },
+        if (command == 'complete' &&
+            task.content?.planogramGuidance != null) ...{
+          'fixtureId': task.content!.planogramGuidance!.fixtureId,
+          'planogramAssignmentId':
+              task.content!.planogramGuidance!.assignmentId,
+          'planogramRevisionId': task.content!.planogramGuidance!.revisionId,
+        },
       },
     );
     await _repository.remember(

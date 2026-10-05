@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'task_numbers.dart';
+import 'task_planogram.dart';
 
 /// Versioned instruction content, not execution results or a workflow engine.
 class TaskTemplateContent {
@@ -8,20 +9,23 @@ class TaskTemplateContent {
     required List<TemplateStep> steps,
     this.schemaVersion = 1,
     this.knowledgeGuidance,
+    this.planogramGuidance,
   }) : steps = List.unmodifiable(steps);
   final int schemaVersion;
   final String title;
   final List<TemplateStep> steps;
   final KnowledgeGuidance? knowledgeGuidance;
+  final PlanogramGuidance? planogramGuidance;
   factory TaskTemplateContent.fromJson(Map<String, dynamic> json) {
     _keys(json, {
       'schemaVersion',
       'title',
       'steps',
-      if (json['schemaVersion'] == 3) 'knowledgeGuidance',
+      if ({3, 4}.contains(json['schemaVersion'])) 'knowledgeGuidance',
+      if (json['schemaVersion'] == 4) 'planogramGuidance',
     });
     if (json['schemaVersion'] is! int ||
-        !{1, 2, 3}.contains(json['schemaVersion']) ||
+        !{1, 2, 3, 4}.contains(json['schemaVersion']) ||
         json['steps'] is! List) {
       throw const FormatException('Ungültiges Inhaltsschema.');
     }
@@ -53,6 +57,9 @@ class TaskTemplateContent {
       knowledgeGuidance: json['knowledgeGuidance'] == null
           ? null
           : KnowledgeGuidance.fromJson(_object(json['knowledgeGuidance'])),
+      planogramGuidance: json['planogramGuidance'] == null
+          ? null
+          : PlanogramGuidance.fromJson(_object(json['planogramGuidance'])),
     );
     if (utf8.encode(jsonEncode(value.toJson())).length > 8192) {
       throw const FormatException(
@@ -65,7 +72,9 @@ class TaskTemplateContent {
     'schemaVersion': schemaVersion,
     'title': title,
     'steps': steps.map((s) => s.toJson()).toList(),
-    if (schemaVersion == 3) 'knowledgeGuidance': knowledgeGuidance?.toJson(),
+    if ({3, 4}.contains(schemaVersion))
+      'knowledgeGuidance': knowledgeGuidance?.toJson(),
+    if (schemaVersion == 4) 'planogramGuidance': planogramGuidance?.toJson(),
   };
 }
 

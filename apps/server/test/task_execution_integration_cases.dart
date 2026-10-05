@@ -206,7 +206,7 @@ void executionTests() {
         );
         Future<String> snapshot() async =>
             (await f.owner.execute(
-                  'SELECT (to_jsonb(t)-ARRAY[\'started_at\',\'started_by\',\'completed_at\',\'completed_by\',\'cancelled_at\',\'cancelled_by\',\'knowledge_article_id\',\'knowledge_revision_id\',\'knowledge_revision_state\'])::text FROM "${f.schema}".task_instances t',
+                  'SELECT (to_jsonb(t)-ARRAY[\'started_at\',\'started_by\',\'completed_at\',\'completed_by\',\'cancelled_at\',\'cancelled_by\',\'knowledge_article_id\',\'knowledge_revision_id\',\'knowledge_revision_state\',\'planogram_fixture_id\',\'planogram_assignment_id\',\'planogram_revision_id\'])::text FROM "${f.schema}".task_instances t',
                 )).single.first
                 as String;
         final before = await snapshot();
@@ -229,6 +229,7 @@ void executionTests() {
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
           '0018_task_knowledge_guidance',
+          '0019_task_planogram_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

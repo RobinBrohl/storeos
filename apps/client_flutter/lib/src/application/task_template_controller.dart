@@ -23,6 +23,11 @@ class TaskTemplateController extends ChangeNotifier {
   String? nextCursor, revisionCursor, error, notice;
   String title = '';
   List<TemplateStep> steps = [];
+  PlanogramGuidance? planogramGuidance;
+  RetainedLayoutDto? planogramPreview;
+  LayoutViewDto? planogramSelectionPreview;
+  List<LayoutViewDto>? planogramChoices;
+  String? planogramCursor;
   KnowledgeGuidance? knowledgeGuidance;
   PublishedWikiDto? guidancePreview;
   List<PublishedWikiDto>? guidanceChoices;
@@ -63,8 +68,8 @@ class TaskTemplateController extends ChangeNotifier {
       ? 'Zuerst unter Organisation einen Standort einrichten.'
       : null;
   Map<String, dynamic> _editorJson() => {
-    'schemaVersion': _contentSchema == 3
-        ? 3
+    'schemaVersion': _contentSchema >= 3
+        ? _contentSchema
         : steps.any((s) => s.type == 'number')
         ? 2
         : _contentSchema,
@@ -80,7 +85,8 @@ class TaskTemplateController extends ChangeNotifier {
           },
         )
         .toList(),
-    if (_contentSchema == 3) 'knowledgeGuidance': knowledgeGuidance?.toJson(),
+    if (_contentSchema >= 3) 'knowledgeGuidance': knowledgeGuidance?.toJson(),
+    if (_contentSchema == 4) 'planogramGuidance': planogramGuidance?.toJson(),
   };
   void _notify() {
     if (!_disposed) notifyListeners();
@@ -111,6 +117,11 @@ class TaskTemplateController extends ChangeNotifier {
     title = '';
     steps = [];
     knowledgeGuidance = null;
+    planogramGuidance = null;
+    planogramPreview = null;
+    planogramSelectionPreview = null;
+    planogramChoices = null;
+    planogramCursor = null;
     guidancePreview = null;
     guidanceChoices = null;
     guidanceCursor = null;
@@ -277,6 +288,11 @@ class TaskTemplateController extends ChangeNotifier {
     steps = [...revision!.content!.steps];
     _contentSchema = revision!.content!.schemaVersion;
     knowledgeGuidance = revision!.content!.knowledgeGuidance;
+    planogramGuidance = revision!.content!.planogramGuidance;
+    planogramPreview = null;
+    planogramSelectionPreview = null;
+    planogramChoices = null;
+    planogramCursor = null;
     guidancePreview = null;
     guidanceChoices = null;
     guidanceCursor = null;
@@ -299,6 +315,125 @@ class TaskTemplateController extends ChangeNotifier {
       _notify();
     }
   }
+
+  Future<void> loadPlanograms({bool more = false}) => _run((epoch) async {
+    if (!platform.allows('merchandising.layouts.read') ||
+        revision?.isDraft != true ||
+        conflict ||
+        selected == null) {
+      return;
+    }
+    final location = selected!.locationId;
+    final raw = await _get(
+      epoch,
+      '/locations/$location/merchandising/fixtures',
+      after: more ? planogramCursor : null,
+    );
+    final loaded = <LayoutViewDto>[];
+    for (final row in (raw['items'] as List)) {
+      final fixture = FixtureDto.fromJson(row as Map<String, dynamic>);
+      if (fixture.locationId != location) throw const FormatException();
+      if (fixture.status != 'active' || fixture.currentAssignmentId == null) {
+        continue;
+      }
+      LayoutViewDto view;
+      try {
+        view = LayoutViewDto.fromJson(
+          await _get(
+            epoch,
+            '/locations/$location/merchandising/fixtures/${fixture.id}/guidance-selection',
+          ),
+        );
+      } on StoreApiException catch (error) {
+        if (error.code == 'planogram_selection_unavailable') continue;
+        rethrow;
+      }
+      if (view.fixture.id != fixture.id ||
+          view.fixture.locationId != location ||
+          view.assignment?.fixtureId != fixture.id ||
+          view.assignment?.id != fixture.currentAssignmentId ||
+          view.revision?.id != view.assignment?.revisionId) {
+        continue;
+      }
+      if (view.fixture.status == 'active' &&
+          view.revision?.status == 'published' &&
+          view.articles.every(
+            (a) => a['isActive'] == true && a['assortmentIsActive'] == true,
+          )) {
+        loaded.add(view);
+      }
+    }
+    planogramChoices = [if (more) ...planogramChoices ?? [], ...loaded];
+    planogramCursor = raw['nextCursor'] as String?;
+  });
+
+  void selectPlanogram(LayoutViewDto view) {
+    if (!editable ||
+        !_current(_epoch) ||
+        !(planogramChoices?.contains(view) ?? false) ||
+        view.assignment == null ||
+        view.revision == null) {
+      return;
+    }
+    planogramGuidance = PlanogramGuidance(
+      fixtureId: view.fixture.id,
+      assignmentId: view.assignment!.id,
+      revisionId: view.revision!.id,
+    );
+    _contentSchema = 4;
+    planogramPreview = null;
+    planogramSelectionPreview = view;
+    planogramChoices = null;
+    planogramCursor = null;
+    notice = null;
+    _notify();
+  }
+
+  void clearPlanogram() {
+    if (!editable || !_current(_epoch)) return;
+    planogramGuidance = null;
+    planogramPreview = null;
+    planogramSelectionPreview = null;
+    planogramChoices = null;
+    planogramCursor = null;
+    _notify();
+  }
+
+  Future<void> previewPlanogram() => _run((epoch) async {
+    final pin = planogramGuidance, head = selected, source = revision;
+    if (pin == null || head == null || source == null) return;
+    planogramPreview = null;
+    planogramSelectionPreview = null;
+    if (pin.sameAs(source.content?.planogramGuidance)) {
+      final result = RetainedLayoutDto.fromJson(
+        await _get(
+          epoch,
+          '/task-templates/${head.id}/revisions/${source.id}/planogram',
+        ),
+      );
+      if (!pin.sameAs(result.instruction.pin)) throw const FormatException();
+      planogramPreview = result;
+    } else {
+      final view = LayoutViewDto.fromJson(
+        await _get(
+          epoch,
+          '/locations/${head.locationId}/merchandising/fixtures/${pin.fixtureId}/guidance-selection',
+        ),
+      );
+      if (view.fixture.id != pin.fixtureId ||
+          view.fixture.locationId != head.locationId ||
+          view.assignment?.id != pin.assignmentId ||
+          view.assignment?.fixtureId != pin.fixtureId ||
+          view.revision?.id != pin.revisionId ||
+          view.assignment?.revisionId != pin.revisionId) {
+        throw const StoreApiException(
+          'planogram_selection_unavailable',
+          'Die Auswahl wurde geändert. Bitte ausdrücklich neu auswählen.',
+        );
+      }
+      planogramSelectionPreview = view;
+    }
+  });
 
   Future<void> loadGuidance({bool more = false}) => _run((epoch) async {
     if (!platform.allows('knowledge.articles.read') ||
@@ -330,7 +465,7 @@ class TaskTemplateController extends ChangeNotifier {
       'articleId': item.articleId,
       'revisionId': item.revisionId,
     });
-    _contentSchema = 3;
+    if (_contentSchema < 3) _contentSchema = 3;
     guidancePreview = item;
     guidanceChoices = null;
     guidanceCursor = null;
@@ -578,6 +713,10 @@ class TaskTemplateController extends ChangeNotifier {
     FormatException(:final message) when message.isNotEmpty => message,
     StoreApiException(code: 'empty_template') =>
       'Für die Freigabe ist mindestens ein vollständiger Schritt erforderlich.',
+    StoreApiException(code: 'planogram_selection_unavailable') =>
+      'Die ausgewählte Platzierung ist für diesen Entwurf nicht verfügbar. Bitte die aktuelle Zuweisung ausdrücklich auswählen; Ihre Eingaben bleiben erhalten.',
+    StoreApiException(code: 'planogram_guidance_unavailable') =>
+      'Die zugewiesene Platzierung ist für neue Arbeit nicht mehr verfügbar. Bitte entfernen oder neu auswählen; die Zuweisung wird nicht automatisch gewechselt.',
     StoreApiException(code: 'guidance_selection_unavailable') =>
       'Die ausgewählte Anleitung ist für diesen Entwurf nicht verfügbar. Bitte eine aktuelle freigegebene Revision auswählen; Ihre Eingaben bleiben erhalten.',
     StoreApiException(code: 'guidance_unavailable') =>

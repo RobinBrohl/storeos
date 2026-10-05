@@ -3,7 +3,7 @@
 // scripts/update/Run-UpdateRecoveryAcceptance.ps1 creates the database, grants
 // the restricted runtime role CONNECT and drops the database again. The owner
 // connection builds the pre-update schema and seed; the runtime role serves the
-// API only after the pending migrations (0011 through 0018) have been applied.
+// API only after the pending migrations (0011 through 0019) have been applied.
 //
 // Modes (STOREOS_UPDATE_MODE):
 //  - prepare: apply exactly migrations 0001-0010 from a byte-identical copy of
@@ -11,7 +11,7 @@
 //    evidence with owner SQL, capture stable projections and write the private
 //    run manifest plus a non-secret prepare result.
 //  - upgrade: apply the real repository migrations through the production
-//    MigrationRunner (only 0011 through 0018 may be pending), verify checksums,
+//    MigrationRunner (only 0011 through 0019 may be pending), verify checksums,
 //    idempotency, preservation of the pre-update projections, the new
 //    0011/0012 columns, constraints and the published-interval exclusion
 //    invariant, the 0013 article master, 0014 assortment and 0015 manual stock
@@ -39,6 +39,8 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
+import 'package:storeos_api_contracts/api_contracts.dart'
+    show RetainedLayoutDto;
 import 'package:postgres/postgres.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:storeos_server/src/application/auth_service.dart';
@@ -65,6 +67,7 @@ const _expectedPendingMigrations = [
   '0016_local_planograms',
   '0017_approved_operational_knowledge',
   '0018_task_knowledge_guidance',
+  '0019_task_planogram_guidance',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1070,7 +1073,7 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       throw StateError('The stock audit evidence is incomplete.');
     }
 
-    await seedLocalPlanogram(
+    final planogramGuidance = await seedLocalPlanogram(
       (method, route, body, status) => api.request(
         method,
         route,
@@ -1117,7 +1120,7 @@ Future<void> _smoke(Map<String, String> env, String source) async {
           'revisionId': revision,
           'locationId': locationId,
           'content': {
-            'schemaVersion': 3,
+            'schemaVersion': 4,
             'title': 'Update guided work',
             'steps': [
               {
@@ -1127,6 +1130,7 @@ Future<void> _smoke(Map<String, String> env, String source) async {
               },
             ],
             'knowledgeGuidance': guidance.toJson(),
+            'planogramGuidance': planogramGuidance.toJson(),
           },
         },
       );
@@ -1161,6 +1165,11 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       );
       final guidedTask = published['tasks'][0]['id'];
       await replaceAndRetireGuidance(guidanceRequest, guidance);
+      await replaceAndRetireLayoutGuidance(
+        guidanceRequest,
+        locationId,
+        planogramGuidance,
+      );
       final read = await api.request(
         'GET',
         '/api/v1/platform/employee-home/shifts/$shift/tasks/$guidedTask/knowledge',
@@ -1181,6 +1190,19 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         );
       }
       await verifyGuidanceEvidence(owner, _schema, runtimeUser);
+      await verifyLayoutGuidanceEvidence(owner, _schema, runtimeUser);
+      final layout = await api.request(
+        'GET',
+        '/api/v1/platform/employee-home/shifts/$shift/tasks/$guidedTask/planogram',
+        token: workerToken,
+      );
+      final retained = RetainedLayoutDto.fromJson(layout);
+      if (!retained.instruction.pin.sameAs(planogramGuidance) ||
+          !retained.currentContext.reassigned ||
+          !retained.currentContext.fixtureRetired ||
+          !retained.currentContext.planogramRetired) {
+        throw StateError('Updated contextual layout evidence changed.');
+      }
       await verifyKnowledgeEvidence(
         owner,
         _schema,
@@ -1203,9 +1225,16 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         'articleRetired': true,
         'runtimeProtections': true,
       },
+      'planogramGuidance': {
+        'migration': '0019_task_planogram_guidance',
+        'exactPinPreserved': true,
+        'historicalContextualRead': true,
+        'retiredReassigned': true,
+        'runtimeProtections': true,
+      },
       'merchandising': {
         'revisionCount': 2,
-        'assignmentCount': 2,
+        'assignmentCount': 3,
         'pinnedPrint': true,
       },
       'ready': true,

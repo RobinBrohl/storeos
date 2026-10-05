@@ -550,7 +550,7 @@ void cancellationTests() {
             (await f.owner.execute(
                   'SELECT jsonb_agg((${table == 'task_blockings' ? "to_jsonb(t)-'resolution_kind'-'numeric_attempt_id'" : "to_jsonb(t)-'numeric_attempt_id'-'cancelled_at'-'cancelled_by'"}'
                   '-ARRAY[\'knowledge_article_id\',\'knowledge_revision_id\','
-                  '\'knowledge_revision_state\']) ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
+                  '\'knowledge_revision_state\',\'planogram_fixture_id\',\'planogram_assignment_id\',\'planogram_revision_id\']) ORDER BY to_jsonb(t)::text)::text FROM "${f.schema}".$table t',
                 )).single.first
                 as String,
         ];
@@ -572,6 +572,7 @@ void cancellationTests() {
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
           '0018_task_knowledge_guidance',
+          '0019_task_planogram_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

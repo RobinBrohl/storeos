@@ -4,6 +4,7 @@ import '../application/auth_service.dart';
 import '../infrastructure/auth_store.dart';
 import '../merchandising/merchandising_service.dart';
 import 'api_support.dart';
+import '../platform/platform_database.dart';
 
 class MerchandisingRoutes {
   MerchandisingRoutes(AuthService auth, MerchandisingService service) {
@@ -139,6 +140,23 @@ class MerchandisingRoutes {
       (Request r, String l, String id) async =>
           jsonResponse(200, await service.layout(await actor(r), l, id)),
     );
+    router.get('$f/<fixtureId>/guidance-selection', (
+      Request r,
+      String l,
+      String id,
+    ) async {
+      if (r.url.hasQuery) {
+        throw const PlatformFailure(
+          400,
+          'invalid_query',
+          'Query parameters are forbidden.',
+        );
+      }
+      return jsonResponse(
+        200,
+        await service.guidanceSelection(await actor(r), l, id),
+      );
+    });
     router.get(
       '$f/<fixtureId>/assignments',
       (Request r, String l, String id) async => jsonResponse(

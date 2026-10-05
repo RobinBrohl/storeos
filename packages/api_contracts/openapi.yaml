@@ -7,6 +7,14 @@ servers:
   - url: http://127.0.0.1:8080
     description: Loopback development; use HTTPS for LAN deployments.
 paths:
+  /api/v1/platform/shifts/{id}/tasks/{task}/planogram:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1shifts~1{id}~1tasks~1{task}~1planogram'
+  /api/v1/platform/employee-home/shifts/{id}/tasks/{task}/planogram:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1employee-home~1shifts~1{id}~1tasks~1{task}~1planogram'
+  /api/v1/platform/task-templates/{id}/revisions/{revisionId}/planogram:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1task-templates~1{id}~1revisions~1{revisionId}~1planogram'
+  /api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/guidance-selection:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1merchandising~1fixtures~1{fixtureId}~1guidance-selection'
   /api/v1/platform/knowledge/articles:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1knowledge~1articles'
   /api/v1/platform/knowledge/articles/{articleId}:

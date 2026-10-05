@@ -11,6 +11,7 @@ import '../tasks/task_instance_service.dart';
 import '../tasks/task_execution_service.dart';
 import '../workforce/workforce_service.dart';
 import '../knowledge/knowledge_guidance_port.dart';
+import '../merchandising/planogram_guidance_port.dart';
 
 /// Coordinates public ports, authorization and one shared local transaction.
 class ShiftApplication {
@@ -21,7 +22,8 @@ class ShiftApplication {
       _people = PeopleService(database),
       _links = EmployeeLinks(database),
       _organization = OrganizationService(database),
-      _knowledge = KnowledgeGuidancePort(database);
+      _knowledge = KnowledgeGuidancePort(database),
+      _planogram = PlanogramGuidancePort(database);
   final PlatformDatabase database;
   final WorkforceService _workforce;
   final TaskInstanceService _tasks;
@@ -30,6 +32,7 @@ class ShiftApplication {
   final EmployeeLinks _links;
   final OrganizationService _organization;
   final KnowledgeGuidancePort _knowledge;
+  final PlanogramGuidancePort _planogram;
   Future<Map<String, dynamic>> _run(
     SessionPrincipal p,
     String permission,
@@ -243,6 +246,9 @@ class ShiftApplication {
           if (stored.content?.knowledgeGuidance != null) {
             _knowledge.requireRead(actor);
           }
+          if (stored.content?.planogramGuidance != null) {
+            await _planogram.requireWorkLocation(tx, actor, shift.locationId);
+          }
         }
         return _detail(tx, shift);
       }
@@ -409,6 +415,43 @@ class ShiftApplication {
       final employee = await _self(tx, actor);
       return _execution.running(tx, employee, actor.locationId, cursor);
     });
+  }
+
+  Future<Map<String, dynamic>> planogram(
+    SessionPrincipal p,
+    String shiftId,
+    String taskId, {
+    bool self = true,
+  }) {
+    shiftId = requireUuid({'id': shiftId}, 'id');
+    taskId = requireUuid({'id': taskId}, 'id');
+    return _run(
+      p,
+      self ? 'workforce.shifts.self.read' : 'workforce.shifts.manage',
+      (tx, actor) async {
+        _require(
+          actor,
+          self ? 'tasks.instances.self.read' : 'tasks.instances.read',
+        );
+        _planogram.requireRead(actor);
+        final shift = await _visible(tx, actor, shiftId, self);
+        final task = await _tasks.detail(tx, shiftId, taskId);
+        final pin = task.content?.planogramGuidance;
+        if (pin == null) {
+          throw const PlatformFailure(
+            404,
+            'not_found',
+            'Task has no assigned layout.',
+          );
+        }
+        return (await _planogram.readStoredPin(
+          tx,
+          actor,
+          shift.locationId,
+          pin,
+        )).toJson();
+      },
+    );
   }
 
   Future<Map<String, dynamic>> knowledge(

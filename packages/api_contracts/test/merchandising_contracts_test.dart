@@ -64,7 +64,7 @@ void main() {
     },
   );
   test(
-    'all twenty merchandising operations have scoped contracts, errors and resolvable response schemas',
+    'all twenty-one merchandising operations have scoped contracts, errors and resolvable response schemas',
     () {
       final document =
           jsonDecode(File('platform.openapi.json').readAsStringSync())
@@ -134,7 +134,7 @@ void main() {
           );
         }
       }
-      expect(operations.length, 20);
+      expect(operations.length, 21);
       expect(
         operations,
         containsAll([

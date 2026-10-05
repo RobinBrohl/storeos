@@ -99,6 +99,7 @@ void main() {
         '0016_local_planograms',
         '0017_approved_operational_knowledge',
         '0018_task_knowledge_guidance',
+        '0019_task_planogram_guidance',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'task_planogram_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
@@ -15,6 +16,186 @@ const location = '22222222-2222-4222-8222-222222222222';
 const account = '33333333-3333-4333-8333-333333333333';
 
 void main() {
+  test(
+    'Planogram and Knowledge remain independent through select save replace clear and schema 4 numeric editing',
+    () async {
+      final f = await _Fixture.create();
+      addTearDown(f.dispose);
+      await f.ready();
+      await f.c.loadGuidance();
+      f.c.selectGuidance(f.c.guidanceChoices!.first);
+      LayoutViewDto.fromJson(selectionLayout);
+      await f.c.loadPlanograms();
+      expect(f.c.error, isNull);
+      expect(f.c.planogramChoices, isNotNull);
+      final candidate = f.c.planogramChoices!.single;
+      f.c.selectPlanogram(candidate);
+      expect(f.c.canPublish, false);
+      final pin = f.c.planogramGuidance!.toJson();
+      f.c.clearGuidance();
+      expect(f.c.planogramGuidance!.toJson(), pin);
+      await f.c.loadGuidance();
+      f.c.selectGuidance(f.c.guidanceChoices!.first);
+      f.c.clearPlanogram();
+      expect(f.c.knowledgeGuidance, isNotNull);
+      await f.c.loadPlanograms();
+      f.c.selectPlanogram(f.c.planogramChoices!.single);
+      await f.c.save();
+      expect(f.c.error, isNull);
+      expect(f.c.revision!.content!.schemaVersion, 4);
+      expect(f.c.canPublish, true);
+      await f.c.previewPlanogram();
+      expect(f.c.planogramPreview!.instruction.pin.toJson(), pin);
+      f.c.addStep(numeric: true);
+      final id = f.c.steps.last.id;
+      f.c.setInstruction(id, 'Measure');
+      f.c.setNumberRule(id, 'unit', 'C');
+      f.c.setNumberRule(id, 'minimum', '1');
+      f.c.setNumberRule(id, 'maximum', '5');
+      await f.c.save();
+      expect(f.c.error, isNull);
+      expect(f.c.revision!.content!.schemaVersion, 4);
+      f.api.planogramUnavailable = true;
+      final saved = jsonEncode(f.api.records);
+      final version = f.c.selected!.version;
+      await f.c.publish();
+      expect(f.c.error, contains('neu auswählen'));
+      expect(jsonEncode(f.api.records), saved);
+      expect(f.c.selected!.version, version);
+      f.c.setTitle('Retained stale draft edit');
+      await f.c.save();
+      expect(f.c.error, isNull);
+      expect(f.c.planogramGuidance!.toJson(), pin);
+      f.c.clearPlanogram();
+      await f.c.save();
+      expect(f.c.revision!.content!.schemaVersion, 4);
+      expect(f.c.knowledgeGuidance, isNotNull);
+    },
+  );
+  test(
+    'Planogram selection failure preserves input and explicit replacement captures a new occurrence',
+    () async {
+      final f = await _Fixture.create();
+      addTearDown(f.dispose);
+      await f.ready();
+      await f.c.loadGuidance();
+      f.c.selectGuidance(f.c.guidanceChoices!.first);
+      await f.c.loadPlanograms();
+      f.c.selectPlanogram(f.c.planogramChoices!.single);
+      final original = f.c.planogramGuidance!.toJson();
+      f.c.setTitle('Unsaved local title');
+      f.c.setInstruction(f.c.steps.single.id, 'Unsaved local instruction');
+      final saved = f.api.copy(f.api.records[f.c.revision!.id]!);
+      final version = f.c.selected!.version;
+      f.api.selectionUnavailable = true;
+      await f.c.save();
+      expect(f.c.error, contains('Eingaben bleiben erhalten'));
+      expect(f.c.title, 'Unsaved local title');
+      expect(f.c.steps.single.instruction, 'Unsaved local instruction');
+      expect(f.c.planogramGuidance!.toJson(), original);
+      expect(f.c.knowledgeGuidance, isNotNull);
+      expect(f.c.dirty, true);
+      expect(f.c.canPublish, false);
+      expect(f.c.selected!.version, version);
+      expect(f.api.records[f.c.revision!.id], saved);
+      f.api.selectionUnavailable = false;
+      await f.c.save();
+      const replacement = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+      f.api.layout['assignment']['id'] = replacement;
+      f.api.layout['fixture']['currentAssignmentId'] = replacement;
+      await f.c.loadPlanograms();
+      f.c.selectPlanogram(f.c.planogramChoices!.single);
+      expect(f.c.planogramGuidance!.assignmentId, replacement);
+      expect(f.c.knowledgeGuidance, isNotNull);
+      await f.c.save();
+      expect(f.c.error, isNull);
+      expect(
+        f.c.revision!.content!.planogramGuidance!.assignmentId,
+        replacement,
+      );
+      f.c.clearPlanogram();
+      await f.c.save();
+      expect(f.c.revision!.content!.planogramGuidance, isNull);
+      expect(f.c.revision!.content!.knowledgeGuidance, isNotNull);
+    },
+  );
+  testWidgets(
+    'dual previews remain stable while the scrolled editor changes height',
+    (tester) async {
+      final f = await _Fixture.create();
+      addTearDown(f.dispose);
+      await f.ready();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: TaskTemplateSection(controller: f.c)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await f.c.loadPlanograms();
+      f.c.selectPlanogram(f.c.planogramChoices!.single);
+      await f.c.previewPlanogram();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('choose-guidance')));
+      await f.c.loadGuidance();
+      await tester.pumpAndSettle();
+      f.c.selectGuidance(f.c.guidanceChoices!.first);
+      await f.c.previewGuidance();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('save-template')));
+      f.c.clearPlanogram();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(f.c.knowledgeGuidance, isNotNull);
+      await tester.pumpWidget(const SizedBox());
+      f.dispose();
+    },
+  );
+  for (final actor in ['test', 'replacement']) {
+    for (final surface in ['picker', 'preview']) {
+      test(
+        'Planogram $actor session replacement fences pending $surface and stale callbacks',
+        () async {
+          final f = await _Fixture.create();
+          addTearDown(f.dispose);
+          await f.ready();
+          await f.c.loadPlanograms();
+          final cached = f.c.planogramChoices!.single;
+          f.c.selectPlanogram(cached);
+          await f.c.save();
+          f.api.planogramPending = Completer<Map<String, dynamic>>();
+          f.api.planogramStarted = Completer<void>();
+          final action = surface == 'picker'
+              ? f.c.loadPlanograms()
+              : f.c.previewPlanogram();
+          await f.api.planogramStarted!.future;
+          final oldToken = f.api.planogramTokens.last;
+          final oldRequests = f.api.planogramTokens.length;
+          await f.session.signIn(username: actor, password: 'test');
+          expect(f.c.planogramGuidance, isNull);
+          expect(f.c.planogramChoices, isNull);
+          expect(f.c.planogramPreview, isNull);
+          expect(f.c.planogramSelectionPreview, isNull);
+          f.api.planogramPending!.complete(
+            surface == 'picker'
+                ? {
+                    'items': [selectionFixture],
+                    'nextCursor': null,
+                  }
+                : retainedLayout,
+          );
+          await action;
+          expect(f.c.selected, isNull);
+          expect(f.c.planogramChoices, isNull);
+          expect(f.c.planogramPreview, isNull);
+          expect(f.c.error, isNull);
+          expect(f.api.planogramTokens.length, oldRequests);
+          expect(f.api.planogramTokens.last, oldToken);
+          f.c.selectPlanogram(cached);
+          expect(f.c.planogramGuidance, isNull);
+        },
+      );
+    }
+  }
   test(
     'selection failure preserves local edit input and saved draft',
     () async {
@@ -493,9 +674,10 @@ class _Fixture {
 }
 
 class _Session implements StoreApi {
+  int generation = 0;
   @override
   Future<SessionResponse> login(LoginRequest request) async => SessionResponse(
-    token: 'token',
+    token: 'token-${++generation}',
     expiresAt: DateTime.now().add(const Duration(hours: 1)),
     user: SessionUser(
       id: request.username == 'test'
@@ -535,7 +717,14 @@ class _Api implements PlatformApi {
   Completer<Map<String, dynamic>>? pending;
   Completer<Map<String, dynamic>>? guidancePending;
   Completer<void>? guidanceStarted;
-  bool retired = false;
+  bool retired = false,
+      planogramUnavailable = false,
+      selectionUnavailable = false;
+  final layout =
+      jsonDecode(jsonEncode(selectionLayout)) as Map<String, dynamic>;
+  final planogramTokens = <String>[];
+  Completer<Map<String, dynamic>>? planogramPending;
+  Completer<void>? planogramStarted;
   final knowledge = [
     for (final n in [1, 2])
       PublishedWikiDto.fromJson({
@@ -583,6 +772,7 @@ class _Api implements PlatformApi {
           'organization.read',
           if (role == 'admin') 'tasks.templates.manage',
           if (role == 'admin') 'knowledge.articles.read',
+          if (role == 'admin') 'merchandising.layouts.read',
         ],
       };
     }
@@ -596,6 +786,20 @@ class _Api implements PlatformApi {
     }
     if (failGet) {
       throw const StoreApiException('network_unavailable', 'Nicht erreichbar.');
+    }
+    if (route.contains('/merchandising/fixtures') ||
+        route.endsWith('/planogram')) {
+      planogramTokens.add(token);
+      if (planogramPending != null) {
+        planogramStarted!.complete();
+        return planogramPending!.future;
+      }
+      if (route.endsWith('/guidance-selection')) return copy(layout);
+      if (route.endsWith('/planogram')) return retainedLayout;
+      return {
+        'items': [copy(layout['fixture'] as Map<String, dynamic>)],
+        'nextCursor': null,
+      };
     }
     if (route.startsWith('/knowledge/')) {
       if (guidancePending != null) {
@@ -667,6 +871,23 @@ class _Api implements PlatformApi {
     Map<String, dynamic> body,
   ) async {
     requests++;
+    if (selectionUnavailable && route.endsWith('/edit')) {
+      throw const StoreApiException(
+        'planogram_selection_unavailable',
+        'Unavailable selection',
+        statusCode: 422,
+      );
+    }
+    if (planogramUnavailable &&
+        route.endsWith('/publish') &&
+        records[route.split('/')[4]]!['content']['planogramGuidance'] != null) {
+      throw const StoreApiException(
+        'planogram_guidance_unavailable',
+        'Unavailable for new work',
+        statusCode: 422,
+      );
+    }
+
     if (retired &&
         (route == '/task-templates' || route.endsWith('/edit')) &&
         body['content']['knowledgeGuidance'] != null &&

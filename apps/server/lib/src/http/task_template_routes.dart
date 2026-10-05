@@ -3,6 +3,7 @@ import 'package:shelf_router/shelf_router.dart';
 import '../application/auth_service.dart';
 import '../tasks/task_template_service.dart';
 import 'api_support.dart';
+import '../platform/platform_database.dart';
 
 class TaskTemplateRoutes {
   TaskTemplateRoutes(AuthService auth, TaskTemplateService service) {
@@ -67,6 +68,27 @@ class TaskTemplateRoutes {
         ),
       ),
     );
+    router.get('$root/<id>/revisions/<revision>/planogram', (
+      Request r,
+      String id,
+      String revision,
+    ) async {
+      if (r.url.hasQuery) {
+        throw const PlatformFailure(
+          400,
+          'invalid_query',
+          'Template layout reads accept no query parameters.',
+        );
+      }
+      return jsonResponse(
+        200,
+        await service.planogram(
+          await auth.authenticate(bearerToken(r)),
+          id,
+          revision,
+        ),
+      );
+    });
     router.post(
       '$root/<id>/revisions/<revision>/edit',
       (Request r, String id, String revision) async => jsonResponse(

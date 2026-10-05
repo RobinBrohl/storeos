@@ -31,14 +31,17 @@ class ShiftController extends ChangeNotifier {
   TaskInstanceDto? task;
   TaskExecutionDto? execution;
   TaskKnowledgeDto? taskKnowledge;
+  RetainedLayoutDto? taskPlanogram;
+  bool layoutOpen = false;
+  String? layoutError;
+  final Map<String, PlanogramGuidance?> selectionPlanograms = {};
   bool instructionOpen = false;
   String? instructionError;
   final Map<String, KnowledgeGuidance?> selectionGuidance = {};
   String guidanceIdentity(String revision) {
-    final pin = selectionGuidance[revision];
-    return pin == null
-        ? ''
-        : '\nWikiArticle ${pin.articleId} · WikiRevision ${pin.revisionId}';
+    final pin = selectionGuidance[revision],
+        layout = selectionPlanograms[revision];
+    return '${pin == null ? '' : '\nWikiArticle ${pin.articleId} · WikiRevision ${pin.revisionId}'}${layout == null ? '' : '\nFixture ${layout.fixtureId} · Assignment ${layout.assignmentId} · Revision ${layout.revisionId}'}';
   }
 
   List<TaskInstanceDto> running = [];
@@ -127,6 +130,9 @@ class ShiftController extends ChangeNotifier {
     executionGeneration++;
     execution = null;
     taskKnowledge = null;
+    taskPlanogram = null;
+    layoutOpen = false;
+    layoutError = null;
     instructionOpen = false;
     instructionError = null;
     blockings = [];
@@ -247,6 +253,7 @@ class ShiftController extends ChangeNotifier {
     startsAt = endsAt = '';
     selections = [];
     selectionGuidance.clear();
+    selectionPlanograms.clear();
     busy = editingNew = conflict = unconfirmed = false;
     _newId = _pendingRoute = null;
     _pendingBody = null;
@@ -319,6 +326,7 @@ class ShiftController extends ChangeNotifier {
 
   void _accept(Map<String, dynamic> raw) {
     selectionGuidance.clear();
+    selectionPlanograms.clear();
     final shift = ShiftDto.fromJson(raw['shift'] as Map<String, dynamic>);
     _check(shift);
     selected = shift;
@@ -364,6 +372,37 @@ class ShiftController extends ChangeNotifier {
     executionConflict = false;
   });
 
+  Future<void> openLayout() => _run((e) async {
+    final selectedTask = task, shift = selected;
+    if (selectedTask?.content?.planogramGuidance == null || shift == null) {
+      return;
+    }
+    layoutOpen = true;
+    taskPlanogram = null;
+    layoutError = null;
+    _notify();
+    try {
+      final result = RetainedLayoutDto.fromJson(
+        await _get(e, '$root/${shift.id}/tasks/${selectedTask!.id}/planogram'),
+      );
+      if (!selectedTask.content!.planogramGuidance!.sameAs(
+        result.instruction.pin,
+      )) {
+        throw const FormatException();
+      }
+      taskPlanogram = result;
+    } catch (error) {
+      if (_current(e)) layoutError = _message(error);
+    }
+  });
+  void closeLayout() {
+    if (busy || !_current(_epoch)) return;
+    layoutOpen = false;
+    taskPlanogram = null;
+    layoutError = null;
+    _notify();
+  }
+
   Future<void> openInstruction() => _run((e) async {
     final selectedTask = task, shift = selected;
     if (selectedTask?.content?.knowledgeGuidance == null || shift == null) {
@@ -390,6 +429,7 @@ class ShiftController extends ChangeNotifier {
   });
   Future<void> reviewGuidance() => _run((e) async {
     selectionGuidance.clear();
+    selectionPlanograms.clear();
     for (final selection in selections) {
       final raw = await _get(
         e,
@@ -405,6 +445,8 @@ class ShiftController extends ChangeNotifier {
       }
       selectionGuidance[selection.revisionId] =
           revision.content?.knowledgeGuidance;
+      selectionPlanograms[selection.revisionId] =
+          revision.content?.planogramGuidance;
     }
   });
   void closeInstruction() {
@@ -684,6 +726,7 @@ class ShiftController extends ChangeNotifier {
   void newDraft() {
     if (self || busy || unconfirmed) return;
     selectionGuidance.clear();
+    selectionPlanograms.clear();
     _clearExecution();
     selected = null;
     tasks = [];
@@ -963,6 +1006,8 @@ class ShiftController extends ChangeNotifier {
       'Das neue Ende muss nach der aktuellen Serverzeit liegen.',
     StoreApiException(code: 'invalid_selection') =>
       'Nur veröffentlichte Vorlagenrevisionen dieses Standorts sind erlaubt.',
+    StoreApiException(code: 'planogram_guidance_unavailable') =>
+      'Eine zugewiesene Platzierung ist für neue Arbeit nicht mehr verfügbar. Bitte Vorlagenauswahl prüfen und die Zuweisung ausdrücklich neu auswählen; die gespeicherte Schicht bleibt erhalten.',
     StoreApiException(code: 'guidance_unavailable') =>
       'Eine zugewiesene Anleitung ist für neue Arbeit nicht mehr verfügbar. Bitte die Vorlagenauswahl prüfen; bestehende Aufgaben behalten ihre Revision.',
     StoreApiException(:final message) => message,

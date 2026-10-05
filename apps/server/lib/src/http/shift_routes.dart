@@ -145,6 +145,28 @@ class ShiftRoutes {
     );
     for (final self in [false, true]) {
       final path = self ? '/api/v1/platform/employee-home/shifts' : root;
+      router.get('$path/<id>/tasks/<task>/planogram', (
+        Request r,
+        String id,
+        String task,
+      ) async {
+        if (r.url.hasQuery) {
+          throw const PlatformFailure(
+            400,
+            'invalid_query',
+            'Task layout reads accept no query parameters.',
+          );
+        }
+        return jsonResponse(
+          200,
+          await app.planogram(
+            await auth.authenticate(bearerToken(r)),
+            id,
+            task,
+            self: self,
+          ),
+        );
+      });
       router.get('$path/<id>/tasks/<task>/knowledge', (
         Request r,
         String id,

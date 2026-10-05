@@ -70,13 +70,13 @@ class MerchandisingFixture {
   late String adminId;
   String get base => 'http://127.0.0.1:${server!.port}';
 
-  Future<void> restart() async {
+  Future<void> restart({String locationId = _home}) async {
     await server?.close(force: true);
     final store = PostgresAuthStore(pool, schemaName: schema);
     auth = await AuthService.create(
       store: store,
       companyId: _company,
-      locationId: _home,
+      locationId: locationId,
       sessionTtl: const Duration(hours: 1),
       passwordHasher: PasswordHasher(memoryKiB: 64, iterations: 1),
     );
@@ -84,7 +84,7 @@ class MerchandisingFixture {
       pool,
       schemaName: schema,
       companyId: _company,
-      locationId: _home,
+      locationId: locationId,
     );
     final app = ServerApp(
       config: ServerConfig(
@@ -96,7 +96,7 @@ class MerchandisingFixture {
           password: 'unused',
         ),
         companyId: _company,
-        locationId: _home,
+        locationId: locationId,
         allowedOrigins: allowedOrigins,
       ),
       auth: auth,
@@ -415,3 +415,5 @@ Future<void> withMerchandisingFixture(
 String get merchandisingTestLocation => _home;
 String get merchandisingTestPassword => _password;
 bool get merchandisingDatabaseAvailable => _url != null;
+
+String get merchandisingTestCompany => _company;

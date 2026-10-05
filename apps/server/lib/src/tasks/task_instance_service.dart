@@ -4,17 +4,20 @@ import '../platform/platform_database.dart';
 import 'task_template_repository.dart';
 import 'task_instance_repository.dart';
 import '../knowledge/knowledge_guidance_port.dart';
+import '../merchandising/planogram_guidance_port.dart';
 
 /// Tasks owns selection validation and snapshots; no workforce table access.
 class TaskInstanceService {
   TaskInstanceService(this.database)
     : _templates = TaskTemplateRepository(database.schema, database.companyId),
       _instances = TaskInstanceRepository(database.schema, database.companyId),
-      _knowledge = KnowledgeGuidancePort(database);
+      _knowledge = KnowledgeGuidancePort(database),
+      _planogram = PlanogramGuidancePort(database);
   final PlatformDatabase database;
   final TaskTemplateRepository _templates;
   final TaskInstanceRepository _instances;
   final KnowledgeGuidancePort _knowledge;
+  final PlanogramGuidancePort _planogram;
   Future<List<TaskTemplateContent>> validateSelections(
     TxSession tx,
     String location,
@@ -50,10 +53,13 @@ class TaskInstanceService {
   }) async {
     final contents = await validateSelections(tx, locationId, selections);
     // Validate the complete selection before materialization, within the same
-    // authorized Company transaction that serializes Knowledge retirement.
+    // authorized Company transaction that serializes guidance/deployment writers.
     for (final content in contents) {
       if (content.knowledgeGuidance case final pin?) {
         await _knowledge.validatePublication(tx, actor, pin);
+      }
+      if (content.planogramGuidance case final pin?) {
+        await _planogram.validatePublication(tx, actor, locationId, pin);
       }
     }
     for (var i = 0; i < selections.length; i++) {
@@ -84,6 +90,11 @@ class TaskInstanceService {
           if (contents[i].knowledgeGuidance case final pin?) ...{
             'knowledgeArticleId': pin.articleId,
             'knowledgeRevisionId': pin.revisionId,
+          },
+          if (contents[i].planogramGuidance case final pin?) ...{
+            'fixtureId': pin.fixtureId,
+            'planogramAssignmentId': pin.assignmentId,
+            'planogramRevisionId': pin.revisionId,
           },
         },
       );

@@ -972,7 +972,7 @@ void main() {
         ]) {
           snapshots.add(
             (await f.owner.execute(
-                  'SELECT COALESCE(jsonb_agg(to_jsonb(t)-ARRAY[\'knowledge_article_id\',\'knowledge_revision_id\',\'knowledge_revision_state\'] ORDER BY id), \'[]\'::jsonb)::text FROM "${f.schema}".$table t',
+                  'SELECT COALESCE(jsonb_agg(to_jsonb(t)-ARRAY[\'knowledge_article_id\',\'knowledge_revision_id\',\'knowledge_revision_state\',\'planogram_fixture_id\',\'planogram_assignment_id\',\'planogram_revision_id\'] ORDER BY id), \'[]\'::jsonb)::text FROM "${f.schema}".$table t',
                 )).single.first
                 as String,
           );
@@ -1027,6 +1027,7 @@ void main() {
         expect(applied, [
           '0017_approved_operational_knowledge',
           '0018_task_knowledge_guidance',
+          '0019_task_planogram_guidance',
         ]);
         expect(await preserved(), before);
         await create(f);

@@ -45,6 +45,8 @@ class AuditRepository {
       'revisionId',
       'knowledgeArticleId',
       'knowledgeRevisionId',
+      'planogramAssignmentId',
+      'planogramRevisionId',
       'revisionIds',
       'shiftId',
       'sku',

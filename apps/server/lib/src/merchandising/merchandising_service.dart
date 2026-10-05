@@ -8,6 +8,7 @@ import '../platform/organization_service.dart';
 import '../platform/platform_database.dart';
 import 'merchandising_repository.dart';
 import 'print_layout.dart';
+import 'planogram_guidance_port.dart';
 import '../http/json_logger.dart';
 
 class MerchandisingService {
@@ -995,6 +996,42 @@ class MerchandisingService {
     merchandisingId(location),
     (tx, a) => _view(tx, a, location, merchandisingId(id)),
   );
+
+  /// Current eligible deployment only; historical Task reads use their stored pin.
+  Future<Map<String, dynamic>> guidanceSelection(
+    SessionPrincipal p,
+    String location,
+    String id,
+  ) => _run(p, 'read', merchandisingId(location), (tx, actor) async {
+    if (!permissionsForRole(actor.role).contains('tasks.templates.manage')) {
+      throw const PlatformFailure(
+        403,
+        'forbidden',
+        'Template management access required.',
+      );
+    }
+    final view = await _view(tx, actor, location, merchandisingId(id));
+    final assignment = view['assignment'] as Map<String, dynamic>?;
+    if (assignment == null) {
+      throw const PlatformFailure(
+        422,
+        'planogram_selection_unavailable',
+        'Select a current eligible Fixture deployment.',
+      );
+    }
+    await PlanogramGuidancePort(database).validatePublication(
+      tx,
+      actor,
+      location,
+      PlanogramGuidance(
+        fixtureId: id,
+        assignmentId: assignment['id'] as String,
+        revisionId: assignment['revisionId'] as String,
+      ),
+      selection: true,
+    );
+    return view;
+  });
   Future<Map<String, dynamic>> printView(
     SessionPrincipal p,
     String location,

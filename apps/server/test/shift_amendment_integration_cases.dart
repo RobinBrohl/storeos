@@ -923,7 +923,7 @@ void shiftAmendmentTests() {
               as String,
           (await f.owner.execute(
                 'SELECT jsonb_agg((to_jsonb(t)-ARRAY[\'knowledge_article_id\','
-                '\'knowledge_revision_id\',\'knowledge_revision_state\']) ORDER BY id)::text '
+                '\'knowledge_revision_id\',\'knowledge_revision_state\',\'planogram_fixture_id\',\'planogram_assignment_id\',\'planogram_revision_id\']) ORDER BY id)::text '
                 'FROM "${f.schema}".task_instances t',
               )).single.first
               as String,
@@ -948,6 +948,7 @@ void shiftAmendmentTests() {
           '0016_local_planograms',
           '0017_approved_operational_knowledge',
           '0018_task_knowledge_guidance',
+          '0019_task_planogram_guidance',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

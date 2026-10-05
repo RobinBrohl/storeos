@@ -21,11 +21,15 @@ targeted independent review **APPROVE**, **64/64 PASS**, focused Codex Security
 **SECURITY APPROVE**, and all five jobs green in
 [changed-commit CI run 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549).
 Implementation `15679bf` delivers exact approved Knowledge revision pins in
-schema-3 Templates/Tasks and contextual historical panels. Migration chain ends
-at 0018; 0001–0017 are unchanged. See [P4.6 evidence](docs/development/phase-4-6-task-knowledge-guidance.md)
+schema-3 Templates/Tasks and contextual historical panels. Its closure migration chain ended
+at 0018; 0001–0017 were unchanged. See [P4.6 evidence](docs/development/phase-4-6-task-knowledge-guidance.md)
 and [ADR 0020](docs/adr/0020-task-knowledge-guidance.md). No active P4.6 remediation remains.
 No active P4.5 remediation remains; F01/F02 are LOW non-blocking follow-ups.
-Native-device/accessibility acceptance is not claimed. P4.7 is not selected.
+Native-device/accessibility acceptance is not claimed.
+
+P4.7 Task + exact Planogram Assignment execution pinning is **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW APPROVE / SECURITY REMEDIATION COMPLETE / TARGETED SECURITY RE-REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING** on `main`, uncommitted and unstaged. The verified starting HEAD was `a0ed6346f7453c8f4e170aee43af8d775677f97b`, matching cached/live origin; all five exact-HEAD jobs succeeded in [baseline CI 37290533013](https://github.com/RobinBrohl/storeos/actions/runs/37290533013). New migration 0019 adds schema 4 and durable Fixture/Assignment/Revision integrity; migrations 0001–0018 and dependencies/lockfiles are unchanged. Existing P4.1–P4.6 closure remains intact. No P4.8 capability is selected.
+
+See [P4.7 local evidence](docs/development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](docs/adr/0021-task-planogram-assignment-guidance.md).
 
 ## Start locally
 

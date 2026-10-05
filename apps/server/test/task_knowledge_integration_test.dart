@@ -622,12 +622,12 @@ void main() {
             schemaName: f.schema,
             runtimeDatabaseUser: f.runtimeUser,
           ).apply(),
-          ['0018_task_knowledge_guidance'],
+          ['0018_task_knowledge_guidance', '0019_task_planogram_guidance'],
         );
         for (var i = 0; i < tables.length; i++) {
           final table = tables[i];
           final result = (await f.owner.execute(
-            "SELECT jsonb_agg(to_jsonb(t)-'knowledge_article_id'-'knowledge_revision_id'-'knowledge_revision_state' ORDER BY ${order(table)})::text FROM \"${f.schema}\".$table t",
+            "SELECT jsonb_agg(to_jsonb(t)-'knowledge_article_id'-'knowledge_revision_id'-'knowledge_revision_state'-'planogram_fixture_id'-'planogram_assignment_id'-'planogram_revision_id' ORDER BY ${order(table)})::text FROM \"${f.schema}\".$table t",
           )).single.first;
           expect(result, before[i]);
         }

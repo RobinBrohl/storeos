@@ -88,7 +88,7 @@ Future<void> verifyGuidanceEvidence(
       content = TaskTemplateContent.fromJson(
         jsonDecode(row[0] as String) as Map<String, dynamic>,
       );
-  if (content.schemaVersion != 3 ||
+  if (content.schemaVersion != 4 ||
       row[1] != 'completed' ||
       row[4] != 1 ||
       row[5] != 'retired' ||
@@ -175,6 +175,19 @@ Future<void> verifyRestoredGuidanceRead(
           !read.articleRetired) {
         throw StateError('Restored contextual read did not retain v1.');
       }
+      final retained = RetainedLayoutDto.fromJson(
+        await ShiftApplication(
+          db,
+        ).planogram(principal, row[1] as String, row[0] as String),
+      );
+      if (retained.instruction.content.title != 'Brot Revision 1' ||
+          !retained.currentContext.reassigned ||
+          !retained.currentContext.fixtureRetired ||
+          !retained.currentContext.planogramRetired) {
+        throw StateError(
+          'Restored contextual layout did not retain exact deployment.',
+        );
+      }
       Future<void> denied(
         Future<Map<String, dynamic>> action,
         int status,
@@ -199,5 +212,121 @@ Future<void> verifyRestoredGuidanceRead(
     }
   } finally {
     await pool.close();
+  }
+}
+
+/// Deploy R2 after the Task has retained R1, then retire both target and Planogram.
+Future<void> replaceAndRetireLayoutGuidance(
+  KnowledgeAcceptanceRequest request,
+  String location,
+  PlanogramGuidance pin,
+) async {
+  final root =
+      '/api/v1/platform/locations/$location/merchandising/fixtures/${pin.fixtureId}';
+  final original = LayoutViewDto.fromJson(
+    await request('GET', '$root/layout', null, 200),
+  );
+  if (original.assignment!.id != pin.assignmentId ||
+      original.revision!.id != pin.revisionId) {
+    throw StateError('The fresh Task must retain the current R1 assignment.');
+  }
+  final pg = original.revision!.planogramId;
+  final plans = '/api/v1/platform/merchandising/planograms/$pg';
+  final revisions = await request('GET', '$plans/revisions', null, 200);
+  final replacement = (revisions['items'] as List).singleWhere(
+    (r) => r['revisionNumber'] == 2,
+  );
+  final fixture = await request('GET', root, null, 200);
+  final assigned = await request('POST', '$root/assignments', {
+    'operationId': newUuid(),
+    'expectedVersion': fixture['version'],
+    'revisionId': replacement['id'],
+  }, 200);
+  final current = LayoutViewDto.fromJson(
+    await request('GET', '$root/layout', null, 200),
+  );
+  if (current.assignment!.id == pin.assignmentId ||
+      current.revision!.id == pin.revisionId ||
+      current.revision!.content.title != 'Brot Revision 2') {
+    throw StateError(
+      'The standalone current deployment must differ from retained R1.',
+    );
+  }
+  final print = PrintViewDto.fromJson(
+    await request(
+      'GET',
+      '$root/assignments/${pin.assignmentId}/print-view',
+      null,
+      200,
+    ),
+  );
+  if (!print.html.contains('Historische Zuweisung') ||
+      print.revisionId != pin.revisionId ||
+      print.assignmentId != pin.assignmentId) {
+    throw StateError('Historical print no longer retains R1.');
+  }
+  await request('POST', '$root/retire', {
+    'expectedVersion': assigned['appliedVersion'],
+  }, 200);
+  final plan = await request('GET', plans, null, 200);
+  await request('POST', '$plans/retire', {
+    'expectedVersion': plan['version'],
+  }, 200);
+}
+
+Future<void> verifyLayoutGuidanceEvidence(
+  Connection owner,
+  String schema,
+  String runtime,
+) async {
+  final s = quotedSchema(schema);
+  final rows = await owner.execute(
+    'SELECT t.content,t.planogram_fixture_id::text,t.planogram_assignment_id::text,t.planogram_revision_id::text,a.fixture_id=t.planogram_fixture_id AND a.revision_id=t.planogram_revision_id,f.current_assignment_id<>a.id,f.status,p.status,r.title,t.content=tr.content FROM $s.task_instances t JOIN $s.merchandising_planogram_assignments a ON a.id=t.planogram_assignment_id JOIN $s.merchandising_fixtures f ON f.id=t.planogram_fixture_id JOIN $s.merchandising_planogram_revisions r ON r.id=t.planogram_revision_id JOIN $s.merchandising_planograms p ON p.id=r.planogram_id JOIN $s.task_template_revisions tr ON tr.id=t.revision_id',
+  );
+  if (rows.length != 1) {
+    throw StateError('Expected one exact retained layout Task.');
+  }
+  final row = rows.single,
+      content = TaskTemplateContent.fromJson(
+        jsonDecode(row[0] as String) as Map<String, dynamic>,
+      ),
+      pin = content.planogramGuidance!;
+  if (pin.fixtureId != row[1] ||
+      pin.assignmentId != row[2] ||
+      pin.revisionId != row[3] ||
+      row[4] != true ||
+      row[5] != true ||
+      row[6] != 'retired' ||
+      row[7] != 'retired' ||
+      row[8] != 'Brot Revision 1' ||
+      row[9] != true) {
+    throw StateError('Recovered deployment tuple changed.');
+  }
+  final audit = await owner.execute(
+    "SELECT changes FROM $s.audit_entries WHERE action='tasks.instance.completed' AND entity_id=(SELECT id::text FROM $s.task_instances WHERE planogram_assignment_id IS NOT NULL)",
+  );
+  if (audit.length != 1 ||
+      (audit.single.first as Map)['planogramAssignmentId'] !=
+          pin.assignmentId ||
+      (audit.single.first as Map)['fixtureId'] != pin.fixtureId ||
+      (audit.single.first as Map)['planogramRevisionId'] != pin.revisionId) {
+    throw StateError('Recovered exact completion pin missing.');
+  }
+  for (final mutation in [
+    'UPDATE $s.task_instances SET planogram_assignment_id=NULL WHERE planogram_assignment_id IS NOT NULL',
+    'UPDATE $s.task_template_revisions SET planogram_revision_id=NULL WHERE planogram_revision_id IS NOT NULL',
+  ]) {
+    var denied = false;
+    try {
+      await owner.runTx((tx) async {
+        await tx.execute('SET LOCAL ROLE "${runtime.replaceAll('"', '""')}"');
+        await tx.execute(mutation);
+      });
+    } on ServerException {
+      denied = true;
+    }
+    if (!denied) {
+      throw StateError('Recovered generated pin protection missing.');
+    }
   }
 }

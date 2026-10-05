@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../application/task_template_controller.dart';
+import 'retained_layout_panel.dart';
 
 class TaskTemplateSection extends StatefulWidget {
   const TaskTemplateSection({required this.controller, super.key});
@@ -117,306 +118,374 @@ class _TaskTemplateSectionState extends State<TaskTemplateSection> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            Text(
-              'Arbeitsvorlagen',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            if (c.busy) const LinearProgressIndicator(),
-            if (c.error case final error?)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(error, key: const Key('template-error')),
-              ),
-            if (c.notice case final notice?)
-              Text(notice, key: const Key('template-notice')),
-            Wrap(
-              spacing: 12,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextButton.icon(
-                  onPressed: c.busy ? null : _reload,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Erneut laden'),
-                ),
-                FilledButton.icon(
-                  key: const Key('create-template'),
-                  onPressed: c.busy || c.creationUnavailableReason != null
-                      ? null
-                      : _create,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Vorlage anlegen'),
-                ),
-              ],
-            ),
-            if (c.creationUnavailableReason case final reason?) Text(reason),
-            if (c.templates?.isEmpty ?? false)
-              const Text('Noch keine Arbeitsvorlagen vorhanden.'),
-            for (final item in c.templates ?? [])
-              ListTile(
-                title: Text(item.title),
-                subtitle: Text(
-                  '${_location(item.locationId)} · ${item.draftId == null ? 'Freigegeben' : 'Entwurf vorhanden'}',
-                ),
-                selected: c.selected?.id == item.id,
-                onTap: c.busy ? null : () => _open(item.id),
-              ),
-            if (c.nextCursor != null)
-              TextButton(
-                onPressed: c.busy ? null : () => c.loadList(more: true),
-                child: const Text('Weitere Vorlagen laden'),
-              ),
-            if (c.selected case final selected?) ...[
-              const Divider(),
-              Text('Standort: ${_location(selected.locationId)}'),
-              if (!c.confirmed)
-                const Text('Serverstand nicht bestätigt. Bitte erneut laden.'),
-              if (c.revision case final revision?) ...[
                 Text(
-                  c.conflict
-                      ? 'Konflikt · lokale Eingaben sind nicht bestätigt'
-                      : 'Revision ${revision.number} · ${revision.isDraft ? 'Entwurf' : 'Freigegeben'}',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  'Arbeitsvorlagen',
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
-                if (revision.publishedAt case final time?)
-                  Text('Freigegeben am ${time.toLocal()}'),
-                if (c.dirty)
-                  const Text(
-                    'Ungespeicherte Änderungen',
-                    key: Key('template-dirty'),
+                if (c.busy) const LinearProgressIndicator(),
+                if (c.error case final error?)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(error, key: const Key('template-error')),
                   ),
-                if (c.conflict)
-                  ExpansionTile(
-                    title: const Text('Bestätigten Serverstand anzeigen'),
-                    children: [
-                      ListTile(
-                        title: Text(revision.content!.title),
-                        subtitle: Text(
-                          'Revision ${revision.number} · ${revision.status}',
-                        ),
-                      ),
-                      for (final step in revision.content!.steps)
-                        ListTile(title: Text(step.instruction)),
-                    ],
-                  ),
-                if (c.conflict)
-                  FilledButton(
-                    onPressed: c.busy
-                        ? null
-                        : () async {
-                            if (await _discard() && mounted) {
-                              c.useServerVersion();
-                            }
-                          },
-                    child: const Text('Serverstand übernehmen'),
-                  ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  key: ValueKey('template-title-${c.editorGeneration}'),
-                  initialValue: c.title,
-                  readOnly: !c.editable,
-                  decoration: const InputDecoration(labelText: 'Titel'),
-                  onChanged: c.setTitle,
+                if (c.notice case final notice?)
+                  Text(notice, key: const Key('template-notice')),
+                Wrap(
+                  spacing: 12,
+                  children: [
+                    TextButton.icon(
+                      onPressed: c.busy ? null : _reload,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Erneut laden'),
+                    ),
+                    FilledButton.icon(
+                      key: const Key('create-template'),
+                      onPressed: c.busy || c.creationUnavailableReason != null
+                          ? null
+                          : _create,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Vorlage anlegen'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                const Text('Freigegebene Anleitung (optional)'),
-                if (c.knowledgeGuidance case final pin?) ...[
-                  Text(
-                    'WikiArticle ${pin.articleId} · WikiRevision ${pin.revisionId}',
-                    key: const Key('template-guidance-pin'),
-                  ),
-                  TextButton(
-                    onPressed: c.busy ? null : c.previewGuidance,
-                    child: const Text('Zugewiesene Revision ansehen'),
-                  ),
-                  if (c.editable)
-                    TextButton(
-                      onPressed: c.clearGuidance,
-                      child: const Text('Anleitung entfernen'),
-                    ),
-                ],
-                if (c.editable)
-                  TextButton(
-                    key: const Key('choose-guidance'),
-                    onPressed: c.loadGuidance,
-                    child: const Text(
-                      'Freigegebene Anleitung wählen / ersetzen',
-                    ),
-                  ),
-                for (final item in c.guidanceChoices ?? [])
+                if (c.creationUnavailableReason case final reason?)
+                  Text(reason),
+                if (c.templates?.isEmpty ?? false)
+                  const Text('Noch keine Arbeitsvorlagen vorhanden.'),
+                for (final item in c.templates ?? [])
                   ListTile(
                     title: Text(item.title),
                     subtitle: Text(
-                      'Revision ${item.revisionNumber} · ${item.publishedAt}',
+                      '${_location(item.locationId)} · ${item.draftId == null ? 'Freigegeben' : 'Entwurf vorhanden'}',
                     ),
-                    onTap: c.editable ? () => c.selectGuidance(item) : null,
+                    selected: c.selected?.id == item.id,
+                    onTap: c.busy ? null : () => _open(item.id),
                   ),
-                if (c.guidanceChoices?.isEmpty == true)
-                  const Text('Keine freigegebenen Anleitungen verfügbar.'),
-                if (c.guidanceCursor != null)
+                if (c.nextCursor != null)
                   TextButton(
-                    onPressed: c.busy ? null : () => c.loadGuidance(more: true),
-                    child: const Text('Weitere Anleitungen'),
+                    onPressed: c.busy ? null : () => c.loadList(more: true),
+                    child: const Text('Weitere Vorlagen laden'),
                   ),
-                if (c.guidancePreview case final preview?)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                if (c.selected case final selected?) ...[
+                  const Divider(),
+                  Text('Standort: ${_location(selected.locationId)}'),
+                  if (!c.confirmed)
+                    const Text(
+                      'Serverstand nicht bestätigt. Bitte erneut laden.',
+                    ),
+                  if (c.revision case final revision?) ...[
+                    Text(
+                      c.conflict
+                          ? 'Konflikt · lokale Eingaben sind nicht bestätigt'
+                          : 'Revision ${revision.number} · ${revision.isDraft ? 'Entwurf' : 'Freigegeben'}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    if (revision.publishedAt case final time?)
+                      Text('Freigegeben am ${time.toLocal()}'),
+                    if (c.dirty)
+                      const Text(
+                        'Ungespeicherte Änderungen',
+                        key: Key('template-dirty'),
+                      ),
+                    if (c.conflict)
+                      ExpansionTile(
+                        title: const Text('Bestätigten Serverstand anzeigen'),
                         children: [
-                          Text(preview.title),
-                          Text(
-                            'Zugewiesene Revision ${preview.revisionNumber} · ${preview.publishedAt}',
+                          ListTile(
+                            title: Text(revision.content!.title),
+                            subtitle: Text(
+                              'Revision ${revision.number} · ${revision.status}',
+                            ),
                           ),
-                          SelectableText(
-                            preview.body,
-                            key: const Key('template-guidance-body'),
-                          ),
+                          for (final step in revision.content!.steps)
+                            ListTile(title: Text(step.instruction)),
                         ],
                       ),
+                    if (c.conflict)
+                      FilledButton(
+                        onPressed: c.busy
+                            ? null
+                            : () async {
+                                if (await _discard() && mounted) {
+                                  c.useServerVersion();
+                                }
+                              },
+                        child: const Text('Serverstand übernehmen'),
+                      ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      key: ValueKey('template-title-${c.editorGeneration}'),
+                      initialValue: c.title,
+                      readOnly: !c.editable,
+                      decoration: const InputDecoration(labelText: 'Titel'),
+                      onChanged: c.setTitle,
                     ),
-                  ),
-                const SizedBox(height: 16),
-                for (final (index, step) in c.steps.indexed)
-                  Card(
-                    key: ValueKey(step.id),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Schritt ${index + 1} · ${step.type == 'number' ? 'Zahlenwert erforderlich' : 'Bestätigung erforderlich'}',
+                    const SizedBox(height: 16),
+                    const Text('Zugewiesene Platzierung (optional)'),
+                    if (c.planogramGuidance case final pin?) ...[
+                      Text(
+                        'Fixture ${pin.fixtureId} · Assignment ${pin.assignmentId} · Revision ${pin.revisionId}',
+                        key: const Key('template-planogram-pin'),
+                      ),
+                      TextButton(
+                        key: const Key('preview-planogram'),
+                        onPressed: c.busy ? null : c.previewPlanogram,
+                        child: const Text('Exakte Platzierung ansehen'),
+                      ),
+                      if (c.editable)
+                        TextButton(
+                          key: const Key('clear-planogram'),
+                          onPressed: c.clearPlanogram,
+                          child: const Text('Platzierung entfernen'),
+                        ),
+                    ],
+                    if (c.editable)
+                      TextButton(
+                        key: const Key('choose-planogram'),
+                        onPressed: () => c.loadPlanograms(),
+                        child: const Text(
+                          'Aktuelle Platzierung wählen / ersetzen',
+                        ),
+                      ),
+                    for (final view in c.planogramChoices ?? [])
+                      ListTile(
+                        key: Key('planogram-choice-${view.fixture.id}'),
+                        title: Text(view.fixture.name),
+                        subtitle: Text(
+                          'Assignment ${view.assignment!.id} · Revision ${view.revision!.revisionNumber} · ${view.revision!.id}',
+                        ),
+                        onTap: c.editable
+                            ? () => c.selectPlanogram(view)
+                            : null,
+                      ),
+                    if (c.planogramChoices?.isEmpty == true)
+                      const Text(
+                        'Keine aktuell auswählbaren Platzierungen verfügbar.',
+                      ),
+                    if (c.planogramCursor != null)
+                      TextButton(
+                        onPressed: c.busy
+                            ? null
+                            : () => c.loadPlanograms(more: true),
+                        child: const Text('Weitere Platzierungen'),
+                      ),
+                    if (c.planogramPreview case final preview?)
+                      RetainedLayoutPanel(layout: preview),
+                    if (c.planogramSelectionPreview case final view?)
+                      CurrentLayoutSelectionPanel(layout: view),
+                    const SizedBox(height: 16),
+                    const Text('Freigegebene Anleitung (optional)'),
+                    if (c.knowledgeGuidance case final pin?) ...[
+                      Text(
+                        'WikiArticle ${pin.articleId} · WikiRevision ${pin.revisionId}',
+                        key: const Key('template-guidance-pin'),
+                      ),
+                      TextButton(
+                        onPressed: c.busy ? null : c.previewGuidance,
+                        child: const Text('Zugewiesene Revision ansehen'),
+                      ),
+                      if (c.editable)
+                        TextButton(
+                          onPressed: c.clearGuidance,
+                          child: const Text('Anleitung entfernen'),
+                        ),
+                    ],
+                    if (c.editable)
+                      TextButton(
+                        key: const Key('choose-guidance'),
+                        onPressed: c.loadGuidance,
+                        child: const Text(
+                          'Freigegebene Anleitung wählen / ersetzen',
+                        ),
+                      ),
+                    for (final item in c.guidanceChoices ?? [])
+                      ListTile(
+                        title: Text(item.title),
+                        subtitle: Text(
+                          'Revision ${item.revisionNumber} · ${item.publishedAt}',
+                        ),
+                        onTap: c.editable ? () => c.selectGuidance(item) : null,
+                      ),
+                    if (c.guidanceChoices?.isEmpty == true)
+                      const Text('Keine freigegebenen Anleitungen verfügbar.'),
+                    if (c.guidanceCursor != null)
+                      TextButton(
+                        onPressed: c.busy
+                            ? null
+                            : () => c.loadGuidance(more: true),
+                        child: const Text('Weitere Anleitungen'),
+                      ),
+                    if (c.guidancePreview case final preview?)
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(preview.title),
+                              Text(
+                                'Zugewiesene Revision ${preview.revisionNumber} · ${preview.publishedAt}',
+                              ),
+                              SelectableText(
+                                preview.body,
+                                key: const Key('template-guidance-body'),
+                              ),
+                            ],
                           ),
-                          TextFormField(
-                            key: ValueKey(
-                              'instruction-${step.id}-${c.editorGeneration}',
-                            ),
-                            initialValue: step.instruction,
-                            minLines: 2,
-                            maxLines: 8,
-                            readOnly: !c.editable,
-                            decoration: const InputDecoration(
-                              labelText: 'Anleitungstext',
-                            ),
-                            onChanged: (value) =>
-                                c.setInstruction(step.id, value),
-                          ),
-                          if (step.type == 'number') ...[
-                            for (final field in ['unit', 'minimum', 'maximum'])
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    for (final (index, step) in c.steps.indexed)
+                      Card(
+                        key: ValueKey(step.id),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Schritt ${index + 1} · ${step.type == 'number' ? 'Zahlenwert erforderlich' : 'Bestätigung erforderlich'}',
+                              ),
                               TextFormField(
                                 key: ValueKey(
-                                  '$field-${step.id}-${c.editorGeneration}',
+                                  'instruction-${step.id}-${c.editorGeneration}',
                                 ),
-                                initialValue: switch (field) {
-                                  'unit' => step.unit,
-                                  'minimum' => step.minimum,
-                                  _ => step.maximum,
-                                },
+                                initialValue: step.instruction,
+                                minLines: 2,
+                                maxLines: 8,
                                 readOnly: !c.editable,
-                                decoration: InputDecoration(
-                                  labelText: switch (field) {
-                                    'unit' => 'Einheit',
-                                    'minimum' => 'Untergrenze (inklusive)',
-                                    _ => 'Obergrenze (inklusive)',
-                                  },
+                                decoration: const InputDecoration(
+                                  labelText: 'Anleitungstext',
                                 ),
                                 onChanged: (value) =>
-                                    c.setNumberRule(step.id, field, value),
+                                    c.setInstruction(step.id, value),
                               ),
-                          ],
-                          if (revision.isDraft)
-                            Wrap(
-                              children: [
-                                IconButton(
-                                  tooltip: 'Schritt nach oben',
-                                  onPressed: !c.editable || index == 0
-                                      ? null
-                                      : () => c.moveStep(step.id, -1),
-                                  icon: const Icon(Icons.arrow_upward),
-                                ),
-                                IconButton(
-                                  tooltip: 'Schritt nach unten',
-                                  onPressed:
-                                      !c.editable || index == c.steps.length - 1
-                                      ? null
-                                      : () => c.moveStep(step.id, 1),
-                                  icon: const Icon(Icons.arrow_downward),
-                                ),
-                                TextButton(
-                                  onPressed: c.editable
-                                      ? () => c.removeStep(step.id)
-                                      : null,
-                                  child: const Text('Schritt entfernen'),
-                                ),
+                              if (step.type == 'number') ...[
+                                for (final field in [
+                                  'unit',
+                                  'minimum',
+                                  'maximum',
+                                ])
+                                  TextFormField(
+                                    key: ValueKey(
+                                      '$field-${step.id}-${c.editorGeneration}',
+                                    ),
+                                    initialValue: switch (field) {
+                                      'unit' => step.unit,
+                                      'minimum' => step.minimum,
+                                      _ => step.maximum,
+                                    },
+                                    readOnly: !c.editable,
+                                    decoration: InputDecoration(
+                                      labelText: switch (field) {
+                                        'unit' => 'Einheit',
+                                        'minimum' => 'Untergrenze (inklusive)',
+                                        _ => 'Obergrenze (inklusive)',
+                                      },
+                                    ),
+                                    onChanged: (value) =>
+                                        c.setNumberRule(step.id, field, value),
+                                  ),
                               ],
-                            ),
+                              if (revision.isDraft)
+                                Wrap(
+                                  children: [
+                                    IconButton(
+                                      tooltip: 'Schritt nach oben',
+                                      onPressed: !c.editable || index == 0
+                                          ? null
+                                          : () => c.moveStep(step.id, -1),
+                                      icon: const Icon(Icons.arrow_upward),
+                                    ),
+                                    IconButton(
+                                      tooltip: 'Schritt nach unten',
+                                      onPressed:
+                                          !c.editable ||
+                                              index == c.steps.length - 1
+                                          ? null
+                                          : () => c.moveStep(step.id, 1),
+                                      icon: const Icon(Icons.arrow_downward),
+                                    ),
+                                    TextButton(
+                                      onPressed: c.editable
+                                          ? () => c.removeStep(step.id)
+                                          : null,
+                                      child: const Text('Schritt entfernen'),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (revision.isDraft)
+                      Wrap(
+                        spacing: 12,
+                        children: [
+                          TextButton.icon(
+                            onPressed: c.canAddStep ? c.addStep : null,
+                            icon: const Icon(Icons.add),
+                            label: const Text('Schritt hinzufügen'),
+                          ),
+                          TextButton.icon(
+                            onPressed: c.canAddStep
+                                ? () => c.addStep(numeric: true)
+                                : null,
+                            icon: const Icon(Icons.add),
+                            label: const Text('Zahlenschritt hinzufügen'),
+                          ),
+                          FilledButton(
+                            key: const Key('save-template'),
+                            onPressed: c.editable && c.dirty ? c.save : null,
+                            child: const Text('Entwurf speichern'),
+                          ),
+                          FilledButton.tonal(
+                            key: const Key('publish-template'),
+                            onPressed: c.canPublish
+                                ? () async {
+                                    if (await _confirm(
+                                          'Revision freigeben?',
+                                          'Diese Revision bleibt nach der Freigabe unveränderlich. Änderungen erfolgen in einem neuen Entwurf.',
+                                        ) &&
+                                        mounted) {
+                                      await c.publish();
+                                    }
+                                  }
+                                : null,
+                            child: const Text('Revision freigeben'),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                if (revision.isDraft)
-                  Wrap(
-                    spacing: 12,
-                    children: [
-                      TextButton.icon(
-                        onPressed: c.canAddStep ? c.addStep : null,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Schritt hinzufügen'),
-                      ),
-                      TextButton.icon(
-                        onPressed: c.canAddStep
-                            ? () => c.addStep(numeric: true)
-                            : null,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Zahlenschritt hinzufügen'),
-                      ),
-                      FilledButton(
-                        key: const Key('save-template'),
-                        onPressed: c.editable && c.dirty ? c.save : null,
-                        child: const Text('Entwurf speichern'),
-                      ),
+                    if (c.canNewDraft)
                       FilledButton.tonal(
-                        key: const Key('publish-template'),
-                        onPressed: c.canPublish
-                            ? () async {
-                                if (await _confirm(
-                                      'Revision freigeben?',
-                                      'Diese Revision bleibt nach der Freigabe unveränderlich. Änderungen erfolgen in einem neuen Entwurf.',
-                                    ) &&
-                                    mounted) {
-                                  await c.publish();
-                                }
-                              }
-                            : null,
-                        child: const Text('Revision freigeben'),
+                        onPressed: c.newDraft,
+                        child: const Text('Neue Revision aus letzter Freigabe'),
                       ),
-                    ],
+                  ],
+                  const Divider(),
+                  Text(
+                    'Revisionshistorie',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                if (c.canNewDraft)
-                  FilledButton.tonal(
-                    onPressed: c.newDraft,
-                    child: const Text('Neue Revision aus letzter Freigabe'),
-                  ),
+                  for (final item in c.revisions)
+                    ListTile(
+                      title: Text('Revision ${item.number}: ${item.title}'),
+                      subtitle: Text(item.isDraft ? 'Entwurf' : 'Freigegeben'),
+                      onTap: c.busy
+                          ? null
+                          : () => _open(selected.id, revisionId: item.id),
+                    ),
+                  if (c.revisionCursor != null)
+                    TextButton(
+                      onPressed: c.busy ? null : c.moreHistory,
+                      child: const Text('Weitere Revisionen laden'),
+                    ),
+                ],
               ],
-              const Divider(),
-              Text(
-                'Revisionshistorie',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              for (final item in c.revisions)
-                ListTile(
-                  title: Text('Revision ${item.number}: ${item.title}'),
-                  subtitle: Text(item.isDraft ? 'Entwurf' : 'Freigegeben'),
-                  onTap: c.busy
-                      ? null
-                      : () => _open(selected.id, revisionId: item.id),
-                ),
-              if (c.revisionCursor != null)
-                TextButton(
-                  onPressed: c.busy ? null : c.moreHistory,
-                  child: const Text('Weitere Revisionen laden'),
-                ),
-            ],
+            ),
           ],
         ),
       ),

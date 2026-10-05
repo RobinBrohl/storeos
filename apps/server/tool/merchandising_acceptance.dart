@@ -10,7 +10,7 @@ typedef AcceptanceRequest =
     );
 
 /// Shared real-HTTP seed for backup/update acceptance; no foreign SQL writes.
-Future<void> seedLocalPlanogram(
+Future<PlanogramGuidance> seedLocalPlanogram(
   AcceptanceRequest request,
   String location,
 ) async {
@@ -41,6 +41,7 @@ Future<void> seedLocalPlanogram(
     'originFixtureId': fixture,
   }, 201);
   String? firstAssignment, firstRevision;
+  PlanogramGuidance? currentPin;
   for (var number = 1; number <= 2; number++) {
     final revision = newUuid();
     final expected = number == 1 ? 1 : 3;
@@ -82,6 +83,10 @@ Future<void> seedLocalPlanogram(
         throw StateError('Publication changed an assignment.');
       }
     }
+    // R2 publication alone leaves the selected R1 deployment current.
+    if (number == 2) {
+      continue;
+    }
     final assignment = {
       'operationId': newUuid(),
       'expectedVersion': number,
@@ -94,6 +99,11 @@ Future<void> seedLocalPlanogram(
       200,
     );
     await request('POST', '$fixtures/$fixture/assignments', assignment, 200);
+    currentPin = PlanogramGuidance(
+      fixtureId: fixture,
+      assignmentId: (result['assignment'] as Map)['id'] as String,
+      revisionId: revision,
+    );
     if (number == 1) {
       firstRevision = revision;
       firstAssignment = (result['assignment'] as Map)['id'] as String;
@@ -105,7 +115,7 @@ Future<void> seedLocalPlanogram(
     null,
     200,
   );
-  if ((history['items'] as List).length != 2) {
+  if ((history['items'] as List).length != 1) {
     throw StateError('Assignment history not preserved.');
   }
   final print = PrintViewDto.fromJson(
@@ -116,9 +126,11 @@ Future<void> seedLocalPlanogram(
       200,
     ),
   );
-  if (!print.html.contains('Historische Zuweisung') ||
+  if (print.revisionId != firstRevision ||
+      print.assignmentId != firstAssignment ||
       !print.html.contains('A4 landscape') ||
       print.html.contains('<>&')) {
     throw StateError('Pinned print boundary failed.');
   }
+  return currentPin!;
 }

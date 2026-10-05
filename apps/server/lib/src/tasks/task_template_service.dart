@@ -8,16 +8,19 @@ import '../platform/platform_input.dart';
 import 'task_template.dart';
 import 'task_template_repository.dart';
 import '../knowledge/knowledge_guidance_port.dart';
+import '../merchandising/planogram_guidance_port.dart';
 
 class TaskTemplateService {
   TaskTemplateService(this.database)
     : _repository = TaskTemplateRepository(database.schema, database.companyId),
       _organization = OrganizationService(database),
-      _knowledge = KnowledgeGuidancePort(database);
+      _knowledge = KnowledgeGuidancePort(database),
+      _planogram = PlanogramGuidancePort(database);
   final PlatformDatabase database;
   final TaskTemplateRepository _repository;
   final OrganizationService _organization;
   final KnowledgeGuidancePort _knowledge;
+  final PlanogramGuidancePort _planogram;
   Future<T> _run<T>(
     SessionPrincipal principal,
     Future<T> Function(TxSession, PlatformActor) action,
@@ -166,6 +169,34 @@ class TaskTemplateService {
     return _run(principal, (tx, actor) => _result(tx, id, revisionId));
   }
 
+  Future<Map<String, dynamic>> planogram(
+    SessionPrincipal principal,
+    String id,
+    String revisionId,
+  ) {
+    id = requireUuid({'id': id}, 'id');
+    revisionId = requireUuid({'id': revisionId}, 'id');
+    return _run(principal, (tx, actor) async {
+      _planogram.requireRead(actor);
+      final template = await _get(tx, id);
+      final revision = await _revision(tx, id, revisionId);
+      final pin = revision.content.planogramGuidance;
+      if (pin == null) {
+        throw const PlatformFailure(
+          404,
+          'not_found',
+          'Template revision has no assigned layout.',
+        );
+      }
+      return (await _planogram.readStoredPin(
+        tx,
+        actor,
+        template.locationId,
+        pin,
+      )).toJson();
+    });
+  }
+
   Future<Map<String, dynamic>> create(
     SessionPrincipal principal,
     Map<String, dynamic> input,
@@ -182,6 +213,15 @@ class TaskTemplateService {
       await _organization.requireConfiguredLocation(tx, locationId);
       if (content.knowledgeGuidance case final pin?) {
         await _knowledge.validatePublication(tx, actor, pin, selection: true);
+      }
+      if (content.planogramGuidance case final pin?) {
+        await _planogram.validatePublication(
+          tx,
+          actor,
+          locationId,
+          pin,
+          selection: true,
+        );
       }
       if (await _repository.find(tx, id) != null ||
           await _repository.revisionIdExists(tx, revisionId)) {
@@ -224,6 +264,9 @@ class TaskTemplateService {
       final source = await _revision(tx, id, template.publishedId!);
       if (source.content.knowledgeGuidance != null) {
         _knowledge.requireRead(actor);
+      }
+      if (source.content.planogramGuidance != null) {
+        await _planogram.requireWorkLocation(tx, actor, template.locationId);
       }
       await _repository.addRevision(
         tx,
@@ -278,6 +321,10 @@ class TaskTemplateService {
           content?.knowledgeGuidance != null) {
         _knowledge.requireRead(actor);
       }
+      if (revision.content.planogramGuidance != null ||
+          content?.planogramGuidance != null) {
+        await _planogram.requireWorkLocation(tx, actor, template.locationId);
+      }
       if (publish && revision.repeatsPublication(version)) {
         return _result(tx, id, revisionId);
       }
@@ -289,6 +336,14 @@ class TaskTemplateService {
         if (revision.content.knowledgeGuidance case final pin?) {
           await _knowledge.validatePublication(tx, actor, pin);
         }
+        if (revision.content.planogramGuidance case final pin?) {
+          await _planogram.validatePublication(
+            tx,
+            actor,
+            template.locationId,
+            pin,
+          );
+        }
         await _repository.publish(tx, revision, actor.id, version);
       } else {
         if (content!.knowledgeGuidance case final pin?) {
@@ -296,6 +351,17 @@ class TaskTemplateService {
             await _knowledge.validatePublication(
               tx,
               actor,
+              pin,
+              selection: true,
+            );
+          }
+        }
+        if (content.planogramGuidance case final pin?) {
+          if (!pin.sameAs(revision.content.planogramGuidance)) {
+            await _planogram.validatePublication(
+              tx,
+              actor,
+              template.locationId,
               pin,
               selection: true,
             );
@@ -313,6 +379,10 @@ class TaskTemplateService {
         if (jsonEncode(revision.content.knowledgeGuidance?.toJson()) !=
             jsonEncode(content.knowledgeGuidance?.toJson())) {
           fields.add('knowledgeGuidance');
+        }
+        if (jsonEncode(revision.content.planogramGuidance?.toJson()) !=
+            jsonEncode(content.planogramGuidance?.toJson())) {
+          fields.add('planogramGuidance');
         }
         await _repository.edit(tx, revision, content);
       }
@@ -351,6 +421,11 @@ class TaskTemplateService {
       if (revision.content.knowledgeGuidance case final pin?) ...{
         'knowledgeArticleId': pin.articleId,
         'knowledgeRevisionId': pin.revisionId,
+      },
+      if (revision.content.planogramGuidance case final pin?) ...{
+        'fixtureId': pin.fixtureId,
+        'planogramAssignmentId': pin.assignmentId,
+        'planogramRevisionId': pin.revisionId,
       },
       if (fields.isNotEmpty) 'changedFields': fields,
     },

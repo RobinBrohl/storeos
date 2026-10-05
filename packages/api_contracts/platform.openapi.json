@@ -1449,7 +1449,7 @@
             }
           },
           "422": {
-            "description": "guidance_selection_unavailable: selected instruction is unavailable for draft authoring; select an active Article current published revision. No Template, Revision or audit is created on failure.",
+            "description": "guidance_selection_unavailable: selected instruction is unavailable for draft authoring; select an active Article current published revision. No Template, Revision or audit is created on failure. planogram_selection_unavailable: exact deployment unavailable under fresh-work rules; no automatic rebasing or partial commit.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1883,7 +1883,7 @@
             }
           },
           "422": {
-            "description": "guidance_selection_unavailable: a new or replacement instruction is unavailable for draft authoring; select an active Article current published revision. Saved draft/version/audit remain unchanged on failure; unchanged retained pins are not reselected.",
+            "description": "guidance_selection_unavailable: a new or replacement instruction is unavailable for draft authoring; select an active Article current published revision. Saved draft/version/audit remain unchanged on failure; unchanged retained pins are not reselected. planogram_selection_unavailable: exact deployment unavailable under fresh-work rules; no automatic rebasing or partial commit.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1928,7 +1928,7 @@
     "/api/v1/platform/task-templates/{id}/revisions/{revisionId}/publish": {
       "post": {
         "operationId": "publishTemplateRevision",
-        "description": "Requires tasks.templates.manage (admin only), current session and company/location scope. Writes and audit are atomic. No domain events. Existing APIs remain unchanged. Retry with the same revision ID and original expectedVersion returns the committed revision without another audit entry; mismatched versions return 409. Every retry rechecks authorization.",
+        "description": "Requires tasks.templates.manage (admin only), current session and company/location scope. Writes and audit are atomic. No domain events. Existing APIs remain unchanged. Retry with the same revision ID and original expectedVersion returns the committed revision without another audit entry; mismatched versions return 409. Every retry rechecks authorization. Planogram pin replay checks current authorization/scope before returning committed evidence, without fresh availability validation or duplicate Tasks/audit.",
         "security": [
           {
             "session": []
@@ -2044,7 +2044,7 @@
             }
           },
           "422": {
-            "description": "empty_template: a published Template needs a step. guidance_unavailable: exact retained instruction cannot be used for fresh publication; explicitly review/remove/replace it. Exact committed publication replay precedes fresh lifecycle validation and returns original evidence.",
+            "description": "empty_template: a published Template needs a step. guidance_unavailable: exact retained instruction cannot be used for fresh publication; explicitly review/remove/replace it. Exact committed publication replay precedes fresh lifecycle validation and returns original evidence. planogram_guidance_unavailable: exact deployment unavailable under fresh-work rules; no automatic rebasing or partial commit.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2281,7 +2281,7 @@
     "/api/v1/platform/shifts/{id}/publish": {
       "post": {
         "operationId": "publishShift",
-        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location. State and audit share one transaction; no integration events. Published shifts and snapshots cannot be changed. Create ID is bound to actor, location and original normalized content; identical retries return current state. Publish retry with the original expectedVersion returns the same tasks after fresh authorization. Conflicting versions return 409.",
+        "description": "Requires workforce.shifts.manage; task reads also require tasks.instances.read. Admin only; same company and configured location. State and audit share one transaction; no integration events. Published shifts and snapshots cannot be changed. Create ID is bound to actor, location and original normalized content; identical retries return current state. Publish retry with the original expectedVersion returns the same tasks after fresh authorization. Conflicting versions return 409. Planogram pin replay checks current authorization/scope before returning committed evidence, without fresh availability validation or duplicate Tasks/audit.",
         "security": [
           {
             "session": []
@@ -2389,7 +2389,7 @@
             }
           },
           "422": {
-            "description": "shift_not_publishable, employee_unavailable or invalid_selection: fresh Shift publication validation failed. guidance_unavailable: exact retained instruction cannot be used for fresh publication; explicitly review/remove/replace it. Exact committed publication replay precedes fresh lifecycle validation and returns original evidence.",
+            "description": "shift_not_publishable, employee_unavailable or invalid_selection: fresh Shift publication validation failed. guidance_unavailable: exact retained instruction cannot be used for fresh publication; explicitly review/remove/replace it. Exact committed publication replay precedes fresh lifecycle validation and returns original evidence. planogram_guidance_unavailable: exact deployment unavailable under fresh-work rules; no automatic rebasing or partial commit.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8729,6 +8729,428 @@
           }
         }
       }
+    },
+    "/api/v1/platform/shifts/{id}/tasks/{task}/planogram": {
+      "get": {
+        "operationId": "managerTaskPlanogram",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "description": "No query parameters or client-selected Revision. Authorize current session and task scope, then resolve the stored immutable pin. Requires existing manager Shift/Task scope. Requires merchandising.layouts.read. Exact Assignment/Fixture/Revision evidence remains available after reassignment and terminal Fixture/Planogram retirement. Frozen structure is separate from live Article/Assortment/Stock. No execution-window requirement. No current-content substitution.",
+        "responses": {
+          "200": {
+            "description": "Exact retained layout and separate current enrichment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetainedLayout"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: malformed UUID; invalid_query: query parameters are forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current Company, configured Location or required Tasks/Merchandising capability denied; plugin access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: invisible/mismatched Task/Shift or absent guidance; employee_unavailable: no active Employee context.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: retained instruction or database integrity failure. No substitution.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unavailable database, timeout or infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/employee-home/shifts/{id}/tasks/{task}/planogram": {
+      "get": {
+        "operationId": "employeeTaskPlanogram",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "description": "No query parameters or client-selected Revision. Authorize current session and task scope, then resolve the stored immutable pin. Requires current active own Employee link and configured Location; published own Shift visibility. Requires merchandising.layouts.read. Exact Assignment/Fixture/Revision evidence remains available after reassignment and terminal Fixture/Planogram retirement. Frozen structure is separate from live Article/Assortment/Stock. No execution-window requirement. No current-content substitution.",
+        "responses": {
+          "200": {
+            "description": "Exact retained layout and separate current enrichment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetainedLayout"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: malformed UUID; invalid_query: query parameters are forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current Company, configured Location or required Tasks/Merchandising capability denied; plugin access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: invisible/mismatched Task/Shift or absent guidance; employee_unavailable: no active Employee context.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: retained instruction or database integrity failure. No substitution.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unavailable database, timeout or infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/task-templates/{id}/revisions/{revisionId}/planogram": {
+      "get": {
+        "operationId": "templateRevisionPlanogram",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "description": "No query parameters. Requires tasks.templates.manage and merchandising.layouts.read in the current Company/configured Location. Resolve only this stored Template revision pin; historical preview survives reassignment and retirement. Read only, with no readership audit.",
+        "responses": {
+          "200": {
+            "description": "Exact retained layout and separate current enrichment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetainedLayout"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: malformed UUID; invalid_query: query parameters are forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: absent, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current Company, configured Location or required Tasks/Merchandising capability denied; plugin access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: Template/Revision missing, mismatched, or has no Planogram pin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: retained instruction or database integrity failure. No substitution.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unavailable database, timeout or infrastructure failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/merchandising/fixtures/{fixtureId}/guidance-selection": {
+      "get": {
+        "operationId": "currentPlanogramGuidanceSelection",
+        "description": "No query parameters. merchandising.layouts.read and configured Location required. Select only the server-resolved current published deployment of an active Fixture and Planogram, with active Articles/Assortment. No historical selector. Saving and fresh publication revalidate the exact captured tuple. Requires tasks.templates.manage and merchandising.layouts.read in the configured Company/Location.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fixtureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmed evidence/state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayoutView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: malformed UUID; invalid_query: query parameters forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: missing, expired or revoked session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: capability, Company or configured local Location denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected server failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: unexpected database/infrastructure failure; no integrity error is globally normalized by merchandising.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location is missing or not configured. Requested scoped resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "planogram_selection_unavailable: no eligible current deployment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -9854,7 +10276,8 @@
             "enum": [
               1,
               2,
-              3
+              3,
+              4
             ]
           },
           "title": {
@@ -9878,9 +10301,19 @@
                 "$ref": "#/components/schemas/KnowledgeGuidance"
               }
             ]
+          },
+          "planogramGuidance": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PlanogramGuidance"
+              }
+            ]
           }
         },
-        "description": "Text must contain valid Unicode scalar values; isolated UTF-16 surrogates are rejected. Normalized compact UTF-8 JSON is limited to 8192 bytes. Step IDs must be unique. Empty steps are allowed only in drafts; publication requires at least one step. Schema 3 requires nullable knowledgeGuidance, storing only exact Article and published Revision IDs. Schemas 1/2 forbid guidance and are unchanged.",
+        "description": "Text must contain valid Unicode scalar values; isolated UTF-16 surrogates are rejected. Normalized compact UTF-8 JSON is limited to 8192 bytes. Step IDs must be unique. Empty steps are allowed only in drafts; publication requires at least one step. Schema 3 requires nullable knowledgeGuidance, storing only exact Article and published Revision IDs. Schemas 1/2 forbid guidance and are unchanged. Schema 4 requires independently nullable knowledgeGuidance and planogramGuidance. Schemas 1–3 forbid the Planogram field. Only the exact Fixture/Assignment/Revision tuple is persisted.",
         "allOf": [
           {
             "if": {
@@ -9904,7 +10337,10 @@
             "if": {
               "properties": {
                 "schemaVersion": {
-                  "const": 3
+                  "enum": [
+                    3,
+                    4
+                  ]
                 }
               }
             },
@@ -9917,6 +10353,27 @@
               "not": {
                 "required": [
                   "knowledgeGuidance"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "schemaVersion": {
+                  "const": 4
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "planogramGuidance"
+              ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "planogramGuidance"
                 ]
               }
             }
@@ -13338,6 +13795,149 @@
           }
         },
         "description": "Exact stored task pin. Frozen content is separate from current supersession/retirement indicators. Reading creates no acknowledgment or task transition."
+      },
+      "PlanogramGuidance": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fixtureId",
+          "assignmentId",
+          "revisionId"
+        ],
+        "properties": {
+          "fixtureId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          }
+        },
+        "description": "Exact deployment occurrence. Assignment identity remains distinct when a Revision is deployed again."
+      },
+      "RetainedLayoutInstruction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fixtureId",
+          "assignmentId",
+          "revisionId",
+          "planogramId",
+          "revisionNumber",
+          "content"
+        ],
+        "properties": {
+          "fixtureId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "planogramId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "revisionNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "content": {
+            "$ref": "#/components/schemas/LayoutContent"
+          }
+        }
+      },
+      "RetainedLayoutContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fixtureName",
+          "fixtureKind",
+          "fixtureRetired",
+          "planogramRetired",
+          "reassigned",
+          "articles",
+          "stockContextStatus",
+          "queriedAt"
+        ],
+        "properties": {
+          "fixtureName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "fixtureKind": {
+            "type": "string",
+            "enum": [
+              "shelf",
+              "refrigerated_case",
+              "counter",
+              "display"
+            ]
+          },
+          "fixtureRetired": {
+            "type": "boolean"
+          },
+          "planogramRetired": {
+            "type": "boolean"
+          },
+          "reassigned": {
+            "type": "boolean"
+          },
+          "articles": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/LayoutArticleContext"
+            }
+          },
+          "stockContextStatus": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "description": "Availability of the batched optional Stock read. When available, article stock null means no recorded StockLevel; recorded zero remains a quantity. When unavailable, ignore null stock as a missing-level indication and retain the instruction."
+          },
+          "queriedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RetainedLayout": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "instruction",
+          "currentContext"
+        ],
+        "properties": {
+          "instruction": {
+            "$ref": "#/components/schemas/RetainedLayoutInstruction"
+          },
+          "currentContext": {
+            "$ref": "#/components/schemas/RetainedLayoutContext"
+          }
+        },
+        "description": "Frozen published structure and durable identities, separately named current labels, lifecycle and optional Stock. Contains no author, assigner or operation metadata. Never substitute a current deployment for the retained tuple."
       }
     }
   }

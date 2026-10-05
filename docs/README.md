@@ -1,7 +1,13 @@
 # Documentation index
 
+P4.7 Task + exact Planogram Assignment execution pinning is **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW APPROVE / SECURITY REMEDIATION COMPLETE / TARGETED SECURITY RE-REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING** on `main`, uncommitted and unstaged. The verified starting HEAD was `a0ed6346f7453c8f4e170aee43af8d775677f97b`, matching cached/live origin; all five exact-HEAD jobs succeeded in [baseline CI 37290533013](https://github.com/RobinBrohl/storeos/actions/runs/37290533013). New migration 0019 adds schema 4 and durable Fixture/Assignment/Revision integrity; migrations 0001–0018 and dependencies/lockfiles are unchanged. Existing P4.1–P4.6 closure remains intact. No P4.8 capability is selected.
+
+See [P4.7 local evidence](development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](adr/0021-task-planogram-assignment-guidance.md).
+
+Historical closure context:
+
 Canonical sources reconciled 2026-10-05. Start with [HANDOVER](HANDOVER.md) after
-[AGENTS](../AGENTS.md). Current baseline is `15679bf`; P4.6 is **DONE/CLOSED**,
+[AGENTS](../AGENTS.md). P4.6 implementation baseline was `15679bf`; P4.6 is **DONE/CLOSED**,
 with targeted review APPROVE, 64/64 PASS, focused Codex Security SECURITY APPROVE
 and all five jobs green in [changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549).
 See [ADR 0020](adr/0020-task-knowledge-guidance.md)
@@ -18,10 +24,9 @@ remains absent regression. P4.5 Approved Operational Knowledge is **DONE/CLOSED*
 with independent adversarial review APPROVE, 60/60 PASS and all five jobs green in
 [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360).
 See [final evidence](development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04)
-and [ADR 0019](adr/0019-approved-operational-knowledge.md). Current migration chain
-ends at 0018; no active P4.5 remediation remains. F01/F02 are LOW non-blocking follow-ups.
-No active P4.6 remediation remains. Next is fresh P4.7 capability selection after
-the documentation closure commit; P4.7 is not selected or ACTIVE.
+and [ADR 0019](adr/0019-approved-operational-knowledge.md). The P4.6 closure migration chain
+ended at 0018; no active P4.5 remediation remains. F01/F02 are LOW non-blocking follow-ups.
+No active P4.6 remediation remains. Its closure recommended fresh P4.7 selection; current delivery is recorded above.
 Do not infer delivery from a target architecture description or an Accepted ADR.
 
 ## Canonical sources
@@ -110,3 +115,5 @@ resolve current delivery and outstanding findings.
 [API contracts](../packages/api_contracts/README.md), [design system](../packages/design_system/README.md),
 [reserved modules](../modules/README.md), [shared](../packages/shared/README.md),
 [plugin SDK](../packages/plugin_sdk/README.md) and [plugin example](../plugins/examples/README.md).
+
+P4.7 slice evidence: [Task Planogram Assignment guidance](development/phase-4-7-task-planogram-guidance.md).

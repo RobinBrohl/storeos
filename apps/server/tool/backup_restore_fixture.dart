@@ -19,6 +19,7 @@ import 'dart:convert';
 import 'merchandising_acceptance.dart';
 import 'knowledge_acceptance.dart';
 import 'task_guidance_acceptance.dart';
+import 'backup_planogram_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -48,6 +49,10 @@ const _connectionSettings = ConnectionSettings(
 /// Evidence tables and their deterministic ordering keys. Identifiers are
 /// compile-time constants, never user input.
 const _evidenceTables = <String, String>{
+  'articles': 'id',
+  'article_location_assortment': 'id',
+  'stock_levels': 'id',
+  'stock_movements': 'id',
   'knowledge_articles': 'id',
   'knowledge_revisions': 'id',
   'shifts': 'id',
@@ -191,6 +196,7 @@ Future<void> _prepare(Map<String, String> env, String source) async {
       'sourceDatabase': source,
       ...ids,
       'workerRecoveryPassword': workerPassword,
+      'adminRecoveryPassword': adminPassword,
       'snapshot': snapshot.toJson(),
     });
     stdout.writeln('backup_restore_fixture_prepared');
@@ -263,6 +269,15 @@ Future<void> _verify(Map<String, String> env, String source) async {
     );
     await verifyGuidanceEvidence(sourceOwner, _schema, runtimeUser);
     await verifyGuidanceEvidence(targetOwner, _schema, runtimeUser);
+    await verifyBackupPlanogramProtections(
+      targetOwner,
+      _schema,
+      runtimeUser,
+      expected,
+    );
+    if (!(await _snapshot(targetOwner, _schema)).sameEvidence(current)) {
+      throw StateError('Restored database probes changed business evidence.');
+    }
 
     final sourceSessions = await _activeSessions(sourceOwner, _schema);
     final restoredSessions = await _activeSessions(targetOwner, _schema);
@@ -302,6 +317,11 @@ Future<void> _verify(Map<String, String> env, String source) async {
       'backup_accept_worker',
       expected['workerRecoveryPassword'] as String,
     );
+    await verifyBackupPlanogramReads(
+      _ownerEndpoint(env, target),
+      _schema,
+      expected,
+    );
     if (await _activeSessions(targetOwner, _schema) != 0 ||
         await _runtimeConnect(targetOwner, runtimeUser)) {
       throw StateError('Restore verification changed fencing.');
@@ -322,12 +342,22 @@ Future<void> _verify(Map<String, String> env, String source) async {
       'restoredRuntimeConnect': restoredConnect,
       'restoredRuntimeConnectionRejected': true,
       'guidance': {
-        'schemaVersion': 3,
+        'schemaVersion': 4,
+        'exactPlanogramPinPreserved': true,
+        'retiredReassignedLayoutReadVerified': true,
         'historicalRevision': 1,
         'completedPinPreserved': true,
         'contextualReadVerified': true,
         'arbitraryHistoryDenied': true,
         'runtimeProtections': true,
+        'articleAssortmentStockMovementHashesMatch': true,
+        'currentA2R2ReadVerified': true,
+        'currentArticleAssortmentNonemptyStockVerified': true,
+        'planogramHistoricalDenials': 5,
+        'planogramConfiguredLocationDenials': 4,
+        'planogramConfiguredLocationReturnVerified': true,
+        'planogramDatabaseRejections': 14,
+        'planogramGeneratedColumnsVerified': 6,
       },
     });
     stdout.writeln('backup_restore_fixture_verified');
@@ -365,7 +395,28 @@ Future<Map<String, String>> _seed(
       'locationName': 'Backup Acceptance Location',
     },
   );
-  await seedLocalPlanogram(
+  final alternateLocationId = newUuid();
+  await api.request(
+    'POST',
+    '$root/locations',
+    token: adminToken,
+    expected: 201,
+    body: {'id': alternateLocationId, 'name': 'Backup scope A'},
+  );
+  await api.request(
+    'POST',
+    '$root/users',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': newUuid(),
+      'username': 'backup_scope_admin_a',
+      'password': adminPassword,
+      'locationId': alternateLocationId,
+      'role': 'admin',
+    },
+  );
+  final planogramGuidance = await seedLocalPlanogram(
     (method, route, body, status) => api.request(
       method,
       route,
@@ -374,6 +425,24 @@ Future<Map<String, String>> _seed(
       expected: status,
     ),
     locationId,
+  );
+  final layout = await api.request(
+    'GET',
+    '$root/locations/$locationId/merchandising/fixtures/${planogramGuidance.fixtureId}/layout',
+    token: adminToken,
+  );
+  final articleId = (layout['articles'] as List).single['id'] as String;
+  final stock = await api.request(
+    'POST',
+    '$root/locations/$locationId/stock',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': newUuid(),
+      'articleId': articleId,
+      'quantity': '12.500',
+      'note': 'Bounded backup acceptance opening',
+    },
   );
   final employeeId = newUuid(), workerId = newUuid();
   await seedApprovedKnowledge(
@@ -487,8 +556,24 @@ Future<Map<String, String>> _seed(
         'instruction': 'Confirm completed work',
       },
     ],
-    schemaVersion: 3,
+    schemaVersion: 4,
+    planogram: planogramGuidance.toJson(),
     guidance: guidance.toJson(),
+  );
+
+  final legacy3Template = await _publishTemplate(
+    api,
+    adminToken,
+    locationId,
+    'Backup Acceptance Schema 3',
+    [
+      {
+        'id': newUuid(),
+        'type': 'confirmation',
+        'instruction': 'Preserve old nullable guidance content',
+      },
+    ],
+    schemaVersion: 3,
   );
 
   final shiftId = newUuid();
@@ -518,6 +603,10 @@ Future<Map<String, String>> _seed(
           'templateId': completedTemplate['templateId'],
           'revisionId': completedTemplate['revisionId'],
         },
+        {
+          'templateId': legacy3Template['templateId'],
+          'revisionId': legacy3Template['revisionId'],
+        },
       ],
     },
   );
@@ -528,8 +617,8 @@ Future<Map<String, String>> _seed(
     body: {'expectedVersion': 1},
   );
   final tasks = (published['tasks'] as List).cast<Map<String, dynamic>>();
-  if (tasks.length != 3) {
-    throw StateError('Expected exactly three published tasks.');
+  if (tasks.length != 4) {
+    throw StateError('Expected exactly four published tasks.');
   }
   final taskByTemplate = {
     for (final task in tasks)
@@ -543,6 +632,55 @@ Future<Map<String, String>> _seed(
       completedTaskId == null) {
     throw StateError('Published tasks do not match the selected templates.');
   }
+  // A real second employee's pinned Task supplies the restored IDOR target.
+  final otherEmployeeId = newUuid(), otherShiftId = newUuid();
+  final otherEmployee = await api.request(
+    'POST',
+    '$root/employees',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': otherEmployeeId,
+      'displayName': 'Other backup employee',
+      'locationId': locationId,
+    },
+  );
+  final otherTemplate = await _publishTemplate(
+    api,
+    adminToken,
+    locationId,
+    'Other employee retained layout',
+    [
+      {
+        'id': newUuid(),
+        'type': 'confirmation',
+        'instruction': 'Other employee work',
+      },
+    ],
+    schemaVersion: 4,
+    planogram: planogramGuidance.toJson(),
+  );
+  await api.request(
+    'POST',
+    '$root/shifts',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': otherShiftId,
+      'locationId': locationId,
+      'employeeId': otherEmployeeId,
+      'startsAt': otherEmployee['assignedFrom'],
+      'endsAt': end.toIso8601String(),
+      'selections': [otherTemplate],
+    },
+  );
+  final otherPublished = await api.request(
+    'POST',
+    '$root/shifts/$otherShiftId/publish',
+    token: adminToken,
+    body: {'expectedVersion': 1},
+  );
+  final otherTaskId = (otherPublished['tasks'] as List).single['id'] as String;
 
   final workerLogin = await api.request(
     'POST',
@@ -551,6 +689,11 @@ Future<Map<String, String>> _seed(
   );
   final workerToken = workerLogin['token'] as String;
   await replaceAndRetireGuidance(guidanceRequest, guidance);
+  await replaceAndRetireLayoutGuidance(
+    guidanceRequest,
+    locationId,
+    planogramGuidance,
+  );
   final assigned = await api.request(
     'GET',
     '$root/employee-home/shifts/$shiftId/tasks/$completedTaskId/knowledge',
@@ -656,10 +799,17 @@ Future<Map<String, String>> _seed(
     token: workerToken,
     expected: 204,
   );
+  final currentLayout = await api.request(
+    'GET',
+    '$root/locations/$locationId/merchandising/fixtures/${planogramGuidance.fixtureId}/layout',
+    token: adminToken,
+  );
   return {
     'companyId': companyId,
     'locationId': locationId,
     'adminAccountId': adminId,
+    'alternateLocationId': alternateLocationId,
+    'completedTemplateRevisionId': completedTemplate['revisionId']!,
     'workerAccountId': workerId,
     'employeeId': employeeId,
     'shiftId': shiftId,
@@ -670,6 +820,15 @@ Future<Map<String, String>> _seed(
     'blockedTemplateId': blockedTemplate['templateId']!,
     'completedTemplateId': completedTemplate['templateId']!,
     'pluginId': pluginId,
+    'articleId': articleId,
+    'stockLevelId': stock['id'] as String,
+    'otherShiftId': otherShiftId,
+    'otherTaskId': otherTaskId,
+    'planogramFixtureId': planogramGuidance.fixtureId,
+    'planogramAssignmentId': planogramGuidance.assignmentId,
+    'planogramRevisionId': planogramGuidance.revisionId,
+    'currentAssignmentId': (currentLayout['assignment'] as Map)['id'] as String,
+    'currentRevisionId': (currentLayout['revision'] as Map)['id'] as String,
   };
 }
 
@@ -681,6 +840,7 @@ Future<Map<String, String>> _publishTemplate(
   List<Map<String, dynamic>> steps, {
   int schemaVersion = 2,
   Map<String, dynamic>? guidance,
+  Map<String, dynamic>? planogram,
 }) async {
   final templateId = newUuid(), revisionId = newUuid();
   await api.request(
@@ -696,7 +856,8 @@ Future<Map<String, String>> _publishTemplate(
         'schemaVersion': schemaVersion,
         'title': title,
         'steps': steps,
-        if (schemaVersion == 3) 'knowledgeGuidance': guidance,
+        if (schemaVersion >= 3) 'knowledgeGuidance': guidance,
+        if (schemaVersion == 4) 'planogramGuidance': planogram,
       },
     },
   );
@@ -736,6 +897,10 @@ Future<void> _assertSeededJourney(
     throw StateError('Expected exactly one active source plugin token.');
   }
   const expectedCounts = {
+    'articles': 1,
+    'article_location_assortment': 1,
+    'stock_levels': 1,
+    'stock_movements': 1,
     'knowledge_articles': 3,
     'knowledge_revisions': 8,
     'merchandising_fixtures': 1,
@@ -745,9 +910,9 @@ Future<void> _assertSeededJourney(
     'merchandising_planogram_placements': 2,
     'merchandising_planogram_assignments': 2,
 
-    'shifts': 1,
-    'task_template_revisions': 3,
-    'task_instances': 3,
+    'shifts': 2,
+    'task_template_revisions': 5,
+    'task_instances': 5,
     'task_step_results': 2,
     'task_numeric_attempts': 2,
     'task_blockings': 1,
@@ -762,10 +927,12 @@ Future<void> _assertSeededJourney(
     'SELECT status FROM "$schema".task_instances ORDER BY status',
   );
   final seeded = statuses.map((row) => row.single as String).toList();
-  if (seeded.length != 3 ||
+  if (seeded.length != 5 ||
       seeded[0] != 'blocked' ||
       seeded[1] != 'completed' ||
-      seeded[2] != 'in_progress') {
+      seeded[2] != 'in_progress' ||
+      seeded[3] != 'open' ||
+      seeded[4] != 'open') {
     throw StateError('Seeded task states differ from the plan.');
   }
   final attempts = await owner.execute(

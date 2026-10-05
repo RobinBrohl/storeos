@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
 import '../application/shift_controller.dart';
+import 'retained_layout_panel.dart';
 
 class ShiftSection extends StatefulWidget {
   const ShiftSection({
@@ -323,6 +324,25 @@ class _ShiftSectionState extends State<ShiftSection> {
           if (c.task?.content != null) ...[
             const Divider(),
             Text(c.task!.title, style: Theme.of(context).textTheme.titleLarge),
+            if (c.task!.content!.planogramGuidance != null) ...[
+              TextButton(
+                key: const Key('assigned-layout'),
+                onPressed: c.busy ? null : c.openLayout,
+                child: const Text('Zugewiesene Platzierung'),
+              ),
+              if (c.layoutOpen) ...[
+                if (c.busy) const LinearProgressIndicator(),
+                if (c.layoutError case final error?)
+                  Text(error, key: const Key('layout-error')),
+                if (c.taskPlanogram case final layout?)
+                  RetainedLayoutPanel(layout: layout),
+                TextButton(
+                  key: const Key('return-from-layout'),
+                  onPressed: c.busy ? null : c.closeLayout,
+                  child: const Text('Zurück zur Aufgabe'),
+                ),
+              ],
+            ],
             if (c.task!.content!.knowledgeGuidance != null) ...[
               TextButton(
                 key: const Key('assigned-instruction'),

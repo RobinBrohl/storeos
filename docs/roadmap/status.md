@@ -1,6 +1,15 @@
 # Actual implementation status
 
-P4.8 Selected-article inventory counts are **IMPLEMENTED LOCALLY** on main, uncommitted and unstaged. Independent adversarial review returned **CHANGES REQUIRED**. Bounded F01–F04 remediation is **COMPLETE**; targeted review, focused security review and remote changed-commit CI are **PENDING**. Migration 0020 adds immutable Stock-owned rounds/observations and whole approved corrections; P4.1–P4.7 closure remains intact. See [P4.8 contract and evidence](../development/phase-4-8-stock-counts.md).
+P4.8 Selected-Article Inventory Count is **DONE/CLOSED** at implementation commit
+`cba9bff10a8d32bfcda39ee428436153ca2fc044` on `main`. Initial independent review
+**CHANGES REQUIRED** led to bounded F01–F04 remediation, followed by targeted
+**APPROVE**, **124/124 PASS / 0 QUALIFIED / 0 FAIL** and focused Codex Security
+**SECURITY APPROVE** (zero confirmed/probable vulnerabilities; no security commit blocker).
+All five exact-commit jobs succeeded in [CI 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163).
+The migration chain ends at `0020_stock_counts.sql`; 0001–0019 and dependencies/lockfiles
+are unchanged. No active P4.8 remediation remains. Next after the closure commit:
+**fresh P4.9 capability selection**; no P4.9 capability is selected or ACTIVE.
+See [P4.8 contract and closure evidence](../development/phase-4-8-stock-counts.md#final-documentation-closure--2026-10-06).
 
 
 P4.7 Task + exact Planogram Assignment execution pinning is **DONE/CLOSED** at implementation commit
@@ -14,7 +23,7 @@ re-review returned **SECURITY APPROVE**. All five exact-HEAD jobs succeeded in
 [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). Migration 0019 completes the 0001–0019 chain;
 0001–0018 and dependencies/lockfiles are unchanged. No active P4.7 remediation remains.
 Existing P4.1–P4.6 closure remains intact. Next after the documentation closure commit:
-P4.8 selection followed that closure; its local implementation is recorded above.
+P4.8 selection followed that closure; its final closure is recorded above.
 
 See [P4.7 evidence](../development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md). Closure evidence includes real Flutter/HTTP/PostgreSQL and Chrome workflows, print, backup/restore, update/recovery and full final-source regression; physical-printer, native-device and accessibility acceptance are not claimed.
 
@@ -92,7 +101,7 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P4.4 Local Planogram Execution | DONE / CLOSED | Implementation `cd7669ed`; CI portability fix `73dca5a4`; migration 0016 / ADR 0018. Company Planogram, Location Fixture, immutable published Revision, explicit append-only Assignment, target Assortment validation and browser HTML/CSS print. | Full independent review, bounded F01/F02 remediation, targeted APPROVE; 1–49 PASS, 50A PASS, 50B QUALIFIED, 51–68 PASS, no blockers. All five jobs green in [CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802). [Final closure](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04) records real journeys, browser print and backup/update/recovery acceptance. |
 | P4.5 Approved Operational Knowledge | DONE / CLOSED | Implementation 93072a4; migration 0017 / ADR 0019. Company-scoped WikiArticle, one active draft, immutable published/discarded WikiRevision, current published pointer, terminal retirement and strict publication replay. Plain text, Company-wide audience; no Task evidence or events. | Independent adversarial review APPROVE, 60/60 PASS; all five jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360). [Final closure](../development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04) records real journeys, Chrome workflow, backup/update/recovery and full regression. F01/F02 LOW non-blocking follow-ups. |
 | P4.6 Guided Operation — Task + approved Knowledge revision pinning | DONE / CLOSED | Implementation `15679bf`; migration 0018 / ADR 0020. Optional concrete schema-3 Article/Revision pin, frozen Template content, immutable Task snapshot and exact contextual historical read; no copied Knowledge text or readership evidence. | Full independent CHANGES REQUIRED review, bounded F01 remediation, targeted APPROVE, 64/64 PASS, focused Codex Security SECURITY APPROVE; all five jobs green in [changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549). [Final closure](../development/phase-4-6-task-knowledge-guidance.md#final-documentation-closure--2026-10-05) records real journeys, Chrome, backup/update/recovery and full regression. No active remediation. |
-| P4.8 selected-article Stock counts | IMPLEMENTED LOCALLY | Migration 0020 / ADR 0022; immutable blind observations, recounts, whole approval, typed count corrections and zero-variance evidence. Uncommitted/unstaged main. | Local acceptance per [slice](../development/phase-4-8-stock-counts.md); bounded F01–F04 remediation complete; targeted review, focused security review and remote changed-commit CI pending. |
+| P4.8 Selected-Article Inventory Count | DONE / CLOSED | Implementation `cba9bff10a8d32bfcda39ee428436153ca2fc044`; migration 0020 / ADR 0022. Stock-owned immutable blind observations/rounds, 1–100 selected StockLevels, one Employee, recounts, whole atomic approval, typed count corrections and explicit zero-variance evidence. | Initial independent CHANGES REQUIRED, bounded F01–F04 remediation, targeted APPROVE; 124/124 PASS, 0 QUALIFIED, 0 FAIL. Focused SECURITY APPROVE; all five jobs green in [exact-commit CI 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163). [Final closure](../development/phase-4-8-stock-counts.md#final-documentation-closure--2026-10-06) records real journeys, Chrome, 100-line acceptance, backup/update/recovery and final-source regression. No active remediation. |
 | P4.7 Task + exact Planogram Assignment execution pinning | DONE / CLOSED | Implementation `ccfa3df`; schema 4, independent nullable Knowledge/Planogram fields, exact Fixture/Assignment/Revision pin. Migration 0019 / ADR 0021; current Location authorization precedes historical read/replay. | Initial independent CHANGES REQUIRED, F01/F02 remediation, targeted APPROVE; 80/80 PASS. Initial SECURITY CHANGES REQUIRED, bounded Location-scope F01 remediation, targeted SECURITY APPROVE; all five jobs green in [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). [Final closure](../development/phase-4-7-task-planogram-guidance.md#final-documentation-closure--2026-10-05); no active remediation. |
 
 ## Accepted manual Stock boundaries
@@ -192,13 +201,14 @@ read acknowledgment, native-device/accessibility acceptance or offline queue is 
 
 ## Planned and deferred scope
 
-P4.8 is IMPLEMENTED LOCALLY; bounded independent-review remediation is complete; next is targeted review, then focused security review and changed-commit CI. No active P4.7 remediation remains.
+P4.8 is DONE/CLOSED, with no active remediation. Next after the documentation
+closure commit is fresh P4.9 capability selection; no P4.9 capability is preselected or ACTIVE.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
 | Workforce / Tasks / Wiki extension | MIXED | P4.6 exact Task pins are DONE/CLOSED. Recurrence, recommendations, qualification workflows and swaps remain future slices; begun-work reconciliation remains open. |
-| Inventory / Stock / Purchasing / Production | PLANNED | Beyond existing Article/Assortment/manual Stock: units/conversions, receiving, inventory counts, batches, Recipe, production and valuation. |
+| Inventory / Stock / Purchasing / Production extensions | PLANNED | Beyond delivered Article/Assortment/manual Stock and P4.8 selected-article counts: units/conversions, receiving, broader inventory workflows, batches, Recipe, production and valuation. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |
 | HACCP, Pricing, Menu/publishing, reporting/finance | PLANNED | No certified safety module, cost/margin basis, structured Menu/public publisher or finance capability exists. |

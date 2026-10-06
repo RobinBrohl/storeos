@@ -94,5 +94,5 @@ No document in this pass certifies legal compliance.
 
 P4.8 selected counts do not establish statutory annual-inventory certification or
 valuation. Operator physical counting and personnel decisions remain human. The
-local slice has completed bounded independent-review remediation and awaits targeted review, focused security review and changed-commit CI;
+bounded slice is DONE/CLOSED with targeted APPROVE, 124/124 PASS, SECURITY APPROVE and green changed-commit CI;
 reload/session replacement loses only memory tracking, never durable server evidence.

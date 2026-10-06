@@ -1,6 +1,15 @@
 # Documentation index
 
-P4.8 Selected-article inventory counts are **IMPLEMENTED LOCALLY** on main, uncommitted and unstaged. Independent adversarial review returned **CHANGES REQUIRED**. Bounded F01–F04 remediation is **COMPLETE**; targeted review, focused security review and remote changed-commit CI are **PENDING**. Migration 0020 adds immutable Stock-owned rounds/observations and whole approved corrections; P4.1–P4.7 closure remains intact. See [P4.8 contract and evidence](development/phase-4-8-stock-counts.md).
+P4.8 Selected-Article Inventory Count is **DONE/CLOSED** at implementation commit
+`cba9bff10a8d32bfcda39ee428436153ca2fc044` on `main`. Initial independent review
+**CHANGES REQUIRED** led to bounded F01–F04 remediation, followed by targeted
+**APPROVE**, **124/124 PASS / 0 QUALIFIED / 0 FAIL** and focused Codex Security
+**SECURITY APPROVE** (zero confirmed/probable vulnerabilities; no security commit blocker).
+All five exact-commit jobs succeeded in [CI 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163).
+The migration chain ends at `0020_stock_counts.sql`; 0001–0019 and dependencies/lockfiles
+are unchanged. No active P4.8 remediation remains. Next after the closure commit:
+**fresh P4.9 capability selection**; no P4.9 capability is selected or ACTIVE.
+See [P4.8 contract and closure evidence](development/phase-4-8-stock-counts.md#final-documentation-closure--2026-10-06).
 
 
 P4.7 Task + exact Planogram Assignment execution pinning is **DONE/CLOSED** at implementation commit
@@ -14,7 +23,7 @@ re-review returned **SECURITY APPROVE**. All five exact-HEAD jobs succeeded in
 [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). Migration 0019 completes the 0001–0019 chain;
 0001–0018 and dependencies/lockfiles are unchanged. No active P4.7 remediation remains.
 Existing P4.1–P4.6 closure remains intact. Next after the documentation closure commit:
-P4.8 selection followed that closure; its local implementation is recorded above.
+P4.8 selection followed that closure; its final closure is recorded above.
 
 See [P4.7 closure evidence](development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](adr/0021-task-planogram-assignment-guidance.md).
 
@@ -82,7 +91,7 @@ than retroactively changing review/CI outcomes.
 
 ## Slice contracts and evidence
 
-- [P4.8 selected-article Stock counts](development/phase-4-8-stock-counts.md): IMPLEMENTED LOCALLY; remediation complete; targeted review/security/CI pending.
+- [P4.8 selected-article Stock counts](development/phase-4-8-stock-counts.md): DONE/CLOSED; targeted APPROVE, 124/124 PASS, SECURITY APPROVE and green exact-commit CI.
 
 Records below describe their own slice/run. Original “pending”, “uncommitted”
 and older counts inside evidence are historical unless a current header says

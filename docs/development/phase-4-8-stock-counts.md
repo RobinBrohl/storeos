@@ -1,9 +1,12 @@
 # P4.8 Selected-article inventory counts
 
-Current state: **IMPLEMENTED LOCALLY** on `main`, uncommitted and unstaged.
-**INDEPENDENT REVIEW REMEDIATION COMPLETE**. **TARGETED REVIEW PENDING**,
-**SECURITY REVIEW PENDING**, **REMOTE CHANGED-COMMIT CI PENDING**.
-This record does not close P4.8. No Codex Security scan was run.
+Current state: **DONE/CLOSED** at implementation commit
+`cba9bff10a8d32bfcda39ee428436153ca2fc044` on `main`.
+Targeted independent **APPROVE**, **124/124 PASS / 0 QUALIFIED / 0 FAIL**,
+focused Codex Security **SECURITY APPROVE** and green
+[exact-commit CI 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163)
+close the bounded slice. No active P4.8 remediation remains. The final closure
+below supersedes historical pending gates while preserving the actual chronology.
 
 ## Baseline and authoritative contract
 
@@ -19,7 +22,7 @@ That CI is evidence for the baseline, not these uncommitted changes.
 See [ADR 0022](../adr/0022-selected-article-stock-counts.md) for ownership,
 frozen labels, Account separation, zero variance and supported-writer decisions.
 
-## Delivered local behavior
+## Delivered behavior
 
 Manager → select 1–100 existing levels → one eligible Employee → open immutable
 rounds. Employee → own blind count → one exact physical observation per current
@@ -67,7 +70,7 @@ Audit uses bounded IDs/versions/transition facts for open, observation, recount,
 approval, cancellation and Stock correction. Quantities/discrepancies/free text stay
 in business records. No events/outbox or generic workflow engine is added.
 
-## Reproducible verification
+## Original local verification checkpoint
 
 Pinned local SDKs: Dart 3.13.4 / Flutter 3.47.5. Existing dependencies only;
 all Flutter commands use `--no-pub`, Dart tests use cached package configuration.
@@ -120,14 +123,16 @@ analyzers and format checks passed. Final-source runs use ignored `final-*` logs
 their actual results, exact counts, source fingerprint and operational report links
 are reported in the review handoff without modifying source after verification.
 
-## Limits and pending gates
+## Limits
 
 Only selected existing levels, one Employee and whole approval are delivered. No
 whole-Location/statutory inventory, valuation, reservations, purchases/sales,
 unit conversion, batches/expiry, multiple assignees, partial approvals, recurring
 counts, generated Tasks, scanner/device acceptance, offline queues, sync or P4.9.
-Targeted independent review, focused security review and remote changed-commit CI remain
-pending. Existing M1 proxy/deployment and broader M3/M4 debt are not closed here.
+Targeted independent review, focused security review and exact changed-commit CI
+are complete; see the final closure below. Existing M1 proxy/deployment and broader
+M3/M4 debt are not closed here. Physical-device and accessibility acceptance are
+not claimed.
 
 ## Independent review and bounded remediation — 2026-10-06
 
@@ -198,7 +203,185 @@ proofs; criterion 121 requires the complete final-source regression. No criteria
 are added. Final results are reported in the handoff only after execution;
 unchanged fingerprints prove no source edits followed the final boundary.
 
-Canonical state: **P4.8 IMPLEMENTED LOCALLY / INDEPENDENT REVIEW REMEDIATION
+Historical remediation checkpoint: **P4.8 IMPLEMENTED LOCALLY / INDEPENDENT REVIEW REMEDIATION
 COMPLETE / TARGETED REVIEW PENDING / SECURITY REVIEW PENDING / REMOTE
-CHANGED-COMMIT CI PENDING**. This is not DONE/CLOSED and does not replace the
+CHANGED-COMMIT CI PENDING**. At that checkpoint it was not DONE/CLOSED and did not replace the
 original independent findings with an approval.
+
+## Final documentation closure — 2026-10-06
+
+### Baseline and exact changed-commit CI
+
+Before closure edits, dynamic Git checks established `main`, clean working tree
+and index, no stash, exactly one intended worktree (`C:/dev/storeos`), and
+HEAD = cached `origin/main` = live `origin/main` =
+`cba9bff10a8d32bfcda39ee428436153ca2fc044` (Add selected article stock counts).
+The implementation commit is present. Read-only GitHub API evidence identifies
+[CI run 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163)
+for that exact SHA, completed with conclusion `success`. All five required jobs
+are completed/success: `dart`, `flutter`, `numeric-guided-work-e2e`,
+`backup-restore-acceptance`, and `update-recovery-acceptance`.
+
+Git comparison with predecessor `59b6e81b4dde9d887a0b88c60514c0ec9e6f94fe`
+shows only new migration `0020_stock_counts.sql`; migrations 0001–0019 retain
+identical Git content. The chain contains exactly 0001–0020, with no 0021.
+Migration 0020's raw SHA-256 still matches the remediation fingerprint above.
+Dependency manifests and lockfiles are unchanged by the implementation.
+This closure changes documentation only and leaves every migration untouched.
+
+### Selection and review chronology
+
+1. Planning selected **P4.8 Selected-Article Inventory Count** over Recipe /
+   Composition, Shift Transfer / Swap, Recurring Operational Work, Supplier /
+   PO / Goods Receipt, HACCP Operational Log and External POS / Sales Ingestion.
+2. Initial local implementation delivered the bounded Stock-owned count domain,
+   migration 0020 and claimed **124/124 PASS**.
+3. Independent adversarial review returned **CHANGES REQUIRED**: F01 LOW malformed
+   pagination cursor product defect; F02 LOW reachable-response OpenAPI mismatch;
+   F03 LOW security-relevant resident manager history after authenticated session
+   replacement; F04 INFO missing explicit other-Employee restore denial evidence.
+   F04 was an evidence gap, not a production authorization defect.
+4. Bounded remediation completed all four, preserving the domain contract and old
+   migrations. The preceding dated record retains the exact fixes and checks.
+5. The authoritative review evidence supplied in the closure request reports
+   targeted independent **APPROVE** and final product acceptance
+   **124/124 PASS / 0 QUALIFIED / 0 FAIL**.
+6. The supplied focused Codex Security result is **SECURITY APPROVE**, with zero
+   confirmed/probable vulnerabilities and no security commit blocker. Its reviewed
+   boundaries include Employee object authorization/blindness, Company/Location
+   isolation, self-approval, Observation-to-Stock integrity, correction provenance,
+   replay, session isolation, runtime grants, SQL/query safety, audit/privacy and
+   restored authorization. No new security scan is performed by this docs pass.
+7. Implementation was committed and pushed; the exact changed-commit CI above is
+   green. Review approvals are supplied review evidence; Git/GitHub state is
+   dynamically verified. No review identifier is invented.
+
+### Delivered operator workflow and integrity
+
+Manager selects 1–100 explicit existing StockLevels, assigns one eligible Employee
+and opens the Count. Opening freezes StockLevel/Article identity, counting unit,
+baseline quantity, baseline balanceVersion and an immutable initial Round per line.
+Employee sees identification and frozen unit, then records an immutable physical
+Observation. Manager reviews baseline, Observation, discrepancy and stale state.
+An explicit Recount appends a fresh Round capturing current Stock; old Rounds and
+Observations remain evidence. Employee records the new Observation, and Manager
+approves the entire Count atomically.
+
+Approval requires every current Round observed, compatible integrity, nonstale
+Stock versions and Account-based separation. The approving Account must differ
+from the recorder Account of every CURRENT selected Observation. Employee relinking
+does not rewrite historical recorder identity; superseded self-recorded Observations
+do not block approval when another Account recorded the current ones.
+
+For nonzero discrepancy, exact thousandths compute `observed - baseline` and create
+exactly one immutable `StockMovement(kind = count_correction)` linked to the exact
+approved Count, Line, Observation and StockLevel. Legacy movement kinds retain their
+semantics and provenance separation. Zero variance retains the approved line outcome,
+exact Observation, discrepancy 0, checked Stock version and null movement reference;
+it creates no movement, quantity/version increment or balance timestamp change.
+
+Any incomplete, stale, unauthorized, self-approval or integrity failure, or failed
+movement/outcome/audit/receipt persistence, rolls back the entire approval. The Count
+remains open with its existing Observations; no approval Stock effects, approved
+outcomes, approval audit or approval receipt persist.
+
+Lifecycle is `open → approved` or `open → cancelled`, both terminal. Scope and
+assignee are immutable. Cancellation retains all evidence without StockMovement.
+An optional terminal-predecessor link creates a fresh Count/current baselines; it
+neither mutates nor reverses the predecessor. There is no automatic reversal.
+
+### Blindness, current authorization and session isolation
+
+Strict Employee DTOs omit baseline/expected quantity, discrepancy, balanceVersion
+and manager Stock review evidence in detail, historical Round and applicable
+Observation/replay responses. Flutter hiding is not the privacy boundary.
+Every operation revalidates session, Company, configured execution Location,
+route Location where applicable, capability and resource/Employee scope.
+Same-Company registered Location existence is insufficient. Employee access also
+requires an active Account–Employee link and the exact assigned Employee. Viewer
+is denied; auditor has no Count business capability; plugins have no human Count access.
+
+Resolved F03 clears/fences Count state, manager history rows, cursor, error/loading
+state, sensitive baseline/discrepancy state and pending old responses upon opaque
+authenticated session replacement. Delayed responses cannot repopulate the replacement
+principal. It is a closed finding, not active debt.
+
+### Replay and deterministic concurrency
+
+Count-specific receipts cover opening, Observation, Recount, approval and cancellation,
+binding Company, Location, actor Account, Count/resource, command kind, canonical
+payload and operation identity. Current authorization precedes receipt return.
+Exact committed replay returns original evidence without another Count, Round,
+Observation, movement, audit or receipt. Later Stock state cannot reconstruct or
+rewrite the original approval result.
+
+Stock stays writable throughout a Count. Each Round freezes quantity, balanceVersion
+and Stock unit. Approval checks the current version; any intervening movement makes
+the line stale, including `10 → 12 → 10`. No automatic rebase or compensation exists.
+Deterministic supported-writer ordering proves manual correction first makes the
+Count stale; approval first makes the later correction see the updated version
+according to existing semantics. Overlapping Counts are allowed. A first nonzero
+approval changes Stock version and makes competing old baselines stale. Two
+zero-variance Counts may both approve because neither writes Stock. The evidence
+uses controlled queue ordering, not arbitrary sleeps.
+
+Migration 0020 supplies five persistence concepts, immutable Rounds/Observations,
+protected terminal outcomes, one correction per approved Observation, provenance
+separation and narrow runtime INSERT/UPDATE grants, with no unexpected SECURITY
+DEFINER. Transient session/configured-Location authorization remains a current
+Application check, not durable FK truth. These guarantees apply to established
+supported writers; arbitrary privileged SQL is outside the threat model.
+
+### Real acceptance, backup and recovery evidence
+
+The existing ignored `.local/p48/remediation-final-summary.json` records all final
+phases PASS, including full regression, real Flutter/HTTP/PostgreSQL client journey,
+Count Chrome workflow, guidance Chrome regressions, numeric E2E, encrypted backup,
+update/recovery and diagnostic/crypto checks. The existing
+`.local/p48/remediation-acceptance.md` retains the numbered 124/124 local reassessment;
+its historical pending gates are superseded by the supplied approvals and live CI.
+These local artifacts were inspected, not rewritten. The final-source regression
+log records 112 contract, 327 server and 2 design-system passes, and 314 Flutter
+passes; five server opt-in discoveries were executed separately. The earlier
+preflight counts above remain historical. Software checks are not rerun in this
+documentation-only pass.
+
+The decisive journey proves Article A `10/v1 → Observation 9 → ordinary correction
+12/v2 → stale approval rejection → Recount 12/v2 → Observation 11 → approval →
+exactly -1 count_correction → 11/v3`. Article B `5/v1 → Observation 5 → approval`
+retains zero-variance evidence without movement/version/timestamp changes. A
+deliberately lost approval response, later ordinary Stock change and exact retry
+return original approval evidence without duplicate movement/audit; restart preserves
+the durable receipt and replay. Exactly 100 distinct StockLevels approve atomically
+with 50 corrections and 50 zero outcomes; 101 is rejected. This is a supported
+release bound, not a capacity benchmark.
+
+Encrypted backup/restore preserves open Counts, superseded Rounds, Observations,
+approved mixed Count, zero evidence, correction provenance, cancelled Count, linked
+follow-up, receipts and ledger/projection consistency. Restored authorization proves
+assigned Employee blind access, explicit other-Employee denial, configured Location
+denial and Observation replay authorization, plus revoked sessions, plugin fencing
+and runtime database fencing. This closes F04's evidence gap.
+The inspected final backup log identifies sanitized report
+`.local/backup-acceptance/604521a575d24f3f/report.json`.
+
+Update/recovery proves clean migration through 0020, populated 0019→0020, failed-0020
+rollback, prior Stock, Task schemas 1–4, Knowledge, Planogram, prior receipts/audit,
+usable new Count workflow and isolated recovery/fencing. No downgrade is supported.
+The inspected final update log identifies sanitized report
+`.local/update-recovery/cee3e68ade334bee/report.json`.
+
+### Final disposition and next state
+
+**P4.8 Selected-Article Inventory Count = DONE/CLOSED.** No active P4.8 remediation
+remains. M1 proxy/login-limiter pilot gate, M2 closed disposition, M3 local containment,
+M4 broader error taxonomy, supported-writer/raw-SQL boundary, memory-only uncertain
+command recovery, physical-device/accessibility gaps and P4.5 F01/F02 nonblocking
+follow-ups retain their existing dispositions. P4.8 memory-only pending commands
+are an accepted limitation, not a closure blocker.
+
+Closure does not certify statutory annual inventory, valuation, scanner acceptance,
+offline Count queues, physical devices, accessibility or multi-site synchronization.
+Next after the closure commit is **fresh P4.9 capability selection**; no P4.9
+capability is preselected or ACTIVE. This closure leaves documentation unstaged and
+uncommitted on `main`; it performs no implementation edit, branch change, commit or push.

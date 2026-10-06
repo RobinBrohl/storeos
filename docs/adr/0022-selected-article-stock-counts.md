@@ -1,7 +1,7 @@
 # ADR 0022: Selected-article Stock counts and immutable physical observations
 
-Status: Accepted product/architecture decision; implementation local, independent
-review, focused security review and changed-commit remote CI pending.
+Status: Accepted product/architecture decision; P4.8 DONE/CLOSED, targeted independent
+APPROVE, 124/124 PASS, focused SECURITY APPROVE and green changed-commit CI.
 Date: 2026-10-06
 
 ## Context

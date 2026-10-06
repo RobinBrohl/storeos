@@ -167,12 +167,17 @@ Earlier proposals for self-password change, M2 exclusion and interval amendment
 are SUPERSEDED by implemented slices. The old P4.3-uncommitted baseline is
 SUPERSEDED by `e8ce8c3`. Historical review/CI runs remain scoped to their named commits.
 
-## P4.8 local review gates
+## P4.8 closed review gates and accepted limits
 
-Selected-article Stock counts are IMPLEMENTED LOCALLY; bounded F01–F04 independent-review remediation is complete. Targeted review,
-focused security review and remote changed-commit CI remain pending. The original
-F01–F03 LOW blockers and F04 INFO evidence gap remain in the slice's chronology;
-remediation is implemented without claiming independent approval. Count routes contain unexpected database integrity
+Selected-article Stock counts are DONE/CLOSED: bounded F01–F04 remediation is
+complete, targeted independent review returned APPROVE, final product acceptance
+is 124/124 PASS, focused Codex Security returned SECURITY APPROVE and all five
+jobs in [exact-commit CI 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163) succeeded.
+No active P4.8 remediation remains. The original F01–F03 LOW blockers and F04
+INFO restore evidence gap remain historical closed findings, not active debt.
+F04 was an evidence gap, not a production authorization defect. Count routes contain unexpected database integrity
 failures locally as sanitized 500 and known operational failures as 503; this does not
 close broad M3/M4. Memory-only uncertain command tracking ends on reload/session
-replacement; durable receipts remain authoritative. See [slice](phase-4-8-stock-counts.md).
+replacement; durable receipts remain authoritative. This accepted limitation is
+not a closure blocker. Physical-device/accessibility gaps and the supported-writer
+boundary remain. See [slice](phase-4-8-stock-counts.md).

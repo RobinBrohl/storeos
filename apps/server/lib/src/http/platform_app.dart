@@ -12,6 +12,8 @@ import '../platform/platform_database.dart';
 import 'article_assortment_routes.dart';
 import 'article_routes.dart';
 import 'stock_routes.dart';
+import 'stock_count_routes.dart';
+import '../stock/stock_count_service.dart';
 import 'merchandising_routes.dart';
 import '../merchandising/merchandising_service.dart';
 import '../knowledge/knowledge_service.dart';
@@ -38,6 +40,7 @@ Handler createPlatformHandler(
       ).router.call,
     )
     .add(StockRoutes(auth, StockService(database)).router.call)
+    .add(StockCountRoutes(auth, StockCountService(database)).router.call)
     .add(MerchandisingRoutes(auth, MerchandisingService(database)).router.call)
     .add(KnowledgeRoutes(auth, KnowledgeService(database)).router.call)
     .add(EmployeeRoutes(auth, EmployeeApplication(database)).router.call)

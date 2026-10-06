@@ -15,6 +15,7 @@ export 'src/json_numbers.dart';
 export 'src/articles.dart';
 export 'src/article_assortment.dart';
 export 'src/stock.dart';
+export 'src/stock_counts.dart';
 export 'src/merchandising.dart';
 export 'src/knowledge.dart';
 

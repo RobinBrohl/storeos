@@ -1,5 +1,7 @@
 // Bounded P4.7 probes for the isolated encrypted backup acceptance only.
 import 'dart:convert';
+import 'stock_count_acceptance.dart';
+import 'package:storeos_server/src/stock/stock_count_service.dart';
 
 import 'package:postgres/postgres.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
@@ -29,7 +31,7 @@ Future<void> verifyBackupPlanogramReads(
     sessionTtl: const Duration(minutes: 1),
   );
   AuthService? alternateAuth;
-  String? workerToken, adminToken, alternateToken;
+  String? workerToken, adminToken, alternateToken, otherWorkerToken;
   try {
     final db = PlatformDatabase(
       pool,
@@ -57,6 +59,20 @@ Future<void> verifyBackupPlanogramReads(
     adminToken = admin.token;
     final manager = await auth.authenticate(admin.token);
     final s = quotedSchema(schema);
+    otherWorkerToken = (await auth.login(
+      LoginRequest(
+        username: 'backup_accept_other_worker',
+        password: evidence['workerRecoveryPassword'] as String,
+      ),
+      remoteKey: 'isolated-count-other-employee-restore',
+    )).token;
+    await verifyRestoredStockCounts(
+      db,
+      manager,
+      principal,
+      evidence,
+      otherWorker: await auth.authenticate(otherWorkerToken),
+    );
     var auditBefore = (await pool.execute(
       'SELECT count(*) FROM $s.audit_entries',
     )).single.single;
@@ -227,6 +243,27 @@ Future<void> verifyBackupPlanogramReads(
       'SELECT count(*) FROM $s.audit_entries',
     )).single.single;
     final alternateShifts = ShiftApplication(alternateDb);
+    await denied(
+      StockCountService(alternateDb).get(
+        alternateManager,
+        evidence['locationId'] as String,
+        evidence['approvedCountId'] as String,
+      ),
+      403,
+      'forbidden',
+    );
+    await denied(
+      StockCountService(alternateDb).command(
+        alternateManager,
+        evidence['locationId'] as String,
+        evidence['approvedCountId'] as String,
+        'approve',
+        jsonDecode(evidence['countApprovePayload'] as String)
+            as Map<String, dynamic>,
+      ),
+      403,
+      'forbidden',
+    );
     final alternateTemplates = TaskTemplateService(alternateDb);
     await denied(
       alternateTemplates.planogram(
@@ -300,6 +337,7 @@ Future<void> verifyBackupPlanogramReads(
       throw StateError('Restored scope checks/replay duplicated Tasks.');
     }
   } finally {
+    if (otherWorkerToken != null) await auth.logout(otherWorkerToken);
     if (alternateToken != null) await alternateAuth!.logout(alternateToken);
     if (workerToken != null) await auth.logout(workerToken);
     if (adminToken != null) await auth.logout(adminToken);

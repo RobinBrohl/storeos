@@ -3,7 +3,7 @@
 // scripts/update/Run-UpdateRecoveryAcceptance.ps1 creates the database, grants
 // the restricted runtime role CONNECT and drops the database again. The owner
 // connection builds the pre-update schema and seed; the runtime role serves the
-// API only after the pending migrations (0011 through 0019) have been applied.
+// API only after the pending migrations (0011 through 0020) have been applied.
 //
 // Modes (STOREOS_UPDATE_MODE):
 //  - prepare: apply exactly migrations 0001-0010 from a byte-identical copy of
@@ -11,7 +11,7 @@
 //    evidence with owner SQL, capture stable projections and write the private
 //    run manifest plus a non-secret prepare result.
 //  - upgrade: apply the real repository migrations through the production
-//    MigrationRunner (only 0011 through 0019 may be pending), verify checksums,
+//    MigrationRunner (only 0011 through 0020 may be pending), verify checksums,
 //    idempotency, preservation of the pre-update projections, the new
 //    0011/0012 columns, constraints and the published-interval exclusion
 //    invariant, the 0013 article master, 0014 assortment and 0015 manual stock
@@ -33,6 +33,7 @@
 // database downgrade, application downgrade or replacement activation.
 import 'dart:convert';
 import 'merchandising_acceptance.dart';
+import 'stock_count_acceptance.dart';
 import 'knowledge_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'dart:io';
@@ -68,6 +69,7 @@ const _expectedPendingMigrations = [
   '0017_approved_operational_knowledge',
   '0018_task_knowledge_guidance',
   '0019_task_planogram_guidance',
+  '0020_stock_counts',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1073,6 +1075,30 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       throw StateError('The stock audit evidence is incomplete.');
     }
 
+    final countEvidence = await seedStockCounts(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: workerToken,
+        expected: status,
+      ),
+      locationId,
+      manifest['employeeId'] as String,
+    );
+    await verifyRestoredStockCounts(
+      database,
+      await auth.authenticate(adminToken),
+      await auth.authenticate(workerToken),
+      countEvidence,
+    );
     final planogramGuidance = await seedLocalPlanogram(
       (method, route, body, status) => api.request(
         method,

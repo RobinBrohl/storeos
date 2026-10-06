@@ -1567,6 +1567,7 @@ void main() {
         '0017_approved_operational_knowledge',
         '0018_task_knowledge_guidance',
         '0019_task_planogram_guidance',
+        '0020_stock_counts',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);
@@ -1578,6 +1579,7 @@ void main() {
         'ORDER BY conname',
       );
       expect(constraints.map((row) => row.single).toSet(), {
+        'stock_count_movement_complete',
         'stock_levels_article_fk',
         'stock_levels_identity_unique',
         'stock_levels_location_fk',
@@ -1587,6 +1589,9 @@ void main() {
         'stock_levels_unit_valid',
         'stock_levels_version_valid',
         'stock_movements_actor_fk',
+        'stock_movement_approved_line_fk',
+        'stock_movement_count_observation_fk',
+        'stock_movement_count_provenance_valid',
         'stock_movements_balance_valid',
         'stock_movements_delta_valid',
         'stock_movements_kind_valid',

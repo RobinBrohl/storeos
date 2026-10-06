@@ -91,3 +91,8 @@ migration 0012; old M2 deferral is SUPERSEDED. See the [live debt register](deve
 Operator/legal decisions are not closed by a successful test suite. [Compliance](compliance/overview.md)
 states review boundaries; deployment/restore documentation states technical procedures.
 No document in this pass certifies legal compliance.
+
+P4.8 selected counts do not establish statutory annual-inventory certification or
+valuation. Operator physical counting and personnel decisions remain human. The
+local slice has completed bounded independent-review remediation and awaits targeted review, focused security review and changed-commit CI;
+reload/session replacement loses only memory tracking, never durable server evidence.

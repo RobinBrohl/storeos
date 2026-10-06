@@ -166,3 +166,13 @@ Basic sales ingestion can preserve unresolved effects without inventing these ru
 Earlier proposals for self-password change, M2 exclusion and interval amendment
 are SUPERSEDED by implemented slices. The old P4.3-uncommitted baseline is
 SUPERSEDED by `e8ce8c3`. Historical review/CI runs remain scoped to their named commits.
+
+## P4.8 local review gates
+
+Selected-article Stock counts are IMPLEMENTED LOCALLY; bounded F01–F04 independent-review remediation is complete. Targeted review,
+focused security review and remote changed-commit CI remain pending. The original
+F01–F03 LOW blockers and F04 INFO evidence gap remain in the slice's chronology;
+remediation is implemented without claiming independent approval. Count routes contain unexpected database integrity
+failures locally as sanitized 500 and known operational failures as 503; this does not
+close broad M3/M4. Memory-only uncertain command tracking ends on reload/session
+replacement; durable receipts remain authoritative. See [slice](phase-4-8-stock-counts.md).

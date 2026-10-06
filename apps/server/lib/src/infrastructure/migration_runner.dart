@@ -269,6 +269,20 @@ class MigrationRunner {
             'FROM $role',
           );
         }
+        if (known.containsKey('0020_stock_counts')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.stock_counts, $_schema.stock_count_lines, $_schema.stock_count_rounds, $_schema.stock_count_observations, $_schema.stock_count_commands TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.stock_counts, $_schema.stock_count_lines, $_schema.stock_count_rounds, $_schema.stock_count_observations, $_schema.stock_count_commands FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status, version, approved_at, approved_by, cancelled_at, cancelled_by, cancellation_reason) ON $_schema.stock_counts TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (current_round_id, approved_observation_id, discrepancy_scaled, checked_stock_version, movement_id) ON $_schema.stock_count_lines TO $role',
+          );
+        }
         if (known.containsKey('0017_approved_operational_knowledge')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.knowledge_articles, $_schema.knowledge_revisions TO $role',

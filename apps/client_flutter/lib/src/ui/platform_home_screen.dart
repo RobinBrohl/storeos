@@ -11,6 +11,8 @@ import '../application/stock_controller.dart';
 import 'article_section.dart';
 import 'assortment_section.dart';
 import 'stock_section.dart';
+import 'stock_count_section.dart';
+import '../application/stock_count_controller.dart';
 import 'merchandising_section.dart';
 import '../application/merchandising_controller.dart';
 import '../application/knowledge_controller.dart';
@@ -51,6 +53,8 @@ class PlatformHomeScreen extends StatefulWidget {
     this.articles,
     this.assortment,
     this.stock,
+    this.counts,
+    this.ownCounts,
     this.merchandising,
     this.knowledge,
     this.shifts,
@@ -66,6 +70,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final ArticleController? articles;
   final ArticleAssortmentController? assortment;
   final StockController? stock;
+  final StockCountController? counts, ownCounts;
   final MerchandisingController? merchandising;
   final KnowledgeController? knowledge;
   final ShiftController? shifts, home;
@@ -218,6 +223,11 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.home => ShiftSection(
       key: const ValueKey('work-home'),
       controller: widget.home!,
+      countsShortcut:
+          widget.ownCounts != null &&
+              widget.platform.allows('stock.counts.self.read')
+          ? () => _openCounts(widget.ownCounts!)
+          : null,
       knowledgeShortcut:
           widget.knowledge != null &&
               widget.platform.allows('knowledge.articles.read')
@@ -240,6 +250,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.stock => StockSection(
       controller: widget.stock!,
       platform: widget.platform,
+      countsShortcut:
+          widget.counts != null && widget.platform.allows('stock.counts.manage')
+          ? () => _openCounts(widget.counts!)
+          : null,
     ),
     _Section.merchandising => MerchandisingSection(
       controller: widget.merchandising!,
@@ -265,6 +279,16 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.events => LogSection(controller: widget.platform, audit: false),
     _Section.plugins => PluginsSection(controller: widget.platform),
   };
+
+  void _openCounts(StockCountController controller) =>
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => Scaffold(
+            appBar: AppBar(title: const Text('Inventurzählungen')),
+            body: StockCountSection(controller: controller),
+          ),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(

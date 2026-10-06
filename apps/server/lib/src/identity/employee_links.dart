@@ -19,6 +19,22 @@ class EmployeeLinks {
   Future<EmployeeLinkDto?> forAccount(TxSession tx, String accountId) =>
       _links.find(tx, accountId: accountId);
 
+  /// Current assignability for Stock counts, without exposing Account records
+  /// or allowing another module to read Identity tables.
+  Future<bool> canRecordStockCount(
+    TxSession tx,
+    String employeeId,
+    String locationId,
+  ) async {
+    final link = await forEmployee(tx, employeeId);
+    if (link == null || link.locationId != locationId) return false;
+    final account = await _accounts.user(tx, link.accountId);
+    return account != null &&
+        account.isActive &&
+        account.locationId == locationId &&
+        permissionsForRole(account.role).contains('stock.counts.self.record');
+  }
+
   Future<EmployeeLinkDto> link(
     TxSession tx,
     PlatformActor actor,

@@ -20,7 +20,11 @@ const int stockNoteMaxLength = 500;
 /// Flutter Web; parsing and formatting still use integer arithmetic only.
 const int stockMaxScaled = 999999999999999;
 
-const Set<String> stockMovementKinds = {'opening', 'adjustment'};
+const Set<String> stockMovementKinds = {
+  'opening',
+  'adjustment',
+  'count_correction',
+};
 
 final _targetQuantity = RegExp(r'^[0-9]{1,12}(\.[0-9]{1,3})?$');
 final _signedQuantity = RegExp(r'^-?[0-9]{1,12}(\.[0-9]{1,3})?$');
@@ -260,6 +264,9 @@ class StockMovementDto {
     required this.recordedAt,
     required this.recordedBy,
     required this.note,
+    this.countId,
+    this.countLineId,
+    this.countObservationId,
   });
 
   final String id, kind;
@@ -273,6 +280,7 @@ class StockMovementDto {
   final DateTime recordedAt;
   final String recordedBy;
   final String? note;
+  final String? countId, countLineId, countObservationId;
 
   factory StockMovementDto.fromJson(Map<String, dynamic> json) {
     _keys(json, {
@@ -284,6 +292,9 @@ class StockMovementDto {
       'recordedAt',
       'recordedBy',
       'note',
+      if (json['kind'] == 'count_correction') 'countId',
+      if (json['kind'] == 'count_correction') 'countLineId',
+      if (json['kind'] == 'count_correction') 'countObservationId',
     });
     final kind = json['kind'];
     final balanceVersion = json['balanceVersion'];
@@ -294,6 +305,9 @@ class StockMovementDto {
         balanceVersion > maxJsonSafeInteger) {
       throw const FormatException('Ungültige Bestandsbewegung.');
     }
+    if (kind == 'count_correction' && stockDelta(json['delta']) == 0) {
+      throw const FormatException('Invalid zero count correction.');
+    }
     return StockMovementDto(
       id: _id(json, 'id'),
       kind: kind,
@@ -303,6 +317,11 @@ class StockMovementDto {
       recordedAt: _time(json, 'recordedAt'),
       recordedBy: _id(json, 'recordedBy'),
       note: normalizeStockOpenNote(json['note']),
+      countId: kind == 'count_correction' ? _id(json, 'countId') : null,
+      countLineId: kind == 'count_correction' ? _id(json, 'countLineId') : null,
+      countObservationId: kind == 'count_correction'
+          ? _id(json, 'countObservationId')
+          : null,
     );
   }
 
@@ -315,6 +334,9 @@ class StockMovementDto {
     'recordedAt': recordedAt.toUtc().toIso8601String(),
     'recordedBy': recordedBy,
     'note': note,
+    if (kind == 'count_correction') 'countId': countId,
+    if (kind == 'count_correction') 'countLineId': countLineId,
+    if (kind == 'count_correction') 'countObservationId': countObservationId,
   };
 }
 

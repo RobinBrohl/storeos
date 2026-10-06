@@ -7,10 +7,12 @@ class ShiftSection extends StatefulWidget {
   const ShiftSection({
     required this.controller,
     this.knowledgeShortcut,
+    this.countsShortcut,
     super.key,
   });
   final ShiftController controller;
   final VoidCallback? knowledgeShortcut;
+  final VoidCallback? countsShortcut;
   @override
   State<ShiftSection> createState() => _ShiftSectionState();
 }
@@ -99,6 +101,12 @@ class _ShiftSectionState extends State<ShiftSection> {
         const Text(
           'Alle Zeiten in UTC. Eine geplante Schicht ist kein Anwesenheitsnachweis.',
         ),
+        if (widget.countsShortcut != null)
+          TextButton(
+            key: const Key('own-stock-counts-shortcut'),
+            onPressed: widget.countsShortcut,
+            child: const Text('Meine Inventurzählungen'),
+          ),
         if (widget.knowledgeShortcut != null)
           TextButton.icon(
             key: const Key('work-knowledge-shortcut'),

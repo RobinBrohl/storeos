@@ -1,5 +1,8 @@
 # Actual implementation status
 
+P4.8 Selected-article inventory counts are **IMPLEMENTED LOCALLY** on main, uncommitted and unstaged. Independent adversarial review returned **CHANGES REQUIRED**. Bounded F01–F04 remediation is **COMPLETE**; targeted review, focused security review and remote changed-commit CI are **PENDING**. Migration 0020 adds immutable Stock-owned rounds/observations and whole approved corrections; P4.1–P4.7 closure remains intact. See [P4.8 contract and evidence](../development/phase-4-8-stock-counts.md).
+
+
 P4.7 Task + exact Planogram Assignment execution pinning is **DONE/CLOSED** at implementation commit
 `ccfa3df78f141da9577e988a9f8ddfb21ca4df1f` on `main`. Before documentation closure, HEAD matched cached and live
 `origin/main`; the tree/index were clean, with no stash and one intended worktree.
@@ -11,7 +14,7 @@ re-review returned **SECURITY APPROVE**. All five exact-HEAD jobs succeeded in
 [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). Migration 0019 completes the 0001–0019 chain;
 0001–0018 and dependencies/lockfiles are unchanged. No active P4.7 remediation remains.
 Existing P4.1–P4.6 closure remains intact. Next after the documentation closure commit:
-fresh P4.8 capability selection; no P4.8 capability is selected or ACTIVE.
+P4.8 selection followed that closure; its local implementation is recorded above.
 
 See [P4.7 evidence](../development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md). Closure evidence includes real Flutter/HTTP/PostgreSQL and Chrome workflows, print, backup/restore, update/recovery and full final-source regression; physical-printer, native-device and accessibility acceptance are not claimed.
 
@@ -89,6 +92,7 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P4.4 Local Planogram Execution | DONE / CLOSED | Implementation `cd7669ed`; CI portability fix `73dca5a4`; migration 0016 / ADR 0018. Company Planogram, Location Fixture, immutable published Revision, explicit append-only Assignment, target Assortment validation and browser HTML/CSS print. | Full independent review, bounded F01/F02 remediation, targeted APPROVE; 1–49 PASS, 50A PASS, 50B QUALIFIED, 51–68 PASS, no blockers. All five jobs green in [CI run 37217071802](https://github.com/RobinBrohl/storeos/actions/runs/37217071802). [Final closure](../development/phase-4-4-local-planograms.md#final-documentation-closure--2026-10-04) records real journeys, browser print and backup/update/recovery acceptance. |
 | P4.5 Approved Operational Knowledge | DONE / CLOSED | Implementation 93072a4; migration 0017 / ADR 0019. Company-scoped WikiArticle, one active draft, immutable published/discarded WikiRevision, current published pointer, terminal retirement and strict publication replay. Plain text, Company-wide audience; no Task evidence or events. | Independent adversarial review APPROVE, 60/60 PASS; all five jobs green in [changed-commit CI run 37229964360](https://github.com/RobinBrohl/storeos/actions/runs/37229964360). [Final closure](../development/phase-4-5-approved-operational-knowledge.md#final-documentation-closure--2026-10-04) records real journeys, Chrome workflow, backup/update/recovery and full regression. F01/F02 LOW non-blocking follow-ups. |
 | P4.6 Guided Operation — Task + approved Knowledge revision pinning | DONE / CLOSED | Implementation `15679bf`; migration 0018 / ADR 0020. Optional concrete schema-3 Article/Revision pin, frozen Template content, immutable Task snapshot and exact contextual historical read; no copied Knowledge text or readership evidence. | Full independent CHANGES REQUIRED review, bounded F01 remediation, targeted APPROVE, 64/64 PASS, focused Codex Security SECURITY APPROVE; all five jobs green in [changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549). [Final closure](../development/phase-4-6-task-knowledge-guidance.md#final-documentation-closure--2026-10-05) records real journeys, Chrome, backup/update/recovery and full regression. No active remediation. |
+| P4.8 selected-article Stock counts | IMPLEMENTED LOCALLY | Migration 0020 / ADR 0022; immutable blind observations, recounts, whole approval, typed count corrections and zero-variance evidence. Uncommitted/unstaged main. | Local acceptance per [slice](../development/phase-4-8-stock-counts.md); bounded F01–F04 remediation complete; targeted review, focused security review and remote changed-commit CI pending. |
 | P4.7 Task + exact Planogram Assignment execution pinning | DONE / CLOSED | Implementation `ccfa3df`; schema 4, independent nullable Knowledge/Planogram fields, exact Fixture/Assignment/Revision pin. Migration 0019 / ADR 0021; current Location authorization precedes historical read/replay. | Initial independent CHANGES REQUIRED, F01/F02 remediation, targeted APPROVE; 80/80 PASS. Initial SECURITY CHANGES REQUIRED, bounded Location-scope F01 remediation, targeted SECURITY APPROVE; all five jobs green in [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). [Final closure](../development/phase-4-7-task-planogram-guidance.md#final-documentation-closure--2026-10-05); no active remediation. |
 
 ## Accepted manual Stock boundaries
@@ -188,7 +192,7 @@ read acknowledgment, native-device/accessibility acceptance or offline queue is 
 
 ## Planned and deferred scope
 
-Next after the documentation closure commit: fresh P4.8 capability selection. No active P4.7 remediation remains; no P4.8 capability is selected or ACTIVE.
+P4.8 is IMPLEMENTED LOCALLY; bounded independent-review remediation is complete; next is targeted review, then focused security review and changed-commit CI. No active P4.7 remediation remains.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |

@@ -7,7 +7,7 @@
 # from byte-identical repository migration copies, seeds representative
 # pre-update evidence with owner SQL, creates an encrypted restore point with the
 # existing backup script, applies the real pending migrations (0011, 0012,
-# 0013, 0014, 0015, 0016, 0017, 0018 and 0019) through the production MigrationRunner, verifies preservation
+# 0013, 0014, 0015, 0016, 0017, 0018, 0019 and 0020) through the production MigrationRunner, verifies preservation
 # and the new protections, starts the current server against the upgraded database for a bounded HTTP
 # smoke, restores the pre-update restore point into a NEW isolated target and
 # verifies the recovered pre-update evidence and fencing. The normal StoreOS
@@ -371,7 +371,7 @@ try {
                 'encrypted PostgreSQL restore point before migration',
                 'forward-only migration with checksum and prefix validation',
                 'single-transaction migration atomicity',
-                'current application after a successful 0011/0012/0013/0014/0015/0016/0017/0018/0019 upgrade',
+                'current application after a successful 0011/0012/0013/0014/0015/0016/0017/0018/0019/0020 upgrade',
                 'isolated recovery of pre-update PostgreSQL state',
                 'recovery fencing',
                 'operator-verifiable evidence'

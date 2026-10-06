@@ -12,11 +12,13 @@ class StockSection extends StatefulWidget {
   const StockSection({
     required this.controller,
     required this.platform,
+    this.countsShortcut,
     super.key,
   });
 
   final StockController controller;
   final PlatformController platform;
+  final VoidCallback? countsShortcut;
 
   @override
   State<StockSection> createState() => _StockSectionState();
@@ -61,8 +63,14 @@ class _StockSectionState extends State<StockSection> {
           padding: const EdgeInsets.all(24),
           children: [
             Text('Bestand', style: Theme.of(context).textTheme.headlineMedium),
+            if (widget.countsShortcut != null)
+              TextButton(
+                key: const Key('stock-counts-shortcut'),
+                onPressed: widget.countsShortcut,
+                child: const Text('Inventurzählungen'),
+              ),
             const Text(
-              'Manuell erfasste Bestände je Artikel und Standort. Jede echte Korrektur erzeugt eine unveränderliche Bewegung; die Einheit wird beim Anlegen eingefroren. Keine Wareneingänge, kein Verbrauch, keine Inventur, keine Bewertung.',
+              'Manuell erfasste Bestände je Artikel und Standort. Jede echte Korrektur erzeugt eine unveränderliche Bewegung; die Einheit wird beim Anlegen eingefroren. Ausgewählte Bestände können separat gezählt werden. Keine Wareneingänge, kein Verbrauch, keine Bewertung.',
             ),
             if (widget.platform.organization == null)
               const Padding(
@@ -792,7 +800,11 @@ class _HistoryDialogState extends State<_HistoryDialog> {
               ListTile(
                 key: ValueKey('stock-movement-${movement.id}'),
                 title: Text(
-                  '${movement.kind == 'opening' ? 'Anfangsbestand' : 'Korrektur'}'
+                  '${movement.kind == 'opening'
+                      ? 'Anfangsbestand'
+                      : movement.kind == 'count_correction'
+                      ? 'Inventurkorrektur'
+                      : 'Korrektur'}'
                   ' · ${movement.delta} $unit',
                 ),
                 subtitle: Text(
@@ -800,6 +812,8 @@ class _HistoryDialogState extends State<_HistoryDialog> {
                     'Stand danach: ${movement.balanceAfter} $unit',
                     _time(movement.recordedAt),
                     movement.recordedBy,
+                    if (movement.countId != null)
+                      'Zählung ${movement.countId} · Position ${movement.countLineId} · Beobachtung ${movement.countObservationId}',
                     if (movement.note != null) movement.note!,
                   ].join(' · '),
                 ),

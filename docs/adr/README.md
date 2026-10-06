@@ -25,6 +25,7 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0019](0019-approved-operational-knowledge.md) | Approved operational Knowledge: stable Article, immutable revisions and strict publication replay |
 | [0020](0020-task-knowledge-guidance.md) | Exact approved Knowledge revision pins and contextual historical Task guidance |
 | [0021](0021-task-planogram-assignment-guidance.md) | Exact Fixture/Assignment/Revision pins, current fresh-work validation and contextual retained layout |
+| [0022](0022-selected-article-stock-counts.md) | Selected Stock counts, immutable blind observations, whole approval and typed movement provenance |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).
 

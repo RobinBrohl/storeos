@@ -6,6 +6,7 @@ import 'package:storeos_design_system/storeos_design_system.dart';
 import '../application/article_assortment_controller.dart';
 import '../application/article_controller.dart';
 import '../application/stock_controller.dart';
+import '../application/stock_count_controller.dart';
 import '../application/merchandising_controller.dart';
 import '../application/knowledge_controller.dart';
 import '../application/session_controller.dart';
@@ -42,6 +43,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   ArticleController? _articles;
   ArticleAssortmentController? _assortment;
   StockController? _stock;
+  StockCountController? _counts, _ownCounts;
   MerchandisingController? _merchandising;
   KnowledgeController? _knowledge;
   ShiftController? _shifts, _home;
@@ -75,6 +77,13 @@ class _StoreOsAppState extends State<StoreOsApp> {
         api,
       );
       _stock = StockController(_controller, _platformController!, api);
+      _counts = StockCountController(_controller, _platformController!, api);
+      _ownCounts = StockCountController(
+        _controller,
+        _platformController!,
+        api,
+        self: true,
+      );
       _merchandising = MerchandisingController(
         _controller,
         _platformController!,
@@ -93,6 +102,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _articles?.dispose();
     _assortment?.dispose();
     _stock?.dispose();
+    _counts?.dispose();
+    _ownCounts?.dispose();
     _merchandising?.dispose();
     _knowledge?.dispose();
     _employees?.dispose();
@@ -143,6 +154,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       articles: _articles,
                       assortment: _assortment,
                       stock: _stock,
+                      counts: _counts,
+                      ownCounts: _ownCounts,
                       merchandising: _merchandising,
                       knowledge: _knowledge,
                       shifts: _shifts,

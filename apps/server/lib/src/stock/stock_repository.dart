@@ -191,17 +191,26 @@ class StockRepository {
     required int balanceVersion,
     required String recordedBy,
     required String? note,
+    String? countId,
+    String? countLineId,
+    String? countObservationId,
   }) async {
+    final countColumns = kind == 'count_correction'
+        ? ', count_id, count_line_id, count_observation_id'
+        : '';
+    final countValues = kind == 'count_correction'
+        ? ', CAST(@count AS uuid), CAST(@countLine AS uuid), CAST(@countObservation AS uuid)'
+        : '';
     await tx.execute(
       Sql.named(
         'INSERT INTO $schema.stock_movements '
         '(id, stock_level_id, company_id, location_id, article_id, kind, '
         'delta_scaled, balance_after_scaled, balance_version, recorded_by, '
-        'note) '
+        'note$countColumns) '
         'VALUES(CAST(@id AS uuid), CAST(@level AS uuid), '
         'CAST(@company AS uuid), CAST(@location AS uuid), '
         'CAST(@article AS uuid), @kind, @delta, @balance, @version, '
-        'CAST(@actor AS uuid), @note)',
+        'CAST(@actor AS uuid), @note$countValues)',
       ),
       parameters: {
         ..._scope,
@@ -214,6 +223,9 @@ class StockRepository {
         'version': balanceVersion,
         'actor': recordedBy,
         'note': note,
+        if (kind == 'count_correction') 'count': countId,
+        if (kind == 'count_correction') 'countLine': countLineId,
+        if (kind == 'count_correction') 'countObservation': countObservationId,
       },
     );
   }
@@ -256,7 +268,10 @@ class StockRepository {
   }) async => (await tx.execute(
     Sql.named(
       'SELECT id::text AS id, kind, delta_scaled, balance_after_scaled, '
-      'balance_version, recorded_at, recorded_by::text AS recorded_by, note '
+      'balance_version, recorded_at, recorded_by::text AS recorded_by, note, '
+      "to_jsonb(stock_movements)->>'count_id' AS count_id, "
+      "to_jsonb(stock_movements)->>'count_line_id' AS count_line_id, "
+      "to_jsonb(stock_movements)->>'count_observation_id' AS count_observation_id "
       'FROM $schema.stock_movements '
       'WHERE company_id=CAST(@company AS uuid) '
       'AND location_id=CAST(@location AS uuid) '
@@ -306,4 +321,7 @@ StockMovementDto _movement(Map<String, dynamic> row) => StockMovementDto(
   recordedAt: row['recorded_at'] as DateTime,
   recordedBy: row['recorded_by'] as String,
   note: row['note'] as String?,
+  countId: row['count_id'] as String?,
+  countLineId: row['count_line_id'] as String?,
+  countObservationId: row['count_observation_id'] as String?,
 );

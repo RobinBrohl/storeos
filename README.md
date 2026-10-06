@@ -1,5 +1,8 @@
 # StoreOS
 
+P4.8 Selected-article inventory counts are **IMPLEMENTED LOCALLY** on main, uncommitted and unstaged. Independent adversarial review returned **CHANGES REQUIRED**. Bounded F01–F04 remediation is **COMPLETE**; targeted review, focused security review and remote changed-commit CI are **PENDING**. Migration 0020 adds immutable Stock-owned rounds/observations and whole approved corrections; P4.1–P4.7 closure remains intact. See [P4.8 contract and evidence](docs/development/phase-4-8-stock-counts.md).
+
+
 StoreOS is a local-first, self-hosted operating system for retail and gastronomy. It connects daily employee work with shared operational data: shifts, guided tasks, Articles, location Assortment and Stock. Operators own their data; the local core needs no vendor cloud account or mandatory telemetry.
 
 The current implementation is a single-site online Flutter Web client, a Dart modular monolith and PostgreSQL. The bounded employee journey and platform administration are delivered. P4.3 Manual Stock Foundation is DONE/CLOSED, including the accepted adjustment retry correction, independent targeted review APPROVE, 28/28 PASS and green changed-commit CI. See [actual status](docs/roadmap/status.md) and the [closure record](docs/development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04) for evidence and remaining operational boundaries.
@@ -38,7 +41,7 @@ re-review returned **SECURITY APPROVE**. All five exact-HEAD jobs succeeded in
 [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). Migration 0019 completes the 0001–0019 chain;
 0001–0018 and dependencies/lockfiles are unchanged. No active P4.7 remediation remains.
 Existing P4.1–P4.6 closure remains intact. Next after the documentation closure commit:
-fresh P4.8 capability selection; no P4.8 capability is selected or ACTIVE.
+P4.8 selection followed that closure; its local implementation is recorded above.
 
 See [P4.7 closure evidence](docs/development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](docs/adr/0021-task-planogram-assignment-guidance.md).
 

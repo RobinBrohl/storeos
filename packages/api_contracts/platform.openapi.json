@@ -9151,6 +9151,1465 @@
           }
         }
       }
+    },
+    "/api/v1/platform/locations/{locationId}/stock-counts": {
+      "get": {
+        "operationId": "listStockCounts",
+        "description": "Requires stock.counts.manage and stock.levels.manage. Configured Company/execution Location equality is checked before resource disclosure or replay. Scoped keyset pagination; maximum 50 items. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "description": "Opaque scoped keyset cursor. Lists: UUID ascending; history: round number descending. Page size 50."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped authorized read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockCountPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_cursor: malformed, incomplete or differently scoped pagination cursor; invalid_count: malformed Location identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "openStockCount",
+        "description": "Requires stock.counts.manage and stock.levels.manage. Configured Company/execution Location equality is checked before resource disclosure or replay. Exact committed replay rechecks current authorization, binds actor/resource/command/canonical payload, and returns the original result without duplicate writes or audit. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockCountOpen"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Original committed result on exact authorized replay; no duplicate effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagerCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, selected StockLevel or preceding count unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_json: malformed JSON; invalid_count: invalid exact command shape, IDs, bounds or quantity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: definitive 16 KiB request limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "operation_conflict: operation UUID bound differently; count_conflict: count UUID exists or predecessor is open; version_exhausted: selected Stock version is not representable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "assignee_unavailable: Employee does not satisfy current Company/link/eligibility rules.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock-counts/assignees": {
+      "get": {
+        "operationId": "eligibleStockCounters",
+        "description": "Requires stock.counts.manage and stock.levels.manage. Configured Company/execution Location equality is checked before resource disclosure or replay. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped authorized read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountAssignees"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_count: malformed Location identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock-counts/{countId}": {
+      "get": {
+        "operationId": "reviewStockCount",
+        "description": "Requires stock.counts.manage and stock.levels.manage. Configured Company/execution Location equality is checked before resource disclosure or replay. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "countId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped authorized read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagerCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, count/line unavailable within authorized scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_count: malformed Location/count identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock-counts/{countId}/lines/{lineId}/rounds": {
+      "get": {
+        "operationId": "reviewStockCountHistory",
+        "description": "Requires stock.counts.manage and stock.levels.manage. Configured Company/execution Location equality is checked before resource disclosure or replay. Scoped keyset pagination; maximum 50 items. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "countId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "description": "Opaque scoped keyset cursor. Lists: UUID ascending; history: round number descending. Page size 50."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped authorized read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagerCountHistory"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, count/line unavailable within authorized scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_cursor: invalid or differently scoped pagination cursor; invalid_count: malformed Location/count/line identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock-counts/{countId}/recount": {
+      "post": {
+        "operationId": "recountStockCount",
+        "description": "Requires stock.counts.manage and stock.levels.manage. Configured Company/execution Location equality is checked before resource disclosure or replay. Exact committed replay rechecks current authorization, binds actor/resource/command/canonical payload, and returns the original result without duplicate writes or audit. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "countId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockCountRecount"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed result on exact authorized replay; no duplicate effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagerCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, count/line unavailable within authorized scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_json: malformed JSON; invalid_count: invalid exact command shape, IDs, bounds or quantity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: definitive 16 KiB request limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "operation_conflict: operation UUID bound differently; count_conflict: terminal count or expected version mismatch; version_exhausted: count/round version; count_stale: selected current Stock unit is incompatible.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "assignee_unavailable: Employee does not satisfy current Company/link/eligibility rules.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock-counts/{countId}/approve": {
+      "post": {
+        "operationId": "approveStockCount",
+        "description": "Requires stock.counts.approve and stock.levels.manage. Configured Company/execution Location equality is checked before resource disclosure or replay. Exact committed replay rechecks current authorization, binds actor/resource/command/canonical payload, and returns the original result without duplicate writes or audit. Every current round is validated before whole atomic approval. Zero variance records evidence without Stock writes; nonzero variance creates one attributable correction. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "countId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockCountApprove"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed result on exact authorized replay; no duplicate effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagerCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, count/line unavailable within authorized scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_json: malformed JSON; invalid_count: invalid exact command shape, IDs, bounds or quantity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: definitive 16 KiB request limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "operation_conflict: operation UUID bound differently; count_conflict: terminal count or expected version mismatch; version_exhausted: count or nonzero Stock version; count_stale: any current baseline version/unit mismatch. No partial effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "count_incomplete: any current round lacks an observation; self_approval_forbidden: approving Account recorded any current observation. Whole approval rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/stock-counts/{countId}/cancel": {
+      "post": {
+        "operationId": "cancelStockCount",
+        "description": "Requires stock.counts.manage and stock.levels.manage. Configured Company/execution Location equality is checked before resource disclosure or replay. Exact committed replay rechecks current authorization, binds actor/resource/command/canonical payload, and returns the original result without duplicate writes or audit. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "countId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockCountCancel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed result on exact authorized replay; no duplicate effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagerCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, count/line unavailable within authorized scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_json: malformed JSON; invalid_count: invalid exact command shape, IDs, bounds or quantity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: definitive 16 KiB request limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "operation_conflict: operation UUID bound differently; count_conflict: terminal count or expected version mismatch; version_exhausted: count version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/stock-counts": {
+      "get": {
+        "operationId": "ownStockCounts",
+        "description": "Requires stock.counts.self.read and current eligible own Employee assignment. Configured Company/execution Location equality is checked before resource disclosure or replay. Responses and history are blind: no baseline, discrepancy, Stock version or recorder Account. Scoped keyset pagination; maximum 50 items. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "description": "Opaque scoped keyset cursor. Lists: UUID ascending; history: round number descending. Page size 50."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped authorized read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockCountPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, eligible own Employee link unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_cursor: invalid or differently scoped pagination cursor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/stock-counts/{countId}": {
+      "get": {
+        "operationId": "ownStockCount",
+        "description": "Requires stock.counts.self.read and current eligible own Employee assignment. Configured Company/execution Location equality is checked before resource disclosure or replay. Responses and history are blind: no baseline, discrepancy, Stock version or recorder Account. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "countId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped authorized read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, eligible own Employee link unavailable, count/line unavailable within authorized scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_count: malformed count identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/stock-counts/{countId}/lines/{lineId}/rounds": {
+      "get": {
+        "operationId": "ownStockCountHistory",
+        "description": "Requires stock.counts.self.read and current eligible own Employee assignment. Configured Company/execution Location equality is checked before resource disclosure or replay. Responses and history are blind: no baseline, discrepancy, Stock version or recorder Account. Scoped keyset pagination; maximum 50 items. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "countId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "description": "Opaque scoped keyset cursor. Lists: UUID ascending; history: round number descending. Page size 50."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped authorized read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeCountHistory"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, eligible own Employee link unavailable, count/line unavailable within authorized scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_cursor: invalid or differently scoped pagination cursor; invalid_count: malformed count/line identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/stock-counts/{countId}/lines/{lineId}/observations": {
+      "post": {
+        "operationId": "recordStockCountObservation",
+        "description": "Requires stock.counts.self.record and current eligible own Employee assignment. Configured Company/execution Location equality is checked before resource disclosure or replay. Responses and history are blind: no baseline, discrepancy, Stock version or recorder Account. Exact committed replay rechecks current authorization, binds actor/resource/command/canonical payload, and returns the original result without duplicate writes or audit. ",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "countId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockCountObservationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed result on exact authorized replay; no duplicate effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeCount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized: current valid session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden: current capability and configured Company/execution Location equality required; manager operations also require stock.levels.manage. origin_forbidden: request Origin is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found: configured Location unavailable, eligible own Employee link unavailable, count/line unavailable within authorized scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: unexpected integrity/program failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable: operational database failure; response is sanitized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_json: malformed JSON; invalid_count: invalid exact command shape, IDs, bounds or quantity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large: definitive 16 KiB request limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: application/json required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "operation_conflict: operation UUID bound differently; count_conflict: terminal count or expected version mismatch; version_exhausted: count version; round_conflict: superseded round; observation_exists: current round already observed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -12159,62 +13618,135 @@
         }
       },
       "StockMovement": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "kind",
-          "delta",
-          "balanceAfter",
-          "balanceVersion",
-          "recordedAt",
-          "recordedBy",
-          "note"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "opening",
-              "adjustment"
-            ]
-          },
-          "delta": {
-            "type": "string",
-            "pattern": "^-?[0-9]{1,12}(\\.[0-9]{1,3})?$",
-            "description": "Exact signed decimal delta as thousandths; zero never carries a sign."
-          },
-          "balanceAfter": {
-            "type": "string",
-            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
-            "description": "Exact decimal balance after this movement; 0 to 999999999999.999."
-          },
-          "balanceVersion": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "recordedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "recordedBy": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "note": {
-            "type": [
-              "string",
-              "null"
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "delta",
+              "balanceAfter",
+              "balanceVersion",
+              "recordedAt",
+              "recordedBy",
+              "note"
             ],
-            "minLength": 1,
-            "maxLength": 500
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "opening",
+                  "adjustment"
+                ]
+              },
+              "delta": {
+                "type": "string",
+                "pattern": "^-?[0-9]{1,12}(\\.[0-9]{1,3})?$",
+                "description": "Exact signed decimal delta as thousandths; zero never carries a sign."
+              },
+              "balanceAfter": {
+                "type": "string",
+                "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+                "description": "Exact decimal balance after this movement; 0 to 999999999999.999."
+              },
+              "balanceVersion": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "recordedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "recordedBy": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1,
+                "maxLength": 500
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "delta",
+              "balanceAfter",
+              "balanceVersion",
+              "recordedAt",
+              "recordedBy",
+              "note",
+              "countId",
+              "countLineId",
+              "countObservationId"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "kind": {
+                "const": "count_correction"
+              },
+              "delta": {
+                "type": "string",
+                "pattern": "^-?[0-9]{1,12}(\\.[0-9]{1,3})?$",
+                "description": "Exact signed decimal delta as thousandths; zero never carries a sign."
+              },
+              "balanceAfter": {
+                "type": "string",
+                "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+                "description": "Exact decimal balance after this movement; 0 to 999999999999.999."
+              },
+              "balanceVersion": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "recordedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "recordedBy": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "countId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "countLineId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "countObservationId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
           }
-        }
+        ]
       },
       "StockMovementPage": {
         "type": "object",
@@ -13938,6 +15470,962 @@
           }
         },
         "description": "Frozen published structure and durable identities, separately named current labels, lifecycle and optional Stock. Contains no author, assigner or operation metadata. Never substitute a current deployment for the retained tuple."
+      },
+      "StockCountOpen": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "id",
+          "employeeId",
+          "stockLevelIds",
+          "purpose",
+          "precedingCountId"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stockLevelIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "precedingCountId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "StockCountObservationInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion",
+          "roundId",
+          "quantity",
+          "note"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "roundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact nonnegative thousandths; canonical responses omit trailing zeros."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "StockCountRecount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion",
+          "lineIds",
+          "reason"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "lineIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "StockCountApprove": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          }
+        }
+      },
+      "StockCountCancel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion",
+          "reason"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "EmployeeCountObservation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "quantity",
+          "recordedAt",
+          "note"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact nonnegative thousandths; canonical responses omit trailing zeros."
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Database UTC acceptance/capture time."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ManagerCountObservation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "quantity",
+          "recordedAt",
+          "note",
+          "recordedBy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact nonnegative thousandths; canonical responses omit trailing zeros."
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Database UTC acceptance/capture time."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recordedBy": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "EmployeeCountRound": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "number",
+          "current",
+          "observation"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmployeeCountObservation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ManagerCountRound": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "number",
+          "current",
+          "observation",
+          "baselineQuantity",
+          "baselineVersion",
+          "stockUnit",
+          "capturedAt",
+          "provenance",
+          "requestedBy",
+          "reason",
+          "discrepancy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManagerCountObservation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "baselineQuantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact nonnegative thousandths; canonical responses omit trailing zeros."
+          },
+          "baselineVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "stockUnit": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "capturedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Database UTC acceptance/capture time."
+          },
+          "provenance": {
+            "enum": [
+              "open",
+              "recount"
+            ]
+          },
+          "requestedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discrepancy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?[0-9]{1,12}(\\.[0-9]{1,3})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "EmployeeCountLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "articleId",
+          "position",
+          "sku",
+          "name",
+          "barcode",
+          "stockUnit",
+          "round"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "barcode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stockUnit": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "round": {
+            "$ref": "#/components/schemas/EmployeeCountRound"
+          }
+        }
+      },
+      "CountCurrentStock": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "quantity",
+          "version",
+          "stockUnit",
+          "updatedAt"
+        ],
+        "properties": {
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact nonnegative thousandths; canonical responses omit trailing zeros."
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "stockUnit": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Database UTC acceptance/capture time."
+          }
+        }
+      },
+      "CountApprovedOutcome": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "observationId",
+          "discrepancy",
+          "checkedStockVersion",
+          "movementId"
+        ],
+        "properties": {
+          "observationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "discrepancy": {
+            "type": "string",
+            "pattern": "^-?[0-9]{1,12}(\\.[0-9]{1,3})?$"
+          },
+          "checkedStockVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "movementId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ManagerCountLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "articleId",
+          "position",
+          "sku",
+          "name",
+          "barcode",
+          "stockUnit",
+          "round",
+          "stockLevelId",
+          "currentStock",
+          "stale",
+          "discrepancy",
+          "outcome"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "barcode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stockUnit": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "round": {
+            "$ref": "#/components/schemas/ManagerCountRound"
+          },
+          "stockLevelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currentStock": {
+            "$ref": "#/components/schemas/CountCurrentStock"
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "discrepancy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?[0-9]{1,12}(\\.[0-9]{1,3})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CountApprovedOutcome"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "StockCountSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locationId",
+          "employeeId",
+          "purpose",
+          "status",
+          "version",
+          "openedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "status": {
+            "enum": [
+              "open",
+              "approved",
+              "cancelled"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "openedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Database UTC acceptance/capture time."
+          }
+        }
+      },
+      "StockCountPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/StockCountSummary"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "EmployeeCount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locationId",
+          "employeeId",
+          "purpose",
+          "status",
+          "version",
+          "openedAt",
+          "lines"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "status": {
+            "enum": [
+              "open",
+              "approved",
+              "cancelled"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "openedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Database UTC acceptance/capture time."
+          },
+          "lines": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/EmployeeCountLine"
+            }
+          }
+        }
+      },
+      "ManagerCount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locationId",
+          "employeeId",
+          "purpose",
+          "status",
+          "version",
+          "openedAt",
+          "createdBy",
+          "precedingCountId",
+          "approval",
+          "cancellation",
+          "lines"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "status": {
+            "enum": [
+              "open",
+              "approved",
+              "cancelled"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "openedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Database UTC acceptance/capture time."
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "precedingCountId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "approval": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "approvedBy",
+                  "approvedAt"
+                ],
+                "properties": {
+                  "approvedBy": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "approvedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Database UTC acceptance/capture time."
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cancellation": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "cancelledBy",
+                  "cancelledAt",
+                  "reason"
+                ],
+                "properties": {
+                  "cancelledBy": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "cancelledAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Database UTC acceptance/capture time."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/ManagerCountLine"
+            }
+          }
+        }
+      },
+      "EmployeeCountHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/EmployeeCountRound"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ManagerCountHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ManagerCountRound"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "CountAssignees": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "displayName"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "displayName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

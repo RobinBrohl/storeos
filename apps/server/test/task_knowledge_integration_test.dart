@@ -622,7 +622,11 @@ void main() {
             schemaName: f.schema,
             runtimeDatabaseUser: f.runtimeUser,
           ).apply(),
-          ['0018_task_knowledge_guidance', '0019_task_planogram_guidance'],
+          [
+            '0018_task_knowledge_guidance',
+            '0019_task_planogram_guidance',
+            '0020_stock_counts',
+          ],
         );
         for (var i = 0; i < tables.length; i++) {
           final table = tables[i];

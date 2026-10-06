@@ -20,6 +20,7 @@ import 'merchandising_acceptance.dart';
 import 'knowledge_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'backup_planogram_acceptance.dart';
+import 'stock_count_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -53,6 +54,11 @@ const _evidenceTables = <String, String>{
   'article_location_assortment': 'id',
   'stock_levels': 'id',
   'stock_movements': 'id',
+  'stock_counts': 'id',
+  'stock_count_lines': 'id',
+  'stock_count_rounds': 'id',
+  'stock_count_observations': 'id',
+  'stock_count_commands': 'operation_id',
   'knowledge_articles': 'id',
   'knowledge_revisions': 'id',
   'shifts': 'id',
@@ -645,6 +651,32 @@ Future<Map<String, String>> _seed(
       'locationId': locationId,
     },
   );
+  final otherAccountId = newUuid();
+  await api.request(
+    'POST',
+    '$root/users',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': otherAccountId,
+      'username': 'backup_accept_other_worker',
+      'password': workerPassword,
+      'locationId': locationId,
+      'role': 'employee',
+    },
+  );
+  await api.request(
+    'POST',
+    '$root/employees/$otherEmployeeId/account-link',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': newUuid(),
+      'accountId': otherAccountId,
+      'expectedEmployeeVersion': otherEmployee['version'],
+      'expectedAccountVersion': 1,
+    },
+  );
   final otherTemplate = await _publishTemplate(
     api,
     adminToken,
@@ -688,6 +720,24 @@ Future<Map<String, String>> _seed(
     body: {'username': workerUser, 'password': workerPassword},
   );
   final workerToken = workerLogin['token'] as String;
+  final countEvidence = await seedStockCounts(
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: adminToken,
+      expected: status,
+    ),
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: workerToken,
+      expected: status,
+    ),
+    locationId,
+    employeeId,
+  );
   await replaceAndRetireGuidance(guidanceRequest, guidance);
   await replaceAndRetireLayoutGuidance(
     guidanceRequest,
@@ -808,6 +858,7 @@ Future<Map<String, String>> _seed(
     'companyId': companyId,
     'locationId': locationId,
     'adminAccountId': adminId,
+    ...countEvidence,
     'alternateLocationId': alternateLocationId,
     'completedTemplateRevisionId': completedTemplate['revisionId']!,
     'workerAccountId': workerId,
@@ -897,10 +948,15 @@ Future<void> _assertSeededJourney(
     throw StateError('Expected exactly one active source plugin token.');
   }
   const expectedCounts = {
-    'articles': 1,
-    'article_location_assortment': 1,
-    'stock_levels': 1,
-    'stock_movements': 1,
+    'articles': 3,
+    'article_location_assortment': 3,
+    'stock_levels': 3,
+    'stock_movements': 5,
+    'stock_counts': 3,
+    'stock_count_lines': 6,
+    'stock_count_rounds': 7,
+    'stock_count_observations': 4,
+    'stock_count_commands': 10,
     'knowledge_articles': 3,
     'knowledge_revisions': 8,
     'merchandising_fixtures': 1,

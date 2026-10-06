@@ -465,7 +465,15 @@ void main() {
     expect(levelProperties.containsKey('effectiveAvailability'), isFalse);
     final levelPage = schemas['StockLevelPage'] as Map;
     expect(levelPage['properties']['items']['maxItems'], 50);
-    final movementSchema = schemas['StockMovement'] as Map;
+    final movementKinds = schemas['StockMovement']['oneOf'] as List;
+    expect(movementKinds, hasLength(2));
+    final countCorrection = movementKinds[1] as Map;
+    expect(countCorrection['properties']['kind']['const'], 'count_correction');
+    expect(
+      countCorrection['required'],
+      containsAll(['countId', 'countLineId', 'countObservationId']),
+    );
+    final movementSchema = movementKinds.first as Map;
     expect(movementSchema['additionalProperties'], isFalse);
     expect((movementSchema['required'] as List).toSet(), {
       'id',

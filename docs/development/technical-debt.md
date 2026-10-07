@@ -181,3 +181,30 @@ close broad M3/M4. Memory-only uncertain command tracking ends on reload/session
 replacement; durable receipts remain authoritative. This accepted limitation is
 not a closure blocker. Physical-device/accessibility gaps and the supported-writer
 boundary remain. See [slice](phase-4-8-stock-counts.md).
+
+## P4.9 closed review gates and accepted limits
+
+Approved Article Recipe / Composition (composition only) is **DONE/CLOSED** at
+`e5e6d5c2999bb9f8132161b43ad1537aa403973c`: initial independent CHANGES REQUIRED,
+bounded F01–F05 remediation, supplied targeted APPROVE, **151 PASS / 1 QUALIFIED /
+0 FAIL**, supplied focused **SECURITY APPROVE** (zero confirmed/probable
+vulnerabilities, zero required fixes, no security commit blocker) and all five jobs
+green in [exact-commit CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
+No active P4.9 remediation remains; the [closure record](phase-4-9-recipe-compositions.md#final-documentation-closure--2026-10-07)
+preserves chronology and evidence.
+
+| Finding | Current disposition |
+| --- | --- |
+| F01 MEDIUM product defect | CLOSED: initial-draft discard recovery allocates the next empty draft under the same active Recipe identity; no number reuse. |
+| F02 MEDIUM product defect | CLOSED: authoritative reconciliation clears stale transient snapshots and preserves/display-saves exact server-frozen content. |
+| F03 LOW product defect | CLOSED: opt-in Recipe write parsing rejects duplicate decoded JSON names, including escaped equivalents, as bounded 400 invalid_json. |
+| F04 LOW documentation/contract defect | CLOSED: all 13 operations retain precise reachable error contracts; global M3/M4 are not reopened or closed by this work. |
+| F05 MEDIUM test/evidence gap | CLOSED: nonempty approved Count/observation/recount/correction/zero-variance evidence and all seven Stock/Count hashes are preserved across populated 0020→0021 and Recipe workflow. |
+| F06 INFO | ACCEPTED DESIGN / NON-BLOCKER: Company + operation UUID namespace; independent Companies may reuse UUIDs. |
+| F07 INFO / criterion 152 | ACCEPTED EVIDENCE LIMITATION / NON-BLOCKER: verified runs used disposable databases; universal historical normal-database proof cannot be reconstructed. Criterion 152 remains the only QUALIFIED item, no product/security defect or active remediation. |
+
+Memory-only uncertain-command recovery, supported-writer/raw-SQL boundaries,
+physical-device/accessibility gaps, M1 pilot gate, M2 CLOSED, M3 endpoint containment,
+M4 broader error taxonomy and P4.5 F01/F02 nonblocking follow-ups remain unchanged.
+No P4.10 capability is selected or ACTIVE; next is fresh selection after the
+documentation closure commit.

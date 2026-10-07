@@ -1,7 +1,9 @@
 # ADR 0023 — Approved Article Recipe / Composition
 
-Status: Accepted product/architecture contract; implemented locally, independent review remediation complete;
-targeted review, security review and remote changed-commit CI pending. P4.9 is not DONE/CLOSED.
+Status: Accepted product/architecture contract; P4.9 **DONE/CLOSED**. F01–F05
+remediation complete; targeted independent APPROVE, 151 PASS / 1 QUALIFIED / 0 FAIL,
+focused SECURITY APPROVE and green [exact-commit CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
+Criterion 152 is historical evidence qualification only; no active remediation remains.
 
 ## Context
 
@@ -108,7 +110,8 @@ changes are explicit current warnings, never silent content updates. Publication
 can be recovered after a lost response and server restart. Backup verification
 compares all Recipe rows and probes restored reads/replay/authorization under
 runtime-role fencing. Update acceptance includes the new migration and protected
-legacy evidence. Independent/security/changed-commit review remains outstanding.
+legacy evidence. Independent/security review and exact-commit CI are complete;
+see the [final closure](../development/phase-4-9-recipe-compositions.md#final-documentation-closure--2026-10-07).
 
 ## Open Questions
 

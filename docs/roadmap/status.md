@@ -1,10 +1,16 @@
 # Actual implementation status
 
-P4.9 Approved Article Recipe / Composition (composition only) is **IMPLEMENTED
-LOCALLY** on main, uncommitted/unstaged. **INDEPENDENT REVIEW REMEDIATION COMPLETE · TARGETED REVIEW PENDING ·
-SECURITY REVIEW PENDING · REMOTE CHANGED-COMMIT CI PENDING**; it is not DONE/CLOSED.
-Migration 0021 adds separate Production composition evidence; 0001–0020 and
-lockfiles/dependencies remain unchanged. No P4.10 capability is selected.
+P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
+at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.
+Initial independent review **CHANGES REQUIRED** led to bounded F01–F05 remediation,
+then targeted **APPROVE**, **151 PASS / 1 QUALIFIED / 0 FAIL** and focused Codex
+Security **SECURITY APPROVE** (zero confirmed/probable vulnerabilities, zero required
+security fixes, no security commit blocker). Criterion 152 is qualified solely for
+historical forensic evidence scope; it is no product/security defect or closure blocker.
+All five exact-commit jobs succeeded in [CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
+The migration chain ends at `0021_recipe_compositions.sql`; 0001–0020 retain
+unchanged Git content. No active P4.9 remediation remains. Next after the closure
+commit: **fresh P4.10 capability selection**; no P4.10 capability is selected or ACTIVE.
 See [P4.9 development record](../development/phase-4-9-recipe-compositions.md) and [ADR 0023](../adr/0023-approved-article-recipe-composition.md).
 
 
@@ -111,6 +117,7 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P4.6 Guided Operation — Task + approved Knowledge revision pinning | DONE / CLOSED | Implementation `15679bf`; migration 0018 / ADR 0020. Optional concrete schema-3 Article/Revision pin, frozen Template content, immutable Task snapshot and exact contextual historical read; no copied Knowledge text or readership evidence. | Full independent CHANGES REQUIRED review, bounded F01 remediation, targeted APPROVE, 64/64 PASS, focused Codex Security SECURITY APPROVE; all five jobs green in [changed-commit CI 37287951549](https://github.com/RobinBrohl/storeos/actions/runs/37287951549). [Final closure](../development/phase-4-6-task-knowledge-guidance.md#final-documentation-closure--2026-10-05) records real journeys, Chrome, backup/update/recovery and full regression. No active remediation. |
 | P4.8 Selected-Article Inventory Count | DONE / CLOSED | Implementation `cba9bff10a8d32bfcda39ee428436153ca2fc044`; migration 0020 / ADR 0022. Stock-owned immutable blind observations/rounds, 1–100 selected StockLevels, one Employee, recounts, whole atomic approval, typed count corrections and explicit zero-variance evidence. | Initial independent CHANGES REQUIRED, bounded F01–F04 remediation, targeted APPROVE; 124/124 PASS, 0 QUALIFIED, 0 FAIL. Focused SECURITY APPROVE; all five jobs green in [exact-commit CI 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163). [Final closure](../development/phase-4-8-stock-counts.md#final-documentation-closure--2026-10-06) records real journeys, Chrome, 100-line acceptance, backup/update/recovery and final-source regression. No active remediation. |
 | P4.7 Task + exact Planogram Assignment execution pinning | DONE / CLOSED | Implementation `ccfa3df`; schema 4, independent nullable Knowledge/Planogram fields, exact Fixture/Assignment/Revision pin. Migration 0019 / ADR 0021; current Location authorization precedes historical read/replay. | Initial independent CHANGES REQUIRED, F01/F02 remediation, targeted APPROVE; 80/80 PASS. Initial SECURITY CHANGES REQUIRED, bounded Location-scope F01 remediation, targeted SECURITY APPROVE; all five jobs green in [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). [Final closure](../development/phase-4-7-task-planogram-guidance.md#final-documentation-closure--2026-10-05); no active remediation. |
+| P4.9 Approved Article Recipe / Composition — composition only | DONE / CLOSED | Implementation `e5e6d5c2999bb9f8132161b43ad1537aa403973c`; migration 0021 / ADR 0023. Separate Company-wide Recipe, one declared batch, exact thousandths, frozen ordered Article references, immutable published/discarded revisions, initial-draft recovery, terminal retirement and Company-scoped publication replay. No Stock or Task effect. | Initial independent CHANGES REQUIRED, F01–F05 remediation, targeted APPROVE; 151 PASS / 1 QUALIFIED / 0 FAIL. Criterion 152 is historical forensic evidence scope only. Focused SECURITY APPROVE; all five jobs green in [exact-commit CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736). [Final closure](../development/phase-4-9-recipe-compositions.md#final-documentation-closure--2026-10-07) preserves real Flutter/HTTP/PostgreSQL and Chrome, 50-line acceptance, backup/update/recovery and final-source regression. No active remediation. |
 
 ## Accepted manual Stock boundaries
 
@@ -209,16 +216,15 @@ read acknowledgment, native-device/accessibility acceptance or offline queue is 
 
 ## Planned and deferred scope
 
-P4.8 is DONE/CLOSED, with no active remediation. P4.9 composition is implemented
-locally with independent review remediation complete; targeted review, security
-review and changed-commit CI remain pending.
-No P4.10 capability is selected.
+P4.1–P4.9 are DONE/CLOSED, with no active P4.9 remediation. After the
+documentation closure commit, the next action is fresh P4.10 capability selection.
+No P4.10 capability is selected or ACTIVE.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
 | Workforce / Tasks / Wiki extension | MIXED | P4.6 exact Task pins are DONE/CLOSED. Recurrence, recommendations, qualification workflows and swaps remain future slices; begun-work reconciliation remains open. |
-| Inventory / Stock / Purchasing / Production extensions | PLANNED | Beyond delivered Article/Assortment/manual Stock, P4.8 selected-article counts and locally implemented P4.9 composition: units/conversions, receiving, broader inventory workflows, batches, Recipe extensions, production and valuation. |
+| Inventory / Stock / Purchasing / Production extensions | PLANNED | Beyond delivered Article/Assortment/manual Stock, P4.8 selected-article counts and DONE/CLOSED P4.9 composition: units/conversions, receiving, broader inventory workflows, batches, Recipe extensions, production and valuation. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |
 | HACCP, Pricing, Menu/publishing, reporting/finance | PLANNED | No certified safety module, cost/margin basis, structured Menu/public publisher or finance capability exists. |

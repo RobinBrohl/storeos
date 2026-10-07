@@ -1,10 +1,16 @@
 # StoreOS handover
 
-P4.9 Approved Article Recipe / Composition (composition only) is **IMPLEMENTED
-LOCALLY** on main, uncommitted/unstaged. **INDEPENDENT REVIEW REMEDIATION COMPLETE · TARGETED REVIEW PENDING ·
-SECURITY REVIEW PENDING · REMOTE CHANGED-COMMIT CI PENDING**; it is not DONE/CLOSED.
-Migration 0021 adds separate Production composition evidence; 0001–0020 and
-lockfiles/dependencies remain unchanged. No P4.10 capability is selected.
+P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
+at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.
+Initial independent review **CHANGES REQUIRED** led to bounded F01–F05 remediation,
+then targeted **APPROVE**, **151 PASS / 1 QUALIFIED / 0 FAIL** and focused Codex
+Security **SECURITY APPROVE** (zero confirmed/probable vulnerabilities, zero required
+security fixes, no security commit blocker). Criterion 152 is qualified solely for
+historical forensic evidence scope; it is no product/security defect or closure blocker.
+All five exact-commit jobs succeeded in [CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
+The migration chain ends at `0021_recipe_compositions.sql`; 0001–0020 retain
+unchanged Git content. No active P4.9 remediation remains. Next after the closure
+commit: **fresh P4.10 capability selection**; no P4.10 capability is selected or ACTIVE.
 See [P4.9 development record](development/phase-4-9-recipe-compositions.md) and [ADR 0023](adr/0023-approved-article-recipe-composition.md).
 
 
@@ -143,7 +149,7 @@ records the accepted correction and current-head CI.
 - Inventory owns Article/Assortment. Stock owns immutable movements and level
   projections; it reads the released inventory projection/port, not foreign tables.
   Existing stock survives Article/Assortment deactivation.
-- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0020 are
+- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0021 are
   append-only; no applied file edits, silent overwrite or evidence deletion.
 - Personnel decisions remain human. Task activity is not attendance or employee scoring.
 
@@ -190,7 +196,9 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. Independently review the uncommitted P4.9 composition implementation, then perform focused security review and changed-commit CI under separate authorization. P4.8 remains DONE/CLOSED; P4.9 remains locally implemented with those gates pending. No P4.10 capability is selected.
+1. After the documentation closure commit, perform fresh P4.10 capability selection.
+   P4.1–P4.9 remain DONE/CLOSED; no active P4.9 remediation or selected/ACTIVE
+   P4.10 capability remains. This closure pass does not authorize that commit.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

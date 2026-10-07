@@ -1,7 +1,10 @@
 # Production: approved Article composition
 
-P4.9 is implemented locally; independent review remediation is complete. Targeted
-review, security review and remote changed-commit CI remain pending. [ADR 0023](../adr/0023-approved-article-recipe-composition.md)
+P4.9 is **DONE/CLOSED**: F01–F05 remediation complete, targeted independent
+APPROVE, 151 PASS / 1 QUALIFIED / 0 FAIL, focused SECURITY APPROVE and green
+[exact-commit CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
+Criterion 152 is qualified only for historical evidence scope; no active remediation
+remains. [ADR 0023](../adr/0023-approved-article-recipe-composition.md)
 owns the complete architecture/product contract.
 
 `apps/server/lib/src/production` owns Recipe lifecycle, repository and application

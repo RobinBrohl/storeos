@@ -1,10 +1,14 @@
 # P4.10 — Location-scoped preparation batch execution evidence
 
-Status: **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING / SECURITY REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**.
-Targeted independent approval and delivery closure remain pending.
-All work remains unstaged/uncommitted on `main`; no commit or push is authorized.
+Status: **P4.10 DONE/CLOSED** at implementation commit
+`e637187b17d4617212acf42b99a07500e9488c3d` on `main`.
+F01/F02 remediation and nonblocking F03 documentation follow-up are CLOSED.
+Targeted independent APPROVE, focused SECURITY APPROVE and green exact-commit
+CI establish closure. P4.11 remains UNSELECTED; next is fresh capability
+selection from clean main. This final pass changes documentation only and
+leaves those edits unstaged/uncommitted; no commit or push is authorized.
 
-## Baseline
+## Historical implementation baseline
 
 Before edits, `main` was clean at `7182c07f31779b9af599806a6d0ed445af484f0b`,
 equal to cached and live `origin/main`, with one worktree and no stash. Exactly
@@ -56,7 +60,7 @@ commands retain an immutable route/body/operation/session binding for exact retr
 Confirmed commands with failed refresh remain a distinct state. Navigation uses
 the drawer when the destination list would exceed available screen height.
 
-## Verification and reproducibility
+## Historical implementation verification and reproducibility
 
 Use the installed pinned Dart 3.13.4 / Flutter 3.47.5 and existing dependencies.
 `scripts/recipes/Run-P410Checks.ps1` creates/drops strict disposable PostgreSQL
@@ -110,8 +114,9 @@ Task Recipe pin, Shift/Workforce mutation, events/outbox, persistent offline que
 sync or P4.11 capability is added. Boundary acceptance is not a capacity benchmark.
 Memory-only client pending intent is lost on client reload; server receipts remain
 durable. Existing M1 proxy/login pilot gate and operator/device/accessibility
-policies are unchanged. Independent review, security review and changed-commit CI
-are pending. Codex Security was not run during implementation.
+policies are unchanged. At the implementation point, independent review,
+security review and changed-commit CI were pending; Codex Security was not run
+during implementation. The subsequent completed gates are recorded below.
 
 See the [criterion evidence ledger](phase-4-10-preparation-batches-criteria.md)
 for separate assessments of the supplied 156 hard acceptance criteria.
@@ -181,7 +186,7 @@ The initial full suite total was 924; the seven added client cases make the
 expected complete package total **931**, with opt-in hosts separately exercised.
 Never interpret pending/failed final phases as PASS.
 
-Canonical state: **P4.10 IMPLEMENTED LOCALLY / INDEPENDENT REVIEW REMEDIATION
+Historical remediation-point state: **P4.10 IMPLEMENTED LOCALLY / INDEPENDENT REVIEW REMEDIATION
 COMPLETE / TARGETED REVIEW PENDING / SECURITY REVIEW PENDING / REMOTE
 CHANGED-COMMIT CI PENDING**. No DONE/CLOSED or P4.11 selection is claimed.
 Remediation edits only the three Flutter controller/UI/test files, the four
@@ -189,3 +194,114 @@ backup-related Dart tools, and affected documentation. Server/domain/API contrac
 capabilities, grants, migrations, command receipts and Stock/Task effects retain
 the reviewed implementation bytes. Main/baseline HEAD/index/dependencies remain
 unchanged; no commit, push, install, normal-database write or Codex Security run occurs.
+
+## Final documentation closure — 2026-10-07
+
+P4.10 Preparation Batch is **DONE/CLOSED**. Before closure edits, `main` had a
+clean tree/index at `e637187b17d4617212acf42b99a07500e9488c3d`
+(Add preparation batch execution evidence), equal to cached and live
+`origin/main`, with no stash and exactly one intended worktree. The latest
+[CI run 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236)
+names that exact implementation commit. All five required jobs completed
+successfully: dart, flutter, numeric-guided-work-e2e, backup-restore-acceptance
+and update-recovery-acceptance. Baseline CI 37583520347 above is historical.
+
+### Review chronology and final acceptance
+
+| Point | Result and evidence |
+| --- | --- |
+| Initial implementation | READY FOR REVIEW; 924 package tests (171 API/contracts, 408 server/PostgreSQL, 343 Flutter, 2 design system); 19 final phases. These are historical initial figures. |
+| Independent adversarial review | CHANGES REQUIRED; F01 MEDIUM PRODUCT DEFECT and F02 MEDIUM TEST/EVIDENCE GAP. |
+| Bounded remediation | F01 CLOSED and F02 CLOSED; 931 package tests; 18/18 remediation-focused Flutter tests; 156 PASS / 0 QUALIFIED / 0 FAIL; 19/19 final-source phases PASS. |
+| Targeted independent re-review | Supplied verdict APPROVE; F03 LOW documentation follow-up, explicitly nonblocking. |
+| F03 docs-only remediation | CLOSED: stale current status and test-count references reconciled; historical intermediate figures preserved. |
+| Focused Codex Security | Supplied verdict SECURITY APPROVE; zero confirmed/probable vulnerabilities, zero required security fixes and zero commit-blocking security defects. |
+| Remote implementation CI | Exact implementation commit e637187b17d4617212acf42b99a07500e9488c3d; all five required jobs green in run 37632074236. |
+
+Final package regression is **931 PASS**: **171 API/contracts**, **408
+server/PostgreSQL**, **350 Flutter** and **2 design system**. Nine conditional
+server hosts were exercised separately in opt-in phases, not counted as passing
+main-suite cases. Existing `.local/p410/final/summary.json` records **19/19
+phases PASS**; its regression log corroborates package totals. Focused Flutter
+verification is **18/18 PASS**. Canonical acceptance is **156 PASS / 0 QUALIFIED /
+0 FAIL**. Initial 924-test/19-phase evidence remains historical; it is not
+retroactively relabeled as the final remediation run.
+
+F01 separates confirmed command evidence from authoritative current detail:
+failed refresh cannot present stale effective count as current, and further
+correction is blocked until reload. F02 proves source/restored R1 Batch context
+after different R2 publication and Recipe retirement, including own/manager
+access, standalone exclusion and other-Employee denial. F03 closes stale docs.
+No active P4.10 remediation remains.
+
+### Delivered domain and replay boundary
+
+PreparationBatch records an attributable Employee declaration that a whole
+number of repetitions of one exact approved RecipeRevision's declared batch
+were prepared. It does not represent kilograms, portions, physical yield,
+sellable units, ingredient Stock consumption or produced Stock increase.
+Planned count is null or **1..9999**, completion is **1..9999**, and correction
+is **0..9999**. Correction zero preserves completed lifecycle and original
+completion evidence.
+
+Delivered scope includes Location-scoped execution evidence, exact published
+RecipeRevision pin, server-derived Employee/Account identity, optional planning,
+immutable original completion/cancellation evidence, append-only manager count
+corrections including zero, five durable command receipt kinds and exact replay,
+historical Recipe context through an authorized Batch, current/frozen Recipe
+separation, Employee self workflow, manager history/cancellation/correction,
+strict Company/Location isolation, session fencing, literal rendering,
+backup/restore and update/recovery. Migration 0022 is delivered/accepted.
+There are **no Stock effects, no Task/Shift effects and no yield/output-unit
+semantics**.
+
+Fresh opening requires valid current Recipe/Article/Assortment/Employee state
+and the exact current publication. Once opened, the RecipeRevision remains
+pinned: replacement does not upgrade it; retirement and Article/Assortment
+changes do not rewrite it. Authorized Batch context can still resolve retained
+historical instructions. A historical Recipe UUID alone grants no contextual
+access.
+
+The five durable kinds are **open**, **complete**, **employee_cancel**,
+**manager_cancel** and **count_correct**, namespaced by **Company + operation
+UUID**. Current authentication/capability/Location/resource scope precedes
+receipt disclosure. Exact retries return original committed evidence.
+Completion replay after later count correction still returns the original
+completion result; fresh detail returns the current effective corrected count.
+
+### Focused security conclusion and threat-model limit
+
+The supplied focused Codex Security verdict is **SECURITY APPROVE**. No
+confirmed/probable vulnerability, required security fix or commit-blocking
+security defect was found. Its conclusions cover no IDOR/BOLA, cross-Company
+or cross-Location leak, historical Recipe authorization bypass, receipt/replay
+information leak requiring remediation, Employee impersonation, manager proxy
+completion or correction privilege bypass; no SQL injection, unsafe dynamic SQL,
+DB grant escalation or mutable terminal evidence through the runtime role; no
+XSS/active-content path, sensitive audit/log leakage, stale-session disclosure,
+cross-session pending-command execution, supported-writer TOCTOU authorization
+defect, restore authorization widening or Stock/Task side effect.
+
+These conclusions apply to supported application writers. Arbitrary privileged
+DBA/direct runtime SQL remains outside that scope; closure does not strengthen
+that accepted boundary or imply zero standing debt.
+
+### Migration, standing debt and next step
+
+The committed migration chain is **0001 → 0022**, ending at
+`0022_preparation_batches.sql`; no migration 0023 exists. This closure edits
+no migration, source, test, contract, dependency or generated report.
+
+M1 proxy/login-limiter pilot gate, M2 CLOSED, M3 local API/error-contract
+containment, M4 broader taxonomy inconsistency, supported-writer/raw-SQL limits,
+memory-only uncertain-command recovery, physical-device/accessibility gaps,
+P4.5 F01/F02 nonblocking follow-ups and P4.9 criterion 152 historical evidence
+qualification remain as recorded in [technical debt](technical-debt.md).
+P4.10 closes none of those standing items.
+
+**P4.11 remains UNSELECTED**; no P4.11 capability is ACTIVE. Next is fresh P4.11
+capability selection from clean main. This docs-only closure runs diff/consistency
+checks, without rerunning the 931-test software suite, committing, pushing,
+changing branches or writing to the normal database. Final-source reports remain
+the retained implementation/remediation evidence; documentation closure is a
+subsequent, explicitly scoped change.

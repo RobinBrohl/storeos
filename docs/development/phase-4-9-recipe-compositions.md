@@ -6,7 +6,7 @@ CHANGES REQUIRED led to F01–F05 remediation and targeted APPROVE. Final accept
 is **151 PASS / 1 QUALIFIED / 0 FAIL**, with criterion 152 qualified solely for
 historical forensic evidence scope. Focused Codex Security returned **SECURITY APPROVE**;
 all five jobs in [exact-commit CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736)
-succeeded. No active P4.9 remediation remains. No P4.10 capability is selected or ACTIVE.
+succeeded. No active P4.9 remediation remains. At P4.9 closure, no P4.10 capability was selected or ACTIVE; subsequent P4.10 delivery is DONE/CLOSED per the [current closure](phase-4-10-preparation-batches.md#final-documentation-closure--2026-10-07). P4.11 remains UNSELECTED.
 
 ## Verified planning baseline
 

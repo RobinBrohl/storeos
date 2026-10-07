@@ -1,6 +1,20 @@
 # StoreOS
 
-P4.10 Location-scoped PreparationBatch execution evidence is **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING / SECURITY REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**. Work is unstaged and uncommitted on main at baseline `7182c07f31779b9af599806a6d0ed445af484f0b`. Migration 0022 adds Production declarations, durable command receipts and append-only count corrections with no Stock or Task effect. P4.11 is not selected. See [P4.10 development record](docs/development/phase-4-10-preparation-batches.md) and [ADR 0024](docs/adr/0024-preparation-batch-evidence.md).
+P4.10 Preparation Batch is **DONE/CLOSED** at implementation commit
+`e637187b17d4617212acf42b99a07500e9488c3d` on `main`. Initial independent
+**CHANGES REQUIRED** led to F01/F02 remediation and targeted **APPROVE**;
+nonblocking F03 documentation follow-up is **CLOSED**. Final acceptance is
+**156 PASS / 0 QUALIFIED / 0 FAIL**, with **931 package tests**, **18/18**
+remediation-focused Flutter tests and **19/19** final-source phases PASS.
+Focused Codex Security returned **SECURITY APPROVE**: zero confirmed/probable
+vulnerabilities, zero required security fixes and no security commit blocker.
+All five jobs succeeded in [exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236).
+Migration `0022_preparation_batches.sql` is delivered/accepted; the committed
+chain is 0001–0022, with no 0023. Location-scoped declarations pin an exact
+published RecipeRevision, retain immutable terminal evidence and append-only
+count corrections, and have no Stock, Task/Shift or yield/output-unit effects.
+No active P4.10 remediation remains. **P4.11 is UNSELECTED**; next is fresh
+P4.11 capability selection from clean `main`. See [P4.10 development record](docs/development/phase-4-10-preparation-batches.md) and [ADR 0024](docs/adr/0024-preparation-batch-evidence.md).
 
 P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
 at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.
@@ -12,7 +26,7 @@ historical forensic evidence scope; it is no product/security defect or closure 
 All five exact-commit jobs succeeded in [CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
 At P4.9 closure the migration chain ended at `0021_recipe_compositions.sql`; 0001–0020 retain
 unchanged Git content. No active P4.9 remediation remains. Next after the closure
-commit, fresh P4.10 selection was completed. The local P4.10 delivery is recorded above.
+commit, fresh P4.10 selection was completed. The final P4.10 closure is recorded above.
 See [P4.9 development record](docs/development/phase-4-9-recipe-compositions.md) and [ADR 0023](docs/adr/0023-approved-article-recipe-composition.md).
 
 P4.8 Selected-Article Inventory Count is **DONE/CLOSED** at implementation commit

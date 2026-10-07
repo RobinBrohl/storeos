@@ -1,10 +1,10 @@
 # P4.10 hard acceptance criterion evidence
 
-Each supplied criterion is assessed separately. This ledger maps concrete evidence; the final response records PASS/FAIL after frozen-source verification. It is an implementation self-assessment, not independent approval. Targeted independent review returned APPROVE; security review and remote changed-commit CI remain pending.
+P4.10 is **DONE/CLOSED**. Each supplied criterion is assessed separately below: **156 PASS / 0 QUALIFIED / 0 FAIL**. This implementation evidence ledger is complemented by targeted independent **APPROVE**, focused **SECURITY APPROVE** and all five jobs green in [exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236). F01/F02 remediation and nonblocking F03 documentation follow-up are **CLOSED**.
 
 The initial 156/156 self-assessment preceded independent **CHANGES REQUIRED** for
 F01 (MEDIUM product defect) and F02 (MEDIUM evidence gap). Bounded remediation is
-complete; targeted review returned APPROVE. Security review and remote changed-commit CI remain pending.
+complete; targeted review returned APPROVE. Focused Security and exact-commit CI subsequently passed.
 Every retained criterion below is reassessed against unchanged reviewed core and
 the final-source run. In particular, 50/53/145 now include failed-refresh zero and
 2 → 1 evidence, blocked stale corrections and authoritative reload; 140 now includes
@@ -169,6 +169,6 @@ Paths and suite details are in [the development record](phase-4-10-preparation-b
 | 151 | Existing Recipe workflow remains green. | Existing Recipe PostgreSQL/contract regression plus dedicated Recipe HTTP and actual Chrome journeys |
 | 152 | Existing Chrome regressions remain green. | Dedicated Knowledge, Task-Knowledge, Task-Planogram and Stock Count Chrome journeys; numeric and print browser checks |
 | 153 | Full final-source regression green. | Frozen-source final runner: 931 package passes (including 350 Flutter package tests), nine conditional hosts explicitly exercised, four clean analyzers/formatters, release Web/Compose and recovery/tools |
-| 154 | Documentation remains pending review/security/CI. | P4.10 remains IMPLEMENTED LOCALLY; independent remediation complete and targeted review APPROVE; security review and remote changed-commit CI pending; no DONE/CLOSED claim |
+| 154 | Documentation remains pending review/security/CI (historical implementation gate). | PASS: documentation was pending review/security/CI at implementation; targeted APPROVE, SECURITY APPROVE and exact-commit CI 37632074236 now establish DONE/CLOSED; F03 stale documentation follow-up CLOSED |
 | 155 | No P4.11 capability added. | Evidence-only scope and public dependencies; no yield, consumption, produced Stock, Task pin, Shift/Workforce, offline queue or sync additions |
 | 156 | Normal StoreOS database untouched by verified acceptance runs. | Strict run-owned disposable database wrappers and recovery runners; normal database is never used for migration or business acceptance writes |

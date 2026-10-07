@@ -1,8 +1,9 @@
 # Production: approved Article composition
 
 P4.10 adds location-scoped PreparationBatch evidence under [ADR 0024](../adr/0024-preparation-batch-evidence.md).
-It is implemented locally pending independent review, security review and remote
-changed-commit CI. Production owns batches, immutable receipts and append-only
+It is **DONE/CLOSED**: F01–F03 CLOSED, targeted APPROVE, 156 PASS / 0 QUALIFIED /
+0 FAIL, focused SECURITY APPROVE and all five jobs green in
+[exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236). Production owns batches, immutable receipts and append-only
 count corrections. Identity, People and Organization public ports derive the
 current eligible operator and configured Location; Inventory's released Article
 and effective Assortment projections supply fresh opening gates under the Company

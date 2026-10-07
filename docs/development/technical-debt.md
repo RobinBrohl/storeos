@@ -206,5 +206,25 @@ preserves chronology and evidence.
 Memory-only uncertain-command recovery, supported-writer/raw-SQL boundaries,
 physical-device/accessibility gaps, M1 pilot gate, M2 CLOSED, M3 endpoint containment,
 M4 broader error taxonomy and P4.5 F01/F02 nonblocking follow-ups remain unchanged.
-No P4.10 capability is selected or ACTIVE; next is fresh selection after the
-documentation closure commit.
+P4.10 Preparation Batch is DONE/CLOSED; P4.11 remains UNSELECTED. Next is fresh P4.11 capability selection from clean main.
+
+## P4.10 closed review gates and retained limits
+
+Preparation Batch is **DONE/CLOSED** at implementation
+`e637187b17d4617212acf42b99a07500e9488c3d`: initial independent CHANGES REQUIRED,
+bounded F01/F02 remediation, targeted APPROVE, nonblocking F03 docs follow-up
+CLOSED, **156 PASS / 0 QUALIFIED / 0 FAIL**, focused SECURITY APPROVE and all five
+jobs green in [exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236).
+No active P4.10 remediation remains.
+
+| Finding | Final disposition |
+| --- | --- |
+| F01 MEDIUM product defect | CLOSED: confirmed command evidence is separate from authoritative current detail; failed refresh clears stale effective counts and blocks further correction until reload. |
+| F02 MEDIUM test/evidence gap | CLOSED: source/restored R1 Batch context after R2 publication and Recipe retirement proves own/manager access, standalone exclusion and other-Employee denial. |
+| F03 LOW documentation follow-up | CLOSED, nonblocking: current status/test-count references reconciled while historical implementation and review evidence remains labeled. |
+
+M1 proxy/login-limiter pilot gate, M2 CLOSED, M3 local API/error containment,
+M4 broader taxonomy, supported-writer/raw-SQL limits, memory-only uncertain-command
+recovery, physical-device/accessibility gaps, P4.5 F01/F02 nonblocking follow-ups
+and P4.9 criterion 152 historical evidence qualification retain their dispositions.
+No zero-debt or broader production-readiness claim is made.

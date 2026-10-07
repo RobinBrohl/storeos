@@ -1,6 +1,20 @@
 # Actual implementation status
 
-P4.10 Location-scoped PreparationBatch execution evidence is **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING / SECURITY REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**. Work is unstaged and uncommitted on main at baseline `7182c07f31779b9af599806a6d0ed445af484f0b`. Migration 0022 adds Production declarations, durable command receipts and append-only count corrections with no Stock or Task effect. P4.11 is not selected. See [P4.10 development record](../development/phase-4-10-preparation-batches.md) and [ADR 0024](../adr/0024-preparation-batch-evidence.md).
+P4.10 Preparation Batch is **DONE/CLOSED** at implementation commit
+`e637187b17d4617212acf42b99a07500e9488c3d` on `main`. Initial independent
+**CHANGES REQUIRED** led to F01/F02 remediation and targeted **APPROVE**;
+nonblocking F03 documentation follow-up is **CLOSED**. Final acceptance is
+**156 PASS / 0 QUALIFIED / 0 FAIL**, with **931 package tests**, **18/18**
+remediation-focused Flutter tests and **19/19** final-source phases PASS.
+Focused Codex Security returned **SECURITY APPROVE**: zero confirmed/probable
+vulnerabilities, zero required security fixes and no security commit blocker.
+All five jobs succeeded in [exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236).
+Migration `0022_preparation_batches.sql` is delivered/accepted; the committed
+chain is 0001–0022, with no 0023. Location-scoped declarations pin an exact
+published RecipeRevision, retain immutable terminal evidence and append-only
+count corrections, and have no Stock, Task/Shift or yield/output-unit effects.
+No active P4.10 remediation remains. **P4.11 is UNSELECTED**; next is fresh
+P4.11 capability selection from clean `main`. See [P4.10 development record](../development/phase-4-10-preparation-batches.md) and [ADR 0024](../adr/0024-preparation-batch-evidence.md).
 
 P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
 at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.
@@ -12,7 +26,7 @@ historical forensic evidence scope; it is no product/security defect or closure 
 All five exact-commit jobs succeeded in [CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
 At P4.9 closure the migration chain ended at `0021_recipe_compositions.sql`; 0001–0020 retain
 unchanged Git content. No active P4.9 remediation remains. Next after the closure
-commit, fresh P4.10 selection was completed. The local P4.10 delivery is recorded above.
+commit, fresh P4.10 selection was completed. The final P4.10 closure is recorded above.
 See [P4.9 development record](../development/phase-4-9-recipe-compositions.md) and [ADR 0023](../adr/0023-approved-article-recipe-composition.md).
 
 
@@ -120,6 +134,7 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P4.8 Selected-Article Inventory Count | DONE / CLOSED | Implementation `cba9bff10a8d32bfcda39ee428436153ca2fc044`; migration 0020 / ADR 0022. Stock-owned immutable blind observations/rounds, 1–100 selected StockLevels, one Employee, recounts, whole atomic approval, typed count corrections and explicit zero-variance evidence. | Initial independent CHANGES REQUIRED, bounded F01–F04 remediation, targeted APPROVE; 124/124 PASS, 0 QUALIFIED, 0 FAIL. Focused SECURITY APPROVE; all five jobs green in [exact-commit CI 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163). [Final closure](../development/phase-4-8-stock-counts.md#final-documentation-closure--2026-10-06) records real journeys, Chrome, 100-line acceptance, backup/update/recovery and final-source regression. No active remediation. |
 | P4.7 Task + exact Planogram Assignment execution pinning | DONE / CLOSED | Implementation `ccfa3df`; schema 4, independent nullable Knowledge/Planogram fields, exact Fixture/Assignment/Revision pin. Migration 0019 / ADR 0021; current Location authorization precedes historical read/replay. | Initial independent CHANGES REQUIRED, F01/F02 remediation, targeted APPROVE; 80/80 PASS. Initial SECURITY CHANGES REQUIRED, bounded Location-scope F01 remediation, targeted SECURITY APPROVE; all five jobs green in [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). [Final closure](../development/phase-4-7-task-planogram-guidance.md#final-documentation-closure--2026-10-05); no active remediation. |
 | P4.9 Approved Article Recipe / Composition — composition only | DONE / CLOSED | Implementation `e5e6d5c2999bb9f8132161b43ad1537aa403973c`; migration 0021 / ADR 0023. Separate Company-wide Recipe, one declared batch, exact thousandths, frozen ordered Article references, immutable published/discarded revisions, initial-draft recovery, terminal retirement and Company-scoped publication replay. No Stock or Task effect. | Initial independent CHANGES REQUIRED, F01–F05 remediation, targeted APPROVE; 151 PASS / 1 QUALIFIED / 0 FAIL. Criterion 152 is historical forensic evidence scope only. Focused SECURITY APPROVE; all five jobs green in [exact-commit CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736). [Final closure](../development/phase-4-9-recipe-compositions.md#final-documentation-closure--2026-10-07) preserves real Flutter/HTTP/PostgreSQL and Chrome, 50-line acceptance, backup/update/recovery and final-source regression. No active remediation. |
+| P4.10 Preparation Batch | DONE / CLOSED | Implementation `e637187b17d4617212acf42b99a07500e9488c3d`; migration 0022 / ADR 0024. Location-scoped Employee declarations, exact published RecipeRevision pin, immutable original completion/cancellation, five durable receipt kinds and append-only manager corrections including zero. No Stock, Task/Shift or yield/output-unit effects. | Initial CHANGES REQUIRED; F01/F02 CLOSED, targeted APPROVE, F03 nonblocking docs follow-up CLOSED; 156 PASS / 0 QUALIFIED / 0 FAIL, 931 package tests, 18/18 focused Flutter tests, 19/19 phases. Focused SECURITY APPROVE; all five jobs green in [exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236). [Final closure](../development/phase-4-10-preparation-batches.md#final-documentation-closure--2026-10-07); no active remediation. |
 
 ## Accepted manual Stock boundaries
 
@@ -218,15 +233,14 @@ read acknowledgment, native-device/accessibility acceptance or offline queue is 
 
 ## Planned and deferred scope
 
-P4.1–P4.9 are DONE/CLOSED, with no active P4.9 remediation. After the
-documentation closure commit, fresh P4.10 selection was completed.
-P4.10 preparation evidence is implemented locally pending independent review, security review and changed-commit CI.
+P4.1–P4.10 are DONE/CLOSED, with no active P4.10 remediation.
+P4.11 remains UNSELECTED; next is fresh capability selection from clean main.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
 | Workforce / Tasks / Wiki extension | MIXED | P4.6 exact Task pins are DONE/CLOSED. Recurrence, recommendations, qualification workflows and swaps remain future slices; begun-work reconciliation remains open. |
-| Inventory / Stock / Purchasing / Production extensions | PLANNED | Beyond delivered Article/Assortment/manual Stock, P4.8 selected-article counts and DONE/CLOSED P4.9 composition: units/conversions, receiving, broader inventory workflows, batches, Recipe extensions, production and valuation. |
+| Inventory / Stock / Purchasing / Production extensions | PLANNED | Beyond delivered Article/Assortment/manual Stock, P4.8 selected-article counts, P4.9 composition and P4.10 preparation evidence: units/conversions, receiving, broader inventory workflows, yield/Stock-producing batches, Recipe extensions and valuation. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |
 | HACCP, Pricing, Menu/publishing, reporting/finance | PLANNED | No certified safety module, cost/margin basis, structured Menu/public publisher or finance capability exists. |

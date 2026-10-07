@@ -1,8 +1,9 @@
 # ADR 0024 — Location-scoped preparation batch evidence
 
-Status: Selected contract, implemented locally; independent review remediation
-complete; targeted review, security review and remote changed-commit CI pending.
-This ADR does not establish delivery closure. The decision is unchanged by F01/F02.
+Status: Accepted; P4.10 **DONE/CLOSED**. F01/F02 remediation and nonblocking F03
+documentation follow-up are CLOSED; targeted review APPROVE, focused SECURITY
+APPROVE and all five jobs green in [exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236)
+establish delivery closure. The architectural decision is unchanged.
 
 ## Context
 
@@ -73,7 +74,8 @@ restart through receipts, while client pending state remains memory-only.
 
 ## Open questions
 
-No architectural choice remains open within this selected slice. Independent
-review, security review and changed-commit CI remain required delivery gates.
+No architectural choice or delivery gate remains open within this closed slice.
+Review, security and exact-commit CI evidence are recorded in the
+[P4.10 closure](../development/phase-4-10-preparation-batches.md#final-documentation-closure--2026-10-07).
 Retention/operator/device policies and future yield, Stock, Task, offline or sync
 capabilities retain their separate decision processes.

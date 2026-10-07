@@ -1055,6 +1055,7 @@ void main() {
         '0018_task_knowledge_guidance',
         '0019_task_planogram_guidance',
         '0020_stock_counts',
+        '0021_recipe_compositions',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);
@@ -2015,6 +2016,7 @@ void main() {
         '0018_task_knowledge_guidance',
         '0019_task_planogram_guidance',
         '0020_stock_counts',
+        '0021_recipe_compositions',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await preserved(), before);

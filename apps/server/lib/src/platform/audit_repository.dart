@@ -53,6 +53,8 @@ class AuditRepository {
       'barcode',
       'unit',
       'articleId',
+      'recipeId',
+      'producedArticleId',
       'startsAt',
       'endsAt',
       'revisionNumber',

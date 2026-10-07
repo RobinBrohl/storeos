@@ -9,6 +9,7 @@ import '../application/stock_controller.dart';
 import '../application/stock_count_controller.dart';
 import '../application/merchandising_controller.dart';
 import '../application/knowledge_controller.dart';
+import '../application/recipe_controller.dart';
 import '../application/session_controller.dart';
 import '../application/platform_controller.dart';
 import '../application/employee_controller.dart';
@@ -46,6 +47,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   StockCountController? _counts, _ownCounts;
   MerchandisingController? _merchandising;
   KnowledgeController? _knowledge;
+  RecipeController? _recipes;
   ShiftController? _shifts, _home;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _wasAuthenticated = false;
@@ -90,6 +92,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
         api,
       );
       _knowledge = KnowledgeController(_controller, _platformController!, api);
+      _recipes = RecipeController(_controller, _platformController!, api);
     }
   }
 
@@ -106,6 +109,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _ownCounts?.dispose();
     _merchandising?.dispose();
     _knowledge?.dispose();
+    _recipes?.dispose();
     _employees?.dispose();
     _platformController?.dispose();
     _controller.dispose();
@@ -158,6 +162,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       ownCounts: _ownCounts,
                       merchandising: _merchandising,
                       knowledge: _knowledge,
+                      recipes: _recipes,
                       shifts: _shifts,
                       home: _home,
                       baseUri: widget.baseUri,

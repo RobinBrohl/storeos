@@ -1,14 +1,21 @@
 # StoreOS
 
+P4.9 Approved Article Recipe / Composition (composition only) is **IMPLEMENTED
+LOCALLY** on main, uncommitted/unstaged. **INDEPENDENT REVIEW REMEDIATION COMPLETE · TARGETED REVIEW PENDING ·
+SECURITY REVIEW PENDING · REMOTE CHANGED-COMMIT CI PENDING**; it is not DONE/CLOSED.
+Migration 0021 adds separate Production composition evidence; 0001–0020 and
+lockfiles/dependencies remain unchanged. No P4.10 capability is selected.
+See [P4.9 development record](docs/development/phase-4-9-recipe-compositions.md) and [ADR 0023](docs/adr/0023-approved-article-recipe-composition.md).
+
 P4.8 Selected-Article Inventory Count is **DONE/CLOSED** at implementation commit
 `cba9bff10a8d32bfcda39ee428436153ca2fc044` on `main`. Initial independent review
 **CHANGES REQUIRED** led to bounded F01–F04 remediation, followed by targeted
 **APPROVE**, **124/124 PASS / 0 QUALIFIED / 0 FAIL** and focused Codex Security
 **SECURITY APPROVE** (zero confirmed/probable vulnerabilities; no security commit blocker).
 All five exact-commit jobs succeeded in [CI 37453860163](https://github.com/RobinBrohl/storeos/actions/runs/37453860163).
-The migration chain ends at `0020_stock_counts.sql`; 0001–0019 and dependencies/lockfiles
+At P4.8 closure the migration chain ended at `0020_stock_counts.sql`; 0001–0019 and dependencies/lockfiles
 are unchanged. No active P4.8 remediation remains. Next after the closure commit:
-**fresh P4.9 capability selection**; no P4.9 capability is selected or ACTIVE.
+**fresh P4.9 capability selection** was subsequently completed; current P4.9 delivery is recorded above.
 See [P4.8 contract and closure evidence](docs/development/phase-4-8-stock-counts.md#final-documentation-closure--2026-10-06).
 
 

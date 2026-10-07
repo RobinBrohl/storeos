@@ -7,6 +7,28 @@ servers:
   - url: http://127.0.0.1:8080
     description: Loopback development; use HTTPS for LAN deployments.
 paths:
+  /api/v1/platform/production/recipes:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1recipes'
+  /api/v1/platform/production/recipes/{recipeId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1recipes~1{recipeId}'
+  /api/v1/platform/production/manage/article-candidates:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1article-candidates'
+  /api/v1/platform/production/manage/recipes:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1recipes'
+  /api/v1/platform/production/manage/recipes/{recipeId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1recipes~1{recipeId}'
+  /api/v1/platform/production/manage/recipes/{recipeId}/retire:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1recipes~1{recipeId}~1retire'
+  /api/v1/platform/production/manage/recipes/{recipeId}/revisions:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1recipes~1{recipeId}~1revisions'
+  /api/v1/platform/production/manage/recipes/{recipeId}/revisions/{revisionId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1recipes~1{recipeId}~1revisions~1{revisionId}'
+  /api/v1/platform/production/manage/recipes/{recipeId}/revisions/{revisionId}/edit:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1recipes~1{recipeId}~1revisions~1{revisionId}~1edit'
+  /api/v1/platform/production/manage/recipes/{recipeId}/revisions/{revisionId}/discard:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1recipes~1{recipeId}~1revisions~1{revisionId}~1discard'
+  /api/v1/platform/production/manage/recipes/{recipeId}/revisions/{revisionId}/publish:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1recipes~1{recipeId}~1revisions~1{revisionId}~1publish'
   /api/v1/platform/locations/{locationId}/stock-counts:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock-counts'
   /api/v1/platform/locations/{locationId}/stock-counts/assignees:

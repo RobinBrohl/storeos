@@ -1,6 +1,7 @@
 // Bounded P4.7 probes for the isolated encrypted backup acceptance only.
 import 'dart:convert';
 import 'stock_count_acceptance.dart';
+import 'recipe_acceptance.dart';
 import 'package:storeos_server/src/stock/stock_count_service.dart';
 
 import 'package:postgres/postgres.dart';
@@ -73,6 +74,7 @@ Future<void> verifyBackupPlanogramReads(
       evidence,
       otherWorker: await auth.authenticate(otherWorkerToken),
     );
+    await verifyRestoredRecipes(db, manager, principal);
     var auditBefore = (await pool.execute(
       'SELECT count(*) FROM $s.audit_entries',
     )).single.single;

@@ -10610,6 +10610,1891 @@
           }
         }
       }
+    },
+    "/api/v1/platform/production/recipes": {
+      "get": {
+        "operationId": "listPublishedRecipes",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.read. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Opaque cursor; malformed or mismatched scope returns invalid_cursor."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Literal case-insensitive substring in SKU/name; employee search only current visible and its frozen approved produced labels."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipePublishedPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_content, invalid_cursor. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_content",
+              "invalid_cursor"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/recipes/{recipeId}": {
+      "get": {
+        "operationId": "readPublishedRecipe",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.read. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedRecipe"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_request. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/article-candidates": {
+      "get": {
+        "operationId": "recipeArticleCandidates",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Opaque cursor; malformed or mismatched scope returns invalid_cursor."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Literal case-insensitive substring in SKU/name; employee search only current visible and its frozen approved produced labels."
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Exact active Article ID for explicit reselection; mutually exclusive with nonempty q or after."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeCandidatePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_content, invalid_cursor, invalid_input, invalid_request. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_content",
+              "invalid_cursor",
+              "invalid_input",
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/recipes": {
+      "get": {
+        "operationId": "listManagedRecipes",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Opaque cursor; malformed or mismatched scope returns invalid_cursor."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeManagedPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_cursor. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_cursor"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          }
+        }
+      },
+      "post": {
+        "operationId": "createRecipe",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeRevisionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_json, invalid_request. Rejection commits no business effects. Duplicate decoded object member names are invalid_json for Recipe writes; the streamed transport limit is 262144 bytes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "409": {
+            "description": "Codes: already_exists. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "already_exists"
+            ]
+          },
+          "413": {
+            "description": "Codes: body_too_large. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "body_too_large"
+            ]
+          },
+          "415": {
+            "description": "Codes: unsupported_media_type. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unsupported_media_type"
+            ]
+          },
+          "422": {
+            "description": "Codes: article_unavailable. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "article_unavailable"
+            ]
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecipeRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/recipes/{recipeId}": {
+      "get": {
+        "operationId": "recipeDetail",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_request. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/recipes/{recipeId}/retire": {
+      "post": {
+        "operationId": "retireRecipe",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.publish. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_json, invalid_request. Rejection commits no business effects. Duplicate decoded object member names are invalid_json for Recipe writes; the streamed transport limit is 262144 bytes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          },
+          "409": {
+            "description": "Codes: invalid_lifecycle, stale_version. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_lifecycle",
+              "stale_version"
+            ]
+          },
+          "413": {
+            "description": "Codes: body_too_large. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "body_too_large"
+            ]
+          },
+          "415": {
+            "description": "Codes: unsupported_media_type. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unsupported_media_type"
+            ]
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipeVersionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/recipes/{recipeId}/revisions": {
+      "get": {
+        "operationId": "recipeHistory",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Opaque cursor; malformed or mismatched scope returns invalid_cursor."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeHistoryPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_cursor, invalid_request. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          }
+        }
+      },
+      "post": {
+        "operationId": "newRecipeDraft",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events. Requires an active Recipe with no draft and matching expectedVersion. Copies exact current publication when present; otherwise creates an empty draft using the current active produced Article snapshot. Retains Recipe identity and allocates the next revision number, including after initial discard.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeRevisionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_json, invalid_request. Rejection commits no business effects. Duplicate decoded object member names are invalid_json for Recipe writes; the streamed transport limit is 262144 bytes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          },
+          "409": {
+            "description": "Codes: already_exists, draft_exists, invalid_lifecycle, stale_version. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "already_exists",
+              "draft_exists",
+              "invalid_lifecycle",
+              "stale_version"
+            ]
+          },
+          "413": {
+            "description": "Codes: body_too_large. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "body_too_large"
+            ]
+          },
+          "415": {
+            "description": "Codes: unsupported_media_type. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unsupported_media_type"
+            ]
+          },
+          "422": {
+            "description": "Codes: article_unavailable. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "article_unavailable"
+            ]
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewRecipeDraftRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/recipes/{recipeId}/revisions/{revisionId}": {
+      "get": {
+        "operationId": "recipeRevision",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeRevisionView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_request. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/recipes/{recipeId}/revisions/{revisionId}/edit": {
+      "post": {
+        "operationId": "saveRecipeDraft",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeRevisionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: duplicate_ingredient, invalid_content, invalid_json, invalid_quantity, invalid_request, self_ingredient. Rejection commits no business effects. Duplicate decoded object member names are invalid_json for Recipe writes; the streamed transport limit is 262144 bytes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "duplicate_ingredient",
+              "invalid_content",
+              "invalid_json",
+              "invalid_quantity",
+              "invalid_request",
+              "self_ingredient"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          },
+          "409": {
+            "description": "Codes: invalid_lifecycle, stale_version. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_lifecycle",
+              "stale_version"
+            ]
+          },
+          "413": {
+            "description": "Codes: body_too_large. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "body_too_large"
+            ]
+          },
+          "415": {
+            "description": "Codes: unsupported_media_type. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unsupported_media_type"
+            ]
+          },
+          "422": {
+            "description": "Codes: article_unavailable. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "article_unavailable"
+            ]
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveRecipeRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/recipes/{recipeId}/revisions/{revisionId}/discard": {
+      "post": {
+        "operationId": "discardRecipeDraft",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.manage. No Location assortment requirement, Stock effects, Task pins, readership audit or events.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeRevisionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_json, invalid_request. Rejection commits no business effects. Duplicate decoded object member names are invalid_json for Recipe writes; the streamed transport limit is 262144 bytes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          },
+          "409": {
+            "description": "Codes: invalid_lifecycle, stale_version. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_lifecycle",
+              "stale_version"
+            ]
+          },
+          "413": {
+            "description": "Codes: body_too_large. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "body_too_large"
+            ]
+          },
+          "415": {
+            "description": "Codes: unsupported_media_type. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unsupported_media_type"
+            ]
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipeVersionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/recipes/{recipeId}/revisions/{revisionId}/publish": {
+      "post": {
+        "operationId": "publishRecipe",
+        "tags": [
+          "Production recipes"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Company-wide capability production.recipes.publish. No Location assortment requirement, Stock effects, Task pins, readership audit or events. Operation identity is Company + operation UUID; conflicts bind Recipe, revision, actor and expectedVersion within that Company. Independent Companies may use the same UUID.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revisionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative committed result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipePublication"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Codes: invalid_json, invalid_request. Rejection commits no business effects. Duplicate decoded object member names are invalid_json for Recipe writes; the streamed transport limit is 262144 bytes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ]
+          },
+          "401": {
+            "description": "Codes: unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Codes: forbidden, origin_forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ]
+          },
+          "500": {
+            "description": "Codes: internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "internal_error"
+            ]
+          },
+          "503": {
+            "description": "Codes: database_unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "database_unavailable"
+            ]
+          },
+          "404": {
+            "description": "Codes: not_found. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "not_found"
+            ]
+          },
+          "409": {
+            "description": "Codes: invalid_lifecycle, operation_conflict, stale_version. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "invalid_lifecycle",
+              "operation_conflict",
+              "stale_version"
+            ]
+          },
+          "413": {
+            "description": "Codes: body_too_large. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "body_too_large"
+            ]
+          },
+          "415": {
+            "description": "Codes: unsupported_media_type. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "unsupported_media_type"
+            ]
+          },
+          "422": {
+            "description": "Codes: article_unavailable, ingredient_unit_changed, recipe_not_publishable. Rejection commits no business effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            },
+            "x-error-codes": [
+              "article_unavailable",
+              "ingredient_unit_changed",
+              "recipe_not_publishable"
+            ]
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRecipeRequest"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -16426,6 +18311,769 @@
             }
           }
         }
+      },
+      "RecipeArticleSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sku",
+          "name",
+          "unit"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        },
+        "description": "Server captured Article identity and labels. Stored units are never converted."
+      },
+      "RecipeArticleContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "article",
+          "isActive"
+        ],
+        "properties": {
+          "article": {
+            "$ref": "#/components/schemas/RecipeArticleSnapshot"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "description": "Current Article metadata, separate from frozen composition."
+      },
+      "RecipeIngredientInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "articleId",
+          "quantity",
+          "reselect"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+            "description": "Exact decimal scaled by 1000 without floating point. Range 0.001–999999999999.999 inclusive. No signs, exponent, whitespace or rounding."
+          },
+          "reselect": {
+            "type": "boolean"
+          }
+        },
+        "description": "Stable line identity. New/changed references require reselect=true and an active Company Article. false preserves an existing matching frozen reference. true captures current labels/unit and requires deliberate quantity review, without conversion."
+      },
+      "RecipeIngredient": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "position",
+          "article",
+          "quantity"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "article": {
+            "$ref": "#/components/schemas/RecipeArticleSnapshot"
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}\\.[0-9]{3}$",
+            "description": "Exact decimal scaled by 1000 without floating point. Range 0.001–999999999999.999 inclusive. No signs, exponent, whitespace or rounding."
+          }
+        }
+      },
+      "RecipeDraftContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "batchDescription",
+          "preparation",
+          "ingredients"
+        ],
+        "properties": {
+          "batchDescription": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "One declared batch basis, not a yield. Up to 120 Unicode code points, no NUL/unpaired surrogates or ASCII controls."
+          },
+          "preparation": {
+            "type": "string",
+            "description": "Literal plain text, at most 8192 UTF-8 bytes after CRLF/CR→LF normalization. No NUL or unpaired surrogates."
+          },
+          "ingredients": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/RecipeIngredientInput"
+            }
+          }
+        },
+        "description": "Draft may be incomplete. Distinct ingredient Articles, no produced Article. List order is authoritative. Composition is bounded to 32768 canonical bytes as defined in ADR 0023; transport is independently bounded to 262144 bytes."
+      },
+      "RecipeContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "produced",
+          "batchDescription",
+          "preparation",
+          "ingredients"
+        ],
+        "properties": {
+          "produced": {
+            "$ref": "#/components/schemas/RecipeArticleSnapshot"
+          },
+          "batchDescription": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "One declared batch basis, not a yield. Up to 120 Unicode code points, no NUL/unpaired surrogates or ASCII controls."
+          },
+          "preparation": {
+            "type": "string",
+            "description": "Literal plain text, at most 8192 UTF-8 bytes after CRLF/CR→LF normalization. No NUL or unpaired surrogates."
+          },
+          "ingredients": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/RecipeIngredient"
+            }
+          }
+        },
+        "description": "Frozen produced and ingredient labels for one declared batch. Positions contiguous 1..N. Publication requires nonblank batch/preparation and 1–50 ingredients."
+      },
+      "CreateRecipeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "revisionId",
+          "producedArticleId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "producedArticleId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "RecipeVersionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "NewRecipeDraftRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "expectedVersion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "SaveRecipeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedVersion",
+          "content"
+        ],
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "content": {
+            "$ref": "#/components/schemas/RecipeDraftContent"
+          }
+        }
+      },
+      "PublishRecipeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "description": "Exact replay binds Company, Recipe, revision, actor and expectedVersion. Re-authorized before lookup. Replay preserves original evidence after replacement, deactivation or retirement. Fresh publication requires active Articles and frozen/current ingredient-unit equality."
+      },
+      "Recipe": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "producedArticleId",
+          "status",
+          "version",
+          "currentPublishedRevisionId",
+          "activeDraftRevisionId",
+          "createdAt",
+          "updatedAt",
+          "createdBy",
+          "retiredAt",
+          "retiredBy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "producedArticleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "retired"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "currentPublishedRevisionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "activeDraftRevisionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "retiredAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "retiredBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "RecipeRevision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "recipeId",
+          "revisionNumber",
+          "status",
+          "content",
+          "createdAt",
+          "createdBy",
+          "publishedAt",
+          "publishedBy",
+          "publishOperationId",
+          "publishExpectedVersion",
+          "publicationVersion",
+          "discardedAt",
+          "discardedBy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "discarded"
+            ]
+          },
+          "content": {
+            "$ref": "#/components/schemas/RecipeContent"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publishedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "publishedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "publishOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "publishExpectedVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740990
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "publicationVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discardedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discardedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Stable revision identity. Published/discarded content and ingredient rows are immutable; publication/discard evidence only for corresponding state."
+      },
+      "RecipeDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recipe",
+          "draft",
+          "currentPublished",
+          "currentProduced",
+          "currentIngredients"
+        ],
+        "properties": {
+          "recipe": {
+            "$ref": "#/components/schemas/Recipe"
+          },
+          "draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecipeRevision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currentPublished": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecipeRevision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currentProduced": {
+            "$ref": "#/components/schemas/RecipeArticleContext"
+          },
+          "currentIngredients": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/RecipeArticleContext"
+            }
+          }
+        }
+      },
+      "RecipeRevisionView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "currentProduced",
+          "currentIngredients"
+        ],
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/RecipeRevision"
+          },
+          "currentProduced": {
+            "$ref": "#/components/schemas/RecipeArticleContext"
+          },
+          "currentIngredients": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/RecipeArticleContext"
+            }
+          }
+        }
+      },
+      "RecipeRevisionResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "detail",
+          "revision"
+        ],
+        "properties": {
+          "detail": {
+            "$ref": "#/components/schemas/RecipeDetail"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/RecipeRevision"
+          }
+        }
+      },
+      "RecipePublication": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "replayed"
+        ],
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/RecipeRevision"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PublishedRecipe": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recipeId",
+          "revisionId",
+          "revisionNumber",
+          "publishedAt",
+          "content",
+          "currentProduced",
+          "currentIngredients"
+        ],
+        "properties": {
+          "recipeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "content": {
+            "$ref": "#/components/schemas/RecipeContent"
+          },
+          "currentProduced": {
+            "$ref": "#/components/schemas/RecipeArticleContext"
+          },
+          "currentIngredients": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/RecipeArticleContext"
+            }
+          }
+        },
+        "description": "Employee-safe current approved composition. No management/version/draft/history/actor/operation fields. Inactive ingredients remain visible as separate current warnings; retired Recipe or inactive produced Article is hidden."
+      },
+      "RecipeCandidatePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/RecipeArticleContext"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Bounded 50-item page with opaque Company/query/endpoint scoped cursor. Visibility filtering precedes pagination."
+      },
+      "RecipeManagedPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/RecipeDetail"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Bounded 50-item page with opaque Company/query/endpoint scoped cursor. Visibility filtering precedes pagination."
+      },
+      "RecipeHistoryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/RecipeRevision"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Bounded 50-item page with opaque Company/query/endpoint scoped cursor. Visibility filtering precedes pagination."
+      },
+      "RecipePublishedPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PublishedRecipe"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Bounded 50-item page with opaque Company/query/endpoint scoped cursor. Visibility filtering precedes pagination."
       }
     }
   }

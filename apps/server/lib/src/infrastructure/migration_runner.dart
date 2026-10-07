@@ -297,6 +297,27 @@ class MigrationRunner {
             'REVOKE DELETE, TRUNCATE ON $_schema.knowledge_articles, $_schema.knowledge_revisions FROM $role',
           );
         }
+        if (known.containsKey('0021_recipe_compositions')) {
+          await tx.execute(
+            'GRANT SELECT ON $_schema.inventory_recipe_article_projection TO $role',
+          );
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.production_recipes, $_schema.production_recipe_revisions, $_schema.production_recipe_ingredients TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.production_recipes, $_schema.production_recipe_revisions, $_schema.production_recipe_ingredients FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status,version,current_published_revision_id,active_draft_revision_id,updated_at,retired_at,retired_by) ON $_schema.production_recipes TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (batch_description,preparation,status,published_at,published_by,publish_operation_id,publish_expected_version,publication_version,discarded_at,discarded_by) ON $_schema.production_recipe_revisions TO $role',
+          );
+          // Whole draft replacement needs DELETE; the trigger denies every terminal row.
+          await tx.execute(
+            'GRANT DELETE ON $_schema.production_recipe_ingredients TO $role',
+          );
+        }
         if (known.containsKey('0016_local_planograms')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.merchandising_fixtures, $_schema.merchandising_planograms, $_schema.merchandising_planogram_revisions, $_schema.merchandising_planogram_zones, $_schema.merchandising_planogram_placements, $_schema.merchandising_planogram_assignments TO $role',

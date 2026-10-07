@@ -18,6 +18,7 @@
 import 'dart:convert';
 import 'merchandising_acceptance.dart';
 import 'knowledge_acceptance.dart';
+import 'recipe_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'backup_planogram_acceptance.dart';
 import 'stock_count_acceptance.dart';
@@ -59,6 +60,9 @@ const _evidenceTables = <String, String>{
   'stock_count_rounds': 'id',
   'stock_count_observations': 'id',
   'stock_count_commands': 'operation_id',
+  'production_recipes': 'id',
+  'production_recipe_revisions': 'id',
+  'production_recipe_ingredients': 'revision_id, id',
   'knowledge_articles': 'id',
   'knowledge_revisions': 'id',
   'shifts': 'id',
@@ -261,6 +265,8 @@ Future<void> _verify(Map<String, String> env, String source) async {
     if (!restored.sameEvidence(current)) {
       throw StateError('Restored evidence differs from the source.');
     }
+    await verifyRecipeEvidence(sourceOwner, _schema, runtimeUser);
+    await verifyRecipeEvidence(targetOwner, _schema, runtimeUser);
     await verifyKnowledgeEvidence(
       sourceOwner,
       _schema,
@@ -347,6 +353,15 @@ Future<void> _verify(Map<String, String> env, String source) async {
       'sourceRuntimeConnect': sourceConnect,
       'restoredRuntimeConnect': restoredConnect,
       'restoredRuntimeConnectionRejected': true,
+      'recipes': {
+        'migration': '0021_recipe_compositions',
+        'retainedStatesVerified': true,
+        'frozenContentVerified': true,
+        'employeeVisibilityVerified': true,
+        'managerHistoryVerified': true,
+        'replayVerified': true,
+        'authorizationVerified': true,
+      },
       'guidance': {
         'schemaVersion': 4,
         'exactPlanogramPinPreserved': true,
@@ -452,6 +467,15 @@ Future<Map<String, String>> _seed(
   );
   final employeeId = newUuid(), workerId = newUuid();
   await seedApprovedKnowledge(
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      token: adminToken,
+      body: body,
+      expected: status,
+    ),
+  );
+  await seedRecipeCompositions(
     (method, route, body, status) => api.request(
       method,
       route,
@@ -948,7 +972,10 @@ Future<void> _assertSeededJourney(
     throw StateError('Expected exactly one active source plugin token.');
   }
   const expectedCounts = {
-    'articles': 3,
+    'articles': 8,
+    'production_recipes': 3,
+    'production_recipe_revisions': 7,
+    'production_recipe_ingredients': 14,
     'article_location_assortment': 3,
     'stock_levels': 3,
     'stock_movements': 5,

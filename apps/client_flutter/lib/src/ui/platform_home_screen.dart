@@ -17,6 +17,8 @@ import 'merchandising_section.dart';
 import '../application/merchandising_controller.dart';
 import '../application/knowledge_controller.dart';
 import 'knowledge_section.dart';
+import 'recipe_section.dart';
+import '../application/recipe_controller.dart';
 import 'change_password_dialog.dart';
 import 'platform_sections.dart';
 import 'employee_section.dart';
@@ -40,6 +42,7 @@ enum _Section {
   stock,
   merchandising,
   knowledge,
+  recipes,
   shifts,
   home,
 }
@@ -57,6 +60,7 @@ class PlatformHomeScreen extends StatefulWidget {
     this.ownCounts,
     this.merchandising,
     this.knowledge,
+    this.recipes,
     this.shifts,
     this.home,
     required this.baseUri,
@@ -73,6 +77,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final StockCountController? counts, ownCounts;
   final MerchandisingController? merchandising;
   final KnowledgeController? knowledge;
+  final RecipeController? recipes;
   final ShiftController? shifts, home;
   final Uri baseUri;
 
@@ -85,6 +90,9 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   List<_Section> get _available => [
     _Section.status,
+    if (widget.recipes != null &&
+        widget.platform.allows('production.recipes.read'))
+      _Section.recipes,
     if (widget.knowledge != null &&
         widget.platform.allows('knowledge.articles.read'))
       _Section.knowledge,
@@ -126,6 +134,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.stock => 'Bestand',
     _Section.merchandising => 'Merchandising',
     _Section.knowledge => 'Wissen',
+    _Section.recipes => 'Rezepte',
     _Section.people => 'Mitarbeiter',
     _Section.profile => 'Mein Profil',
     _Section.status => 'Status',
@@ -145,6 +154,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.stock => Icons.warehouse_outlined,
     _Section.merchandising => Icons.view_quilt_outlined,
     _Section.knowledge => Icons.menu_book_outlined,
+    _Section.recipes => Icons.restaurant_menu,
     _Section.people => Icons.badge_outlined,
     _Section.profile => Icons.person_outline,
     _Section.status => Icons.monitor_heart_outlined,
@@ -166,6 +176,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.stock:
       case _Section.merchandising:
       case _Section.knowledge:
+      case _Section.recipes:
       case _Section.people:
       case _Section.profile:
       case _Section.status:
@@ -195,6 +206,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.stock:
       case _Section.merchandising:
       case _Section.knowledge:
+      case _Section.recipes:
         break;
       case _Section.people:
         widget.employees.loadEmployees();
@@ -228,6 +240,18 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
               widget.platform.allows('stock.counts.self.read')
           ? () => _openCounts(widget.ownCounts!)
           : null,
+      recipesShortcut:
+          widget.recipes != null &&
+              widget.platform.allows('production.recipes.read')
+          ? () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => Scaffold(
+                  appBar: AppBar(title: const Text('Rezepte')),
+                  body: RecipeSection(controller: widget.recipes!),
+                ),
+              ),
+            )
+          : null,
       knowledgeShortcut:
           widget.knowledge != null &&
               widget.platform.allows('knowledge.articles.read')
@@ -259,6 +283,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       controller: widget.merchandising!,
     ),
     _Section.knowledge => KnowledgeSection(controller: widget.knowledge!),
+    _Section.recipes => RecipeSection(controller: widget.recipes!),
     _Section.people => EmployeeSection(
       key: const ValueKey('employees'),
       controller: widget.employees,
@@ -342,6 +367,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
                 section != _Section.stock &&
                 section != _Section.merchandising &&
                 section != _Section.knowledge &&
+                section != _Section.recipes &&
                 section != _Section.shifts &&
                 section != _Section.home)
               IconButton(

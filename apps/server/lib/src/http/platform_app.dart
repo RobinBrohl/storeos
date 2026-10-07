@@ -18,6 +18,8 @@ import 'merchandising_routes.dart';
 import '../merchandising/merchandising_service.dart';
 import '../knowledge/knowledge_service.dart';
 import 'knowledge_routes.dart';
+import 'recipe_routes.dart';
+import '../production/recipe_service.dart';
 import 'platform_identity_routes.dart';
 import 'employee_routes.dart';
 import 'task_template_routes.dart';
@@ -43,6 +45,7 @@ Handler createPlatformHandler(
     .add(StockCountRoutes(auth, StockCountService(database)).router.call)
     .add(MerchandisingRoutes(auth, MerchandisingService(database)).router.call)
     .add(KnowledgeRoutes(auth, KnowledgeService(database)).router.call)
+    .add(RecipeRoutes(auth, RecipeService(database)).router.call)
     .add(EmployeeRoutes(auth, EmployeeApplication(database)).router.call)
     .add(
       PlatformIdentityRoutes(

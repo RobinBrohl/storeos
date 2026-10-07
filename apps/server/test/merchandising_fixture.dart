@@ -70,7 +70,7 @@ class MerchandisingFixture {
   late String adminId;
   String get base => 'http://127.0.0.1:${server!.port}';
 
-  Future<void> restart({String locationId = _home}) async {
+  Future<void> restart({String locationId = _home, int port = 0}) async {
     await server?.close(force: true);
     final store = PostgresAuthStore(pool, schemaName: schema);
     auth = await AuthService.create(
@@ -103,7 +103,7 @@ class MerchandisingFixture {
       store: store,
       platformHandler: createPlatformHandler(auth, database),
     );
-    server = await shelf_io.serve(app.handler, '127.0.0.1', 0);
+    server = await shelf_io.serve(app.handler, '127.0.0.1', port);
   }
 
   Future<MerchandisingReply> call(

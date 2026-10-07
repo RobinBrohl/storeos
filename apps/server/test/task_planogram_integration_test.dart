@@ -1508,7 +1508,11 @@ void main() {
             schemaName: f.schema,
             runtimeDatabaseUser: f.runtimeUser,
           ).apply(),
-          ['0019_task_planogram_guidance', '0020_stock_counts'],
+          [
+            '0019_task_planogram_guidance',
+            '0020_stock_counts',
+            '0021_recipe_compositions',
+          ],
         );
         expect(await source(), before);
         expect(

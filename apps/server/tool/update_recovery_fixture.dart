@@ -35,6 +35,7 @@ import 'dart:convert';
 import 'merchandising_acceptance.dart';
 import 'stock_count_acceptance.dart';
 import 'knowledge_acceptance.dart';
+import 'recipe_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
@@ -70,6 +71,7 @@ const _expectedPendingMigrations = [
   '0018_task_knowledge_guidance',
   '0019_task_planogram_guidance',
   '0020_stock_counts',
+  '0021_recipe_compositions',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1118,6 +1120,15 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         expected: status,
       ),
     );
+    await seedRecipeCompositions(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        token: adminToken,
+        body: body,
+        expected: status,
+      ),
+    );
     {
       Future<Map<String, dynamic>> guidanceRequest(
         String method,
@@ -1236,7 +1247,21 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         additionalPublished: 2,
       );
     }
+    await verifyRecipeEvidence(owner, _schema, runtimeUser);
+    await verifyRestoredRecipes(
+      database,
+      await auth.authenticate(adminToken),
+      await auth.authenticate(workerToken),
+    );
     await _writeJson(resultFile, {
+      'recipes': {
+        'migration': '0021_recipe_compositions',
+        'recipeCount': 3,
+        'revisionCount': 7,
+        'ingredientCount': 14,
+        'replayVerified': true,
+        'runtimeProtections': true,
+      },
       'knowledge': {
         'migration': '0017_approved_operational_knowledge',
         'articleCount': 3,

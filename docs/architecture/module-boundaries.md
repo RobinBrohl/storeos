@@ -11,7 +11,7 @@ a separate process, Dart package or database schema.
 ## Current placement and dependency rule
 
 `apps/server` is the composition root. Logical modules live in
-`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock,merchandising,knowledge}/`;
+`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock,merchandising,knowledge,production}/`;
 platform/application/infrastructure components provide identity, authorization,
 transactions, audit and events. The `modules/` directory is reserved, not where
 today's business implementations are deployed.
@@ -39,6 +39,7 @@ share a transaction; events are added only when the use case needs them.
 | Stock | StockLevel projection, immutable StockMovement ledger, StockCount/Line/Round/Observation/Command | Authorized manual opening/correction and selected 1–100-level physical counts, blind own observation, recount and whole atomic approval. Exact thousandths, immutable unit/baselines, typed count correction provenance and count-specific receipts. Public People/Identity ports supply eligibility. No foreign business tables, Tasks, events, valuation, receiving or unit conversion. P4.8 DONE/CLOSED; targeted APPROVE, 124/124 PASS, SECURITY APPROVE and green exact-commit CI; ADR 0022. |
 | Merchandising | Local Fixture, independent Company Planogram, Revision/Zone/Placement and immutable Assignment | Organization scope, Inventory Article/Assortment and Stock referenced-level public ports; browser print; `PlanogramGuidancePort` validates exact fresh deployments and resolves retained instructions after authorized Task/Template context. No Stock writes or events. P4.4 DONE/CLOSED; P4.7 DONE/CLOSED. |
 | Knowledge | Company-wide WikiArticle and immutable published/discarded WikiRevision | Authorized instruction discovery/read and explicit management/publication. Knowledge-owned exact published-revision validation and exact contextual historical resolution through its public port; no foreign business tables, Task snapshot ownership, readership tracking or events. [ADRs 0019/0020](../adr/README.md); P4.5/P4.6 DONE/CLOSED. |
+| Production | Company-wide Article-linked Recipe, immutable revisions and ordered frozen ingredient composition | Inventory-owned `RecipeArticlePort` / `inventory_recipe_article_projection`; current employee composition and manager history. Declared batch only; no yield, conversions, Stock/Task effects, readership or events. [ADR 0023](../adr/0023-approved-article-recipe-composition.md); P4.9 implemented locally, independent review remediation complete; targeted/security/remote CI pending. |
 | Audit infrastructure | Append-only business audit | Shared transactional append and authorized reads. Does not decide business state; runtime grants do not protect against every privileged owner action. |
 | Event/plugin infrastructure | Organization outbox, delivery receipts/inbox and registry | Bounded local dispatch/retry/dead-letter/replay and approved external read clients. No executed plugin code or business-module write API. |
 
@@ -119,7 +120,7 @@ Public ports should express product dependencies without circular Domain ownersh
 | --- | --- | --- |
 | Knowledge extensions | Suggestions and separate review beyond delivered P4.5/P4.6 | Concrete Task guidance is delivered through [ADR 0020](../adr/0020-task-knowledge-guidance.md); further consumers/lifecycle changes need separate contracts. Reads never change execution history. |
 | Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
-| Production / Recipes | Optional Article-linked Recipe revisions, ingredients/yield/instructions, production/batch evidence | Inventory owns Article identity; Stock applies physical effects; cost source and consumption model undecided. No duplicate manufactured product identity. |
+| Production extensions | Future yield, production/batch runs, consumption and costing beyond delivered composition | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. No next capability is selected. |
 | Purchasing / Receiving | Suppliers, orders, receipt/source cost evidence | Article/unit references; authorized Stock commands for accepted physical receipts. Not Stock ledger owner or invented valuation. |
 | Sales integration | Canonical SalesSource/import/checkpoint, Sale/Line source references, mapping and import health | Core validates authority/identity and coordinates explicit Stock/report effects. Vendor adapter acquires/converts; checkout/payment/fiscal archive ownership separate. |
 | Pricing | Effective prices/currency and approval rules | Article references; Menu consumes approved price contract. No implicit price column in Article. |

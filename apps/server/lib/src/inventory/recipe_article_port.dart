@@ -5,6 +5,22 @@ import 'package:storeos_api_contracts/api_contracts.dart';
 class RecipeArticlePort {
   const RecipeArticlePort(this.schema, this.companyId);
   final String schema, companyId;
+
+  /// Current effective local availability for fresh Production use and warnings.
+  Future<bool> effectivelyAvailable(
+    TxSession tx,
+    String location,
+    String article,
+  ) async => (await tx.execute(
+    Sql.named(
+      'SELECT 1 FROM $schema.inventory_article_location_projection WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) AND article_id=CAST(@article AS uuid) AND article_is_active AND assortment_is_active',
+    ),
+    parameters: {
+      'company': companyId,
+      'location': location,
+      'article': article,
+    },
+  )).isNotEmpty;
   Future<List<RecipeArticleContext>> read(TxSession tx, Set<String> ids) async {
     if (ids.isEmpty) return [];
     final rows = await tx.execute(

@@ -6,7 +6,10 @@ import 'package:storeos_server/src/production/recipe_service.dart';
 import 'knowledge_acceptance.dart';
 
 /// All business evidence is created through the normal authorized API.
-Future<void> seedRecipeCompositions(KnowledgeAcceptanceRequest request) async {
+Future<void> seedRecipeCompositions(
+  KnowledgeAcceptanceRequest request, {
+  Future<void> Function()? beforeHistoricalReplacement,
+}) async {
   const root = '/api/v1/platform/production/manage/recipes';
   Future<ArticleDto> article(String sku, String unit) async =>
       ArticleDto.fromJson(
@@ -67,6 +70,9 @@ Future<void> seedRecipeCompositions(KnowledgeAcceptanceRequest request) async {
       PublishRecipeRequest(op, expected).toJson(),
       200,
     );
+    if (n == 1 && beforeHistoricalReplacement != null) {
+      await beforeHistoricalReplacement();
+    }
     if (n < 2) {
       var detail = RecipeDetailDto.fromJson(
         await request('GET', '$root/$id', null, 200),
@@ -118,10 +124,55 @@ Future<void> seedRecipeCompositions(KnowledgeAcceptanceRequest request) async {
           201,
         );
       } else {
+        if (beforeHistoricalReplacement != null) {
+          result = RecipeRevisionResultDto.fromJson(
+            await request(
+              'POST',
+              '$root/$id/revisions/$replacement/edit',
+              SaveRecipeRequest(
+                result.detail.recipe.version,
+                RecipeDraftContent(
+                  batchDescription: 'Replacement declared bowl R2',
+                  preparation:
+                      'Replacement preparation R2; original tray remains frozen.',
+                  ingredients: [
+                    RecipeIngredientInput(
+                      newUuid(),
+                      ingredients[0].id,
+                      '2.000',
+                      reselect: true,
+                    ),
+                    RecipeIngredientInput(
+                      newUuid(),
+                      ingredients[1].id,
+                      '3.000',
+                      reselect: true,
+                    ),
+                  ],
+                ),
+              ).toJson(),
+              200,
+            ),
+          );
+          await request(
+            'POST',
+            '$root/$id/revisions/$replacement/publish',
+            PublishRecipeRequest(
+              newUuid(),
+              result.detail.recipe.version,
+            ).toJson(),
+            200,
+          );
+          detail = RecipeDetailDto.fromJson(
+            await request('GET', '$root/$id', null, 200),
+          );
+        } else {
+          detail = result.detail;
+        }
         await request(
           'POST',
           '$root/$id/retire',
-          RecipeVersionRequest(result.detail.recipe.version).toJson(),
+          RecipeVersionRequest(detail.recipe.version).toJson(),
           200,
         );
       }
@@ -150,15 +201,17 @@ Future<void> seedRecipeCompositions(KnowledgeAcceptanceRequest request) async {
 Future<void> verifyRecipeEvidence(
   Connection owner,
   String schema,
-  String runtime,
-) async {
+  String runtime, {
+  int additionalPublished = 0,
+  int fewerDiscarded = 0,
+}) async {
   final s = quotedSchema(schema), role = quotedSchema(runtime);
   final rows = await owner.execute(
     'SELECT status,count(*) FROM $s.production_recipe_revisions GROUP BY status',
   );
   final states = {for (final row in rows) row[0] as String: row[1] as int};
-  if (states['published'] != 4 ||
-      states['discarded'] != 2 ||
+  if (states['published'] != 4 + additionalPublished ||
+      states['discarded'] != 2 - fewerDiscarded ||
       states['draft'] != 1) {
     throw StateError('Recipe retained states incomplete.');
   }

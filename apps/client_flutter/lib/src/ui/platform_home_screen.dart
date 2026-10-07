@@ -19,6 +19,8 @@ import '../application/knowledge_controller.dart';
 import 'knowledge_section.dart';
 import 'recipe_section.dart';
 import '../application/recipe_controller.dart';
+import '../application/preparation_batch_controller.dart';
+import 'preparation_batch_section.dart';
 import 'change_password_dialog.dart';
 import 'platform_sections.dart';
 import 'employee_section.dart';
@@ -43,6 +45,8 @@ enum _Section {
   merchandising,
   knowledge,
   recipes,
+  batches,
+  ownBatches,
   shifts,
   home,
 }
@@ -61,6 +65,8 @@ class PlatformHomeScreen extends StatefulWidget {
     this.merchandising,
     this.knowledge,
     this.recipes,
+    this.batches,
+    this.ownBatches,
     this.shifts,
     this.home,
     required this.baseUri,
@@ -78,6 +84,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final MerchandisingController? merchandising;
   final KnowledgeController? knowledge;
   final RecipeController? recipes;
+  final PreparationBatchController? batches, ownBatches;
   final ShiftController? shifts, home;
   final Uri baseUri;
 
@@ -90,6 +97,12 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   List<_Section> get _available => [
     _Section.status,
+    if (widget.ownBatches != null &&
+        widget.platform.allows('production.batches.self.read'))
+      _Section.ownBatches,
+    if (widget.batches != null &&
+        widget.platform.allows('production.batches.manage'))
+      _Section.batches,
     if (widget.recipes != null &&
         widget.platform.allows('production.recipes.read'))
       _Section.recipes,
@@ -135,6 +148,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.merchandising => 'Merchandising',
     _Section.knowledge => 'Wissen',
     _Section.recipes => 'Rezepte',
+    _Section.batches => 'Preparation history',
+    _Section.ownBatches => 'My preparation batches',
     _Section.people => 'Mitarbeiter',
     _Section.profile => 'Mein Profil',
     _Section.status => 'Status',
@@ -155,6 +170,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.merchandising => Icons.view_quilt_outlined,
     _Section.knowledge => Icons.menu_book_outlined,
     _Section.recipes => Icons.restaurant_menu,
+    _Section.batches => Icons.history,
+    _Section.ownBatches => Icons.restaurant,
     _Section.people => Icons.badge_outlined,
     _Section.profile => Icons.person_outline,
     _Section.status => Icons.monitor_heart_outlined,
@@ -168,6 +185,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   void _select(_Section section) {
     setState(() => _selected = section);
     switch (section) {
+      case _Section.batches:
+      case _Section.ownBatches:
       case _Section.shifts:
       case _Section.home:
       case _Section.templates:
@@ -198,6 +217,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   void _refresh(_Section section) {
     switch (section) {
+      case _Section.batches:
+        widget.batches!.load();
+      case _Section.ownBatches:
+        widget.ownBatches!.load();
       case _Section.shifts:
       case _Section.home:
       case _Section.templates:
@@ -228,6 +251,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   }
 
   Widget _body(_Section section) => switch (section) {
+    _Section.batches => PreparationBatchSection(controller: widget.batches!),
+    _Section.ownBatches => PreparationBatchSection(
+      controller: widget.ownBatches!,
+    ),
     _Section.shifts => ShiftSection(
       key: const ValueKey('shifts'),
       controller: widget.shifts!,
@@ -324,7 +351,9 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
           ? _selected
           : _Section.status;
       final index = sections.indexOf(section);
-      final wide = MediaQuery.sizeOf(context).width >= 900;
+      final size = MediaQuery.sizeOf(context);
+      final wide =
+          size.width >= 900 && size.height >= sections.length * 56 + 100;
       final useDrawer = !wide && sections.length > 5;
       return Scaffold(
         drawer: useDrawer
@@ -368,6 +397,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
                 section != _Section.merchandising &&
                 section != _Section.knowledge &&
                 section != _Section.recipes &&
+                section != _Section.batches &&
+                section != _Section.ownBatches &&
                 section != _Section.shifts &&
                 section != _Section.home)
               IconButton(

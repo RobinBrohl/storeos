@@ -61,6 +61,9 @@ const _permissions = <String>[
   'production.recipes.read',
   'production.recipes.manage',
   'production.recipes.publish',
+  'production.batches.self.read',
+  'production.batches.self.execute',
+  'production.batches.manage',
   'tasks.templates.manage',
   'workforce.shifts.manage',
   'workforce.shifts.self.read',
@@ -82,6 +85,8 @@ List<String> permissionsForRole(String role) => switch (role) {
     'events.read',
   ],
   'employee' => const [
+    'production.batches.self.read',
+    'production.batches.self.execute',
     'production.recipes.read',
     'stock.counts.self.read',
     'stock.counts.self.record',

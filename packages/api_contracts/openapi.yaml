@@ -7,6 +7,26 @@ servers:
   - url: http://127.0.0.1:8080
     description: Loopback development; use HTTPS for LAN deployments.
 paths:
+  /api/v1/platform/production/self/locations/{locationId}/batches:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1batches'
+  /api/v1/platform/production/self/locations/{locationId}/batches/{batchId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1batches~1{batchId}'
+  /api/v1/platform/production/self/locations/{locationId}/batches/{batchId}/recipe:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1batches~1{batchId}~1recipe'
+  /api/v1/platform/production/self/locations/{locationId}/batches/{batchId}/cancel:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1batches~1{batchId}~1cancel'
+  /api/v1/platform/production/self/locations/{locationId}/batches/{batchId}/complete:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1batches~1{batchId}~1complete'
+  /api/v1/platform/production/manage/locations/{locationId}/batches:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1batches'
+  /api/v1/platform/production/manage/locations/{locationId}/batches/{batchId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1batches~1{batchId}'
+  /api/v1/platform/production/manage/locations/{locationId}/batches/{batchId}/recipe:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1batches~1{batchId}~1recipe'
+  /api/v1/platform/production/manage/locations/{locationId}/batches/{batchId}/cancel:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1batches~1{batchId}~1cancel'
+  /api/v1/platform/production/manage/locations/{locationId}/batches/{batchId}/count-corrections:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1batches~1{batchId}~1count-corrections'
   /api/v1/platform/production/recipes:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1recipes'
   /api/v1/platform/production/recipes/{recipeId}:

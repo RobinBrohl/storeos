@@ -297,6 +297,17 @@ class MigrationRunner {
             'REVOKE DELETE, TRUNCATE ON $_schema.knowledge_articles, $_schema.knowledge_revisions FROM $role',
           );
         }
+        if (known.containsKey('0022_preparation_batches')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.production_preparation_batches, $_schema.production_preparation_batch_commands, $_schema.production_preparation_batch_count_corrections TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.production_preparation_batches, $_schema.production_preparation_batch_commands, $_schema.production_preparation_batch_count_corrections FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status,version,actual_declared_batch_count,completed_by,completed_at,completion_note,cancelled_by,cancelled_at,cancellation_reason,terminal_operation_id,terminal_kind) ON $_schema.production_preparation_batches TO $role',
+          );
+        }
         if (known.containsKey('0021_recipe_compositions')) {
           await tx.execute(
             'GRANT SELECT ON $_schema.inventory_recipe_article_projection TO $role',

@@ -1,5 +1,7 @@
 # Development roadmap
 
+P4.10 Location-scoped PreparationBatch execution evidence is **IMPLEMENTED LOCALLY / INDEPENDENT REVIEW REMEDIATION COMPLETE / TARGETED REVIEW PENDING / SECURITY REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**. Work is unstaged and uncommitted on main at baseline `7182c07f31779b9af599806a6d0ed445af484f0b`. Migration 0022 adds Production declarations, durable command receipts and append-only count corrections with no Stock or Task effect. P4.11 is not selected. See [P4.10 development record](../development/phase-4-10-preparation-batches.md) and [ADR 0024](../adr/0024-preparation-batch-evidence.md).
+
 P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
 at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.
 Initial independent review **CHANGES REQUIRED** led to bounded F01–F05 remediation,
@@ -8,9 +10,9 @@ Security **SECURITY APPROVE** (zero confirmed/probable vulnerabilities, zero req
 security fixes, no security commit blocker). Criterion 152 is qualified solely for
 historical forensic evidence scope; it is no product/security defect or closure blocker.
 All five exact-commit jobs succeeded in [CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
-The migration chain ends at `0021_recipe_compositions.sql`; 0001–0020 retain
+At P4.9 closure the migration chain ended at `0021_recipe_compositions.sql`; 0001–0020 retain
 unchanged Git content. No active P4.9 remediation remains. Next after the closure
-commit: **fresh P4.10 capability selection**; no P4.10 capability is selected or ACTIVE.
+commit, fresh P4.10 selection was completed. The local P4.10 delivery is recorded above.
 See [P4.9 development record](../development/phase-4-9-recipe-compositions.md) and [ADR 0023](../adr/0023-approved-article-recipe-composition.md).
 
 P4.8 Selected-Article Inventory Count is **DONE/CLOSED** at implementation commit
@@ -79,7 +81,7 @@ re-review returned **SECURITY APPROVE**. All five exact-HEAD jobs succeeded in
 Existing P4.1–P4.6 closure remains intact. Next after the documentation closure commit:
 P4.8 selection followed that closure; its final closure is recorded above.
 
-See [P4.7 evidence](../development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md). P4.8 is DONE/CLOSED within its selected bounded Stock-count contract. P4.9 composition is DONE/CLOSED with F01–F05 closed, targeted APPROVE, SECURITY APPROVE and green exact-commit CI. Next after the documentation closure commit is fresh P4.10 capability selection; no subsequent capability is selected or ACTIVE.
+See [P4.7 evidence](../development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md). P4.8 is DONE/CLOSED within its selected bounded Stock-count contract. P4.9 composition is DONE/CLOSED with F01–F05 closed, targeted APPROVE, SECURITY APPROVE and green exact-commit CI. P4.10 preparation evidence is implemented locally pending independent review, security review and changed-commit CI; no P4.11 capability is selected.
 
 M3 containment applies to every new API. M1 gates the adoption of a real-user
 proxy deployment. Wider RBAC, remote access, Knowledge extensions, Planogram extensions, Recipe extensions, Menus and
@@ -178,7 +180,7 @@ CI establish closure. Criterion 152 is historical evidence qualification only;
 see the [development record](../development/phase-4-9-recipe-compositions.md).
 
 Future extensions require separate contracts: calculated yield, production
-orders/batches, labels and explicit stock effects. Production may
+orders, calculated batch yields, labels and explicit stock effects. Production may
 stock finished goods or consume ingredients on sale only under a decided model.
 Costs/margins require trustworthy cost basis; no Recipe-only valuation semantics.
 Allergens and labels require verified data and approval.

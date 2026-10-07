@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'stock_count_acceptance.dart';
 import 'recipe_acceptance.dart';
+import 'preparation_acceptance.dart';
 import 'package:storeos_server/src/stock/stock_count_service.dart';
 
 import 'package:postgres/postgres.dart';
@@ -13,11 +14,12 @@ import 'package:storeos_server/src/merchandising/merchandising_service.dart';
 import 'package:storeos_server/src/platform/platform_database.dart';
 import 'package:storeos_server/src/tasks/task_template_service.dart';
 
-Future<void> verifyBackupPlanogramReads(
+Future<Map<String, dynamic>> verifyBackupPlanogramReads(
   Endpoint endpoint,
   String schema,
-  Map<String, dynamic> evidence,
-) async {
+  Map<String, dynamic> evidence, {
+  bool historicalOnly = false,
+}) async {
   final pool = Pool<void>.withEndpoints(
     [endpoint],
     settings: const PoolSettings(
@@ -67,6 +69,13 @@ Future<void> verifyBackupPlanogramReads(
       ),
       remoteKey: 'isolated-count-other-employee-restore',
     )).token;
+    final historical = await verifyHistoricalPreparation(
+      db,
+      manager,
+      principal,
+      await auth.authenticate(otherWorkerToken),
+    );
+    if (historicalOnly) return historical;
     await verifyRestoredStockCounts(
       db,
       manager,
@@ -75,6 +84,12 @@ Future<void> verifyBackupPlanogramReads(
       otherWorker: await auth.authenticate(otherWorkerToken),
     );
     await verifyRestoredRecipes(db, manager, principal);
+    await verifyRestoredPreparation(
+      db,
+      manager,
+      principal,
+      otherEmployee: await auth.authenticate(otherWorkerToken),
+    );
     var auditBefore = (await pool.execute(
       'SELECT count(*) FROM $s.audit_entries',
     )).single.single;
@@ -338,6 +353,7 @@ Future<void> verifyBackupPlanogramReads(
         tasksBefore) {
       throw StateError('Restored scope checks/replay duplicated Tasks.');
     }
+    return historical;
   } finally {
     if (otherWorkerToken != null) await auth.logout(otherWorkerToken);
     if (alternateToken != null) await alternateAuth!.logout(alternateToken);

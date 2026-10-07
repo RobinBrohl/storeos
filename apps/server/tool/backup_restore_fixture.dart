@@ -19,6 +19,7 @@ import 'dart:convert';
 import 'merchandising_acceptance.dart';
 import 'knowledge_acceptance.dart';
 import 'recipe_acceptance.dart';
+import 'preparation_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'backup_planogram_acceptance.dart';
 import 'stock_count_acceptance.dart';
@@ -63,6 +64,10 @@ const _evidenceTables = <String, String>{
   'production_recipes': 'id',
   'production_recipe_revisions': 'id',
   'production_recipe_ingredients': 'revision_id, id',
+  'production_preparation_batches': 'company_id, id',
+  'production_preparation_batch_commands': 'company_id, operation_id',
+  'production_preparation_batch_count_corrections':
+      'company_id, batch_id, correction_number',
   'knowledge_articles': 'id',
   'knowledge_revisions': 'id',
   'shifts': 'id',
@@ -193,6 +198,12 @@ Future<void> _prepare(Map<String, String> env, String source) async {
       workerUser: workerUser,
       workerPassword: workerPassword,
     );
+    final historical =
+        await verifyBackupPlanogramReads(ownerEndpoint, _schema, {
+          ...ids,
+          'workerRecoveryPassword': workerPassword,
+          'adminRecoveryPassword': adminPassword,
+        }, historicalOnly: true);
 
     // Capture the source snapshot only after the journey is fully persisted.
     owner = await Connection.open(ownerEndpoint, settings: _connectionSettings);
@@ -205,6 +216,7 @@ Future<void> _prepare(Map<String, String> env, String source) async {
       'runId': source.substring('storeos_backup_accept_'.length),
       'sourceDatabase': source,
       ...ids,
+      'preparationHistoricalSource': historical,
       'workerRecoveryPassword': workerPassword,
       'adminRecoveryPassword': adminPassword,
       'snapshot': snapshot.toJson(),
@@ -265,8 +277,22 @@ Future<void> _verify(Map<String, String> env, String source) async {
     if (!restored.sameEvidence(current)) {
       throw StateError('Restored evidence differs from the source.');
     }
-    await verifyRecipeEvidence(sourceOwner, _schema, runtimeUser);
-    await verifyRecipeEvidence(targetOwner, _schema, runtimeUser);
+    await verifyRecipeEvidence(
+      sourceOwner,
+      _schema,
+      runtimeUser,
+      additionalPublished: 1,
+      fewerDiscarded: 1,
+    );
+    await verifyRecipeEvidence(
+      targetOwner,
+      _schema,
+      runtimeUser,
+      additionalPublished: 1,
+      fewerDiscarded: 1,
+    );
+    await verifyPreparationGrants(sourceOwner, _schema, runtimeUser);
+    await verifyPreparationGrants(targetOwner, _schema, runtimeUser);
     await verifyKnowledgeEvidence(
       sourceOwner,
       _schema,
@@ -329,11 +355,18 @@ Future<void> _verify(Map<String, String> env, String source) async {
       'backup_accept_worker',
       expected['workerRecoveryPassword'] as String,
     );
-    await verifyBackupPlanogramReads(
+    final historicalRestored = await verifyBackupPlanogramReads(
       _ownerEndpoint(env, target),
       _schema,
       expected,
     );
+    final historicalSource =
+        expected['preparationHistoricalSource'] as Map<String, dynamic>;
+    if (jsonEncode(historicalRestored) != jsonEncode(historicalSource)) {
+      throw StateError(
+        'Restored historical preparation proof differs from source.',
+      );
+    }
     if (await _activeSessions(targetOwner, _schema) != 0 ||
         await _runtimeConnect(targetOwner, runtimeUser)) {
       throw StateError('Restore verification changed fencing.');
@@ -353,6 +386,21 @@ Future<void> _verify(Map<String, String> env, String source) async {
       'sourceRuntimeConnect': sourceConnect,
       'restoredRuntimeConnect': restoredConnect,
       'restoredRuntimeConnectionRejected': true,
+      'preparation': {
+        'historicalSource': historicalSource,
+        'historicalRestored': historicalRestored,
+        'sourceAndRestoredHistoricalProofEqual': true,
+        'migration': '0022_preparation_batches',
+        'batchCount': 5,
+        'receiptCount': 11,
+        'correctionCount': 2,
+        'deterministicEvidencePreserved': true,
+        'ownAndManagerAuthorizationVerified': true,
+        'otherEmployeeDenied': true,
+        'exactContextAndReplayVerified': true,
+        'correctedZeroVerified': true,
+        'runtimeGrantsVerified': true,
+      },
       'recipes': {
         'migration': '0021_recipe_compositions',
         'retainedStatesVerified': true,
@@ -467,15 +515,6 @@ Future<Map<String, String>> _seed(
   );
   final employeeId = newUuid(), workerId = newUuid();
   await seedApprovedKnowledge(
-    (method, route, body, status) => api.request(
-      method,
-      route,
-      token: adminToken,
-      body: body,
-      expected: status,
-    ),
-  );
-  await seedRecipeCompositions(
     (method, route, body, status) => api.request(
       method,
       route,
@@ -744,6 +783,33 @@ Future<Map<String, String>> _seed(
     body: {'username': workerUser, 'password': workerPassword},
   );
   final workerToken = workerLogin['token'] as String;
+  await seedRecipeCompositions(
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: adminToken,
+      expected: status,
+    ),
+    beforeHistoricalReplacement: () => seedPreparationBatches(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: workerToken,
+        expected: status,
+      ),
+      locationId,
+      recipeSku: 'RECIPE-PRODUCED-1',
+    ),
+  );
   final countEvidence = await seedStockCounts(
     (method, route, body, status) => api.request(
       method,
@@ -976,7 +1042,10 @@ Future<void> _assertSeededJourney(
     'production_recipes': 3,
     'production_recipe_revisions': 7,
     'production_recipe_ingredients': 14,
-    'article_location_assortment': 3,
+    'article_location_assortment': 4,
+    'production_preparation_batches': 5,
+    'production_preparation_batch_commands': 11,
+    'production_preparation_batch_count_corrections': 2,
     'stock_levels': 3,
     'stock_movements': 5,
     'stock_counts': 3,

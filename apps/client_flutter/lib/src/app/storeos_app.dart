@@ -10,6 +10,7 @@ import '../application/stock_count_controller.dart';
 import '../application/merchandising_controller.dart';
 import '../application/knowledge_controller.dart';
 import '../application/recipe_controller.dart';
+import '../application/preparation_batch_controller.dart';
 import '../application/session_controller.dart';
 import '../application/platform_controller.dart';
 import '../application/employee_controller.dart';
@@ -48,6 +49,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   MerchandisingController? _merchandising;
   KnowledgeController? _knowledge;
   RecipeController? _recipes;
+  PreparationBatchController? _batches, _ownBatches;
   ShiftController? _shifts, _home;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _wasAuthenticated = false;
@@ -93,6 +95,17 @@ class _StoreOsAppState extends State<StoreOsApp> {
       );
       _knowledge = KnowledgeController(_controller, _platformController!, api);
       _recipes = RecipeController(_controller, _platformController!, api);
+      _batches = PreparationBatchController(
+        _controller,
+        _platformController!,
+        api,
+        self: false,
+      );
+      _ownBatches = PreparationBatchController(
+        _controller,
+        _platformController!,
+        api,
+      );
     }
   }
 
@@ -110,6 +123,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _merchandising?.dispose();
     _knowledge?.dispose();
     _recipes?.dispose();
+    _batches?.dispose();
+    _ownBatches?.dispose();
     _employees?.dispose();
     _platformController?.dispose();
     _controller.dispose();
@@ -163,6 +178,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       merchandising: _merchandising,
                       knowledge: _knowledge,
                       recipes: _recipes,
+                      batches: _batches,
+                      ownBatches: _ownBatches,
                       shifts: _shifts,
                       home: _home,
                       baseUri: widget.baseUri,

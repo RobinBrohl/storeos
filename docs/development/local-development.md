@@ -129,3 +129,15 @@ The numeric browser runner is `./scripts/e2e/Run-NumericGuidedWork.ps1 -ChromeDr
 Update/recovery acceptance uses `./scripts/update/Run-UpdateRecoveryAcceptance.ps1` and an isolated database. The current fixture probes the migration chain through 0018, including completed historical guidance. See [update/recovery](phase-2-update-recovery-acceptance.md) and [P4.6 evidence](phase-4-6-task-knowledge-guidance.md); recovery is an isolated restore point, not a down migration or automatic replacement activation.
 
 Some wrapper commands resolve dependencies unconditionally. Inspect the wrapper before using it in a task that forbids installs; use existing SDK package commands with `--no-pub` where appropriate instead.
+
+P4.10 verification uses `scripts/recipes/Run-P410Checks.ps1` with focused
+PostgreSQL, `-ClientJourney`, `-Browser` or `-FullRegression` options. Supply the
+installed Dart/Flutter paths and matching ChromeDriver; no package resolution is
+performed. Each run creates and removes its own `storeos_p410_<16 hex>_test`
+database. `Run-P410FinalVerification.ps1` inventories source hashes and write times,
+runs full regression, real preparation/Recipe/Count/browser journeys, numeric E2E,
+backup/update/recovery, crypto, diagnostics, redaction, print and setup checks,
+and rejects any inventoried edit during verification. Sanitized evidence is under
+`.local/p410/final`; the normal StoreOS database is not a business acceptance target.
+Backup and update fixtures now include 0022 preparation evidence; the separate
+populated 0021 test proves exact preservation and late-failure rollback.

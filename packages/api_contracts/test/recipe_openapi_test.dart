@@ -154,7 +154,9 @@ void main() {
   };
   final operations = <String, Map>{
     for (final path in paths.entries)
-      if ((path.key as String).contains('/production/'))
+      if (RegExp(
+        r'^/api/v1/platform/production/(recipes(?:/|$)|manage/(recipes(?:/|$)|article-candidates$))',
+      ).hasMatch(path.key as String))
         for (final op in (path.value as Map).values)
           (op as Map)['operationId'] as String: op,
   };

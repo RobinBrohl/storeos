@@ -1,6 +1,8 @@
 /// Public, JSON-serializable API v1 contracts. No database or domain models.
 library;
 
+export 'src/preparation_batches.dart';
+
 export 'src/recipes.dart';
 
 export 'src/task_execution.dart';

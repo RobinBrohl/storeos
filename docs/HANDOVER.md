@@ -1,5 +1,7 @@
 # StoreOS handover
 
+P4.10 Preparation Batch is **IMPLEMENTED LOCALLY / INDEPENDENT REMEDIATION COMPLETE / TARGETED REVIEW APPROVE / SECURITY REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**. P4.10 is not DONE/CLOSED. Work is unstaged and uncommitted on main at baseline `7182c07f31779b9af599806a6d0ed445af484f0b`. Migration 0022 adds Production declarations, durable command receipts and append-only count corrections with no Stock or Task effect. P4.11 is not selected. See [P4.10 development record](development/phase-4-10-preparation-batches.md) and [ADR 0024](adr/0024-preparation-batch-evidence.md).
+
 P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
 at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.
 Initial independent review **CHANGES REQUIRED** led to bounded F01–F05 remediation,
@@ -8,9 +10,9 @@ Security **SECURITY APPROVE** (zero confirmed/probable vulnerabilities, zero req
 security fixes, no security commit blocker). Criterion 152 is qualified solely for
 historical forensic evidence scope; it is no product/security defect or closure blocker.
 All five exact-commit jobs succeeded in [CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736).
-The migration chain ends at `0021_recipe_compositions.sql`; 0001–0020 retain
+At P4.9 closure the migration chain ended at `0021_recipe_compositions.sql`; 0001–0020 retain
 unchanged Git content. No active P4.9 remediation remains. Next after the closure
-commit: **fresh P4.10 capability selection**; no P4.10 capability is selected or ACTIVE.
+commit, fresh P4.10 selection was completed. The local P4.10 delivery is recorded above.
 See [P4.9 development record](development/phase-4-9-recipe-compositions.md) and [ADR 0023](adr/0023-approved-article-recipe-composition.md).
 
 
@@ -196,9 +198,9 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 
 ## Next Recommended Work
 
-1. After the documentation closure commit, perform fresh P4.10 capability selection.
-   P4.1–P4.9 remain DONE/CLOSED; no active P4.9 remediation or selected/ACTIVE
-   P4.10 capability remains. This closure pass does not authorize that commit.
+1. P4.10 Preparation Batch is IMPLEMENTED LOCALLY; independent remediation is
+   complete and targeted review returned APPROVE. Security review and remote
+   changed-commit CI remain pending. P4.10 is not DONE/CLOSED; P4.11 is unselected.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

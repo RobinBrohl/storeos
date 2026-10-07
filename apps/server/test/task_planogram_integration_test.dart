@@ -1512,6 +1512,7 @@ void main() {
             '0019_task_planogram_guidance',
             '0020_stock_counts',
             '0021_recipe_compositions',
+            '0022_preparation_batches',
           ],
         );
         expect(await source(), before);

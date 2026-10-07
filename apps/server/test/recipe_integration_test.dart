@@ -1489,7 +1489,7 @@ void main() {
             schemaName: f.schema,
             runtimeDatabaseUser: f.runtimeUser,
           ).apply(),
-          ['0021_recipe_compositions'],
+          ['0021_recipe_compositions', '0022_preparation_batches'],
         );
         expect(
           await MigrationRunner(

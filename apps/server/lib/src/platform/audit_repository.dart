@@ -66,6 +66,8 @@ class AuditRepository {
       'operationId',
       'movementId',
       'countId',
+      'batchId',
+      'correctionNumber',
       'lineId',
       'roundId',
       'observationId',

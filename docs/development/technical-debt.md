@@ -206,7 +206,7 @@ preserves chronology and evidence.
 Memory-only uncertain-command recovery, supported-writer/raw-SQL boundaries,
 physical-device/accessibility gaps, M1 pilot gate, M2 CLOSED, M3 endpoint containment,
 M4 broader error taxonomy and P4.5 F01/F02 nonblocking follow-ups remain unchanged.
-P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 remains UNSELECTED; next is fresh P4.12 capability selection from clean main.
+P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 is implemented locally with independent/security review and changed-commit CI pending; P4.13 remains UNSELECTED.
 
 ## P4.10 closed review gates and retained limits
 
@@ -248,3 +248,9 @@ M1 pilot gate, M2 CLOSED, M3 containment, M4 taxonomy, supported-writer/raw-SQL
 boundary, memory-only uncertain-command recovery, physical-device/accessibility
 gaps, P4.5 F01/F02 follow-ups and P4.9 criterion 152 qualification.
 No global zero-debt claim is made. See [final closure](phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).
+
+## P4.12 local implementation and pending gates
+
+Bounded purchase orders with minimal Supplier identity are implemented locally with migration 0024. Independent review, focused Codex Security after independent review, and remote changed-commit CI remain pending. No approval or closure is inferred from local tests. See [implementation](phase-4-12-bounded-purchase-orders.md), [acceptance matrix](phase-4-12-acceptance.md) and [ADR 0026](../adr/0026-bounded-purchase-order-intent.md).
+
+The runtime role uses supported authorized writers. Narrow grants, locked draft-line mutation, immutable receipts and deferred final-state checks constrain malformed writes; a deliberately fabricated fully consistent raw SQL command by a credential holder is outside the business-authorization contract. Uncertain Flutter commands survive only in the current process/session. Physical-device/accessibility evidence remains limited to the existing disposition. M1, M2 CLOSED, M3, M4, P4.5 F01/F02 and P4.9 criterion 152 retain their existing dispositions. No unrelated debt is reopened or closed.

@@ -1,5 +1,9 @@
 # Development roadmap
 
+Current P4.12: **BOUNDED PURCHASE ORDERS WITH MINIMAL SUPPLIER IDENTITY** — selected MEDIUM capability, implemented locally with migration **0024** (chain 0001–0024; 0001–0023 unchanged). **INDEPENDENT REVIEW PENDING / SECURITY REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**. Changes remain unstaged/uncommitted on main at baseline `604d1d198b158b1907dd000ea435d94dbae0dec1`. P4.1–P4.11 remain DONE/CLOSED; P4.13 remains UNSELECTED. See [P4.12 implementation and evidence](../development/phase-4-12-bounded-purchase-orders.md). Local verification is required for review readiness; no pending gate is claimed approved.
+
+The following P4.11/P4.10 closure records describe their historical closure state.
+
 P4.11 ONE-WAY SHIFT TRANSFER BEFORE EXECUTION is **DONE/CLOSED** at implementation
 commit `b82dda89374ed9b4182630de4991b0d1569b8ae8` (`Add one-way shift transfer`)
 on `main`. Initial independent **CHANGES REQUIRED** led to F01/F02/F03 closure
@@ -10,9 +14,8 @@ required remediation or security commit blocker. All five jobs succeeded in
 Final remediation regression: **1,133 package tests**, **21/21 phases**,
 **11/11 conditional journeys** and **3/3 numeric browser stages** PASS.
 Migration `0023_one_way_shift_transfers.sql` is delivered; the chain is
-**0001–0023**, with no 0024 and unchanged historical migrations 0001–0022.
-No active P4.11 remediation remains. **P4.12 remains UNSELECTED**; next is fresh
-P4.12 capability selection from clean `main`. See [P4.11 final closure](../development/phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).
+**0001–0023** at P4.11 closure, with unchanged historical migrations 0001–0022.
+No active P4.11 remediation remains. **P4.12 was UNSELECTED at that closure**; its current local implementation is recorded above. See [P4.11 final closure](../development/phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).
 
 P4.10 Preparation Batch is **DONE/CLOSED** at implementation commit
 `e637187b17d4617212acf42b99a07500e9488c3d` on `main`. Initial independent
@@ -27,7 +30,7 @@ Migration `0022_preparation_batches.sql` is delivered/accepted; the committed
 chain at P4.10 closure was 0001–0022; P4.11 now extends it through 0023. Location-scoped declarations pin an exact
 published RecipeRevision, retain immutable terminal evidence and append-only
 count corrections, and have no Stock, Task/Shift or yield/output-unit effects.
-No active P4.10 or P4.11 remediation remains. P4.11 is DONE/CLOSED; P4.12 remains UNSELECTED. Next is fresh P4.12 capability selection from clean `main`. See [P4.10 development record](../development/phase-4-10-preparation-batches.md) and [ADR 0024](../adr/0024-preparation-batch-evidence.md).
+No active P4.10 or P4.11 remediation remains. P4.11 is DONE/CLOSED; P4.12 was unselected at that historical closure; its current local implementation is recorded above. See [P4.10 development record](../development/phase-4-10-preparation-batches.md) and [ADR 0024](../adr/0024-preparation-batch-evidence.md).
 
 P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
 at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.
@@ -108,7 +111,7 @@ re-review returned **SECURITY APPROVE**. All five exact-HEAD jobs succeeded in
 Existing P4.1–P4.6 closure remains intact. Next after the documentation closure commit:
 P4.8 selection followed that closure; its final closure is recorded above.
 
-See [P4.7 evidence](../development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md). P4.8 is DONE/CLOSED within its selected bounded Stock-count contract. P4.9 composition is DONE/CLOSED with F01–F05 closed, targeted APPROVE, SECURITY APPROVE and green exact-commit CI. P4.10 preparation evidence is DONE/CLOSED with targeted APPROVE, SECURITY APPROVE and green exact-commit CI; P4.11 is DONE/CLOSED with targeted APPROVE, SECURITY APPROVE and green exact-commit CI; P4.12 remains UNSELECTED pending fresh selection from clean main.
+See [P4.7 evidence](../development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md). P4.8 is DONE/CLOSED within its selected bounded Stock-count contract. P4.9 composition is DONE/CLOSED with F01–F05 closed, targeted APPROVE, SECURITY APPROVE and green exact-commit CI. P4.10 preparation evidence is DONE/CLOSED with targeted APPROVE, SECURITY APPROVE and green exact-commit CI; P4.11 is DONE/CLOSED with targeted APPROVE, SECURITY APPROVE and green exact-commit CI; P4.12 is implemented locally with independent/security review and changed-commit CI pending; P4.13 remains UNSELECTED.
 
 M3 containment applies to every new API. M1 gates the adoption of a real-user
 proxy deployment. Wider RBAC, remote access, Knowledge extensions, Planogram extensions, Recipe extensions, Menus and

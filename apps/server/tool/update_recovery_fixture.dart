@@ -32,6 +32,7 @@
 // point into an isolated database. This fixture does not implement or prove
 // database downgrade, application downgrade or replacement activation.
 import 'dart:convert';
+import 'purchasing_acceptance.dart';
 import 'merchandising_acceptance.dart';
 import 'stock_count_acceptance.dart';
 import 'knowledge_acceptance.dart';
@@ -76,6 +77,7 @@ const _expectedPendingMigrations = [
   '0021_recipe_compositions',
   '0022_preparation_batches',
   '0023_one_way_shift_transfers',
+  '0024_bounded_purchase_orders',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1363,6 +1365,23 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       transferRecords,
     );
     await verifyTransferGrants(owner, _schema, runtimeUser);
+    final purchasingRecords = await seedPurchasing(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      locationId,
+    );
+    await verifyPurchasing(
+      database,
+      await auth.authenticate(adminToken),
+      await auth.authenticate(workerToken),
+      purchasingRecords,
+    );
+    await verifyPurchasingGrants(owner, _schema, runtimeUser);
     await api.request(
       'POST',
       '/api/v1/auth/logout',
@@ -1370,6 +1389,14 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       expected: 204,
     );
     await _writeJson(resultFile, {
+      'purchasing': {
+        'migration': '0024_bounded_purchase_orders',
+        'suppliers': 2,
+        'orders': 6,
+        'lines': 4,
+        'receipts': 20,
+        'allEightKindsAndExactReplayVerified': true,
+      },
       'transfers': {
         'migration': '0023_one_way_shift_transfers',
         'requests': 9,

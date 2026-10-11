@@ -33,6 +33,9 @@ class PlatformActor {
 }
 
 const _permissions = <String>[
+  'purchasing.suppliers.manage',
+  'purchasing.orders.manage',
+  'purchasing.orders.issue',
   'context.read',
   'organization.read',
   'organization.write',

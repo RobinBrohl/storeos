@@ -197,13 +197,13 @@ class ServerApp {
       return _error(403, 'origin_forbidden', 'Origin is not allowed.');
     }
     final method = _header(request, 'access-control-request-method');
-    if (method != 'GET' && method != 'POST') {
+    if (method != 'GET' && method != 'POST' && method != 'PUT') {
       return _error(405, 'method_not_allowed', 'Method is not allowed.');
     }
     return Response(
       204,
       headers: {
-        'access-control-allow-methods': 'GET, POST, OPTIONS',
+        'access-control-allow-methods': 'GET, POST, PUT, OPTIONS',
         'access-control-allow-headers': 'Authorization, Content-Type',
         'access-control-max-age': '600',
       },

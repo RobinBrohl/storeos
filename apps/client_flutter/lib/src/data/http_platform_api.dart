@@ -7,7 +7,7 @@ import 'package:storeos_api_contracts/api_contracts.dart';
 import 'platform_api.dart';
 import 'store_api.dart';
 
-class HttpPlatformApi implements PlatformApi {
+class HttpPlatformApi implements PurchasingApi {
   HttpPlatformApi({
     required Uri baseUri,
     required http.Client client,
@@ -41,6 +41,23 @@ class HttpPlatformApi implements PlatformApi {
     Map<String, dynamic> body,
   ) => _request(
     () => _client.post(
+      _uri(route),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    ),
+    route: route,
+  );
+
+  @override
+  Future<Map<String, dynamic>> put(
+    String token,
+    String route,
+    Map<String, dynamic> body,
+  ) => _request(
+    () => _client.put(
       _uri(route),
       headers: {
         'Authorization': 'Bearer $token',

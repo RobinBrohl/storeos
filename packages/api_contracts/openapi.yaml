@@ -310,6 +310,28 @@ paths:
           $ref: '#/components/responses/Error'
         '503':
           $ref: '#/components/responses/Error'
+  /api/v1/platform/purchasing/suppliers:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1suppliers"
+  /api/v1/platform/purchasing/suppliers/{supplierId}:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1suppliers~1{supplierId}"
+  /api/v1/platform/purchasing/suppliers/{supplierId}/retire:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1suppliers~1{supplierId}~1retire"
+  /api/v1/platform/purchasing/suppliers/{supplierId}/history:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1suppliers~1{supplierId}~1history"
+  /api/v1/platform/purchasing/locations/{locationId}/article-selections:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1article-selections"
+  /api/v1/platform/purchasing/locations/{locationId}/orders:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/issue:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1issue"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/cancel:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1cancel"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/close:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1close"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/history:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1history"
 components:
   securitySchemes:
     session:

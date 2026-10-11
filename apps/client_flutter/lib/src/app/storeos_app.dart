@@ -12,6 +12,7 @@ import '../application/merchandising_controller.dart';
 import '../application/knowledge_controller.dart';
 import '../application/recipe_controller.dart';
 import '../application/preparation_batch_controller.dart';
+import '../application/purchasing_controller.dart';
 import '../application/session_controller.dart';
 import '../application/platform_controller.dart';
 import '../application/employee_controller.dart';
@@ -51,6 +52,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   KnowledgeController? _knowledge;
   RecipeController? _recipes;
   PreparationBatchController? _batches, _ownBatches;
+  PurchasingController? _purchasing;
   ShiftController? _shifts, _home;
   ShiftTransferController? _transfers, _ownTransfers;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
@@ -63,6 +65,13 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _controller.addListener(_closeDialogsOnSessionEnd);
     if (widget.platformApi case final api?) {
       _platformController = PlatformController(_controller, api);
+      if (api is PurchasingApi) {
+        _purchasing = PurchasingController(
+          _controller,
+          _platformController!,
+          api,
+        );
+      }
       _transfers = ShiftTransferController(
         _controller,
         _platformController!,
@@ -139,6 +148,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _knowledge?.dispose();
     _recipes?.dispose();
     _batches?.dispose();
+    _purchasing?.dispose();
     _ownBatches?.dispose();
     _employees?.dispose();
     _platformController?.dispose();
@@ -194,6 +204,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       knowledge: _knowledge,
                       recipes: _recipes,
                       batches: _batches,
+                      purchasing: _purchasing,
                       ownBatches: _ownBatches,
                       shifts: _shifts,
                       transfers: _transfers,

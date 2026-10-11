@@ -1,4 +1,6 @@
 import 'shift_routes.dart';
+import 'purchasing_routes.dart';
+import '../purchasing/purchasing_service.dart';
 import 'shift_transfer_routes.dart';
 import '../application/shift_transfer_application.dart';
 import '../application/shift_application.dart';
@@ -36,6 +38,7 @@ Handler createPlatformHandler(
   AuthService auth,
   PlatformDatabase database,
 ) => Cascade()
+    .add(PurchasingRoutes(auth, PurchasingService(database)).router.call)
     .add(ShiftRoutes(auth, ShiftApplication(database)).router.call)
     .add(
       ShiftTransferRoutes(auth, ShiftTransferApplication(database)).router.call,

@@ -1514,6 +1514,7 @@ void main() {
             '0021_recipe_compositions',
             '0022_preparation_batches',
             '0023_one_way_shift_transfers',
+            '0024_bounded_purchase_orders',
           ],
         );
         expect(await source(), before);

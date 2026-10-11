@@ -12,3 +12,12 @@ abstract class PlatformApi {
     Map<String, dynamic> body,
   );
 }
+
+/// Purchasing uses PUT for full draft replacement and Supplier editing.
+abstract interface class PurchasingApi implements PlatformApi {
+  Future<Map<String, dynamic>> put(
+    String token,
+    String route,
+    Map<String, dynamic> body,
+  );
+}

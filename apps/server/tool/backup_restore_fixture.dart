@@ -24,6 +24,7 @@ import 'shift_transfer_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'backup_planogram_acceptance.dart';
 import 'stock_count_acceptance.dart';
+import 'purchasing_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -53,6 +54,10 @@ const _connectionSettings = ConnectionSettings(
 /// Evidence tables and their deterministic ordering keys. Identifiers are
 /// compile-time constants, never user input.
 const _evidenceTables = <String, String>{
+  'purchasing_suppliers': 'company_id,id',
+  'purchasing_orders': 'company_id,id',
+  'purchasing_order_lines': 'company_id,order_id,position',
+  'purchasing_commands': 'company_id,operation_id',
   'articles': 'id',
   'article_location_assortment': 'id',
   'stock_levels': 'id',
@@ -298,6 +303,8 @@ Future<void> _verify(Map<String, String> env, String source) async {
     );
     await verifyPreparationGrants(sourceOwner, _schema, runtimeUser);
     await verifyPreparationGrants(targetOwner, _schema, runtimeUser);
+    await verifyPurchasingGrants(sourceOwner, _schema, runtimeUser);
+    await verifyPurchasingGrants(targetOwner, _schema, runtimeUser);
     await verifyKnowledgeEvidence(
       sourceOwner,
       _schema,
@@ -1041,7 +1048,18 @@ Future<Map<String, dynamic>> _seed(
     '$root/locations/$locationId/merchandising/fixtures/${planogramGuidance.fixtureId}/layout',
     token: adminToken,
   );
+  final purchasingRecords = await seedPurchasing(
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: adminToken,
+      expected: status,
+    ),
+    locationId,
+  );
   return {
+    'purchasingRecords': purchasingRecords,
     'transferRecords': transferRecords,
     'transferRecipientEmployeeId': transferEmployee,
     'companyId': companyId,
@@ -1137,6 +1155,10 @@ Future<void> _assertSeededJourney(
     throw StateError('Expected exactly one active source plugin token.');
   }
   const expectedCounts = {
+    'purchasing_suppliers': 2,
+    'purchasing_orders': 6,
+    'purchasing_order_lines': 4,
+    'purchasing_commands': 20,
     'articles': 8,
     'production_recipes': 3,
     'production_recipe_revisions': 7,

@@ -56,11 +56,13 @@ class MerchandisingFixture {
     this.schema,
     this.runtimeUser, {
     this.allowedOrigins = const {},
+    this.homeLocationId = _home,
   });
   final Connection owner;
   final Pool<void> pool;
   final String schema, runtimeUser;
   final Set<String> allowedOrigins;
+  final String homeLocationId;
   final HttpClient client = HttpClient();
   late PlatformDatabase database;
   late SessionPrincipal adminPrincipal;
@@ -70,7 +72,8 @@ class MerchandisingFixture {
   late String adminId;
   String get base => 'http://127.0.0.1:${server!.port}';
 
-  Future<void> restart({String locationId = _home, int port = 0}) async {
+  Future<void> restart({String? locationId, int port = 0}) async {
+    locationId ??= homeLocationId;
     await server?.close(force: true);
     final store = PostgresAuthStore(pool, schemaName: schema);
     auth = await AuthService.create(
@@ -173,7 +176,7 @@ class MerchandisingFixture {
   }) async => ArticleAssortmentDto.fromJson(
     (await call(
       'POST',
-      '/locations/${location ?? _home}/assortment',
+      '/locations/${location ?? homeLocationId}/assortment',
       body: {'id': id ?? newUuid(), 'articleId': articleId},
       expected: 201,
     )).body,
@@ -303,7 +306,7 @@ class MerchandisingFixture {
         'id': newUuid(),
         'username': username,
         'password': _password,
-        'locationId': _home,
+        'locationId': homeLocationId,
         'role': role,
       },
     );
@@ -314,7 +317,9 @@ class MerchandisingFixture {
 Future<void> withMerchandisingFixture(
   Future<void> Function(MerchandisingFixture) action, {
   String? legacyBefore,
+  String? fixedSchema,
   Set<String> allowedOrigins = const {},
+  String homeLocationId = _home,
 }) async {
   final uri = Uri.parse(_url!);
   final split = uri.userInfo.indexOf(':');
@@ -336,7 +341,15 @@ Future<void> withMerchandisingFixture(
     endpoint,
     settings: const ConnectionSettings(sslMode: SslMode.disable),
   );
-  final schema = 'storeos_stock_${newUuid().replaceAll('-', '')}';
+  if (fixedSchema != null &&
+      (fixedSchema != 'storeos_platform' ||
+          endpoint.database != 'storeos_p412_test')) {
+    throw StateError(
+      'Fixed schema requires the dedicated P4.12 disposable database.',
+    );
+  }
+  final schema =
+      fixedSchema ?? 'storeos_stock_${newUuid().replaceAll('-', '')}';
   final pool = Pool<void>.withEndpoints(
     [
       Endpoint(
@@ -358,6 +371,7 @@ Future<void> withMerchandisingFixture(
     schema,
     runtime,
     allowedOrigins: allowedOrigins,
+    homeLocationId: homeLocationId,
   );
   Directory? legacyDirectory;
   if (legacyBefore != null) {
@@ -388,7 +402,7 @@ Future<void> withMerchandisingFixture(
       username: 'test_admin',
       password: _password,
       companyId: _company,
-      locationId: _home,
+      locationId: homeLocationId,
     );
     await fixture.restart();
     fixture.adminToken = await fixture.login('test_admin');

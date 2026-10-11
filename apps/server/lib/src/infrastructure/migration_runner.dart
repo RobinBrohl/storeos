@@ -308,6 +308,23 @@ class MigrationRunner {
             'GRANT UPDATE (status,version,accepted_by,accepted_at,acceptance_operation_id,terminal_by,terminal_at,terminal_reason,terminal_operation_id,terminal_kind,replacement_shift_id) ON $_schema.workforce_shift_transfer_requests TO $role',
           );
         }
+        if (known.containsKey('0024_bounded_purchase_orders')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.purchasing_suppliers, $_schema.purchasing_orders, $_schema.purchasing_order_lines, $_schema.purchasing_commands TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.purchasing_suppliers, $_schema.purchasing_orders, $_schema.purchasing_order_lines, $_schema.purchasing_commands FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (name,ordering_reference,status,version,changed_by,changed_at,retired_by,retired_at,last_operation_id,last_kind) ON $_schema.purchasing_suppliers TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (reference,supplier_id,supplier_version,supplier_name,supplier_reference,status,version,changed_by,changed_at,issued_by,issued_at,issue_operation_id,terminal_by,terminal_at,terminal_reason,terminal_operation_id,last_operation_id,last_kind) ON $_schema.purchasing_orders TO $role',
+          );
+          await tx.execute(
+            'GRANT DELETE ON $_schema.purchasing_order_lines TO $role',
+          );
+        }
         if (known.containsKey('0022_preparation_batches')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.production_preparation_batches, $_schema.production_preparation_batch_commands, $_schema.production_preparation_batch_count_corrections TO $role',

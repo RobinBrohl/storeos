@@ -23,6 +23,8 @@ import 'recipe_section.dart';
 import '../application/recipe_controller.dart';
 import '../application/preparation_batch_controller.dart';
 import 'preparation_batch_section.dart';
+import '../application/purchasing_controller.dart';
+import 'purchasing_section.dart';
 import 'change_password_dialog.dart';
 import 'platform_sections.dart';
 import 'employee_section.dart';
@@ -32,6 +34,7 @@ import '../application/employee_controller.dart';
 import 'system_status_screen.dart';
 
 enum _Section {
+  purchasing,
   transfers,
   ownTransfers,
   status,
@@ -70,6 +73,7 @@ class PlatformHomeScreen extends StatefulWidget {
     this.knowledge,
     this.recipes,
     this.batches,
+    this.purchasing,
     this.ownBatches,
     this.shifts,
     this.transfers,
@@ -91,6 +95,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final KnowledgeController? knowledge;
   final RecipeController? recipes;
   final PreparationBatchController? batches, ownBatches;
+  final PurchasingController? purchasing;
   final ShiftController? shifts, home;
   final ShiftTransferController? transfers, ownTransfers;
   final Uri baseUri;
@@ -103,6 +108,9 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   _Section _selected = _Section.status;
 
   List<_Section> get _available => [
+    if (widget.purchasing != null &&
+        widget.platform.allows('purchasing.orders.manage'))
+      _Section.purchasing,
     _Section.status,
     if (widget.ownTransfers != null &&
         widget.platform.allows('workforce.transfers.self.read'))
@@ -152,6 +160,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   ];
 
   String _label(_Section section) => switch (section) {
+    _Section.purchasing => 'Purchasing',
     _Section.transfers => 'Shift transfer review',
     _Section.ownTransfers => 'My shift transfers',
     _Section.shifts => 'Schichten',
@@ -176,6 +185,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   };
 
   IconData _icon(_Section section) => switch (section) {
+    _Section.purchasing => Icons.shopping_cart_outlined,
     _Section.transfers => Icons.fact_check_outlined,
     _Section.ownTransfers => Icons.swap_horiz,
     _Section.shifts => Icons.calendar_month_outlined,
@@ -202,6 +212,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   void _select(_Section section) {
     setState(() => _selected = section);
     switch (section) {
+      case _Section.purchasing:
       case _Section.transfers:
       case _Section.ownTransfers:
       case _Section.batches:
@@ -236,6 +247,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   void _refresh(_Section section) {
     switch (section) {
+      case _Section.purchasing:
+        widget.purchasing!.load();
       case _Section.transfers:
         widget.transfers!.load();
       case _Section.ownTransfers:
@@ -274,6 +287,7 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   }
 
   Widget _body(_Section section) => switch (section) {
+    _Section.purchasing => PurchasingSection(controller: widget.purchasing!),
     _Section.transfers => ShiftTransferSection(controller: widget.transfers!),
     _Section.ownTransfers => ShiftTransferSection(
       controller: widget.ownTransfers!,

@@ -206,7 +206,7 @@ preserves chronology and evidence.
 Memory-only uncertain-command recovery, supported-writer/raw-SQL boundaries,
 physical-device/accessibility gaps, M1 pilot gate, M2 CLOSED, M3 endpoint containment,
 M4 broader error taxonomy and P4.5 F01/F02 nonblocking follow-ups remain unchanged.
-P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 is implemented locally with independent/security review and changed-commit CI pending; P4.13 remains UNSELECTED.
+P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure publication/CI pending. P4.13 remains UNSELECTED.
 
 ## P4.10 closed review gates and retained limits
 
@@ -240,7 +240,7 @@ in [exact-commit CI 38125193187](https://github.com/RobinBrohl/storeos/actions/r
 | Finding | Final disposition |
 | --- | --- |
 | F01 MEDIUM product defect / commit blocker | CLOSED: advancing PostgreSQL `clock_timestamp()` at deferred final approval validation; cross-start rolls back all effects, leaving the operation UUID reusable. Exact committed replay after start stays valid. |
-| F02 LOW documentation defect / nonblocking | CLOSED: HANDOVER/status selection wording reconciled; final docs closure now records delivered evidence and P4.12 UNSELECTED. |
+| F02 LOW documentation defect / nonblocking | CLOSED: HANDOVER/status selection wording reconciled; the historical P4.11 docs closure recorded delivered evidence and P4.12 UNSELECTED at that time. |
 | F03 LOW test/evidence gap / nonblocking | CLOSED: deterministic both-order identity/link and Knowledge/Planogram races retain exact evidence or reject atomically. |
 
 No active P4.11 remediation remains. All standing dispositions above remain:
@@ -249,8 +249,56 @@ boundary, memory-only uncertain-command recovery, physical-device/accessibility
 gaps, P4.5 F01/F02 follow-ups and P4.9 criterion 152 qualification.
 No global zero-debt claim is made. See [final closure](phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).
 
-## P4.12 local implementation and pending gates
+## P4.12 closed implementation gates and retained limits
 
-Bounded purchase orders with minimal Supplier identity are implemented locally with migration 0024. Independent review, focused Codex Security after independent review, and remote changed-commit CI remain pending. No approval or closure is inferred from local tests. See [implementation](phase-4-12-bounded-purchase-orders.md), [acceptance matrix](phase-4-12-acceptance.md) and [ADR 0026](../adr/0026-bounded-purchase-order-intent.md).
+Bounded Purchase Orders with Minimal Supplier Identity are **DONE/CLOSED** at
+`f9122f21cde5149685059a184114b6d958a2bd32`, with migration 0024. Initial independent
+CHANGES REQUIRED (89 PASS / 6 QUALIFIED / 1 FAIL) led to bounded **F01 CLOSED**,
+targeted **APPROVE** (90 PASS / 6 QUALIFIED / 0 FAIL), focused **SECURITY APPROVE**
+and successful exact implementation-commit [CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998),
+all five jobs. Current acceptance is **93 PASS / 3 QUALIFIED / 0 FAIL**. No actionable
+independent review finding, required Security remediation or commit blocker remains.
+Documentation-only closure commit and its own exact-head CI remain pending publication;
+P4.13 remains UNSELECTED. See [closure](phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11),
+[acceptance matrix](phase-4-12-acceptance.md) and [ADR 0026](../adr/0026-bounded-purchase-order-intent.md).
 
-The runtime role uses supported authorized writers. Narrow grants, locked draft-line mutation, immutable receipts and deferred final-state checks constrain malformed writes; a deliberately fabricated fully consistent raw SQL command by a credential holder is outside the business-authorization contract. Uncertain Flutter commands survive only in the current process/session. Physical-device/accessibility evidence remains limited to the existing disposition. M1, M2 CLOSED, M3, M4, P4.5 F01/F02 and P4.9 criterion 152 retain their existing dispositions. No unrelated debt is reopened or closed.
+F01 was a LOW PRODUCT DEFECT and commit blocker on criterion 36: authorization
+normalized the Location UUID while receipt matching retained route spelling.
+One canonical UUID now binds scope and receipt comparison, preserving Company/
+configured-Location isolation and authorization before disclosure. Twenty regression
+tests (18 reproduced pre-fix failures) passed after remediation; independent re-review
+approved all five Order commands and historical/restart/denial/conflict/no-duplicate cases.
+
+The runtime role uses supported authorized writers. Narrow grants, locked draft-line
+mutation, immutable receipts and deferred final-state checks constrain malformed writes;
+a deliberately fabricated fully consistent raw SQL command by a credential holder is
+outside the business-authorization contract. Uncertain Flutter commands survive only
+in the current process/session. Physical-device/accessibility evidence retains the
+existing limitations. These are acceptance criteria 94–96. M1, M2 CLOSED, M3, M4,
+P4.5 F01/F02 and P4.9 criterion 152 retain their dispositions. No unrelated debt is
+reopened or closed, and no global zero-debt claim is made.
+
+### P4.12 Security INFO observations
+
+These separate IDs trace the supplied focused Security review, which inspected all
+70 P4.12 changed paths. It returned SECURITY APPROVE within the declared supported-
+application-writer threat model, with zero confirmed vulnerabilities/security blockers
+and no required remediation. Fresh Flutter execution was blocked by an SDK cache
+lockfile issue; source inspection and matching earlier Flutter evidence were used.
+One delegated dynamic validation step was blocked and not retried. Neither is fresh
+execution evidence or a claim of universal absence of vulnerabilities.
+
+| ID | Observation in unchanged migration 0024 | Disposition / follow-up trigger |
+| --- | --- | --- |
+| I01 | Supplier retirement SQL CHECK does not explicitly reject NULL `retired_at`. | INFO / NONBLOCKING; commit blocker NO. Future authorized migration must explicitly validate retirement timestamp evidence and add regression cases. |
+| I02 | PurchaseOrder terminal SQL CHECK does not explicitly reject NULL `terminal_at`. | INFO / NONBLOCKING; commit blocker NO. Future authorized migration must explicitly validate terminal timestamp evidence and add regression cases. |
+| I03 | Receipt JSON comparison CHECK does not independently reject JSON null. | INFO / NONBLOCKING; commit blocker NO. Future authorized migration must explicitly validate comparison evidence and add regression cases. |
+
+PostgreSQL CHECK constraints accept SQL NULL/UNKNOWN. For **each I01–I03**, a known
+supported Purchasing API exploit is **NOT ESTABLISHED**, and a complete handcrafted-SQL
+transaction exploit is **NOT REPRODUCED**. These concern defense-in-depth against
+malformed SQL evidence under the supported-writer boundary, not reproduced API exploits.
+The checks are **not already hardened**. Migration 0024 remains unchanged; any bounded
+hardening needs an explicitly authorized **new migration** and regression evidence.
+No migration 0025 is created here; no P4.13 allocation is made. I01–I03 remain distinct
+from M1–M4 and do not change their taxonomy or dispositions.

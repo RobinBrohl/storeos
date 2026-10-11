@@ -96,3 +96,31 @@ P4.8 selected counts do not establish statutory annual-inventory certification o
 valuation. Operator physical counting and personnel decisions remain human. The
 bounded slice is DONE/CLOSED with targeted APPROVE, 124/124 PASS, SECURITY APPROVE and green changed-commit CI;
 reload/session replacement loses only memory tracking, never durable server evidence.
+
+## P4.12 accepted purchase intent and retained boundaries
+
+[Bounded Purchase Orders with Minimal Supplier Identity](development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11)
+is **DONE/CLOSED (accepted implementation)**: F01 CLOSED, independent targeted
+APPROVE, focused SECURITY APPROVE and successful implementation CI 38152045998.
+The [96-criterion matrix](development/phase-4-12-acceptance.md) is 93 PASS /
+3 QUALIFIED / 0 FAIL. Documentation closure publication and its own exact-head CI
+remain pending; P4.13 remains UNSELECTED.
+
+Issue is internal approval of ordering intent; it proves neither transmission,
+Supplier acceptance, delivery, Goods Receipt nor Stock increase. Administrative
+closure does not imply delivery. Receiving, richer Supplier identity, costs,
+pack/unit conversion, device offline writes and multi-site sync need separate
+selected contracts. No Purchasing business effects in Stock/Count, Production,
+Workforce/Tasks, Knowledge, Planogram or events/outbox are introduced.
+
+Memory-only uncertain recovery, physical-device/accessibility gaps and the
+supported-writer/raw-SQL boundary remain accepted limitations. Security INFO
+[I01–I03](development/technical-debt.md#p412-security-info-observations) separately
+trace NULL retirement/terminal timestamps and JSON comparison checks: commit blocker
+NO, supported-API exploit NOT ESTABLISHED, complete handcrafted-SQL transaction
+exploit NOT REPRODUCED. PostgreSQL CHECK accepts SQL NULL/UNKNOWN; these checks
+are not hardened. Future hardening requires an authorized new migration and
+regression evidence, without automatically allocating P4.13. Security's fresh
+Flutter SDK-cache lockfile block and one blocked, unretried delegated dynamic step
+remain disclosed in the closure record. Standing M1/M2 CLOSED/M3/M4, P4.5 F01/F02
+and P4.9 historical qualification dispositions remain unchanged.

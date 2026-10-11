@@ -1,6 +1,6 @@
 # ADR 0026: Bounded purchase order intent and durable snapshots
 
-Date: 2026-10-11. Decision: selected for local P4.12 implementation; independent review, focused security review and remote changed-commit CI remain pending.
+Date: 2026-10-11. Decision: Accepted. P4.12 implementation is DONE/CLOSED: F01 CLOSED, targeted independent APPROVE, focused SECURITY APPROVE and successful implementation-commit CI 38152045998. Documentation closure publication and its own exact-head CI remain pending. See [closure evidence](../development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11).
 
 ## Context
 
@@ -24,7 +24,7 @@ The Flutter workspace retains uncertain commands only in memory, with a deeply f
 
 ## Consequences
 
-Local site operation and operator-owned PostgreSQL evidence remain autonomous. Retired references and historical snapshots survive indefinitely; order references stay reserved across terminal states using deterministic ASCII-only case folding. There is no automatic supplier communication or Stock effect. Device offline writes, multi-site synchronization, receiving, costs and richer Supplier management require separately selected contracts. The three pending review gates must complete before P4.12 can be DONE/CLOSED.
+Local site operation and operator-owned PostgreSQL evidence remain autonomous. Retired references and historical snapshots survive indefinitely; order references stay reserved across terminal states using deterministic ASCII-only case folding. There is no automatic supplier communication or Stock effect. Device offline writes, multi-site synchronization, receiving, costs and richer Supplier management require separately selected contracts. The three implementation review/CI gates are complete; final documentation closure publication still requires its own successful exact-head CI.
 
 ## Alternatives
 
@@ -35,4 +35,4 @@ Local site operation and operator-owned PostgreSQL evidence remain autonomous. R
 
 ## Open questions and gates
 
-Independent review, subsequent focused Codex Security and exact changed-commit remote CI remain required. Receiving, Supplier contacts, costs, pack conversion, transmission, offline writes and multi-site synchronization are not selected decisions of this ADR.
+Independent review, subsequent focused Codex Security and exact implementation-commit remote CI are complete. Nonblocking Security INFO I01–I03 concern SQL NULL/UNKNOWN evidence checks; the current constraints are not hardened. See [traceability and future migration trigger](../development/technical-debt.md#p412-security-info-observations). Any hardening requires an authorized new migration and regression evidence; it does not allocate P4.13. Documentation closure commit/CI remain pending publication. Receiving, Supplier contacts, costs, pack conversion, transmission, offline writes and multi-site synchronization are not selected decisions of this ADR.

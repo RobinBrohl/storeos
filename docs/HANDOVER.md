@@ -1,6 +1,6 @@
 # StoreOS handover
 
-Current P4.12: **BOUNDED PURCHASE ORDERS WITH MINIMAL SUPPLIER IDENTITY** — **P4.12 IMPLEMENTED LOCALLY / F01 REMEDIATED / TARGETED RE-REVIEW PENDING / SECURITY REVIEW PENDING / REMOTE CHANGED-COMMIT CI PENDING**. Independent review returned CHANGES REQUIRED (89 PASS / 6 QUALIFIED / 1 FAIL); bounded F01 canonical Location replay remediation requires the new complete final-source pass and targeted re-review. Migration **0024** remains byte-identical (chain 0001–0024; 0001–0023 unchanged). Changes remain unstaged/uncommitted on main at baseline `604d1d198b158b1907dd000ea435d94dbae0dec1`. P4.12 is not DONE/CLOSED; P4.1–P4.11 remain DONE/CLOSED; P4.13 remains UNSELECTED. See [P4.12 implementation and evidence](development/phase-4-12-bounded-purchase-orders.md). No pending gate is claimed approved.
+P4.12 **Bounded Purchase Orders with Minimal Supplier Identity** is **DONE/CLOSED (accepted implementation)** at `f9122f21cde5149685059a184114b6d958a2bd32` (`Add bounded purchase orders`) on `main`. Initial independent CHANGES REQUIRED led to bounded F01 remediation **CLOSED** and targeted independent **APPROVE**; focused Codex Security returned **SECURITY APPROVE**. All five jobs succeeded in [implementation-commit CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998). Current acceptance: **93 PASS / 3 QUALIFIED / 0 FAIL**, with **1,261 final-source package tests**, **16/16 verification phases**, **13/13 opt-in journeys** and **3/3 numeric browser stages** PASS. Migration chain: **0001–0024**, latest `0024_bounded_purchase_orders.sql`; historical 0001–0023 unchanged, no 0025. P4.1–P4.11 remain DONE/CLOSED; **P4.13 remains UNSELECTED**. The final documentation-only closure commit and its own exact-head remote CI are **PENDING PUBLICATION**; no closure SHA, run or outcome exists yet. See [P4.12 closure evidence](development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11).
 
 The following P4.11/P4.10 closure records describe their historical closure state.
 
@@ -15,7 +15,7 @@ Final remediation regression: **1,133 package tests**, **21/21 phases**,
 **11/11 conditional journeys** and **3/3 numeric browser stages** PASS.
 Migration `0023_one_way_shift_transfers.sql` is delivered; the chain is
 **0001–0023** at P4.11 closure, with unchanged historical migrations 0001–0022.
-No active P4.11 remediation remains. **P4.12 was UNSELECTED at that closure**; its current local implementation is recorded above. See [P4.11 final closure](development/phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).
+No active P4.11 remediation remains. **P4.12 was UNSELECTED at that closure**; its current accepted implementation is recorded above. See [P4.11 final closure](development/phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).
 
 P4.10 Preparation Batch is **DONE/CLOSED** at implementation commit
 `e637187b17d4617212acf42b99a07500e9488c3d` on `main`. Initial independent
@@ -30,7 +30,7 @@ Migration `0022_preparation_batches.sql` is delivered/accepted; the committed
 chain at P4.10 closure was 0001–0022; P4.11 now extends it through 0023. Location-scoped declarations pin an exact
 published RecipeRevision, retain immutable terminal evidence and append-only
 count corrections, and have no Stock, Task/Shift or yield/output-unit effects.
-No active P4.10 or P4.11 remediation remains. P4.11 is DONE/CLOSED; P4.12 was unselected at that historical closure; its current local implementation is recorded above. See [P4.10 development record](development/phase-4-10-preparation-batches.md) and [ADR 0024](adr/0024-preparation-batch-evidence.md).
+No active P4.10 or P4.11 remediation remains. P4.11 is DONE/CLOSED; P4.12 was unselected at that historical closure; its current accepted implementation is recorded above. See [P4.10 development record](development/phase-4-10-preparation-batches.md) and [ADR 0024](adr/0024-preparation-batch-evidence.md).
 
 P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
 at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.
@@ -181,7 +181,7 @@ records the accepted correction and current-head CI.
 - Inventory owns Article/Assortment. Stock owns immutable movements and level
   projections; it reads the released inventory projection/port, not foreign tables.
   Existing stock survives Article/Assortment deactivation.
-- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0021 are
+- IDs and immutable snapshots/evidence are preserved. Migrations 0001–0024 are
   append-only; no applied file edits, silent overwrite or evidence deletion.
 - Personnel decisions remain human. Task activity is not attendance or employee scoring.
 
@@ -190,6 +190,8 @@ Details: [module boundaries](architecture/module-boundaries.md),
 [principles](product-principles.md).
 
 ## Active blockers and debt
+
+P4.12 F01 is CLOSED; no actionable independent review finding or security commit blocker remains. Nonblocking Security INFO observations I01–I03 remain explicit [follow-ups](development/technical-debt.md#p412-security-info-observations): SQL NULL/UNKNOWN timestamp and receipt JSON checks are not hardened by this closure. Supported-API exploits are not established; complete handcrafted-SQL transaction exploits were not reproduced.
 
 F01/F06/F07 and targeted-review findings R1/R2/R3 are **CLOSED** by `f9c8b07`,
 review APPROVE and changed-commit CI. The [P4.3 record](development/phase-4-3-manual-stock.md)
@@ -229,7 +231,7 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 ## Next Recommended Work
 
 1. P4.10 Preparation Batch is DONE/CLOSED with no active remediation.
-   P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is implemented locally with independent/security review and remote CI pending; P4.13 remains UNSELECTED.
+   P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure publication/CI pending. P4.13 remains UNSELECTED.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

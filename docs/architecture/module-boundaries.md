@@ -11,7 +11,7 @@ a separate process, Dart package or database schema.
 ## Current placement and dependency rule
 
 `apps/server` is the composition root. Logical modules live in
-`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock,merchandising,knowledge,production}/`;
+`apps/server/lib/src/{organization,people,workforce,tasks,inventory,stock,merchandising,knowledge,production,purchasing}/`;
 platform/application/infrastructure components provide identity, authorization,
 transactions, audit and events. The `modules/` directory is reserved, not where
 today's business implementations are deployed.
@@ -34,7 +34,7 @@ share a transaction; events are added only when the use case needs them.
 | Identity / platform authorization | Accounts, sessions, fixed role capabilities, Account–Employee links, plugin approvals/tokens | Revalidated access context and minimal references. No employee HR file or scheduling rule; configurable Roles/direct grants are future. |
 | People | Minimal Employee with current fixed Location and assignment interval | Authorized profile/eligibility information; no login sessions or task state. Future skills/HR need distinct privacy boundaries. |
 | Workforce | Shift drafts, publication/cancellation, last interval-amendment evidence, one-way transfer requests/consent/decisions/Shift lineage and receipts | Shift and transfer command/query ports. Planned work is not actual time recording. Published ownership is never reassigned in place; P4.11 creates exact replacement work. Begun-work reconciliation remains unsupported. |
-| Purchasing | Minimal Company Supplier identities; local PurchaseOrder intent, ordered immutable snapshots, lifecycle/history and eight durable receipts | Inventory-owned `PurchasingArticlePort` validates active Article/version/unit and effective local Assortment. Current Admin and configured execution Location govern Order ports. P4.12 is implemented locally under ADR 0026; independent/security review and remote CI pending. Issue is internal approval; closure is administrative. No receiving, prices, conversions, Stock/Task effects, transmission or events. |
+| Purchasing | Minimal Company Supplier identities; local PurchaseOrder intent, ordered immutable snapshots, lifecycle/history and eight durable receipts | Inventory-owned `PurchasingArticlePort` validates active Article/version/unit and effective local Assortment. Current Admin and configured execution Location govern Order ports. P4.12 is DONE/CLOSED under ADR 0026, with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure publication/CI pending. Issue is internal approval; closure is administrative. No receiving, prices, conversions, Stock/Task effects, transmission or events. |
 | Tasks | TaskTemplate revisions/guidance selection, immutable TaskInstance snapshots/pins, execution state, step results, blockings, numeric attempts, command receipts and source/replacement transfer links | Task creation/execution/resolution/query and exact transfer validation/lineage ports. Does not update Workforce tables or own future HACCP records. |
 | Inventory | Company-wide Article and ArticleLocationAssortment | `InventoryArticlePort` and released `inventory_article_location_projection`. Owns effective Article/Assortment information, not stock quantities or prices. |
 | Stock | StockLevel projection, immutable StockMovement ledger, StockCount/Line/Round/Observation/Command | Authorized manual opening/correction and selected 1–100-level physical counts, blind own observation, recount and whole atomic approval. Exact thousandths, immutable unit/baselines, typed count correction provenance and count-specific receipts. Public People/Identity ports supply eligibility. No foreign business tables, Tasks, events, valuation, receiving or unit conversion. P4.8 DONE/CLOSED; targeted APPROVE, 124/124 PASS, SECURITY APPROVE and green exact-commit CI; ADR 0022. |
@@ -121,7 +121,7 @@ Public ports should express product dependencies without circular Domain ownersh
 | --- | --- | --- |
 | Knowledge extensions | Suggestions and separate review beyond delivered P4.5/P4.6 | Concrete Task guidance is delivered through [ADR 0020](../adr/0020-task-knowledge-guidance.md); further consumers/lifecycle changes need separate contracts. Reads never change execution history. |
 | Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
-| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.12 Purchasing intent is implemented locally with external gates pending; P4.13 remains UNSELECTED. |
+| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.12 Purchasing intent is DONE/CLOSED; documentation closure publication/CI pending; P4.13 remains UNSELECTED. |
 | Purchasing / Receiving extensions | Receipt/source cost evidence beyond bounded P4.12 order intent | Article/unit references; future authorized Stock commands for accepted physical receipts require separate selection. Not Stock ledger owner or invented valuation. |
 | Sales integration | Canonical SalesSource/import/checkpoint, Sale/Line source references, mapping and import health | Core validates authority/identity and coordinates explicit Stock/report effects. Vendor adapter acquires/converts; checkout/payment/fiscal archive ownership separate. |
 | Pricing | Effective prices/currency and approval rules | Article references; Menu consumes approved price contract. No implicit price column in Article. |
@@ -142,7 +142,7 @@ complete source/replacement Task links and exact snapshot verification. The
 application coordinator uses public owner ports for Identity/People, Workforce,
 Tasks and guidance validation; it never accesses their foreign repositories.
 F01/F02/F03 are CLOSED; targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187 establish closure. Further
-Workforce capabilities remain unselected. P4.12 implements bounded Purchasing intent locally under ADR 0026, with independent/security review and changed-commit CI pending; P4.13 remains UNSELECTED.
+Workforce capabilities remain unselected. P4.12 delivers accepted bounded Purchasing intent under ADR 0026, with documentation closure publication/CI pending; P4.13 remains UNSELECTED.
 
 Own each schema change through a new tested migration; retain IDs, snapshots and
 supported contracts. Do not let a future integration write Core tables directly.

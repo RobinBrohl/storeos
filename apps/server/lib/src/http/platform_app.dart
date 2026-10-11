@@ -1,4 +1,6 @@
 import 'shift_routes.dart';
+import 'shift_transfer_routes.dart';
+import '../application/shift_transfer_application.dart';
 import '../application/shift_application.dart';
 import 'package:shelf/shelf.dart';
 
@@ -35,6 +37,9 @@ Handler createPlatformHandler(
   PlatformDatabase database,
 ) => Cascade()
     .add(ShiftRoutes(auth, ShiftApplication(database)).router.call)
+    .add(
+      ShiftTransferRoutes(auth, ShiftTransferApplication(database)).router.call,
+    )
     .add(TaskTemplateRoutes(auth, TaskTemplateService(database)).router.call)
     .add(ArticleRoutes(auth, ArticleService(database)).router.call)
     .add(

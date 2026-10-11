@@ -50,6 +50,14 @@ Selbstbedienung (P1) ergänzt unter `/api/v1/platform`:
 
 ## Current documentation boundaries
 
+P4.11 adds strict `ShiftTransferCommandInput` and bounded immutable evidence DTOs,
+eleven concrete operations in `platform.openapi.json` referenced by canonical
+`openapi.yaml`, and operation-specific errors. Regenerate only these additions with
+`dart run tool/shift_transfer_openapi.dart` from this package. Contract tests validate
+exact lifecycle/pin/lineage evidence, privacy and OpenAPI references. The
+[P4.11 record](../../docs/development/phase-4-11-one-way-shift-transfers.md) describes
+participant authorization and Company+operation replay; broader M3/M4 debt remains.
+
 OpenAPI route/error drift prevention remains M3; broad error-taxonomy cleanup remains
 M4. Shared Dart contracts and bounded endpoint tests do not constitute a global
 router/OpenAPI consistency gate. Every API-adding slice must document and test

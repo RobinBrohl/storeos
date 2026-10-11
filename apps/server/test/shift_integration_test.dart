@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -23,6 +24,8 @@ part 'task_cancellation_integration_cases.dart';
 part 'task_numeric_integration_cases.dart';
 part 'shift_cancellation_integration_cases.dart';
 part 'shift_amendment_integration_cases.dart';
+part 'shift_transfer_integration_cases.dart';
+part 'shift_transfer_safety_cases.dart';
 
 const _company = '11111111-1111-4111-8111-111111111111';
 const _home = '22222222-2222-4222-8222-222222222222';
@@ -31,6 +34,8 @@ const _password = 'employee-test-only-password-strong';
 final _url = Platform.environment['STOREOS_TEST_DATABASE'];
 
 void main() {
+  shiftTransferTests();
+  shiftTransferSafetyTests();
   executionTests();
   blockingTests();
   cancellationTests();
@@ -198,6 +203,10 @@ void main() {
       );
       for (final route in [
         '/shifts',
+        '/me/shift-transfers',
+        '/locations/$_home/shift-transfers',
+        '/me/shift-transfers/${newUuid()}',
+        '/employee-home/shifts/${newUuid()}/transfer-recipients',
         '/employee-home/shifts',
         '/blocked-tasks',
         '/employee-home/blocked-tasks',
@@ -214,6 +223,19 @@ void main() {
         token: token,
         expected: 401,
       );
+      for (final route in [
+        '/me/shift-transfers',
+        '/me/shift-transfers/${newUuid()}/accept',
+        '/locations/$_home/shift-transfers/${newUuid()}/approve',
+      ]) {
+        await f.call(
+          'POST',
+          route,
+          token: token,
+          body: _command(1),
+          expected: 401,
+        );
+      }
     }),
     skip: _skip,
   );
@@ -821,6 +843,7 @@ void main() {
         '0020_stock_counts',
         '0021_recipe_compositions',
         '0022_preparation_batches',
+        '0023_one_way_shift_transfers',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);

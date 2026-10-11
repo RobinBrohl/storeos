@@ -1,4 +1,5 @@
 import '../application/shift_controller.dart';
+import '../application/shift_transfer_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:storeos_design_system/storeos_design_system.dart';
@@ -51,6 +52,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   RecipeController? _recipes;
   PreparationBatchController? _batches, _ownBatches;
   ShiftController? _shifts, _home;
+  ShiftTransferController? _transfers, _ownTransfers;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _wasAuthenticated = false;
 
@@ -61,6 +63,17 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _controller.addListener(_closeDialogsOnSessionEnd);
     if (widget.platformApi case final api?) {
       _platformController = PlatformController(_controller, api);
+      _transfers = ShiftTransferController(
+        _controller,
+        _platformController!,
+        api,
+        self: false,
+      );
+      _ownTransfers = ShiftTransferController(
+        _controller,
+        _platformController!,
+        api,
+      );
       _shifts = ShiftController(_controller, _platformController!, api);
       _home = ShiftController(
         _controller,
@@ -113,6 +126,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
   void dispose() {
     _controller.removeListener(_closeDialogsOnSessionEnd);
     _shifts?.dispose();
+    _transfers?.dispose();
+    _ownTransfers?.dispose();
     _home?.dispose();
     _templates?.dispose();
     _articles?.dispose();
@@ -181,6 +196,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       batches: _batches,
                       ownBatches: _ownBatches,
                       shifts: _shifts,
+                      transfers: _transfers,
+                      ownTransfers: _ownTransfers,
                       home: _home,
                       baseUri: widget.baseUri,
                     )

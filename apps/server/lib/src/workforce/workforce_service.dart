@@ -12,6 +12,17 @@ class WorkforceService {
     : _repository = ShiftRepository(database.schema, database.companyId);
   final PlatformDatabase database;
   final ShiftRepository _repository;
+  Future<bool> overlapsTransfer(
+    TxSession tx,
+    ShiftDto source,
+    String recipient,
+  ) => _repository.overlapsWindow(
+    tx,
+    source.id,
+    recipient,
+    source.draft.startsAt,
+    source.draft.endsAt,
+  );
   Future<Shift> _get(TxSession tx, String id) async {
     final shift = await _repository.find(tx, id);
     if (shift == null) {

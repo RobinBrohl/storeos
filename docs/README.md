@@ -1,5 +1,7 @@
 # Documentation index
 
+P4.11 One-way Shift Transfer is **IMPLEMENTED LOCALLY — independent review, security and changed-source CI pending**. It remains unstaged/uncommitted on main and is not DONE/CLOSED. Migration 0023 is new; migrations 0001–0022 remain unchanged. See [P4.11 development record](development/phase-4-11-one-way-shift-transfers.md).
+
 P4.10 Preparation Batch is **DONE/CLOSED** at implementation commit
 `e637187b17d4617212acf42b99a07500e9488c3d` on `main`. Initial independent
 **CHANGES REQUIRED** led to F01/F02 remediation and targeted **APPROVE**;
@@ -13,8 +15,8 @@ Migration `0022_preparation_batches.sql` is delivered/accepted; the committed
 chain is 0001–0022, with no 0023. Location-scoped declarations pin an exact
 published RecipeRevision, retain immutable terminal evidence and append-only
 count corrections, and have no Stock, Task/Shift or yield/output-unit effects.
-No active P4.10 remediation remains. **P4.11 is UNSELECTED**; next is fresh
-P4.11 capability selection from clean `main`. See [P4.10 development record](development/phase-4-10-preparation-batches.md) and [ADR 0024](adr/0024-preparation-batch-evidence.md).
+No active P4.10 remediation remains. P4.11 is now implemented locally with review/security/changed-source CI pending; its baseline was fresh
+P4.11 capability selection from clean `main`. See the P4.11 development record for the current uncommitted slice. See [P4.10 development record](development/phase-4-10-preparation-batches.md) and [ADR 0024](adr/0024-preparation-batch-evidence.md).
 
 P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
 at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.

@@ -297,6 +297,17 @@ class MigrationRunner {
             'REVOKE DELETE, TRUNCATE ON $_schema.knowledge_articles, $_schema.knowledge_revisions FROM $role',
           );
         }
+        if (known.containsKey('0023_one_way_shift_transfers')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.workforce_shift_transfer_requests, $_schema.workforce_shift_transfer_commands, $_schema.task_transfer_links TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.workforce_shift_transfer_requests, $_schema.workforce_shift_transfer_commands, $_schema.task_transfer_links FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status,version,accepted_by,accepted_at,acceptance_operation_id,terminal_by,terminal_at,terminal_reason,terminal_operation_id,terminal_kind,replacement_shift_id) ON $_schema.workforce_shift_transfer_requests TO $role',
+          );
+        }
         if (known.containsKey('0022_preparation_batches')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.production_preparation_batches, $_schema.production_preparation_batch_commands, $_schema.production_preparation_batch_count_corrections TO $role',

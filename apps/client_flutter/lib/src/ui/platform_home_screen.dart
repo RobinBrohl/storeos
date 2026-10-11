@@ -1,4 +1,6 @@
 import '../application/shift_controller.dart';
+import '../application/shift_transfer_controller.dart';
+import 'shift_transfer_section.dart';
 import 'shift_section.dart';
 import 'package:flutter/material.dart';
 import 'package:storeos_design_system/storeos_design_system.dart';
@@ -30,6 +32,8 @@ import '../application/employee_controller.dart';
 import 'system_status_screen.dart';
 
 enum _Section {
+  transfers,
+  ownTransfers,
   status,
   organization,
   users,
@@ -68,6 +72,8 @@ class PlatformHomeScreen extends StatefulWidget {
     this.batches,
     this.ownBatches,
     this.shifts,
+    this.transfers,
+    this.ownTransfers,
     this.home,
     required this.baseUri,
     super.key,
@@ -86,6 +92,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final RecipeController? recipes;
   final PreparationBatchController? batches, ownBatches;
   final ShiftController? shifts, home;
+  final ShiftTransferController? transfers, ownTransfers;
   final Uri baseUri;
 
   @override
@@ -97,6 +104,12 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   List<_Section> get _available => [
     _Section.status,
+    if (widget.ownTransfers != null &&
+        widget.platform.allows('workforce.transfers.self.read'))
+      _Section.ownTransfers,
+    if (widget.transfers != null &&
+        widget.platform.allows('workforce.transfers.manage'))
+      _Section.transfers,
     if (widget.ownBatches != null &&
         widget.platform.allows('production.batches.self.read'))
       _Section.ownBatches,
@@ -139,6 +152,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   ];
 
   String _label(_Section section) => switch (section) {
+    _Section.transfers => 'Shift transfer review',
+    _Section.ownTransfers => 'My shift transfers',
     _Section.shifts => 'Schichten',
     _Section.home => 'Meine Arbeit',
     _Section.templates => 'Arbeitsvorlagen',
@@ -161,6 +176,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   };
 
   IconData _icon(_Section section) => switch (section) {
+    _Section.transfers => Icons.fact_check_outlined,
+    _Section.ownTransfers => Icons.swap_horiz,
     _Section.shifts => Icons.calendar_month_outlined,
     _Section.home => Icons.assignment_outlined,
     _Section.templates => Icons.checklist_outlined,
@@ -185,6 +202,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   void _select(_Section section) {
     setState(() => _selected = section);
     switch (section) {
+      case _Section.transfers:
+      case _Section.ownTransfers:
       case _Section.batches:
       case _Section.ownBatches:
       case _Section.shifts:
@@ -217,6 +236,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   void _refresh(_Section section) {
     switch (section) {
+      case _Section.transfers:
+        widget.transfers!.load();
+      case _Section.ownTransfers:
+        widget.ownTransfers!.load();
       case _Section.batches:
         widget.batches!.load();
       case _Section.ownBatches:
@@ -251,6 +274,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   }
 
   Widget _body(_Section section) => switch (section) {
+    _Section.transfers => ShiftTransferSection(controller: widget.transfers!),
+    _Section.ownTransfers => ShiftTransferSection(
+      controller: widget.ownTransfers!,
+    ),
     _Section.batches => PreparationBatchSection(controller: widget.batches!),
     _Section.ownBatches => PreparationBatchSection(
       controller: widget.ownBatches!,
@@ -262,6 +289,32 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.home => ShiftSection(
       key: const ValueKey('work-home'),
       controller: widget.home!,
+      transferShortcut:
+          widget.ownTransfers != null &&
+              widget.platform.allows('workforce.transfers.self.request')
+          ? (shift) async {
+              final binding = widget.session.sessionIdentity;
+              await widget.ownTransfers!.chooseSource(shift);
+              if (!mounted ||
+                  !identical(binding, widget.session.sessionIdentity)) {
+                return;
+              }
+              await Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => Scaffold(
+                    appBar: AppBar(title: const Text('Propose shift transfer')),
+                    body: ShiftTransferSection(
+                      controller: widget.ownTransfers!,
+                    ),
+                  ),
+                ),
+              );
+              if (mounted &&
+                  identical(binding, widget.session.sessionIdentity)) {
+                widget.home!.load();
+              }
+            }
+          : null,
       countsShortcut:
           widget.ownCounts != null &&
               widget.platform.allows('stock.counts.self.read')

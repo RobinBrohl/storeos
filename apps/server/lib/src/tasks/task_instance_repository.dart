@@ -5,6 +5,63 @@ import 'package:storeos_api_contracts/api_contracts.dart';
 class TaskInstanceRepository {
   TaskInstanceRepository(this.schema, this.companyId);
   final String schema, companyId;
+  Future<bool> pristine(TxSession tx, String shift) async => (await tx.execute(
+    Sql.named(
+      '''SELECT 1 FROM $schema.task_instances t
+      WHERE t.company_id=CAST(@company AS uuid) AND t.shift_id=CAST(@shift AS uuid)
+      AND (t.status<>'open' OR t.version<>1 OR t.started_at IS NOT NULL OR t.started_by IS NOT NULL
+        OR EXISTS(SELECT 1 FROM $schema.task_step_results r WHERE r.instance_id=t.id)
+        OR EXISTS(SELECT 1 FROM $schema.task_numeric_attempts r WHERE r.instance_id=t.id)
+        OR EXISTS(SELECT 1 FROM $schema.task_blockings r WHERE r.instance_id=t.id)
+        OR EXISTS(SELECT 1 FROM $schema.task_execution_commands r WHERE r.instance_id=t.id)) LIMIT 1''',
+    ),
+    parameters: {'company': companyId, 'shift': shift},
+  )).isEmpty;
+
+  Future<void> linkTransfer(
+    TxSession tx,
+    String location,
+    String request,
+    TaskInstanceDto source,
+    TaskInstanceDto replacement,
+  ) async {
+    await tx.execute(
+      Sql.named(
+        '''INSERT INTO $schema.task_transfer_links
+      (company_id,location_id,request_id,source_shift_id,replacement_shift_id,source_task_id,replacement_task_id,template_id,revision_id,position)
+      VALUES(CAST(@company AS uuid),CAST(@location AS uuid),CAST(@request AS uuid),CAST(@sourceShift AS uuid),CAST(@replacementShift AS uuid),CAST(@source AS uuid),CAST(@replacement AS uuid),CAST(@template AS uuid),CAST(@revision AS uuid),@position)''',
+      ),
+      parameters: {
+        'company': companyId,
+        'location': location,
+        'request': request,
+        'sourceShift': source.shiftId,
+        'replacementShift': replacement.shiftId,
+        'source': source.id,
+        'replacement': replacement.id,
+        'template': source.templateId,
+        'revision': source.revisionId,
+        'position': source.position,
+      },
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> transferLinks(
+    TxSession tx,
+    String location,
+    String request,
+  ) async => (await tx.execute(
+    Sql.named(
+      '''SELECT source_task_id::text AS "sourceTaskId",replacement_task_id::text AS "replacementTaskId",
+      source_shift_id::text AS "sourceShiftId",replacement_shift_id::text AS "replacementShiftId",template_id::text AS "templateId",revision_id::text AS "revisionId",position
+      FROM $schema.task_transfer_links WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) AND request_id=CAST(@request AS uuid) ORDER BY position''',
+    ),
+    parameters: {
+      'company': companyId,
+      'location': location,
+      'request': request,
+    },
+  )).map((r) => r.toColumnMap()).toList();
   Future<void> insert(
     TxSession tx, {
     required String id,

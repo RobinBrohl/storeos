@@ -37,6 +37,7 @@ import 'stock_count_acceptance.dart';
 import 'knowledge_acceptance.dart';
 import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
+import 'shift_transfer_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
@@ -74,6 +75,7 @@ const _expectedPendingMigrations = [
   '0020_stock_counts',
   '0021_recipe_compositions',
   '0022_preparation_batches',
+  '0023_one_way_shift_transfers',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1278,7 +1280,103 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       await auth.authenticate(adminToken),
       await auth.authenticate(workerToken),
     );
+    final transferEmployee = '10000000-0000-4000-8000-000000000011',
+        transferAccount = '10000000-0000-4000-8000-000000000012';
+    await api.request(
+      'POST',
+      '/api/v1/platform/employees',
+      token: adminToken,
+      expected: 201,
+      body: {
+        'id': transferEmployee,
+        'displayName': 'Update transfer recipient',
+        'locationId': locationId,
+      },
+    );
+    await api.request(
+      'POST',
+      '/api/v1/platform/users',
+      token: adminToken,
+      expected: 201,
+      body: {
+        'id': transferAccount,
+        'username': 'update_transfer_recipient',
+        'password': manifest['workerPassword'],
+        'locationId': locationId,
+        'role': 'employee',
+      },
+    );
+    await api.request(
+      'POST',
+      '/api/v1/platform/employees/$transferEmployee/account-link',
+      token: adminToken,
+      expected: 201,
+      body: {
+        'id': '10000000-0000-4000-8000-000000000013',
+        'accountId': transferAccount,
+        'expectedEmployeeVersion': 1,
+        'expectedAccountVersion': 1,
+      },
+    );
+    final transferLogin = await api.request(
+      'POST',
+      '/api/v1/auth/login',
+      body: {
+        'username': 'update_transfer_recipient',
+        'password': manifest['workerPassword'],
+      },
+    );
+    final transferToken = transferLogin['token'] as String;
+    final transferRecords = await seedShiftTransfers(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        token: adminToken,
+        body: body,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        token: workerToken,
+        body: body,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        token: transferToken,
+        body: body,
+        expected: status,
+      ),
+      locationId,
+      manifest['employeeId'] as String,
+      transferEmployee,
+      template['id'] as String,
+      publishedId,
+    );
+    await verifyShiftTransfers(
+      database,
+      await auth.authenticate(adminToken),
+      await auth.authenticate(workerToken),
+      await auth.authenticate(transferToken),
+      transferRecords,
+    );
+    await verifyTransferGrants(owner, _schema, runtimeUser);
+    await api.request(
+      'POST',
+      '/api/v1/auth/logout',
+      token: transferToken,
+      expected: 204,
+    );
     await _writeJson(resultFile, {
+      'transfers': {
+        'migration': '0023_one_way_shift_transfers',
+        'requests': 9,
+        'receipts': 21,
+        'taskLinks': 1,
+        'exactReplayVerified': true,
+      },
       'recipes': {
         'preparationMigration': '0022_preparation_batches',
         'preparationBatches': 5,

@@ -14155,6 +14155,1736 @@
           }
         }
       }
+    },
+    "/api/v1/platform/employee-home/shifts/{shiftId}/transfer-recipients": {
+      "get": {
+        "operationId": "listShiftTransferRecipients",
+        "summary": "listShiftTransferRecipients",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Keyset cursor binds endpoint, Company, configured Location, current Employee and filters; picker also binds source Shift/version."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferRecipientPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: resource_limit.",
+            "x-error-codes": [
+              "resource_limit"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422: shift_in_progress, shift_not_transferable.",
+            "x-error-codes": [
+              "shift_in_progress",
+              "shift_not_transferable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-transfers": {
+      "get": {
+        "operationId": "listSelfShiftTransfers",
+        "summary": "listSelfShiftTransfers",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Keyset cursor binds endpoint, Company, configured Location, current Employee and filters; picker also binds source Shift/version."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "proposed",
+                "accepted",
+                "declined",
+                "withdrawn",
+                "rejected",
+                "approved"
+              ]
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "incoming",
+                "outgoing"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "proposeShiftTransfer",
+        "summary": "proposeShiftTransfer",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Strict duplicate-decoded-name JSON; at most 8192 bytes. Unknown fields refused. Identity, interval, snapshots, timestamps and replacement IDs are server-derived.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftTransferPropose"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Original committed command evidence; current detail is loaded separately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferOutcome"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: operation_conflict, shift_conflict, shift_overlap, transfer_already_pending.",
+            "x-error-codes": [
+              "operation_conflict",
+              "shift_conflict",
+              "shift_overlap",
+              "transfer_already_pending"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422: employee_unavailable, recipient_unavailable, shift_in_progress, shift_not_transferable.",
+            "x-error-codes": [
+              "employee_unavailable",
+              "recipient_unavailable",
+              "shift_in_progress",
+              "shift_not_transferable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-transfers/{requestId}": {
+      "get": {
+        "operationId": "readSelfShiftTransfer",
+        "summary": "readSelfShiftTransfer",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-transfers/{requestId}/accept": {
+      "post": {
+        "operationId": "acceptSelfShiftTransfer",
+        "summary": "acceptSelfShiftTransfer",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Strict duplicate-decoded-name JSON; at most 8192 bytes. Unknown fields refused. Identity, interval, snapshots, timestamps and replacement IDs are server-derived.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftTransferRespond"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed command evidence; current detail is loaded separately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferOutcome"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: operation_conflict, shift_conflict, shift_overlap, transfer_conflict.",
+            "x-error-codes": [
+              "operation_conflict",
+              "shift_conflict",
+              "shift_overlap",
+              "transfer_conflict"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, planogram_guidance_unavailable, recipient_unavailable, shift_in_progress, shift_not_transferable.",
+            "x-error-codes": [
+              "employee_unavailable",
+              "guidance_unavailable",
+              "planogram_guidance_unavailable",
+              "recipient_unavailable",
+              "shift_in_progress",
+              "shift_not_transferable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-transfers/{requestId}/decline": {
+      "post": {
+        "operationId": "declineSelfShiftTransfer",
+        "summary": "declineSelfShiftTransfer",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Strict duplicate-decoded-name JSON; at most 8192 bytes. Unknown fields refused. Identity, interval, snapshots, timestamps and replacement IDs are server-derived.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftTransferRespond"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed command evidence; current detail is loaded separately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferOutcome"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: operation_conflict, transfer_conflict.",
+            "x-error-codes": [
+              "operation_conflict",
+              "transfer_conflict"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-transfers/{requestId}/withdraw": {
+      "post": {
+        "operationId": "withdrawSelfShiftTransfer",
+        "summary": "withdrawSelfShiftTransfer",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Strict duplicate-decoded-name JSON; at most 8192 bytes. Unknown fields refused. Identity, interval, snapshots, timestamps and replacement IDs are server-derived.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftTransferClose"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed command evidence; current detail is loaded separately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferOutcome"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_reason, invalid_request.",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_reason",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: operation_conflict, transfer_conflict.",
+            "x-error-codes": [
+              "operation_conflict",
+              "transfer_conflict"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-transfers": {
+      "get": {
+        "operationId": "listManagedShiftTransfers",
+        "summary": "listManagedShiftTransfers",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Keyset cursor binds endpoint, Company, configured Location, current Employee and filters; picker also binds source Shift/version."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "proposed",
+                "accepted",
+                "declined",
+                "withdrawn",
+                "rejected",
+                "approved"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-transfers/{requestId}": {
+      "get": {
+        "operationId": "readManagedShiftTransfer",
+        "summary": "readManagedShiftTransfer",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-transfers/{requestId}/approve": {
+      "post": {
+        "operationId": "approveManagedShiftTransfer",
+        "summary": "approveManagedShiftTransfer",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Strict duplicate-decoded-name JSON; at most 8192 bytes. Unknown fields refused. Identity, interval, snapshots, timestamps and replacement IDs are server-derived.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftTransferRespond"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed command evidence; current detail is loaded separately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferOutcome"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: operation_conflict, shift_conflict, shift_overlap, transfer_conflict.",
+            "x-error-codes": [
+              "operation_conflict",
+              "shift_conflict",
+              "shift_overlap",
+              "transfer_conflict"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, planogram_guidance_unavailable, recipient_unavailable, shift_in_progress, shift_not_transferable.",
+            "x-error-codes": [
+              "employee_unavailable",
+              "guidance_unavailable",
+              "planogram_guidance_unavailable",
+              "recipient_unavailable",
+              "shift_in_progress",
+              "shift_not_transferable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-transfers/{requestId}/reject": {
+      "post": {
+        "operationId": "rejectManagedShiftTransfer",
+        "summary": "rejectManagedShiftTransfer",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current Company/capability/configured Location and participant or manager resource scope precede receipt lookup. Exact replay returns original evidence before fresh state checks. No execution results in transfer evidence. Approval requires independent manager and atomically cancels and republishes exact work. No automatic expiry or notifications.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Strict duplicate-decoded-name JSON; at most 8192 bytes. Unknown fields refused. Identity, interval, snapshots, timestamps and replacement IDs are server-derived.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftTransferClose"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original committed command evidence; current detail is loaded separately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftTransferOutcome"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_reason, invalid_request.",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_reason",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: operation_conflict, transfer_conflict.",
+            "x-error-codes": [
+              "operation_conflict",
+              "transfer_conflict"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -21493,6 +23223,868 @@
               "type": "string"
             },
             "description": "Current context only. Frozen approved content remains authoritative. Retirement is not emergency withdrawal."
+          }
+        }
+      },
+      "ShiftTransferPropose": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "requestId",
+          "sourceShiftId",
+          "expectedSourceVersion",
+          "recipientEmployeeId"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceShiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedSourceVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "recipientEmployeeId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ShiftTransferRespond": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        }
+      },
+      "ShiftTransferClose": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion",
+          "reason"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Trimmed plain text, bounded by Unicode code points, excluding C0/C1 controls. Required for withdrawal and manager rejection; excluded from audit/logs. Decline collects no reason."
+          }
+        }
+      },
+      "ShiftTransferKnowledgePin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "articleId",
+          "revisionId"
+        ],
+        "properties": {
+          "articleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ShiftTransferPlanogramPin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fixtureId",
+          "assignmentId",
+          "revisionId"
+        ],
+        "properties": {
+          "fixtureId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ShiftTransferTaskSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "templateId",
+          "revisionId",
+          "position",
+          "knowledgeGuidance",
+          "planogramGuidance"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          },
+          "knowledgeGuidance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShiftTransferKnowledgePin"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planogramGuidance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShiftTransferPlanogramPin"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "TaskTransferLink": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceTaskId",
+          "replacementTaskId",
+          "sourceShiftId",
+          "replacementShiftId",
+          "templateId",
+          "revisionId",
+          "position"
+        ],
+        "properties": {
+          "sourceTaskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "replacementTaskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceShiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "replacementShiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          }
+        }
+      },
+      "ShiftTransferEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "locationId",
+          "sourceShiftId",
+          "sourceEmployeeId",
+          "recipientEmployeeId",
+          "proposedBy",
+          "sourceLinkId",
+          "recipientLinkId",
+          "recipientAccountId",
+          "proposalOperationId",
+          "sourceVersion",
+          "sourceAccountVersion",
+          "recipientAccountVersion",
+          "version",
+          "startsAt",
+          "endsAt",
+          "proposedAt",
+          "status",
+          "acceptedBy",
+          "acceptanceOperationId",
+          "terminalBy",
+          "terminalOperationId",
+          "replacementShiftId",
+          "acceptedAt",
+          "terminalAt",
+          "terminalReason",
+          "terminalKind",
+          "sourceName",
+          "recipientName",
+          "tasks",
+          "taskLinks"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceShiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceEmployeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientEmployeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "proposedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceLinkId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientLinkId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientAccountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "proposalOperationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "sourceAccountVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "recipientAccountVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "proposedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "proposed",
+              "accepted",
+              "declined",
+              "withdrawn",
+              "rejected",
+              "approved"
+            ]
+          },
+          "acceptedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acceptanceOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replacementShiftId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acceptedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "description": "Trimmed plain text, bounded by Unicode code points, excluding C0/C1 controls. Required for withdrawal and manager rejection; excluded from audit/logs. Decline collects no reason."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalKind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "decline",
+                  "source_withdraw",
+                  "recipient_withdraw",
+                  "manager_reject",
+                  "manager_approve"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sourceName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "recipientName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "tasks": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/ShiftTransferTaskSummary"
+            }
+          },
+          "taskLinks": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/TaskTransferLink"
+            }
+          }
+        }
+      },
+      "ShiftTransferDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "locationId",
+          "sourceShiftId",
+          "sourceEmployeeId",
+          "recipientEmployeeId",
+          "proposedBy",
+          "sourceLinkId",
+          "recipientLinkId",
+          "recipientAccountId",
+          "proposalOperationId",
+          "sourceVersion",
+          "sourceAccountVersion",
+          "recipientAccountVersion",
+          "version",
+          "startsAt",
+          "endsAt",
+          "proposedAt",
+          "status",
+          "acceptedBy",
+          "acceptanceOperationId",
+          "terminalBy",
+          "terminalOperationId",
+          "replacementShiftId",
+          "acceptedAt",
+          "terminalAt",
+          "terminalReason",
+          "terminalKind",
+          "sourceName",
+          "recipientName",
+          "tasks",
+          "taskLinks",
+          "actionable",
+          "nonActionableReason",
+          "participantRole"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceShiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceEmployeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientEmployeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "proposedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceLinkId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientLinkId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientAccountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "proposalOperationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "sourceAccountVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "recipientAccountVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "proposedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "proposed",
+              "accepted",
+              "declined",
+              "withdrawn",
+              "rejected",
+              "approved"
+            ]
+          },
+          "acceptedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acceptanceOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replacementShiftId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acceptedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "description": "Trimmed plain text, bounded by Unicode code points, excluding C0/C1 controls. Required for withdrawal and manager rejection; excluded from audit/logs. Decline collects no reason."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalKind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "decline",
+                  "source_withdraw",
+                  "recipient_withdraw",
+                  "manager_reject",
+                  "manager_approve"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sourceName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "recipientName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "tasks": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/ShiftTransferTaskSummary"
+            }
+          },
+          "taskLinks": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/TaskTransferLink"
+            }
+          },
+          "actionable": {
+            "type": "boolean"
+          },
+          "nonActionableReason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "participantRole": {
+            "type": "string",
+            "enum": [
+              "source",
+              "recipient",
+              "manager"
+            ]
+          }
+        }
+      },
+      "ShiftTransferOutcome": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "request",
+          "replayed"
+        ],
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/ShiftTransferEvidence"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ShiftTransferPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ShiftTransferEvidence"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ShiftTransferRecipientPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor",
+          "shift",
+          "sourceName",
+          "tasks"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "employeeId",
+                "displayName"
+              ],
+              "properties": {
+                "employeeId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "displayName": {
+                  "type": "string",
+                  "maxLength": 120
+                }
+              }
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "shift": {
+            "$ref": "#/components/schemas/Shift"
+          },
+          "sourceName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "tasks": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/ShiftTransferTaskSummary"
+            }
           }
         }
       }

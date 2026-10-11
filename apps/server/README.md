@@ -96,6 +96,13 @@ alle drei Variablen selbst zu setzen. Die CI stellt diese Voraussetzungen bereit
 
 ## Current domain and operational boundary — 2026-10-04
 
+The current local P4.11 migration chain is 0001–0023. One-way future/pristine Shift
+transfer now uses recipient consent and independent manager approval with atomic
+cancellation, exact new replacement work, immutable receipts and Shift/Task lineage.
+Run acceptance through the isolated `scripts/transfers` wrappers. Independent
+review, security review and changed-source CI remain pending; the dated text below
+describes an earlier committed boundary. See the [P4.11 record](../../docs/development/phase-4-11-one-way-shift-transfers.md).
+
 Logical modules now include Employee/Tasks/Workforce through P1b.9 plus Inventory
 Article/Assortment and Stock. The full migration chain is 0001–0015. Pristine
 published interval amendment and the M2 database overlap invariant exist; general

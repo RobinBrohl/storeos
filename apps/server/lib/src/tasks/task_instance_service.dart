@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:postgres/postgres.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
 import '../platform/platform_database.dart';
@@ -18,6 +19,119 @@ class TaskInstanceService {
   final TaskInstanceRepository _instances;
   final KnowledgeGuidancePort _knowledge;
   final PlanogramGuidancePort _planogram;
+
+  /// Bounded transfer projection deliberately omits all execution evidence.
+  Future<List<Map<String, dynamic>>> transferSummary(
+    TxSession tx,
+    String shift,
+  ) async {
+    final items = await _instances.forShifts(tx, [shift]);
+    return [
+      for (final t in items)
+        {
+          'id': t.id,
+          'title': t.title,
+          'templateId': t.templateId,
+          'revisionId': t.revisionId,
+          'position': t.position,
+          'knowledgeGuidance': (await detail(
+            tx,
+            shift,
+            t.id,
+          )).content!.knowledgeGuidance?.toJson(),
+          'planogramGuidance': (await detail(
+            tx,
+            shift,
+            t.id,
+          )).content!.planogramGuidance?.toJson(),
+        },
+    ];
+  }
+
+  Future<void> validateTransfer(
+    TxSession tx,
+    ShiftDto shift, {
+    PlatformActor? publisher,
+  }) async {
+    await requireAllOpen(tx, shiftId: shift.id);
+    final items = await _instances.forShifts(tx, [shift.id]);
+    if (items.isEmpty ||
+        items.length != shift.draft.selections.length ||
+        items.length > 10 ||
+        !await _instances.pristine(tx, shift.id)) {
+      throw const PlatformFailure(
+        422,
+        'shift_in_progress',
+        'The complete Task set must remain pristine.',
+      );
+    }
+    for (var i = 0; i < items.length; i++) {
+      final item = items[i], selection = shift.draft.selections[i];
+      if (item.position != i ||
+          item.templateId != selection.templateId ||
+          item.revisionId != selection.revisionId) {
+        throw const PlatformFailure(
+          422,
+          'shift_not_transferable',
+          'Source work identity is inconsistent.',
+        );
+      }
+      if (publisher != null) {
+        final content = (await detail(tx, shift.id, item.id)).content!;
+        if (content.knowledgeGuidance case final pin?) {
+          await _knowledge.validatePublication(tx, publisher, pin);
+        }
+        if (content.planogramGuidance case final pin?) {
+          await _planogram.validatePublication(
+            tx,
+            publisher,
+            shift.locationId,
+            pin,
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> createTransferReplacement(
+    TxSession tx,
+    PlatformActor actor, {
+    required ShiftDto source,
+    required String requestId,
+    required String replacementShiftId,
+    required String recipient,
+  }) async {
+    await createForShift(
+      tx,
+      actor,
+      shiftId: replacementShiftId,
+      employeeId: recipient,
+      locationId: source.locationId,
+      selections: source.draft.selections,
+    );
+    final originals = await _instances.forShifts(tx, [source.id]);
+    final replacements = await _instances.forShifts(tx, [replacementShiftId]);
+    if (originals.length != replacements.length || originals.isEmpty) {
+      throw StateError('Incomplete transfer work');
+    }
+    for (var i = 0; i < originals.length; i++) {
+      final a = await detail(tx, source.id, originals[i].id),
+          b = await detail(tx, replacementShiftId, replacements[i].id);
+      if (a.templateId != b.templateId ||
+          a.revisionId != b.revisionId ||
+          a.position != b.position ||
+          jsonEncode(a.content!.toJson()) != jsonEncode(b.content!.toJson())) {
+        throw StateError('Transfer snapshots differ');
+      }
+      await _instances.linkTransfer(tx, source.locationId, requestId, a, b);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> transferLinks(
+    TxSession tx,
+    String location,
+    String request,
+  ) => _instances.transferLinks(tx, location, request);
   Future<List<TaskTemplateContent>> validateSelections(
     TxSession tx,
     String location,

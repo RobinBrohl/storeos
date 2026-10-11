@@ -9,12 +9,14 @@ class ShiftSection extends StatefulWidget {
     this.knowledgeShortcut,
     this.recipesShortcut,
     this.countsShortcut,
+    this.transferShortcut,
     super.key,
   });
   final ShiftController controller;
   final VoidCallback? knowledgeShortcut;
   final VoidCallback? recipesShortcut;
   final VoidCallback? countsShortcut;
+  final ValueChanged<ShiftDto>? transferShortcut;
   @override
   State<ShiftSection> createState() => _ShiftSectionState();
 }
@@ -249,6 +251,19 @@ class _ShiftSectionState extends State<ShiftSection> {
           ),
           if (!c.self && c.selected != null)
             Text('ID: ${c.selected!.id} · Version ${c.selected!.version}'),
+          if (c.self &&
+              widget.transferShortcut != null &&
+              c.selected?.status == 'published' &&
+              c.selected!.draft.startsAt.isAfter(DateTime.now().toUtc()) &&
+              c.tasks.isNotEmpty &&
+              c.tasks.every((t) => t.status == 'open' && t.version == 1))
+            FilledButton(
+              key: const Key('propose-transfer'),
+              onPressed: c.busy
+                  ? null
+                  : () => widget.transferShortcut!(c.selected!),
+              child: const Text('Propose transfer'),
+            ),
           if (!c.self && (c.editingNew || c.selected?.status == 'draft'))
             ..._editor(),
           if (!c.editingNew && !(c.selected?.status == 'draft' && !c.self))

@@ -141,3 +141,16 @@ and rejects any inventoried edit during verification. Sanitized evidence is unde
 `.local/p410/final`; the normal StoreOS database is not a business acceptance target.
 Backup and update fixtures now include 0022 preparation evidence; the separate
 populated 0021 test proves exact preservation and late-failure rollback.
+
+P4.11 uses `scripts/transfers/Run-P411Checks.ps1` for focused PostgreSQL, transfer
+Flutter HTTP and Chrome acceptance, and `Run-P411FinalVerification.ps1` for the
+complete frozen-source run. Both create a uniquely named disposable Compose project
+with the installed PostgreSQL image and remove only its resources. Keep normal
+StoreOS services stopped; an occupied reference port fails startup. Supply installed
+Dart/Flutter/Docker and ChromeDriver paths. Neither command resolves packages.
+The complete local migration chain is now 0001–0023. Backup/update fixtures retain
+nine requests, all six states, 21 receipts across all seven kinds and complete
+approved lineage. A populated actual 0022 fixture proves legacy catalog/data
+preservation and late-failure rollback. Sanitized final evidence is under
+`.local/p411/final`. [P4.11](phase-4-11-one-way-shift-transfers.md) remains implemented
+locally with independent review, security review and changed-source CI pending.

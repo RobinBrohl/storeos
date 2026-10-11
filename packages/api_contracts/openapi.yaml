@@ -7,6 +7,26 @@ servers:
   - url: http://127.0.0.1:8080
     description: Loopback development; use HTTPS for LAN deployments.
 paths:
+  /api/v1/platform/employee-home/shifts/{shiftId}/transfer-recipients:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1employee-home~1shifts~1{shiftId}~1transfer-recipients"
+  /api/v1/platform/me/shift-transfers:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-transfers"
+  /api/v1/platform/me/shift-transfers/{requestId}:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-transfers~1{requestId}"
+  /api/v1/platform/me/shift-transfers/{requestId}/accept:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-transfers~1{requestId}~1accept"
+  /api/v1/platform/me/shift-transfers/{requestId}/decline:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-transfers~1{requestId}~1decline"
+  /api/v1/platform/me/shift-transfers/{requestId}/withdraw:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-transfers~1{requestId}~1withdraw"
+  /api/v1/platform/locations/{locationId}/shift-transfers:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-transfers"
+  /api/v1/platform/locations/{locationId}/shift-transfers/{requestId}:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-transfers~1{requestId}"
+  /api/v1/platform/locations/{locationId}/shift-transfers/{requestId}/approve:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-transfers~1{requestId}~1approve"
+  /api/v1/platform/locations/{locationId}/shift-transfers/{requestId}/reject:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-transfers~1{requestId}~1reject"
   /api/v1/platform/production/self/locations/{locationId}/batches:
     $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1batches'
   /api/v1/platform/production/self/locations/{locationId}/batches/{batchId}:

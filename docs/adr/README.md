@@ -44,3 +44,5 @@ foundation is committed at `e8ce8c3`, with acceptance correction `f9c8b07`;
 P4.3 is DONE/CLOSED per the [closure evidence](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
 The broader unit catalog/conversion and costing questions remain open. Do not rewrite the
 original alternatives, decisions or dated verification to reflect later delivery.
+
+[ADR 0025: One-way Shift transfer before execution](0025-one-way-shift-transfer-before-execution.md) records the P4.11 direction. Local implementation remains subject to independent review, security and changed-source CI.

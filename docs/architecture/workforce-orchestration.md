@@ -1,5 +1,13 @@
 # Workforce Orchestration
 
+P4.11 adds a locally implemented explicit one-way transfer of complete future,
+pristine published work. Recipient acceptance leaves the schedule unchanged;
+independent manager approval cancels originals and publishes exact new work through
+Workforce/Tasks ports, retaining both lineage forms. It introduces no automatic
+recommendation or roster changes. See [ADR 0025](../adr/0025-one-way-shift-transfer-before-execution.md)
+and the [P4.11 record](../development/phase-4-11-one-way-shift-transfers.md).
+Independent review, security review and changed-source CI remain pending.
+
 Status: target rules for future work recommendations. Current P1b provides explicit template selections, ordered task snapshots and scoped Employee Home queries through `ShiftApplication`; there is no priority/recommendation engine, attendance detection or task dependency graph. Deterministic prioritization described below remains planned. See [actual status](../roadmap/status.md).
 
 ## Zweck und Zuständigkeit

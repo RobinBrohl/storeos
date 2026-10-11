@@ -20,6 +20,7 @@ import 'merchandising_acceptance.dart';
 import 'knowledge_acceptance.dart';
 import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
+import 'shift_transfer_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'backup_planogram_acceptance.dart';
 import 'stock_count_acceptance.dart';
@@ -71,6 +72,10 @@ const _evidenceTables = <String, String>{
   'knowledge_articles': 'id',
   'knowledge_revisions': 'id',
   'shifts': 'id',
+  'shift_template_selections': 'shift_id, position',
+  'workforce_shift_transfer_requests': 'company_id, id',
+  'workforce_shift_transfer_commands': 'company_id, operation_id',
+  'task_transfer_links': 'company_id, request_id, position',
   'merchandising_fixtures': 'id',
   'merchandising_planograms': 'id',
   'merchandising_planogram_revisions': 'id',
@@ -438,7 +443,7 @@ Future<void> _verify(Map<String, String> env, String source) async {
 
 /// Runs the bounded employee journey through the real HTTP API and returns the
 /// non-secret identifiers needed for later verification.
-Future<Map<String, String>> _seed(
+Future<Map<String, dynamic>> _seed(
   _Api api, {
   required String companyId,
   required String locationId,
@@ -485,6 +490,21 @@ Future<Map<String, String>> _seed(
       'role': 'admin',
     },
   );
+  for (final role in ['viewer', 'auditor']) {
+    await api.request(
+      'POST',
+      '$root/users',
+      token: adminToken,
+      expected: 201,
+      body: {
+        'id': newUuid(),
+        'username': 'backup_transfer_$role',
+        'password': workerPassword,
+        'locationId': locationId,
+        'role': role,
+      },
+    );
+  }
   final planogramGuidance = await seedLocalPlanogram(
     (method, route, body, status) => api.request(
       method,
@@ -828,6 +848,83 @@ Future<Map<String, String>> _seed(
     locationId,
     employeeId,
   );
+  final transferEmployee = newUuid(), transferAccount = newUuid();
+  await api.request(
+    'POST',
+    '$root/employees',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': transferEmployee,
+      'displayName': 'Transfer recipient',
+      'locationId': locationId,
+    },
+  );
+  await api.request(
+    'POST',
+    '$root/users',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': transferAccount,
+      'username': 'backup_transfer_recipient',
+      'password': workerPassword,
+      'locationId': locationId,
+      'role': 'employee',
+    },
+  );
+  await api.request(
+    'POST',
+    '$root/employees/$transferEmployee/account-link',
+    token: adminToken,
+    expected: 201,
+    body: {
+      'id': newUuid(),
+      'accountId': transferAccount,
+      'expectedEmployeeVersion': 1,
+      'expectedAccountVersion': 1,
+    },
+  );
+  final transferLogin = await api.request(
+    'POST',
+    '/api/v1/auth/login',
+    body: {'username': 'backup_transfer_recipient', 'password': workerPassword},
+  );
+  final transferToken = transferLogin['token'] as String;
+  final transferRecords = await seedShiftTransfers(
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: adminToken,
+      expected: status,
+    ),
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: workerToken,
+      expected: status,
+    ),
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: transferToken,
+      expected: status,
+    ),
+    locationId,
+    employeeId,
+    transferEmployee,
+    inProgressTemplate['templateId']!,
+    inProgressTemplate['revisionId']!,
+  );
+  await api.request(
+    'POST',
+    '/api/v1/auth/logout',
+    token: transferToken,
+    expected: 204,
+  );
   await replaceAndRetireGuidance(guidanceRequest, guidance);
   await replaceAndRetireLayoutGuidance(
     guidanceRequest,
@@ -945,6 +1042,8 @@ Future<Map<String, String>> _seed(
     token: adminToken,
   );
   return {
+    'transferRecords': transferRecords,
+    'transferRecipientEmployeeId': transferEmployee,
     'companyId': companyId,
     'locationId': locationId,
     'adminAccountId': adminId,
@@ -1062,9 +1161,12 @@ Future<void> _assertSeededJourney(
     'merchandising_planogram_placements': 2,
     'merchandising_planogram_assignments': 2,
 
-    'shifts': 2,
+    'shifts': 12,
+    'workforce_shift_transfer_requests': 9,
+    'workforce_shift_transfer_commands': 21,
+    'task_transfer_links': 1,
     'task_template_revisions': 5,
-    'task_instances': 5,
+    'task_instances': 15,
     'task_step_results': 2,
     'task_numeric_attempts': 2,
     'task_blockings': 1,
@@ -1079,12 +1181,12 @@ Future<void> _assertSeededJourney(
     'SELECT status FROM "$schema".task_instances ORDER BY status',
   );
   final seeded = statuses.map((row) => row.single as String).toList();
-  if (seeded.length != 5 ||
-      seeded[0] != 'blocked' ||
-      seeded[1] != 'completed' ||
-      seeded[2] != 'in_progress' ||
-      seeded[3] != 'open' ||
-      seeded[4] != 'open') {
+  if (seeded.length != 15 ||
+      seeded.where((s) => s == 'blocked').length != 1 ||
+      seeded.where((s) => s == 'completed').length != 1 ||
+      seeded.where((s) => s == 'in_progress').length != 1 ||
+      seeded.where((s) => s == 'cancelled').length != 1 ||
+      seeded.where((s) => s == 'open').length != 11) {
     throw StateError('Seeded task states differ from the plan.');
   }
   final attempts = await owner.execute(

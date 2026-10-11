@@ -1185,6 +1185,7 @@ void main() {
             '0020_stock_counts',
             '0021_recipe_compositions',
             '0022_preparation_batches',
+            '0023_one_way_shift_transfers',
           ],
         );
         await f.assertLedgerInvariant(level.id);

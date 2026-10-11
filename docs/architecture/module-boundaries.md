@@ -33,8 +33,8 @@ share a transaction; events are added only when the use case needs them.
 | Organization | Company, Location | Authorized scope/setup queries and configured-location port. Stable IDs; one configured Company per installation. Other named Locations can exist without distributed execution. |
 | Identity / platform authorization | Accounts, sessions, fixed role capabilities, Account–Employee links, plugin approvals/tokens | Revalidated access context and minimal references. No employee HR file or scheduling rule; configurable Roles/direct grants are future. |
 | People | Minimal Employee with current fixed Location and assignment interval | Authorized profile/eligibility information; no login sessions or task state. Future skills/HR need distinct privacy boundaries. |
-| Workforce | Shift drafts, publication/cancellation and last interval-amendment evidence | Shift command/query ports. Planned work is not actual time recording. Employee/template reassignment and begun-work reconciliation are unsupported. |
-| Tasks | TaskTemplate revisions/guidance selection, immutable TaskInstance snapshots/pins, execution state, step results, blockings, numeric attempts and command receipts | Task creation/execution/resolution/query ports. Does not update Workforce tables or own future HACCP records. |
+| Workforce | Shift drafts, publication/cancellation, last interval-amendment evidence, one-way transfer requests/consent/decisions/Shift lineage and receipts | Shift and transfer command/query ports. Planned work is not actual time recording. Published ownership is never reassigned in place; P4.11 creates exact replacement work. Begun-work reconciliation remains unsupported. |
+| Tasks | TaskTemplate revisions/guidance selection, immutable TaskInstance snapshots/pins, execution state, step results, blockings, numeric attempts, command receipts and source/replacement transfer links | Task creation/execution/resolution/query and exact transfer validation/lineage ports. Does not update Workforce tables or own future HACCP records. |
 | Inventory | Company-wide Article and ArticleLocationAssortment | `InventoryArticlePort` and released `inventory_article_location_projection`. Owns effective Article/Assortment information, not stock quantities or prices. |
 | Stock | StockLevel projection, immutable StockMovement ledger, StockCount/Line/Round/Observation/Command | Authorized manual opening/correction and selected 1–100-level physical counts, blind own observation, recount and whole atomic approval. Exact thousandths, immutable unit/baselines, typed count correction provenance and count-specific receipts. Public People/Identity ports supply eligibility. No foreign business tables, Tasks, events, valuation, receiving or unit conversion. P4.8 DONE/CLOSED; targeted APPROVE, 124/124 PASS, SECURITY APPROVE and green exact-commit CI; ADR 0022. |
 | Merchandising | Local Fixture, independent Company Planogram, Revision/Zone/Placement and immutable Assignment | Organization scope, Inventory Article/Assortment and Stock referenced-level public ports; browser print; `PlanogramGuidancePort` validates exact fresh deployments and resolves retained instructions after authorized Task/Template context. No Stock writes or events. P4.4 DONE/CLOSED; P4.7 DONE/CLOSED. |
@@ -133,6 +133,15 @@ Public ports should express product dependencies without circular Domain ownersh
 | Remote access boundary | Authenticated workplace/remote context and capability allowlist, optional gateway | Identity/grants/resource authorization remains in Core. No mandatory private device/cloud and no automatic remote full-admin exposure. |
 
 ## Evolution rules
+
+P4.11 locally implements the one-way, future/pristine Shift transfer described in
+[ADR 0025](../adr/0025-one-way-shift-transfer-before-execution.md). Workforce owns
+requests, consent, decisions, Shift lineage and Company-scoped receipts. Tasks owns
+complete source/replacement Task links and exact snapshot verification. The
+application coordinator uses public owner ports for Identity/People, Workforce,
+Tasks and guidance validation; it never accesses their foreign repositories.
+Independent review, security review and changed-source CI remain pending. Further
+Workforce capabilities and P4.12 remain unselected.
 
 Own each schema change through a new tested migration; retain IDs, snapshots and
 supported contracts. Do not let a future integration write Core tables directly.

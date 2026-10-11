@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'stock_count_acceptance.dart';
 import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
+import 'shift_transfer_acceptance.dart';
 import 'package:storeos_server/src/stock/stock_count_service.dart';
 
 import 'package:postgres/postgres.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
 import 'package:storeos_server/src/application/auth_service.dart';
 import 'package:storeos_server/src/application/shift_application.dart';
+import 'package:storeos_server/src/application/shift_transfer_application.dart';
 import 'package:storeos_server/src/infrastructure/auth_store.dart';
 import 'package:storeos_server/src/merchandising/merchandising_service.dart';
 import 'package:storeos_server/src/platform/platform_database.dart';
@@ -34,7 +36,12 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
     sessionTtl: const Duration(minutes: 1),
   );
   AuthService? alternateAuth;
-  String? workerToken, adminToken, alternateToken, otherWorkerToken;
+  String? workerToken,
+      adminToken,
+      alternateToken,
+      otherWorkerToken,
+      transferToken;
+  final roleTokens = <String>[];
   try {
     final db = PlatformDatabase(
       pool,
@@ -74,6 +81,36 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       manager,
       principal,
       await auth.authenticate(otherWorkerToken),
+    );
+    transferToken = (await auth.login(
+      LoginRequest(
+        username: 'backup_transfer_recipient',
+        password: evidence['workerRecoveryPassword'] as String,
+      ),
+      remoteKey: 'isolated-transfer-restore',
+    )).token;
+    for (final role in ['viewer', 'auditor']) {
+      roleTokens.add(
+        (await auth.login(
+          LoginRequest(
+            username: 'backup_transfer_$role',
+            password: evidence['workerRecoveryPassword'] as String,
+          ),
+          remoteKey: 'isolated-transfer-role-restore',
+        )).token,
+      );
+    }
+    await verifyShiftTransfers(
+      db,
+      manager,
+      principal,
+      await auth.authenticate(transferToken),
+      evidence['transferRecords'] as List,
+      outsider: await auth.authenticate(otherWorkerToken),
+      deniedLocation: evidence['alternateLocationId'] as String,
+      deniedRoles: [
+        for (final token in roleTokens) await auth.authenticate(token),
+      ],
     );
     if (historicalOnly) return historical;
     await verifyRestoredStockCounts(
@@ -256,6 +293,18 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       remoteKey: 'isolated-planogram-scope-restore',
     )).token;
     final alternateManager = await alternateAuth.authenticate(alternateToken);
+    final transferRequest =
+        (evidence['transferRecords'] as List).first['requestId'] as String;
+    await denied(
+      ShiftTransferApplication(alternateDb).detail(
+        alternateManager,
+        transferRequest,
+        self: false,
+        location: evidence['locationId'] as String,
+      ),
+      403,
+      'forbidden',
+    );
     auditBefore = (await pool.execute(
       'SELECT count(*) FROM $s.audit_entries',
     )).single.single;
@@ -355,6 +404,10 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
     }
     return historical;
   } finally {
+    if (transferToken != null) await auth.logout(transferToken);
+    for (final token in roleTokens) {
+      await auth.logout(token);
+    }
     if (otherWorkerToken != null) await auth.logout(otherWorkerToken);
     if (alternateToken != null) await alternateAuth!.logout(alternateToken);
     if (workerToken != null) await auth.logout(workerToken);

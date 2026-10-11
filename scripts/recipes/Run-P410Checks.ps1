@@ -66,6 +66,7 @@ try {
     }
     if(!$ready){throw 'Driver readiness failed.'}
     if($BrowserRegressions){foreach($file in @('knowledge_browser_test.dart','task_knowledge_browser_test.dart','task_planogram_browser_test.dart','stock_count_browser_test.dart')){Invoke-Dart 'apps/server' @('test',"test/$file",'--reporter','expanded')}}
+    elseif($TestFile -eq 'shift_transfer_browser_test.dart'){Invoke-Dart 'apps/server' @('test','test/shift_transfer_browser_test.dart','--name','Chrome UI','--reporter','expanded')}
     else{Invoke-Dart 'apps/server' @('test','test/preparation_batch_browser_test.dart','--reporter','expanded')}
   }elseif($ClientJourney){
     $env:STOREOS_PREPARATION_CLIENT_JOURNEY='1'

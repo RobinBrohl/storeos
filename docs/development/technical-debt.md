@@ -206,7 +206,7 @@ preserves chronology and evidence.
 Memory-only uncertain-command recovery, supported-writer/raw-SQL boundaries,
 physical-device/accessibility gaps, M1 pilot gate, M2 CLOSED, M3 endpoint containment,
 M4 broader error taxonomy and P4.5 F01/F02 nonblocking follow-ups remain unchanged.
-P4.10 Preparation Batch is DONE/CLOSED; P4.11 remains UNSELECTED. Next is fresh P4.11 capability selection from clean main.
+P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 remains UNSELECTED; next is fresh P4.12 capability selection from clean main.
 
 ## P4.10 closed review gates and retained limits
 
@@ -228,3 +228,23 @@ M4 broader taxonomy, supported-writer/raw-SQL limits, memory-only uncertain-comm
 recovery, physical-device/accessibility gaps, P4.5 F01/F02 nonblocking follow-ups
 and P4.9 criterion 152 historical evidence qualification retain their dispositions.
 No zero-debt or broader production-readiness claim is made.
+
+## P4.11 closed review gates and retained limits
+
+P4.11 is **DONE/CLOSED** at `b82dda89374ed9b4182630de4991b0d1569b8ae8`.
+Initial independent CHANGES REQUIRED (172 PASS / 4 QUALIFIED / 1 FAIL) led to
+bounded remediation and targeted **APPROVE: 177 PASS / 0 QUALIFIED / 0 FAIL**.
+Focused **SECURITY APPROVE** found no required remediation; all five jobs passed
+in [exact-commit CI 38125193187](https://github.com/RobinBrohl/storeos/actions/runs/38125193187).
+
+| Finding | Final disposition |
+| --- | --- |
+| F01 MEDIUM product defect / commit blocker | CLOSED: advancing PostgreSQL `clock_timestamp()` at deferred final approval validation; cross-start rolls back all effects, leaving the operation UUID reusable. Exact committed replay after start stays valid. |
+| F02 LOW documentation defect / nonblocking | CLOSED: HANDOVER/status selection wording reconciled; final docs closure now records delivered evidence and P4.12 UNSELECTED. |
+| F03 LOW test/evidence gap / nonblocking | CLOSED: deterministic both-order identity/link and Knowledge/Planogram races retain exact evidence or reject atomically. |
+
+No active P4.11 remediation remains. All standing dispositions above remain:
+M1 pilot gate, M2 CLOSED, M3 containment, M4 taxonomy, supported-writer/raw-SQL
+boundary, memory-only uncertain-command recovery, physical-device/accessibility
+gaps, P4.5 F01/F02 follow-ups and P4.9 criterion 152 qualification.
+No global zero-debt claim is made. See [final closure](phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).

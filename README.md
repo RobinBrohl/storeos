@@ -1,6 +1,18 @@
 # StoreOS
 
-P4.11 One-way Shift Transfer is **IMPLEMENTED LOCALLY — independent review, security and changed-source CI pending**. It remains unstaged/uncommitted on main and is not DONE/CLOSED. Migration 0023 is new; migrations 0001–0022 remain unchanged. See [P4.11 development record](docs/development/phase-4-11-one-way-shift-transfers.md).
+P4.11 ONE-WAY SHIFT TRANSFER BEFORE EXECUTION is **DONE/CLOSED** at implementation
+commit `b82dda89374ed9b4182630de4991b0d1569b8ae8` (`Add one-way shift transfer`)
+on `main`. Initial independent **CHANGES REQUIRED** led to F01/F02/F03 closure
+and targeted **APPROVE**: **177 PASS / 0 QUALIFIED / 0 FAIL**. Focused Codex
+Security returned **SECURITY APPROVE**, with no confirmed/probable vulnerability,
+required remediation or security commit blocker. All five jobs succeeded in
+[exact-commit CI 38125193187](https://github.com/RobinBrohl/storeos/actions/runs/38125193187).
+Final remediation regression: **1,133 package tests**, **21/21 phases**,
+**11/11 conditional journeys** and **3/3 numeric browser stages** PASS.
+Migration `0023_one_way_shift_transfers.sql` is delivered; the chain is
+**0001–0023**, with no 0024 and unchanged historical migrations 0001–0022.
+No active P4.11 remediation remains. **P4.12 remains UNSELECTED**; next is fresh
+P4.12 capability selection from clean `main`. See [P4.11 final closure](docs/development/phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).
 
 P4.10 Preparation Batch is **DONE/CLOSED** at implementation commit
 `e637187b17d4617212acf42b99a07500e9488c3d` on `main`. Initial independent
@@ -12,11 +24,10 @@ Focused Codex Security returned **SECURITY APPROVE**: zero confirmed/probable
 vulnerabilities, zero required security fixes and no security commit blocker.
 All five jobs succeeded in [exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236).
 Migration `0022_preparation_batches.sql` is delivered/accepted; the committed
-chain is 0001–0022, with no 0023. Location-scoped declarations pin an exact
+chain at P4.10 closure was 0001–0022; P4.11 now extends it through 0023. Location-scoped declarations pin an exact
 published RecipeRevision, retain immutable terminal evidence and append-only
 count corrections, and have no Stock, Task/Shift or yield/output-unit effects.
-No active P4.10 remediation remains. P4.11 is now implemented locally with review/security/changed-source CI pending; its baseline was fresh
-P4.11 capability selection from clean `main`. See the P4.11 development record for the current uncommitted slice. See [P4.10 development record](docs/development/phase-4-10-preparation-batches.md) and [ADR 0024](docs/adr/0024-preparation-batch-evidence.md).
+No active P4.10 or P4.11 remediation remains. P4.11 is DONE/CLOSED; P4.12 remains UNSELECTED. Next is fresh P4.12 capability selection from clean `main`. See [P4.10 development record](docs/development/phase-4-10-preparation-batches.md) and [ADR 0024](docs/adr/0024-preparation-batch-evidence.md).
 
 P4.9 Approved Article Recipe / Composition (composition only) is **DONE/CLOSED**
 at implementation commit `e5e6d5c2999bb9f8132161b43ad1537aa403973c` on `main`.

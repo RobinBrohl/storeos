@@ -51,7 +51,7 @@ application commands remain the business authorization boundary.
 Flutter fences resident/pending state by opaque session identity, renders text
 literally and retains exact immutable commands for uncertain retry. Memory-only
 tracking does not provide offline durability. Tasks schemas 1–4, Shift, Workforce,
-Stock and Stock Count evidence remain unchanged. No P4.11 scope is selected.
+Stock and Stock Count evidence remain unchanged. At P4.10 closure no P4.11 scope was selected; subsequent P4.11 transfer delivery is recorded in [ADR 0025](0025-one-way-shift-transfer-before-execution.md). P4.12 remains UNSELECTED.
 
 ## Alternatives
 

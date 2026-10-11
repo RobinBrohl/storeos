@@ -120,7 +120,7 @@ Public ports should express product dependencies without circular Domain ownersh
 | --- | --- | --- |
 | Knowledge extensions | Suggestions and separate review beyond delivered P4.5/P4.6 | Concrete Task guidance is delivered through [ADR 0020](../adr/0020-task-knowledge-guidance.md); further consumers/lifecycle changes need separate contracts. Reads never change execution history. |
 | Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
-| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. No P4.11 capability is selected. |
+| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.11 delivers only the bounded Workforce transfer; P4.12 remains UNSELECTED. |
 | Purchasing / Receiving | Suppliers, orders, receipt/source cost evidence | Article/unit references; authorized Stock commands for accepted physical receipts. Not Stock ledger owner or invented valuation. |
 | Sales integration | Canonical SalesSource/import/checkpoint, Sale/Line source references, mapping and import health | Core validates authority/identity and coordinates explicit Stock/report effects. Vendor adapter acquires/converts; checkout/payment/fiscal archive ownership separate. |
 | Pricing | Effective prices/currency and approval rules | Article references; Menu consumes approved price contract. No implicit price column in Article. |
@@ -134,13 +134,13 @@ Public ports should express product dependencies without circular Domain ownersh
 
 ## Evolution rules
 
-P4.11 locally implements the one-way, future/pristine Shift transfer described in
+P4.11 is **DONE/CLOSED** and implements the one-way, future/pristine Shift transfer described in
 [ADR 0025](../adr/0025-one-way-shift-transfer-before-execution.md). Workforce owns
 requests, consent, decisions, Shift lineage and Company-scoped receipts. Tasks owns
 complete source/replacement Task links and exact snapshot verification. The
 application coordinator uses public owner ports for Identity/People, Workforce,
 Tasks and guidance validation; it never accesses their foreign repositories.
-Independent review, security review and changed-source CI remain pending. Further
+F01/F02/F03 are CLOSED; targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187 establish closure. Further
 Workforce capabilities and P4.12 remain unselected.
 
 Own each schema change through a new tested migration; retain IDs, snapshots and

@@ -4,8 +4,9 @@ Status: **P4.10 DONE/CLOSED** at implementation commit
 `e637187b17d4617212acf42b99a07500e9488c3d` on `main`.
 F01/F02 remediation and nonblocking F03 documentation follow-up are CLOSED.
 Targeted independent APPROVE, focused SECURITY APPROVE and green exact-commit
-CI establish closure. P4.11 remains UNSELECTED; next is fresh capability
-selection from clean main. This final pass changes documentation only and
+CI establish closure. At P4.10 closure P4.11 was UNSELECTED; it is now DONE/CLOSED
+per its [final closure](phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11).
+P4.12 remains UNSELECTED; next is fresh capability selection from clean main. This final pass changes documentation only and
 leaves those edits unstaged/uncommitted; no commit or push is authorized.
 
 ## Historical implementation baseline
@@ -288,8 +289,9 @@ that accepted boundary or imply zero standing debt.
 
 ### Migration, standing debt and next step
 
-The committed migration chain is **0001 → 0022**, ending at
-`0022_preparation_batches.sql`; no migration 0023 exists. This closure edits
+At this historical P4.10 closure the committed chain was **0001 → 0022**,
+ending at `0022_preparation_batches.sql`; migration 0023 did not yet exist.
+P4.11 subsequently extends the chain through 0023. This closure edits
 no migration, source, test, contract, dependency or generated report.
 
 M1 proxy/login-limiter pilot gate, M2 CLOSED, M3 local API/error-contract
@@ -299,8 +301,9 @@ P4.5 F01/F02 nonblocking follow-ups and P4.9 criterion 152 historical evidence
 qualification remain as recorded in [technical debt](technical-debt.md).
 P4.10 closes none of those standing items.
 
-**P4.11 remains UNSELECTED**; no P4.11 capability is ACTIVE. Next is fresh P4.11
-capability selection from clean main. This docs-only closure runs diff/consistency
+At this historical P4.10 closure **P4.11 was UNSELECTED**, with fresh P4.11
+capability selection next. P4.11 is now DONE/CLOSED; P4.12 remains UNSELECTED
+per the [current P4.11 closure](phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11). This docs-only closure runs diff/consistency
 checks, without rerunning the 931-test software suite, committing, pushing,
 changing branches or writing to the normal database. Final-source reports remain
 the retained implementation/remediation evidence; documentation closure is a

@@ -1,6 +1,6 @@
 # ADR 0025: One-way Shift transfer before execution
 
-Status: Accepted direction; local implementation, independent review, security review and changed-source CI pending.
+Status: Accepted implementation decision; **P4.11 DONE/CLOSED** at `b82dda89374ed9b4182630de4991b0d1569b8ae8`. F01/F02/F03 CLOSED, targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green [exact-commit CI 38125193187](https://github.com/RobinBrohl/storeos/actions/runs/38125193187); no active remediation. P4.12 remains UNSELECTED.
 
 StoreOS needs a consented transfer of one complete future published Shift. Published ownership and original Task identities are evidence. Reassigning either in place would erase who originally received the work and make historical consent ambiguous.
 

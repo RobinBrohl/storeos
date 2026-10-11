@@ -152,5 +152,6 @@ The complete local migration chain is now 0001–0023. Backup/update fixtures re
 nine requests, all six states, 21 receipts across all seven kinds and complete
 approved lineage. A populated actual 0022 fixture proves legacy catalog/data
 preservation and late-failure rollback. Sanitized final evidence is under
-`.local/p411/final`. [P4.11](phase-4-11-one-way-shift-transfers.md) remains implemented
-locally with independent review, security review and changed-source CI pending.
+`.local/p411/final`. [P4.11](phase-4-11-one-way-shift-transfers.md) is **DONE/CLOSED**:
+F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit
+CI 38125193187. P4.12 remains UNSELECTED.

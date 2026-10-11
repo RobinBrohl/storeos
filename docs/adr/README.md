@@ -45,4 +45,4 @@ P4.3 is DONE/CLOSED per the [closure evidence](../development/phase-4-3-manual-s
 The broader unit catalog/conversion and costing questions remain open. Do not rewrite the
 original alternatives, decisions or dated verification to reflect later delivery.
 
-[ADR 0025: One-way Shift transfer before execution](0025-one-way-shift-transfer-before-execution.md) records the P4.11 direction. Local implementation remains subject to independent review, security and changed-source CI.
+[ADR 0025: One-way Shift transfer before execution](0025-one-way-shift-transfer-before-execution.md) records the delivered P4.11 contract: **DONE/CLOSED**, F01/F02/F03 CLOSED, targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 remains UNSELECTED.

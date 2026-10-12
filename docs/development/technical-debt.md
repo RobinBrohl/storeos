@@ -1,6 +1,7 @@
 # Current technical debt
 
 Living disposition register, reconciled 2026-10-04 against source baseline `93072a4`.
+P4.15 F04 was separately recorded on 2026-10-13; older audit dispositions remain intact.
 The [2026-10-04 audit](project-health-audit-2026-10-04.md) preserves original
 findings F01–F19; the [2026-10-02 report](milestone-health-check-2026-10-02.md)
 preserves M1–M4/L1–L12 at its old baseline. Product and operator decisions belong
@@ -8,6 +9,23 @@ in [risks/open questions](../risks-and-open-questions.md).
 
 **ACTIVE** means unresolved, **CLOSED** requires actual evidence, **DEFERRED**
 has a stated trigger. Documentation correction does not close a runtime defect.
+
+## P4.15 nonblocking Location-picker debt
+
+**P4.15 F04 — ACTIVE / NONBLOCKING**, recorded 2026-10-13. The pre-existing
+fixed-width Stock Location dropdown (`apps/client_flutter/lib/src/ui/stock_section.dart`,
+key `stock-location`) overflows by six pixels for the fixture label
+`Temporary execution scope`. The picker is unchanged by P4.15 and the defect is
+outside its quantity-semantics scope. It has no authorization, conversion or
+receipt effect and is not a P4.15 commit blocker. Independent targeted functional
+APPROVE and F01–F03 CLOSED were reported by the user; F04 remains open debt.
+
+Reproduce the layout at the existing 280-pixel picker width with long Location
+names. When that picker is next touched, fit its selected/menu text within the
+available width and add long-name browser/widget coverage. P4.15's verification
+fixture uses `Retry scope` and explicitly selects `Home`; framework exceptions
+remain asserted and no runtime layout workaround or error suppression was added.
+See the [P4.15 evidence](phase-4-15-article-quantities.md#bounded-functional-remediation--2026-10-12).
 
 ## Closed P4.3 acceptance findings
 

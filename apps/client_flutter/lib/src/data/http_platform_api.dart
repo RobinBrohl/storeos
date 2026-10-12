@@ -101,9 +101,35 @@ class HttpPlatformApi implements PurchasingApi {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       String code = 'http_${response.statusCode}';
       String? layoutMessage;
+      String? quantityMessage;
       try {
         final error = ApiError.fromJson(_object(response.body));
         code = error.code;
+        if (route.contains('/quantity')) {
+          quantityMessage = switch (code) {
+            'quantity_inexact' =>
+              'Der Zielwert passt nicht exakt in die Bestandsgenauigkeit von 0,001 oder überschreitet die Höchstmenge. Es wird nicht gerundet.',
+            'quantity_incompatible' =>
+              'Die Einheit gehört zu einer anderen Dimension oder die Verpackung fehlt in dieser Revision.',
+            'quantity_conflict' =>
+              'Die Verpackungsrevision wurde geändert. Serverstand laden und erneut prüfen.',
+            'stock_conflict' =>
+              'Die Bestandsversion wurde geändert. Serverstand laden und erneut prüfen.',
+            'quantity_unconfigured' =>
+              'Die Mengenbedeutung des Artikels muss zuerst ausdrücklich konfiguriert werden.',
+            'quantity_unbound' =>
+              'Die Bedeutung einer eingefrorenen Bestandseinheit muss zuerst ausdrücklich festgelegt werden.',
+            'quantity_suspended' =>
+              'Das Mengenprofil ist dauerhaft gesperrt. Historische Nachweise bleiben erhalten.',
+            'binding_conflict' =>
+              'Die unveränderliche Bestandsbindung ist bereits festgelegt oder passt nicht zum Profil.',
+            'review_conflict' =>
+              'Die geprüfte Umrechnung passt nicht mehr zum Serverstand. Erneut prüfen.',
+            'operation_conflict' =>
+              'Diese Operation ist bereits an einen anderen Befehl gebunden.',
+            _ => null,
+          };
+        }
         if (route.contains('/merchandising/') && response.statusCode == 409) {
           layoutMessage = switch (code) {
             'article_unavailable' || 'assortment_unavailable' =>
@@ -117,7 +143,8 @@ class HttpPlatformApi implements PurchasingApi {
       }
       throw StoreApiException(
         code,
-        layoutMessage ??
+        quantityMessage ??
+            layoutMessage ??
             switch (response.statusCode) {
               401 =>
                 'Die Sitzung ist nicht mehr gültig. Bitte erneut anmelden.',

@@ -16,6 +16,9 @@ import '../platform/platform_database.dart';
 import 'article_assortment_routes.dart';
 import 'article_routes.dart';
 import 'stock_routes.dart';
+import 'article_quantity_routes.dart';
+import '../inventory/article_quantity_service.dart';
+import '../stock/stock_quantity_service.dart';
 import 'stock_count_routes.dart';
 import '../stock/stock_count_service.dart';
 import 'merchandising_routes.dart';
@@ -40,6 +43,13 @@ Handler createPlatformHandler(
   AuthService auth,
   PlatformDatabase database,
 ) => Cascade()
+    .add(
+      ArticleQuantityRoutes(
+        auth,
+        ArticleQuantityService(database),
+        StockQuantityService(database),
+      ).router.call,
+    )
     .add(PurchasingRoutes(auth, PurchasingService(database)).router.call)
     .add(ShiftRoutes(auth, ShiftApplication(database)).router.call)
     .add(

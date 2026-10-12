@@ -269,6 +269,17 @@ class MigrationRunner {
             'FROM $role',
           );
         }
+        if (known.containsKey('0027_article_quantities')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.inventory_quantity_profiles, $_schema.inventory_quantity_revisions, $_schema.inventory_quantity_commands, $_schema.stock_quantity_bindings, $_schema.stock_quantity_corrections TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.inventory_quantity_profiles, $_schema.inventory_quantity_revisions, $_schema.inventory_quantity_commands, $_schema.stock_quantity_bindings, $_schema.stock_quantity_corrections FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (version,status) ON $_schema.inventory_quantity_profiles TO $role',
+          );
+        }
         if (known.containsKey('0020_stock_counts')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.stock_counts, $_schema.stock_count_lines, $_schema.stock_count_rounds, $_schema.stock_count_observations, $_schema.stock_count_commands TO $role',

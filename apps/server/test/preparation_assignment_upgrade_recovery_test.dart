@@ -153,6 +153,7 @@ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {{schema}}.p413_late
               [
                 '0025_planned_preparation_assignments',
                 '0026_purchase_order_delivery_evidence',
+                '0027_article_quantities',
               ],
             );
             expect(await priorEvidence(f), before);

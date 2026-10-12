@@ -31,6 +31,7 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0025](0025-one-way-shift-transfer-before-execution.md) | One-way future Shift transfer with exact recipient consent, independent approval and immutable lineage; P4.11 DONE/CLOSED |
 | [0026](0026-bounded-purchase-order-intent.md) | Minimal Company Supplier identity, local PurchaseOrder intent, frozen selections and eight durable commands; P4.12 DONE/CLOSED, F01 CLOSED, targeted APPROVE, SECURITY APPROVE, implementation CI 38152045998 and closure CI 38156014870 successful |
 | [0027](0027-planned-preparation-assignment.md) | Production-owned immutable preparation requests with retained approved revision authority and atomic Batch linkage; P4.13 DONE/CLOSED — accepted implementation, F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful; docs publication/closure-commit CI pending |
+| [0029](0029-explicit-article-quantity-semantics.md) | Accepted P4.15 immutable Article quantity anchors, versioned direct packaging, prospective Stock bindings and exact reviewed manual targets; targeted APPROVE, F01–F03 CLOSED, SECURITY APPROVE; publication/remote CI pending |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).
 

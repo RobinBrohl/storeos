@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
 
 import '../application/article_controller.dart';
+import '../application/article_quantity_controller.dart';
+import 'article_quantity_dialog.dart';
 
 class ArticleSection extends StatefulWidget {
   const ArticleSection({required this.controller, super.key});
@@ -172,6 +174,11 @@ class _ArticleSectionState extends State<ArticleSection> {
         spacing: 0,
         children: [
           TextButton(
+            key: ValueKey('article-quantity-${article.id}'),
+            onPressed: controller.busy ? null : () => _quantity(article),
+            child: const Text('Mengenbedeutung'),
+          ),
+          TextButton(
             onPressed: controller.busy ? null : () => _edit(article),
             child: const Text('Bearbeiten'),
           ),
@@ -196,6 +203,24 @@ class _ArticleSectionState extends State<ArticleSection> {
       builder: (context) => const _ArticleDialog(),
     );
     if (mounted && input != null) await controller.create(input);
+  }
+
+  Future<void> _quantity(ArticleDto article) async {
+    final quantities = ArticleQuantityController(
+      controller.session,
+      controller.api,
+      articleId: article.id,
+    );
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) =>
+            ArticleQuantityDialog(controller: quantities, name: article.name),
+      );
+    } finally {
+      quantities.dispose();
+    }
   }
 
   Future<void> _edit(ArticleDto article) async {

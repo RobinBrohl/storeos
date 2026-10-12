@@ -1,5 +1,14 @@
 # Datenhoheit und Schreibzuständigkeit
 
+P4.15 adds Inventory-owned Company Article quantity anchors, revision content
+and receipts; Stock owns Location/Article-scoped immutable prospective bindings
+and manual conversion evidence/receipts. All are operational business data,
+persisted locally and included in the operator's encrypted PostgreSQL backup.
+Actor UUIDs provide required attribution without copying Employee profiles.
+There is no hard delete, replication or alternate writer. Retention/export policy
+remains an operator decision; no unlimited retention period is introduced.
+See [ADR 0029](../adr/0029-explicit-article-quantity-semantics.md).
+
 Current implementation is one locally configured Company with local authorized writers; the multi-site matrix below is future direction, not deployed replication. [Actual status](../roadmap/status.md) separates these scopes.
 
 ## Grundregel

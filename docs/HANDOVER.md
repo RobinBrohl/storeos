@@ -1,5 +1,24 @@
 # StoreOS handover
 
+P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
+Correction is **APPROVED IMPLEMENTATION / PUBLICATION PENDING** on `codex/p415-article-quantities`, based
+on synchronized `f83fece49671946f3a83240458464434ef09573c`. See the
+[bounded contract and verification](development/phase-4-15-article-quantities.md)
+and [ADR 0029](adr/0029-explicit-article-quantity-semantics.md). Independent targeted
+functional review: **APPROVE**; F01/F02/F03: **CLOSED**. Focused Codex Security:
+**SECURITY APPROVE**, with no required remediation (reported by the user on 2026-10-13).
+One local implementation commit is authorized after final verification. Publication,
+exact-commit remote CI, merge and DONE/CLOSED remain pending. The older
+P4.15 UNSELECTED statements below describe their historical closure context.
+The initial CHANGES REQUIRED review and bounded remediation are retained in the
+contract. F04, the pre-existing long-Location-name picker overflow, is nonblocking
+[technical debt](development/technical-debt.md#p415-nonblocking-location-picker-debt).
+Memory-only retries, immutable bindings and permanent suspension remain accepted
+qualifications. Final-source verification: **1,487 package PASS / 21 conditional SKIP**;
+all 21 opt-ins passed separately. Local grouped acceptance: **7 PASS / 6 QUALIFIED / 0 FAIL**.
+The authorized local implementation commit contains 70 files; use the Git handoff for
+its SHA. No push, merge, remote CI success or P4.15 DONE/CLOSED is claimed.
+
 P4.14 Purchase Order Delivery Evidence and Reconciliation is **DONE/CLOSED — accepted implementation** at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`.
 Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
 Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.

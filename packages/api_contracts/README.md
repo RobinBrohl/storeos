@@ -69,3 +69,11 @@ pass and the correction remains open. See [technical debt](../../docs/developmen
 Package README text is guidance; dated phase contracts and actual DTO/HTTP tests
 establish implementation. Use [status](../../docs/roadmap/status.md) for delivery
 and [module boundaries](../../docs/architecture/module-boundaries.md) for ownership.
+
+P4.15 adds strict decimal-string Article quantity and Stock conversion contracts
+in `article_quantities.dart`, with immutable bounded packaging, explicit binding,
+complete reviewed targets and original receipt evidence. `Article.unit` and old
+Stock contracts remain unchanged. New routes are in `platform.openapi.json` and
+referenced by `openapi.yaml`; `tool/article_quantity_openapi.dart` supplies the
+bounded additions and `article_quantity_openapi_test.dart` verifies the artifact.
+See the [P4.15 contract](../../docs/development/phase-4-15-article-quantities.md).

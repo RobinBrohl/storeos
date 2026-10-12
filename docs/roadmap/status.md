@@ -1,5 +1,21 @@
 # Actual implementation status
 
+P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
+Correction is **APPROVED IMPLEMENTATION / PUBLICATION PENDING** on `codex/p415-article-quantities` from
+`f83fece49671946f3a83240458464434ef09573c`. Inventory profiles and immutable
+anchors/revisions, explicit prospective Stock bindings, exact reviewed targets,
+conversion evidence and terminal suspension are the bounded slice. Migration
+0027 is new and unchanged by remediation. Independent targeted functional review:
+**APPROVE**; F01/F02/F03: **CLOSED**. Focused Codex Security: **SECURITY APPROVE**,
+no required remediation (user-reported 2026-10-13). F04 is nonblocking existing
+Location-picker debt. Final-source verification: **1,487 package PASS / 21 conditional SKIP**,
+with all 21 opt-ins passed separately; grouped acceptance **7 PASS / 6 QUALIFIED / 0 FAIL**.
+The authorized local implementation commit contains 70 files. Publication, exact-commit
+remote CI and closure remain pending; P4.15 is not DONE/CLOSED.
+Memory-only retries, immutable bindings and permanent suspension remain accepted. See the
+[contract/evidence](../development/phase-4-15-article-quantities.md).
+Older P4.15 UNSELECTED passages retain their historical context.
+
 P4.14 Purchase Order Delivery Evidence and Reconciliation is **DONE/CLOSED — accepted implementation** at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`.
 Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
 Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.

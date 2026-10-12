@@ -1,5 +1,19 @@
 # Module boundaries
 
+P4.15 implementation adds Inventory-owned immutable Article quantity anchors,
+packaging revisions and quantity command receipts. Stock owns prospective
+immutable bindings and alternate-unit manual correction evidence/receipts.
+`ArticleQuantityPort` releases only current profile facts and exact unit
+resolution inside the caller's authorized transaction; Stock repositories never
+read Inventory quantity tables. Inventory's `inventory_quantity_factor` SQL
+port supplies retained factors solely to database integrity guards. Legacy Stock
+units, quantities, snapshots, counts and contracts remain intact. See
+[ADR 0029](../adr/0029-explicit-article-quantity-semantics.md) and the
+[P4.15 slice](../development/phase-4-15-article-quantities.md). Targeted functional
+and focused Security reviews approved the bounded implementation; publication and
+exact-commit remote CI remain pending. Historical non-conversion statements below describe
+the earlier accepted baselines.
+
 P4.4 Local Planogram Execution, P4.5 Approved Operational Knowledge and P4.6
 Task-to-Knowledge guidance are **DONE/CLOSED** at their documented baselines. P4.7 is **DONE/CLOSED** at implementation `ccfa3df`, with 80/80 PASS, targeted independent APPROVE, targeted SECURITY APPROVE and green [changed-commit CI 37377829784](https://github.com/RobinBrohl/storeos/actions/runs/37377829784). No active P4.7 remediation remains.
 P4.6 has targeted review APPROVE, 64/64 PASS, focused Codex Security SECURITY APPROVE

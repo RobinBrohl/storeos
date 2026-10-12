@@ -261,6 +261,22 @@ class StockRepository {
     );
   }
 
+  /// New quantity operation identities cannot be reused by the legacy command.
+  /// Older populated migration fixtures remain supported without P4.15 tables.
+  Future<bool> quantityOperationExists(TxSession tx, String id) async {
+    final exists = await tx.execute(
+      Sql.named('SELECT to_regclass(@table) IS NOT NULL'),
+      parameters: {'table': '$schema.stock_quantity_corrections'},
+    );
+    if (exists.single.first != true) return false;
+    return (await tx.execute(
+      Sql.named(
+        'SELECT 1 FROM $schema.stock_quantity_corrections WHERE company_id=CAST(@company AS uuid) AND operation_id=CAST(@id AS uuid) UNION ALL SELECT 1 FROM $schema.stock_quantity_bindings WHERE company_id=CAST(@company AS uuid) AND id=CAST(@id AS uuid) LIMIT 1',
+      ),
+      parameters: {'company': companyId, 'id': id},
+    )).isNotEmpty;
+  }
+
   Future<List<StockMovementDto>> movements(
     TxSession tx, {
     required String stockLevelId,

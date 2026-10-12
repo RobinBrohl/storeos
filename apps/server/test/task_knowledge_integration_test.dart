@@ -632,6 +632,7 @@ void main() {
             '0024_bounded_purchase_orders',
             '0025_planned_preparation_assignments',
             '0026_purchase_order_delivery_evidence',
+            '0027_article_quantities',
           ],
         );
         for (var i = 0; i < tables.length; i++) {

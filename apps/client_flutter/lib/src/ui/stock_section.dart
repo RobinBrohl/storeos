@@ -3,6 +3,8 @@ import 'package:storeos_api_contracts/api_contracts.dart';
 
 import '../application/platform_controller.dart';
 import '../application/stock_controller.dart';
+import '../application/article_quantity_controller.dart';
+import 'article_quantity_dialog.dart';
 
 /// Manual stock management (Bestand): current levels, opening, absolute manual
 /// corrections and immutable movement history. The immutable stockUnit snapshot
@@ -336,6 +338,13 @@ class _StockSectionState extends State<StockSection> {
           spacing: 4,
           children: [
             TextButton(
+              key: ValueKey('stock-quantity-semantics-${item.id}'),
+              onPressed: controller.adjustmentBlocked
+                  ? null
+                  : () => _quantity(item),
+              child: const Text('Andere Einheit / Nachweise'),
+            ),
+            TextButton(
               key: ValueKey('stock-adjust-${item.id}'),
               onPressed: controller.adjustmentBlocked
                   ? null
@@ -373,6 +382,32 @@ class _StockSectionState extends State<StockSection> {
       context: context,
       builder: (context) => _AdjustDialog(controller: controller, level: level),
     );
+  }
+
+  Future<void> _quantity(StockLevelDto level) async {
+    final quantities = ArticleQuantityController(
+      controller.session,
+      controller.api,
+      articleId: level.articleId,
+      levelId: level.id,
+      locationId: level.locationId,
+      locationCurrent: () => controller.selectedLocationId == level.locationId,
+    );
+    controller.addListener(quantities.invalidateLocation);
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => ArticleQuantityDialog(
+          controller: quantities,
+          name: level.article.name,
+        ),
+      );
+      await controller.load();
+    } finally {
+      controller.removeListener(quantities.invalidateLocation);
+      quantities.dispose();
+    }
   }
 
   Future<void> _abandon() async {

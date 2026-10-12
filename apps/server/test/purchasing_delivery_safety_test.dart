@@ -518,7 +518,10 @@ void main() {
               schemaName: f.schema,
               runtimeDatabaseUser: f.runtimeUser,
             ).apply(),
-            ['0026_purchase_order_delivery_evidence'],
+            [
+              '0026_purchase_order_delivery_evidence',
+              '0027_article_quantities',
+            ],
           );
           expect(await priorEvidence(f), before);
           expect(

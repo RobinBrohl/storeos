@@ -368,6 +368,26 @@ paths:
     $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1deliveries~1{deliveryId}~1correct"
   /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}/void:
     $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1deliveries~1{deliveryId}~1void"
+  /api/v1/platform/articles/{articleId}/quantity:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{articleId}~1quantity"
+  /api/v1/platform/articles/{articleId}/quantity/history:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{articleId}~1quantity~1history"
+  /api/v1/platform/articles/{articleId}/quantity/configure:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{articleId}~1quantity~1configure"
+  /api/v1/platform/articles/{articleId}/quantity/replace:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{articleId}~1quantity~1replace"
+  /api/v1/platform/articles/{articleId}/quantity/suspend:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1articles~1{articleId}~1quantity~1suspend"
+  /api/v1/platform/locations/{locationId}/stock/{levelId}/quantity:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1quantity"
+  /api/v1/platform/locations/{locationId}/stock/{levelId}/quantity/evidence:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1quantity~1evidence"
+  /api/v1/platform/locations/{locationId}/stock/{levelId}/quantity/bind:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1quantity~1bind"
+  /api/v1/platform/locations/{locationId}/stock/{levelId}/quantity/preview:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1quantity~1preview"
+  /api/v1/platform/locations/{locationId}/stock/{levelId}/quantity/correct:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1quantity~1correct"
 components:
   securitySchemes:
     session:

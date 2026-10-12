@@ -186,6 +186,13 @@ class StockService {
       await _organization.requireConfiguredLocation(tx, location);
       // Operation identity is checked before any stale-version handling so an
       // exact retry after later writes still replays instead of conflicting.
+      if (await repository.quantityOperationExists(tx, parsed.movementId)) {
+        throw const PlatformFailure(
+          409,
+          'operation_conflict',
+          'Operation ID belongs to an explicit quantity command.',
+        );
+      }
       final existing = await repository.findMovement(tx, parsed.movementId);
       if (existing != null) {
         final exactReplay =

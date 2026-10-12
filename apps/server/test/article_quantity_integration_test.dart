@@ -6,7 +6,134 @@ import 'package:test/test.dart';
 import 'merchandising_fixture.dart';
 import 'article_quantity_fixture.dart';
 
+// Main CI 38320235803 failed because its substring privacy check matched a UUID:
+// https://github.com/RobinBrohl/storeos/actions/runs/38320235803
+// Check decoded payload fields and types, not incidental identifier digits.
+Matcher _quantityAuditChanges(String action) {
+  final uuid = matches(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+  );
+  final version = allOf(isA<int>(), greaterThan(0));
+  final fields = switch (action) {
+    'inventory.quantity.configure' ||
+    'inventory.quantity.replace' ||
+    'inventory.quantity.suspend' => {
+      'articleId': uuid,
+      'quantityProfileId': uuid,
+      'operationId': uuid,
+      'version': version,
+      'status': isIn(['active', 'suspended']),
+    },
+    'stock.quantity.bound' => {
+      'articleId': uuid,
+      'operationId': uuid,
+      'quantityProfileId': uuid,
+      'quantityProfileVersion': version,
+      'quantityBindingId': uuid,
+      'expectedVersion': version,
+    },
+    'stock.quantity.corrected' => {
+      'articleId': uuid,
+      'operationId': uuid,
+      'movementId': anyOf(isNull, uuid),
+      'quantityProfileId': uuid,
+      'quantityProfileVersion': version,
+      'quantityBindingId': uuid,
+      'oldVersion': version,
+      'version': version,
+    },
+    _ => throw ArgumentError.value(
+      action,
+      'action',
+      'Unexpected quantity audit',
+    ),
+  };
+  return allOf([
+    isA<Map>(),
+    hasLength(fields.length),
+    for (final field in fields.entries) containsPair(field.key, field.value),
+  ]);
+}
+
 void main() {
+  test(
+    'quantity audit privacy permits identifiers and rejects business data',
+    () {
+      const id = '2db8c724-12b2-46ec-a512-e4125093bd5c';
+      final payloads = {
+        for (final action in ['configure', 'replace', 'suspend'])
+          'inventory.quantity.$action': {
+            'articleId': id,
+            'quantityProfileId': id,
+            'operationId': id,
+            'version': 1250,
+            'status': action == 'suspend' ? 'suspended' : 'active',
+          },
+        'stock.quantity.bound': {
+          'articleId': id,
+          'operationId': id,
+          'quantityProfileId': id,
+          'quantityProfileVersion': 1250,
+          'quantityBindingId': id,
+          'expectedVersion': 1250,
+        },
+        'stock.quantity.corrected': {
+          'articleId': id,
+          'operationId': id,
+          'movementId': id,
+          'quantityProfileId': id,
+          'quantityProfileVersion': 1250,
+          'quantityBindingId': id,
+          'oldVersion': 1250,
+          'version': 1250,
+        },
+      };
+      for (final audit in payloads.entries) {
+        final contract = _quantityAuditChanges(audit.key);
+        expect(audit.value, contract);
+        for (final forbidden in {
+          'inputQuantity': '1250',
+          'targetQuantity': '1.25',
+          'delta': '-0.75',
+          'numerator': '1',
+          'denominator': '1000',
+          'reason': 'Manual physical target after review',
+          'label': 'a misleading label',
+          'packages': [
+            {'content': '1250'},
+          ],
+        }.entries) {
+          expect(
+            contract.matches({
+              ...audit.value,
+              forbidden.key: forbidden.value,
+            }, {}),
+            isFalse,
+            reason: '${audit.key} must reject ${forbidden.key}',
+          );
+        }
+        for (final key in audit.value.keys) {
+          for (final value in <Object>[
+            '1250',
+            '1/1000',
+            'Manual physical target after review',
+            {'reason': 'Manual physical target after review'},
+            ['1250'],
+          ]) {
+            expect(
+              contract.matches({...audit.value, key: value}, {}),
+              isFalse,
+              reason: '${audit.key} must reject business data in $key',
+            );
+          }
+        }
+      }
+      expect({
+        ...payloads['stock.quantity.corrected']!,
+        'movementId': null,
+      }, _quantityAuditChanges('stock.quantity.corrected'));
+    },
+  );
   final skip = merchandisingDatabaseAvailable
       ? false
       : 'Explicit isolated PostgreSQL required.';
@@ -183,6 +310,7 @@ void main() {
       await f.call('GET', '/health', platform: false);
       await f.call('GET', '/ready', platform: false);
       final a = await f.stockArticle(
+        id: '2db8c724-12b2-46ec-a512-e4125093bd5c',
         sku: 'P415-MASS',
         unit: 'a misleading label',
       );
@@ -296,13 +424,11 @@ void main() {
         original,
       );
       final audits = await f.owner.execute(
-        'SELECT changes FROM "${f.schema}".audit_entries WHERE action LIKE \'%quantity%\'',
+        'SELECT action, changes FROM "${f.schema}".audit_entries WHERE action LIKE \'%quantity%\'',
       );
       expect(audits, hasLength(5));
       for (final row in audits) {
-        final text = jsonEncode(row.first);
-        expect(text, isNot(contains('1250')));
-        expect(text, isNot(contains('Manual physical')));
+        expect(row[1], _quantityAuditChanges(row[0] as String));
       }
     }),
     skip: skip,

@@ -124,3 +124,13 @@ regression evidence, without automatically allocating P4.13. Security's fresh
 Flutter SDK-cache lockfile block and one blocked, unretried delegated dynamic step
 remain disclosed in the closure record. Standing M1/M2 CLOSED/M3/M4, P4.5 F01/F02
 and P4.9 historical qualification dispositions remain unchanged.
+
+## P4.13 assignment boundary
+
+Local assignment implementation adds Employee-attributable planning/execution evidence.
+Operator retention, access/export/offboarding and operational recovery decisions remain
+required before real employee-data use. Memory-only uncertain retry tracking and physical
+device/accessibility acceptance remain qualified. P4.13 F01 is remediated locally;
+targeted independent re-review, focused Security and changed-commit CI are pending.
+P4.14 is UNSELECTED. There is no scheduling,
+attendance/HACCP inference, automatic Stock effect or Task/Shift completion coupling.

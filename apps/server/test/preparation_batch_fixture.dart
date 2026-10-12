@@ -60,6 +60,26 @@ class BatchRecipe {
   RecipeDetailDto detail;
 }
 
+/// Reuse the genuinely populated prior fixture without inventing new history.
+Future<BatchRecipe> existingBatchRecipe(MerchandisingFixture f) async {
+  final page = (await f.call('GET', '/production/recipes?q=BATCH-P')).body;
+  final published = PublishedRecipeDto.fromJson(
+    (page['items'] as List).single as Map<String, dynamic>,
+  );
+  return BatchRecipe(
+    ArticleDto.fromJson(
+      (await f.call('GET', '/articles/${published.content.produced.id}')).body,
+    ),
+    ArticleDto.fromJson(
+      (await f.call(
+        'GET',
+        '/articles/${published.content.ingredients.single.article.id}',
+      )).body,
+    ),
+    await recipeDetail(f, published.recipe),
+  );
+}
+
 Future<BatchRecipe> batchRecipe(MerchandisingFixture f) async {
   final p = await f.stockArticle(sku: 'BATCH-P', unit: 'tray'),
       i = await f.article(recipeArticleInput('BATCH-I'));

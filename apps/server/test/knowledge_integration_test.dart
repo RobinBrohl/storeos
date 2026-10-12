@@ -1033,6 +1033,7 @@ void main() {
           '0022_preparation_batches',
           '0023_one_way_shift_transfers',
           '0024_bounded_purchase_orders',
+          '0025_planned_preparation_assignments',
         ]);
         expect(await preserved(), before);
         await create(f);

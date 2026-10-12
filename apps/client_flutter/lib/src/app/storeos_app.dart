@@ -12,6 +12,7 @@ import '../application/merchandising_controller.dart';
 import '../application/knowledge_controller.dart';
 import '../application/recipe_controller.dart';
 import '../application/preparation_batch_controller.dart';
+import '../application/preparation_assignment_controller.dart';
 import '../application/purchasing_controller.dart';
 import '../application/session_controller.dart';
 import '../application/platform_controller.dart';
@@ -52,6 +53,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   KnowledgeController? _knowledge;
   RecipeController? _recipes;
   PreparationBatchController? _batches, _ownBatches;
+  PreparationAssignmentController? _assignments, _ownAssignments;
   PurchasingController? _purchasing;
   ShiftController? _shifts, _home;
   ShiftTransferController? _transfers, _ownTransfers;
@@ -128,6 +130,17 @@ class _StoreOsAppState extends State<StoreOsApp> {
         _platformController!,
         api,
       );
+      _assignments = PreparationAssignmentController(
+        _controller,
+        _platformController!,
+        api,
+      );
+      _ownAssignments = PreparationAssignmentController(
+        _controller,
+        _platformController!,
+        api,
+        self: true,
+      );
     }
   }
 
@@ -150,6 +163,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _batches?.dispose();
     _purchasing?.dispose();
     _ownBatches?.dispose();
+    _assignments?.dispose();
+    _ownAssignments?.dispose();
     _employees?.dispose();
     _platformController?.dispose();
     _controller.dispose();
@@ -206,6 +221,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       batches: _batches,
                       purchasing: _purchasing,
                       ownBatches: _ownBatches,
+                      assignments: _assignments,
+                      ownAssignments: _ownAssignments,
                       shifts: _shifts,
                       transfers: _transfers,
                       ownTransfers: _ownTransfers,

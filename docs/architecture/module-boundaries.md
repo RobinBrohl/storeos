@@ -121,7 +121,7 @@ Public ports should express product dependencies without circular Domain ownersh
 | --- | --- | --- |
 | Knowledge extensions | Suggestions and separate review beyond delivered P4.5/P4.6 | Concrete Task guidance is delivered through [ADR 0020](../adr/0020-task-knowledge-guidance.md); further consumers/lifecycle changes need separate contracts. Reads never change execution history. |
 | Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
-| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.12 Purchasing intent is DONE/CLOSED; documentation closure publication/CI pending; P4.13 remains UNSELECTED. |
+| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.12 Purchasing intent is DONE/CLOSED; documentation closure publication/CI pending; P4.13 is IMPLEMENTED LOCALLY; independent review, focused Security and changed-commit CI pending. P4.14 UNSELECTED. |
 | Purchasing / Receiving extensions | Receipt/source cost evidence beyond bounded P4.12 order intent | Article/unit references; future authorized Stock commands for accepted physical receipts require separate selection. Not Stock ledger owner or invented valuation. |
 | Sales integration | Canonical SalesSource/import/checkpoint, Sale/Line source references, mapping and import health | Core validates authority/identity and coordinates explicit Stock/report effects. Vendor adapter acquires/converts; checkout/payment/fiscal archive ownership separate. |
 | Pricing | Effective prices/currency and approval rules | Article references; Menu consumes approved price contract. No implicit price column in Article. |
@@ -142,7 +142,7 @@ complete source/replacement Task links and exact snapshot verification. The
 application coordinator uses public owner ports for Identity/People, Workforce,
 Tasks and guidance validation; it never accesses their foreign repositories.
 F01/F02/F03 are CLOSED; targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187 establish closure. Further
-Workforce capabilities remain unselected. P4.12 delivers accepted bounded Purchasing intent under ADR 0026, with documentation closure publication/CI pending; P4.13 remains UNSELECTED.
+Workforce capabilities remain unselected. P4.12 delivers accepted bounded Purchasing intent under ADR 0026, with documentation closure publication/CI pending; P4.13 is IMPLEMENTED LOCALLY; independent review, focused Security and changed-commit CI pending. P4.14 UNSELECTED.
 
 Own each schema change through a new tested migration; retain IDs, snapshots and
 supported contracts. Do not let a future integration write Core tables directly.
@@ -153,3 +153,14 @@ error handling and tests before code. See [ADRs](../adr/README.md),
 [guided work](guided-work.md), [workforce orchestration](workforce-orchestration.md)
 and [data ownership](data-ownership.md). Larger entity names above are conceptual;
 choose concrete persistence/API contracts only when a slice is approved.
+
+## P4.13 preparation ownership
+
+Production owns PreparationAssignment, command receipts and atomic Batch linkage under
+[ADR 0027](../adr/0027-planned-preparation-assignment.md). People supplies current Employee
+eligibility through its public service; Identity supplies a narrow current link/Account
+eligibility boolean; Organization and Inventory ports retain their existing scope/catalog
+ownership. Assignment application code never reads their foreign repositories/tables.
+Only persisted assigned evidence authorizes retained R1 execution after R2. Existing
+standalone Batch opening remains current-revision-only. Planning and execution outcomes
+remain separate. No Stock/Purchasing/Task/Shift/events/attendance/HACCP coupling is added.

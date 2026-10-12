@@ -47,4 +47,8 @@ P4.3 is DONE/CLOSED per the [closure evidence](../development/phase-4-3-manual-s
 The broader unit catalog/conversion and costing questions remain open. Do not rewrite the
 original alternatives, decisions or dated verification to reflect later delivery.
 
-[ADR 0025: One-way Shift transfer before execution](0025-one-way-shift-transfer-before-execution.md) records the delivered P4.11 contract: **DONE/CLOSED**, F01/F02/F03 CLOSED, targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187. [ADR 0026](0026-bounded-purchase-order-intent.md) records accepted P4.12, DONE/CLOSED with all three implementation review/CI gates complete; documentation closure publication/CI pending. P4.13 remains UNSELECTED.
+[ADR 0025: One-way Shift transfer before execution](0025-one-way-shift-transfer-before-execution.md) records the delivered P4.11 contract: **DONE/CLOSED**, F01/F02/F03 CLOSED, targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187. [ADR 0026](0026-bounded-purchase-order-intent.md) records accepted P4.12, DONE/CLOSED with all three implementation review/CI gates complete; documentation closure publication/CI pending. P4.13 is IMPLEMENTED LOCALLY; independent review, focused Security and changed-commit CI pending. P4.14 UNSELECTED.
+
+[ADR 0027: Planned preparation with retained approved execution authority](0027-planned-preparation-assignment.md)
+records user-selected P4.13, IMPLEMENTED LOCALLY. Independent review, focused Security
+and changed-commit remote CI remain pending. P4.14 is UNSELECTED.

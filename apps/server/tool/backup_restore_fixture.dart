@@ -20,6 +20,7 @@ import 'merchandising_acceptance.dart';
 import 'knowledge_acceptance.dart';
 import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
+import 'preparation_assignment_acceptance.dart';
 import 'shift_transfer_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'backup_planogram_acceptance.dart';
@@ -70,6 +71,8 @@ const _evidenceTables = <String, String>{
   'production_recipes': 'id',
   'production_recipe_revisions': 'id',
   'production_recipe_ingredients': 'revision_id, id',
+  'production_preparation_assignments': 'company_id, id',
+  'production_preparation_assignment_commands': 'company_id, operation_id',
   'production_preparation_batches': 'company_id, id',
   'production_preparation_batch_commands': 'company_id, operation_id',
   'production_preparation_batch_count_corrections':
@@ -303,6 +306,8 @@ Future<void> _verify(Map<String, String> env, String source) async {
     );
     await verifyPreparationGrants(sourceOwner, _schema, runtimeUser);
     await verifyPreparationGrants(targetOwner, _schema, runtimeUser);
+    await verifyAssignmentGrants(sourceOwner, _schema, runtimeUser);
+    await verifyAssignmentGrants(targetOwner, _schema, runtimeUser);
     await verifyPurchasingGrants(sourceOwner, _schema, runtimeUser);
     await verifyPurchasingGrants(targetOwner, _schema, runtimeUser);
     await verifyKnowledgeEvidence(
@@ -403,9 +408,11 @@ Future<void> _verify(Map<String, String> env, String source) async {
         'historicalRestored': historicalRestored,
         'sourceAndRestoredHistoricalProofEqual': true,
         'migration': '0022_preparation_batches',
-        'batchCount': 5,
-        'receiptCount': 11,
-        'correctionCount': 2,
+        'assignmentCount': 7,
+        'assignmentReceiptCount': 12,
+        'batchCount': 9,
+        'receiptCount': 20,
+        'correctionCount': 4,
         'deterministicEvidencePreserved': true,
         'ownAndManagerAuthorizationVerified': true,
         'otherEmployeeDenied': true,
@@ -818,24 +825,46 @@ Future<Map<String, dynamic>> _seed(
       token: adminToken,
       expected: status,
     ),
-    beforeHistoricalReplacement: () => seedPreparationBatches(
-      (method, route, body, status) => api.request(
-        method,
-        route,
-        body: body,
-        token: adminToken,
-        expected: status,
-      ),
-      (method, route, body, status) => api.request(
-        method,
-        route,
-        body: body,
-        token: workerToken,
-        expected: status,
-      ),
-      locationId,
-      recipeSku: 'RECIPE-PRODUCED-1',
-    ),
+    beforeHistoricalReplacement: () async {
+      await seedPreparationBatches(
+        (method, route, body, status) => api.request(
+          method,
+          route,
+          body: body,
+          token: adminToken,
+          expected: status,
+        ),
+        (method, route, body, status) => api.request(
+          method,
+          route,
+          body: body,
+          token: workerToken,
+          expected: status,
+        ),
+        locationId,
+        recipeSku: 'RECIPE-PRODUCED-1',
+      );
+      await seedPreparationAssignments(
+        (method, route, body, status) => api.request(
+          method,
+          route,
+          body: body,
+          token: adminToken,
+          expected: status,
+        ),
+        (method, route, body, status) => api.request(
+          method,
+          route,
+          body: body,
+          token: workerToken,
+          expected: status,
+        ),
+        locationId,
+        employeeId,
+        otherEmployeeId,
+        recipeSku: 'RECIPE-PRODUCED-1',
+      );
+    },
   );
   final countEvidence = await seedStockCounts(
     (method, route, body, status) => api.request(
@@ -1164,9 +1193,11 @@ Future<void> _assertSeededJourney(
     'production_recipe_revisions': 7,
     'production_recipe_ingredients': 14,
     'article_location_assortment': 4,
-    'production_preparation_batches': 5,
-    'production_preparation_batch_commands': 11,
-    'production_preparation_batch_count_corrections': 2,
+    'production_preparation_assignments': 7,
+    'production_preparation_assignment_commands': 12,
+    'production_preparation_batches': 9,
+    'production_preparation_batch_commands': 20,
+    'production_preparation_batch_count_corrections': 4,
     'stock_levels': 3,
     'stock_movements': 5,
     'stock_counts': 3,

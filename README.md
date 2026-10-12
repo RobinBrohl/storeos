@@ -1,5 +1,22 @@
 # StoreOS
 
+P4.13 **Planned Preparation Assignment** is **IMPLEMENTED LOCALLY**, with migration
+`0025_planned_preparation_assignments.sql` and ADR 0027. Manager requests retain an
+exact approved RecipeRevision and one eligible Employee; explicit Employee start opens
+one atomic linked Batch. Requested, original actual and corrected effective counts stay
+distinct. Independent review returned **CHANGES REQUIRED** (95 PASS / 4 QUALIFIED / 1 FAIL)
+for F01, a MEDIUM product defect and commit blocker. F01 is **REMEDIATED LOCALLY**;
+targeted independent re-review, focused Security and changed-commit remote CI are **PENDING**.
+P4.14 is **UNSELECTED**. P4.1–P4.12 remain DONE/CLOSED. Baseline closure
+`d48856f8eb0ccf4565295616606fe674bc0f2b49` and all five jobs in
+[closure CI 38156014870](https://github.com/RobinBrohl/storeos/actions/runs/38156014870)
+were verified before implementation. All P4.13 changes remain unstaged/uncommitted on
+that original `main` HEAD. See [implementation](docs/development/phase-4-13-planned-preparation-assignments.md) and
+[local acceptance](docs/development/phase-4-13-acceptance.md).
+
+The following P4.12 passage preserves its historical documentation-closure drafting state.
+The baseline verification above supersedes its then-pending publication statements.
+
 P4.12 **Bounded Purchase Orders with Minimal Supplier Identity** is **DONE/CLOSED (accepted implementation)** at `f9122f21cde5149685059a184114b6d958a2bd32` (`Add bounded purchase orders`) on `main`. Initial independent CHANGES REQUIRED led to bounded F01 remediation **CLOSED** and targeted independent **APPROVE**; focused Codex Security returned **SECURITY APPROVE**. All five jobs succeeded in [implementation-commit CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998). Current acceptance: **93 PASS / 3 QUALIFIED / 0 FAIL**, with **1,261 final-source package tests**, **16/16 verification phases**, **13/13 opt-in journeys** and **3/3 numeric browser stages** PASS. Migration chain: **0001–0024**, latest `0024_bounded_purchase_orders.sql`; historical 0001–0023 unchanged, no 0025. P4.1–P4.11 remain DONE/CLOSED; **P4.13 remains UNSELECTED**. The final documentation-only closure commit and its own exact-head remote CI are **PENDING PUBLICATION**; no closure SHA, run or outcome exists yet. See [P4.12 closure evidence](docs/development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11).
 
 The following closure records describe their historical baselines.

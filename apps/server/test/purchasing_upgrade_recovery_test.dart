@@ -90,7 +90,10 @@ void main() {
                 schemaName: f.schema,
                 runtimeDatabaseUser: f.runtimeUser,
               ).apply(),
-              ['0024_bounded_purchase_orders'],
+              [
+                '0024_bounded_purchase_orders',
+                '0025_planned_preparation_assignments',
+              ],
             );
             expect(await purchasingLegacyEvidence(f), before);
             expect(

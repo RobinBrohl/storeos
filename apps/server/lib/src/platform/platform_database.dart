@@ -33,6 +33,9 @@ class PlatformActor {
 }
 
 const _permissions = <String>[
+  'production.assignments.manage',
+  'production.assignments.self.read',
+  'production.assignments.self.start',
   'purchasing.suppliers.manage',
   'purchasing.orders.manage',
   'purchasing.orders.issue',
@@ -92,6 +95,8 @@ List<String> permissionsForRole(String role) => switch (role) {
     'events.read',
   ],
   'employee' => const [
+    'production.assignments.self.read',
+    'production.assignments.self.start',
     'workforce.transfers.self.read',
     'workforce.transfers.self.request',
     'workforce.transfers.self.respond',

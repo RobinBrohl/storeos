@@ -23,7 +23,7 @@ void main() {
     purchasingRaceCases();
   }
   test(
-    'P4.12 clean migration 0001 through 0024',
+    'P4.12 clean migration remains valid through current 0025',
     () async {
       final uri = Uri.parse(Platform.environment['STOREOS_TEST_DATABASE']!);
       final parts = uri.userInfo.split(':');
@@ -45,7 +45,7 @@ void main() {
           schemaName: schema,
           runtimeDatabaseUser: Platform.environment['STOREOS_DB_USER'],
         ).apply();
-        expect(applied.last, '0024_bounded_purchase_orders');
+        expect(applied.last, '0025_planned_preparation_assignments');
       } finally {
         await connection.execute('DROP SCHEMA IF EXISTS "$schema" CASCADE');
         await connection.close();

@@ -70,3 +70,15 @@ A public publisher receives an approved minimal artifact, not access to the oper
 database. Public hosting/remote access cannot create a second unrestricted writer.
 These future boundaries need concrete ownership/retention/export contracts when
 implemented; see [module boundaries](module-boundaries.md) and [open questions](../risks-and-open-questions.md).
+
+## Planned preparation evidence
+
+P4.13 Production owns Company/Location-scoped Employee preparation requests and immutable
+create/withdraw/start receipts. Exact RecipeRevision, target Employee, Location and
+requested count remain immutable. One linked PreparationBatch owns actual execution,
+original completion/cancellation and append-only corrections. Assignment stays started
+as Batch evolves; corrected zero preserves original completion. Current Account links
+control access to Employee-owned work and do not transfer command actor identity.
+Historical scoped R1 context survives replacement/retirement; fresh execution still
+checks current eligibility. See [ADR 0027](../adr/0027-planned-preparation-assignment.md).
+No retention/export/offboarding period or employee-data readiness decision is implied.

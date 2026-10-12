@@ -18187,6 +18187,1692 @@
           }
         }
       }
+    },
+    "/api/v1/platform/production/manage/locations/{locationId}/preparation-assignments": {
+      "get": {
+        "operationId": "listManagedPreparationAssignments",
+        "summary": "listManagedPreparationAssignments",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Keyset position binds endpoint, Company, configured Location, self/manager, Employee and filters."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "assigned",
+                "started",
+                "withdrawn"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPreparationAssignment",
+        "summary": "createPreparationAssignment",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Strict decoded duplicate-name JSON, 16384 byte streamed limit; no actor, scope, Batch IDs, timestamps or start overrides.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreparationAssignmentCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Original accepted evidence; current detail is fetched separately. Exact authorized replay creates no effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentCommandResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_count, invalid_json, invalid_request.",
+            "x-error-codes": [
+              "invalid_count",
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: already_exists, operation_conflict, version_conflict.",
+            "x-error-codes": [
+              "already_exists",
+              "operation_conflict",
+              "version_conflict"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422: article_unavailable, assignee_unavailable, ingredient_unit_changed, not_in_assortment, recipe_selection_unavailable.",
+            "x-error-codes": [
+              "article_unavailable",
+              "assignee_unavailable",
+              "ingredient_unit_changed",
+              "not_in_assortment",
+              "recipe_selection_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/assignees": {
+      "get": {
+        "operationId": "listPreparationAssignees",
+        "summary": "listPreparationAssignees",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Keyset position binds endpoint, Company, configured Location, self/manager, Employee and filters."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssigneePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/{assignmentId}": {
+      "get": {
+        "operationId": "readManagedPreparationAssignment",
+        "summary": "readManagedPreparationAssignment",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/{assignmentId}/recipe": {
+      "get": {
+        "operationId": "readManagedAssignmentRecipe",
+        "summary": "readManagedAssignmentRecipe",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationRecipeContext"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/{assignmentId}/history": {
+      "get": {
+        "operationId": "readManagedAssignmentHistory",
+        "summary": "readManagedAssignmentHistory",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/{assignmentId}/withdraw": {
+      "post": {
+        "operationId": "withdrawPreparationAssignment",
+        "summary": "withdrawPreparationAssignment",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Strict decoded duplicate-name JSON, 16384 byte streamed limit; no actor, scope, Batch IDs, timestamps or start overrides.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreparationAssignmentWithdrawRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted evidence; current detail is fetched separately. Exact authorized replay creates no effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentCommandResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_content, invalid_json, invalid_request.",
+            "x-error-codes": [
+              "invalid_content",
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: assignment_state_conflict, operation_conflict, version_conflict.",
+            "x-error-codes": [
+              "assignment_state_conflict",
+              "operation_conflict",
+              "version_conflict"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/self/locations/{locationId}/preparation-assignments": {
+      "get": {
+        "operationId": "listSelfPreparationAssignments",
+        "summary": "listSelfPreparationAssignments",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Keyset position binds endpoint, Company, configured Location, self/manager, Employee and filters."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "assigned",
+                "started",
+                "withdrawn"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/self/locations/{locationId}/preparation-assignments/{assignmentId}": {
+      "get": {
+        "operationId": "readSelfPreparationAssignment",
+        "summary": "readSelfPreparationAssignment",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/self/locations/{locationId}/preparation-assignments/{assignmentId}/recipe": {
+      "get": {
+        "operationId": "readSelfAssignmentRecipe",
+        "summary": "readSelfAssignmentRecipe",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationRecipeContext"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/self/locations/{locationId}/preparation-assignments/{assignmentId}/history": {
+      "get": {
+        "operationId": "readSelfAssignmentHistory",
+        "summary": "readSelfAssignmentHistory",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/production/self/locations/{locationId}/preparation-assignments/{assignmentId}/start": {
+      "post": {
+        "operationId": "startPreparationAssignment",
+        "summary": "startPreparationAssignment",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "description": "Current session, Company and configured Location equality precede scoped evidence/receipt disclosure. Self access derives the currently eligible linked Employee. Recipe read authority required. Unknown/duplicate query fields rejected. Assignment lifecycle stays started while Batch evolves. No Stock, Task, scheduling or event effects.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Strict decoded duplicate-name JSON, 16384 byte streamed limit; no actor, scope, Batch IDs, timestamps or start overrides.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreparationAssignmentStartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted evidence; current detail is fetched separately. Exact authorized replay creates no effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreparationAssignmentStartResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409: assignment_state_conflict, operation_conflict, version_conflict.",
+            "x-error-codes": [
+              "assignment_state_conflict",
+              "operation_conflict",
+              "version_conflict"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422: article_unavailable, ingredient_unit_changed, not_in_assortment, recipe_unavailable.",
+            "x-error-codes": [
+              "article_unavailable",
+              "ingredient_unit_changed",
+              "not_in_assortment",
+              "recipe_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -27201,6 +28887,592 @@
             "minLength": 1,
             "maxLength": 500,
             "description": "Trimmed literal single-line Unicode text; no controls or unpaired surrogates."
+          }
+        }
+      },
+      "PreparationAssignment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "locationId",
+          "employeeId",
+          "recipeId",
+          "revisionId",
+          "createdBy",
+          "createOperationId",
+          "plannedDeclaredBatchCount",
+          "createdAt",
+          "status",
+          "version",
+          "batchId",
+          "batchOperationId",
+          "startedBy",
+          "withdrawnBy",
+          "terminalOperationId",
+          "startedAt",
+          "withdrawnAt",
+          "withdrawalReason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createOperationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "plannedDeclaredBatchCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9999,
+            "description": "Whole repetitions of one declared Recipe batch; no output units, yield or Stock effect."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "assigned",
+              "started",
+              "withdrawn"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "batchId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "batchOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "startedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "withdrawnBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "startedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "withdrawnAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "withdrawalReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "description": "Trimmed literal text; control characters and malformed Unicode rejected."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PreparationAssignmentDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "locationId",
+          "employeeId",
+          "recipeId",
+          "revisionId",
+          "createdBy",
+          "createOperationId",
+          "plannedDeclaredBatchCount",
+          "createdAt",
+          "status",
+          "version",
+          "batchId",
+          "batchOperationId",
+          "startedBy",
+          "withdrawnBy",
+          "terminalOperationId",
+          "startedAt",
+          "withdrawnAt",
+          "withdrawalReason",
+          "batch"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createOperationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "plannedDeclaredBatchCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9999,
+            "description": "Whole repetitions of one declared Recipe batch; no output units, yield or Stock effect."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "assigned",
+              "started",
+              "withdrawn"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "batchId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "batchOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "startedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "withdrawnBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "terminalOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "startedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "withdrawnAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "withdrawalReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "description": "Trimmed literal text; control characters and malformed Unicode rejected."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "batch": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PreparationBatchDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PreparationAssignmentHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assignment",
+          "batch"
+        ],
+        "properties": {
+          "assignment": {
+            "$ref": "#/components/schemas/PreparationAssignment"
+          },
+          "batch": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PreparationBatchDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PreparationAssignmentPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PreparationAssignment"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PreparationAssignee": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "displayName",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "PreparationAssigneePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PreparationAssignee"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PreparationAssignmentCreateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "operationId",
+          "recipeId",
+          "revisionId",
+          "employeeId",
+          "expectedEmployeeVersion",
+          "plannedDeclaredBatchCount"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedEmployeeVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "plannedDeclaredBatchCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9999,
+            "description": "Whole repetitions of one declared Recipe batch; no output units, yield or Stock effect."
+          }
+        }
+      },
+      "PreparationAssignmentStartRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          }
+        }
+      },
+      "PreparationAssignmentWithdrawRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedVersion",
+          "reason"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Trimmed literal text; control characters and malformed Unicode rejected."
+          }
+        }
+      },
+      "PreparationAssignmentCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assignment",
+          "replayed"
+        ],
+        "properties": {
+          "assignment": {
+            "$ref": "#/components/schemas/PreparationAssignment"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PreparationAssignmentStartResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assignment",
+          "batch",
+          "replayed"
+        ],
+        "properties": {
+          "assignment": {
+            "$ref": "#/components/schemas/PreparationAssignment"
+          },
+          "batch": {
+            "$ref": "#/components/schemas/PreparationBatch"
+          },
+          "replayed": {
+            "type": "boolean"
           }
         }
       }

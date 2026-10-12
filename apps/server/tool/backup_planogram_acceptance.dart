@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'stock_count_acceptance.dart';
 import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
+import 'preparation_assignment_acceptance.dart';
 import 'shift_transfer_acceptance.dart';
 import 'purchasing_acceptance.dart';
 import 'package:storeos_server/src/stock/stock_count_service.dart';
@@ -84,6 +85,12 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       ),
       remoteKey: 'isolated-count-other-employee-restore',
     )).token;
+    await verifyRestoredAssignments(
+      db,
+      manager,
+      principal,
+      await auth.authenticate(otherWorkerToken),
+    );
     final historical = await verifyHistoricalPreparation(
       db,
       manager,
@@ -134,6 +141,8 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       manager,
       principal,
       otherEmployee: await auth.authenticate(otherWorkerToken),
+      expectedBatches: 9,
+      expectedReceipts: 20,
     );
     var auditBefore = (await pool.execute(
       'SELECT count(*) FROM $s.audit_entries',

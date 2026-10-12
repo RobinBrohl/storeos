@@ -23,6 +23,8 @@ import 'recipe_section.dart';
 import '../application/recipe_controller.dart';
 import '../application/preparation_batch_controller.dart';
 import 'preparation_batch_section.dart';
+import '../application/preparation_assignment_controller.dart';
+import 'preparation_assignment_section.dart';
 import '../application/purchasing_controller.dart';
 import 'purchasing_section.dart';
 import 'change_password_dialog.dart';
@@ -34,6 +36,8 @@ import '../application/employee_controller.dart';
 import 'system_status_screen.dart';
 
 enum _Section {
+  assignments,
+  ownAssignments,
   purchasing,
   transfers,
   ownTransfers,
@@ -75,6 +79,8 @@ class PlatformHomeScreen extends StatefulWidget {
     this.batches,
     this.purchasing,
     this.ownBatches,
+    this.assignments,
+    this.ownAssignments,
     this.shifts,
     this.transfers,
     this.ownTransfers,
@@ -95,6 +101,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final KnowledgeController? knowledge;
   final RecipeController? recipes;
   final PreparationBatchController? batches, ownBatches;
+  final PreparationAssignmentController? assignments, ownAssignments;
   final PurchasingController? purchasing;
   final ShiftController? shifts, home;
   final ShiftTransferController? transfers, ownTransfers;
@@ -108,6 +115,14 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   _Section _selected = _Section.status;
 
   List<_Section> get _available => [
+    if (widget.assignments != null &&
+        widget.batches != null &&
+        widget.platform.allows('production.assignments.manage'))
+      _Section.assignments,
+    if (widget.ownAssignments != null &&
+        widget.ownBatches != null &&
+        widget.platform.allows('production.assignments.self.read'))
+      _Section.ownAssignments,
     if (widget.purchasing != null &&
         widget.platform.allows('purchasing.orders.manage'))
       _Section.purchasing,
@@ -173,6 +188,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.knowledge => 'Wissen',
     _Section.recipes => 'Rezepte',
     _Section.batches => 'Preparation history',
+    _Section.assignments => 'Preparation assignments',
+    _Section.ownAssignments => 'My preparation assignments',
     _Section.ownBatches => 'My preparation batches',
     _Section.people => 'Mitarbeiter',
     _Section.profile => 'Mein Profil',
@@ -198,6 +215,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.knowledge => Icons.menu_book_outlined,
     _Section.recipes => Icons.restaurant_menu,
     _Section.batches => Icons.history,
+    _Section.assignments => Icons.assignment_add,
+    _Section.ownAssignments => Icons.assignment_ind,
     _Section.ownBatches => Icons.restaurant,
     _Section.people => Icons.badge_outlined,
     _Section.profile => Icons.person_outline,
@@ -212,6 +231,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   void _select(_Section section) {
     setState(() => _selected = section);
     switch (section) {
+      case _Section.assignments:
+      case _Section.ownAssignments:
       case _Section.purchasing:
       case _Section.transfers:
       case _Section.ownTransfers:
@@ -247,6 +268,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   void _refresh(_Section section) {
     switch (section) {
+      case _Section.assignments:
+        widget.assignments!.load();
+      case _Section.ownAssignments:
+        widget.ownAssignments!.load();
       case _Section.purchasing:
         widget.purchasing!.load();
       case _Section.transfers:
@@ -287,6 +312,14 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   }
 
   Widget _body(_Section section) => switch (section) {
+    _Section.assignments => PreparationAssignmentSection(
+      controller: widget.assignments!,
+      batches: widget.batches!,
+    ),
+    _Section.ownAssignments => PreparationAssignmentSection(
+      controller: widget.ownAssignments!,
+      batches: widget.ownBatches!,
+    ),
     _Section.purchasing => PurchasingSection(controller: widget.purchasing!),
     _Section.transfers => ShiftTransferSection(controller: widget.transfers!),
     _Section.ownTransfers => ShiftTransferSection(
@@ -333,6 +366,24 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
           widget.ownCounts != null &&
               widget.platform.allows('stock.counts.self.read')
           ? () => _openCounts(widget.ownCounts!)
+          : null,
+      assignmentsShortcut:
+          widget.ownAssignments != null &&
+              widget.ownBatches != null &&
+              widget.platform.allows('production.assignments.self.read')
+          ? () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => Scaffold(
+                  appBar: AppBar(
+                    title: const Text('My preparation assignments'),
+                  ),
+                  body: PreparationAssignmentSection(
+                    controller: widget.ownAssignments!,
+                    batches: widget.ownBatches!,
+                  ),
+                ),
+              ),
+            )
           : null,
       recipesShortcut:
           widget.recipes != null &&
@@ -465,6 +516,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
                 section != _Section.knowledge &&
                 section != _Section.recipes &&
                 section != _Section.batches &&
+                section != _Section.assignments &&
+                section != _Section.ownAssignments &&
                 section != _Section.ownBatches &&
                 section != _Section.shifts &&
                 section != _Section.home)

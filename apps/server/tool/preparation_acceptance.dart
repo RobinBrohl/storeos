@@ -191,12 +191,14 @@ Future<void> verifyRestoredPreparation(
   SessionPrincipal manager,
   SessionPrincipal employee, {
   SessionPrincipal? otherEmployee,
+  int expectedBatches = 5,
+  int expectedReceipts = 11,
 }) async {
   final app = PreparationBatchService(db), location = db.locationId;
   final rows = await db.pool.execute(
     'SELECT id::text,status FROM ${db.schema}.production_preparation_batches ORDER BY id',
   );
-  if (rows.length != 5) {
+  if (rows.length != expectedBatches) {
     throw StateError('Restored preparation evidence missing.');
   }
   Future<List<Object?>> fingerprint() async => [
@@ -222,11 +224,11 @@ Future<void> verifyRestoredPreparation(
   ];
   final before = await fingerprint();
   final history = await app.list(manager, location, self: false);
-  if ((history['items'] as List).length != 5) {
+  if ((history['items'] as List).length != expectedBatches) {
     throw StateError('Restored manager preparation history missing.');
   }
   final own = await app.list(employee, location);
-  if ((own['items'] as List).length != 5) {
+  if ((own['items'] as List).length != expectedBatches) {
     throw StateError('Restored self preparation history missing.');
   }
   for (final row in rows) {
@@ -263,7 +265,7 @@ Future<void> verifyRestoredPreparation(
   final receipts = await db.pool.execute(
     'SELECT batch_id::text,kind,actor_id::text,payload,result FROM ${db.schema}.production_preparation_batch_commands ORDER BY operation_id',
   );
-  if (receipts.length != 11) {
+  if (receipts.length != expectedReceipts) {
     throw StateError('Restored preparation receipts missing.');
   }
   for (final r in receipts) {

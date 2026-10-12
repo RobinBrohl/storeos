@@ -326,6 +326,17 @@ class MigrationRunner {
           );
         }
         if (known.containsKey('0022_preparation_batches')) {
+          if (known.containsKey('0025_planned_preparation_assignments')) {
+            await tx.execute(
+              'GRANT SELECT, INSERT ON $_schema.production_preparation_assignments, $_schema.production_preparation_assignment_commands TO $role',
+            );
+            await tx.execute(
+              'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.production_preparation_assignments, $_schema.production_preparation_assignment_commands FROM $role',
+            );
+            await tx.execute(
+              'GRANT UPDATE (status,version,batch_id,batch_operation_id,started_by,started_at,withdrawn_by,withdrawn_at,withdrawal_reason,terminal_operation_id) ON $_schema.production_preparation_assignments TO $role',
+            );
+          }
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.production_preparation_batches, $_schema.production_preparation_batch_commands, $_schema.production_preparation_batch_count_corrections TO $role',
           );

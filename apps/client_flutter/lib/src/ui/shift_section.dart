@@ -8,6 +8,7 @@ class ShiftSection extends StatefulWidget {
     required this.controller,
     this.knowledgeShortcut,
     this.recipesShortcut,
+    this.assignmentsShortcut,
     this.countsShortcut,
     this.transferShortcut,
     super.key,
@@ -15,6 +16,7 @@ class ShiftSection extends StatefulWidget {
   final ShiftController controller;
   final VoidCallback? knowledgeShortcut;
   final VoidCallback? recipesShortcut;
+  final VoidCallback? assignmentsShortcut;
   final VoidCallback? countsShortcut;
   final ValueChanged<ShiftDto>? transferShortcut;
   @override
@@ -110,6 +112,12 @@ class _ShiftSectionState extends State<ShiftSection> {
             key: const Key('own-stock-counts-shortcut'),
             onPressed: widget.countsShortcut,
             child: const Text('Meine Inventurzählungen'),
+          ),
+        if (widget.assignmentsShortcut != null)
+          TextButton(
+            key: const Key('work-preparation-assignments'),
+            onPressed: widget.assignmentsShortcut,
+            child: const Text('My preparation assignments'),
           ),
         if (widget.recipesShortcut != null)
           TextButton(

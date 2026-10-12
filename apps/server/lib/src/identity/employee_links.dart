@@ -14,6 +14,34 @@ class EmployeeLinks {
   final EmployeeLinkRepository _links;
   final IdentityRepository _accounts;
 
+  /// Target capability eligibility without releasing Account data to Production.
+  Future<bool> canStartPreparationAssignment(
+    TxSession tx,
+    String employeeId,
+    String locationId,
+  ) async {
+    final link = await forEmployee(tx, employeeId);
+    if (link == null ||
+        link.locationId != locationId ||
+        link.revokedAt != null) {
+      return false;
+    }
+    final account = await _accounts.user(tx, link.accountId);
+    final rights = account == null
+        ? const <String>[]
+        : permissionsForRole(account.role);
+    return account != null &&
+        account.isActive &&
+        account.locationId == locationId &&
+        [
+          'production.assignments.self.read',
+          'production.assignments.self.start',
+          'production.recipes.read',
+          'production.batches.self.read',
+          'production.batches.self.execute',
+        ].every(rights.contains);
+  }
+
   Future<EmployeeLinkDto?> forEmployee(TxSession tx, String employeeId) =>
       _links.find(tx, employeeId: employeeId);
   Future<EmployeeLinkDto?> forAccount(TxSession tx, String accountId) =>

@@ -206,7 +206,7 @@ preserves chronology and evidence.
 Memory-only uncertain-command recovery, supported-writer/raw-SQL boundaries,
 physical-device/accessibility gaps, M1 pilot gate, M2 CLOSED, M3 endpoint containment,
 M4 broader error taxonomy and P4.5 F01/F02 nonblocking follow-ups remain unchanged.
-P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure publication/CI pending. P4.13 remains UNSELECTED.
+P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure publication/CI pending. P4.13 is IMPLEMENTED LOCALLY; F01 remediated locally, targeted independent re-review, focused Security and changed-commit CI pending. P4.14 UNSELECTED.
 
 ## P4.10 closed review gates and retained limits
 
@@ -259,7 +259,7 @@ and successful exact implementation-commit [CI 38152045998](https://github.com/R
 all five jobs. Current acceptance is **93 PASS / 3 QUALIFIED / 0 FAIL**. No actionable
 independent review finding, required Security remediation or commit blocker remains.
 Documentation-only closure commit and its own exact-head CI remain pending publication;
-P4.13 remains UNSELECTED. See [closure](phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11),
+P4.13 is IMPLEMENTED LOCALLY; F01 remediated locally, targeted independent re-review, focused Security and changed-commit CI pending. P4.14 UNSELECTED. See [closure](phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11),
 [acceptance matrix](phase-4-12-acceptance.md) and [ADR 0026](../adr/0026-bounded-purchase-order-intent.md).
 
 F01 was a LOW PRODUCT DEFECT and commit blocker on criterion 36: authorization
@@ -302,3 +302,19 @@ The checks are **not already hardened**. Migration 0024 remains unchanged; any b
 hardening needs an explicitly authorized **new migration** and regression evidence.
 No migration 0025 is created here; no P4.13 allocation is made. I01–I03 remain distinct
 from M1–M4 and do not change their taxonomy or dispositions.
+
+## P4.13 local implementation gates and retained debt
+
+Planned Preparation Assignment is IMPLEMENTED LOCALLY. Independent review returned
+CHANGES REQUIRED for MEDIUM product defect / commit blocker F01. F01 is REMEDIATED
+LOCALLY; targeted independent re-review, focused Security and changed-commit remote CI
+are PENDING. It does not close unrelated debt.
+P4.14 is UNSELECTED. [Implementation](phase-4-13-planned-preparation-assignments.md) and
+[acceptance](phase-4-13-acceptance.md) retain the qualifications explicitly.
+M1 proxy/login-limiter pilot gate, M2 CLOSED, M3 endpoint-local containment, M4 global
+taxonomy, P4.12 I01–I03 INFO, P4.5 F01/F02, P4.9 historical qualification, supported-writer
+raw-SQL limits, memory-only retry recovery, hardware/accessibility gaps and operator
+privacy/retention/export/offboarding/RPO/RTO decisions keep their existing dispositions.
+The new retained revision exception is restricted to valid persisted assignments;
+standalone Batch opening continues to require the exact current approved revision.
+No broad employee-data production readiness, offline writes or multi-site sync is claimed.

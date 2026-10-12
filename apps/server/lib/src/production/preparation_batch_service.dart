@@ -12,6 +12,7 @@ import '../platform/platform_database.dart';
 import 'preparation_batch.dart';
 import 'preparation_batch_repository.dart';
 import 'recipe_repository.dart';
+import 'preparation_assignment_repository.dart';
 
 class PreparationBatchService {
   PreparationBatchService(this.database)
@@ -173,7 +174,11 @@ class PreparationBatchService {
     return {...Map<String, dynamic>.from(r['result'] as Map), 'replayed': true};
   }
 
-  Future<void> _freshRecipe(TxSession tx, PreparationCommandInput c) async {
+  Future<void> _freshRecipe(
+    TxSession tx,
+    PreparationCommandInput c, {
+    bool retainedAssignment = false,
+  }) async {
     final a = await _recipes.article(tx, c.payload['recipeId'] as String);
     final r = a == null
         ? null
@@ -182,10 +187,12 @@ class PreparationBatchService {
         a.status != 'active' ||
         r == null ||
         r.status != 'published' ||
-        a.currentPublishedRevisionId != r.id) {
-      throw const PlatformFailure(
+        (!retainedAssignment && a.currentPublishedRevisionId != r.id)) {
+      throw PlatformFailure(
         422,
-        'recipe_selection_unavailable',
+        retainedAssignment
+            ? 'recipe_unavailable'
+            : 'recipe_selection_unavailable',
         'Select the exact current approved Recipe revision.',
       );
     }
@@ -230,6 +237,93 @@ class PreparationBatchService {
         );
       }
     }
+  }
+
+  /// Assignment creation uses the same fresh execution invariants as opening.
+  Future<void> validateAssignmentSelection(
+    TxSession tx,
+    String recipe,
+    String revision,
+  ) => _freshRecipe(
+    tx,
+    PreparationCommandInput.fromJson('open', {
+      'batchId': newUuid(),
+      'operationId': newUuid(),
+      'recipeId': recipe,
+      'revisionId': revision,
+      'plannedDeclaredBatchCount': null,
+    }),
+  );
+
+  /// Only persisted assigned evidence can authorize retained-revision execution.
+  /// Participates in the caller's transaction; never commits or nests a Tx.
+  Future<Map<String, dynamic>> openAssignedBatch(
+    TxSession tx,
+    PlatformActor actor,
+    String assignmentId,
+  ) async {
+    if (![
+          'production.assignments.self.start',
+          'production.batches.self.execute',
+          'production.recipes.read',
+        ].every(permissionsForRole(actor.role).contains) ||
+        actor.locationId != database.locationId ||
+        actor.companyId != database.companyId) {
+      throw const PlatformFailure(
+        403,
+        'forbidden',
+        'Assigned execution authority required.',
+      );
+    }
+    final a = await PreparationAssignmentRepository(
+      database.schema,
+      database.companyId,
+      database.locationId,
+    ).find(tx, assignmentId, lock: true);
+    final employee = await _self(tx, actor);
+    if (a == null || a['employeeId'] != employee) {
+      throw const PlatformFailure(404, 'not_found', 'Assignment not found.');
+    }
+    if (a['status'] != 'assigned' || a['version'] != 1) {
+      throw const PlatformFailure(
+        409,
+        'assignment_state_conflict',
+        'Assignment is no longer assigned.',
+      );
+    }
+    final c = PreparationCommandInput.fromJson('open', {
+      'batchId': newUuid(),
+      'operationId': newUuid(),
+      'recipeId': a['recipeId'],
+      'revisionId': a['revisionId'],
+      'plannedDeclaredBatchCount': a['plannedDeclaredBatchCount'],
+    });
+    await _freshRecipe(tx, c, retainedAssignment: true);
+    await _batches.open(tx, employee, actor.id, c);
+    final batch = await _get(tx, c.payload['batchId'] as String);
+    await _batches.accept(tx, batch['batchId'] as String, actor.id, c, {
+      'batch': batch,
+      'replayed': false,
+    });
+    await database.audit(
+      tx,
+      actor,
+      'production.batch.opened',
+      'preparation_batch',
+      batch['batchId'] as String,
+      locationId: database.locationId,
+      changes: {
+        'batchId': batch['batchId'],
+        'recipeId': batch['recipeId'],
+        'revisionId': batch['revisionId'],
+        'employeeId': employee,
+        'locationId': database.locationId,
+        'operationId': c.operationId,
+        'version': 1,
+        'status': 'open',
+      },
+    );
+    return batch;
   }
 
   Future<Map<String, dynamic>> command(

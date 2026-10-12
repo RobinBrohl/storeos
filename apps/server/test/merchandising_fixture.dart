@@ -72,13 +72,17 @@ class MerchandisingFixture {
   late String adminId;
   String get base => 'http://127.0.0.1:${server!.port}';
 
-  Future<void> restart({String? locationId, int port = 0}) async {
+  Future<void> restart({
+    String? locationId,
+    String companyId = _company,
+    int port = 0,
+  }) async {
     locationId ??= homeLocationId;
     await server?.close(force: true);
     final store = PostgresAuthStore(pool, schemaName: schema);
     auth = await AuthService.create(
       store: store,
-      companyId: _company,
+      companyId: companyId,
       locationId: locationId,
       sessionTtl: const Duration(hours: 1),
       passwordHasher: PasswordHasher(memoryKiB: 64, iterations: 1),
@@ -86,7 +90,7 @@ class MerchandisingFixture {
     database = PlatformDatabase(
       pool,
       schemaName: schema,
-      companyId: _company,
+      companyId: companyId,
       locationId: locationId,
     );
     final app = ServerApp(
@@ -98,7 +102,7 @@ class MerchandisingFixture {
           user: 'unused',
           password: 'unused',
         ),
-        companyId: _company,
+        companyId: companyId,
         locationId: locationId,
         allowedOrigins: allowedOrigins,
       ),
@@ -420,7 +424,8 @@ Future<void> withMerchandisingFixture(
     fixture.client.close(force: true);
     await fixture.server?.close(force: true);
     await pool.close();
-    await owner.execute('DROP SCHEMA "$schema" CASCADE');
+    // Preserve the migration error if transactional creation rolled back the schema.
+    await owner.execute('DROP SCHEMA IF EXISTS "$schema" CASCADE');
     await owner.close();
     await legacyDirectory?.delete(recursive: true);
   }

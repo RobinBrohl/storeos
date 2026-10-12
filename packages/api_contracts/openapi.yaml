@@ -7,6 +7,28 @@ servers:
   - url: http://127.0.0.1:8080
     description: Loopback development; use HTTPS for LAN deployments.
 paths:
+  /api/v1/platform/production/self/locations/{locationId}/preparation-assignments/{assignmentId}/start:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1preparation-assignments~1{assignmentId}~1start'
+  /api/v1/platform/production/self/locations/{locationId}/preparation-assignments/{assignmentId}/history:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1preparation-assignments~1{assignmentId}~1history'
+  /api/v1/platform/production/self/locations/{locationId}/preparation-assignments/{assignmentId}/recipe:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1preparation-assignments~1{assignmentId}~1recipe'
+  /api/v1/platform/production/self/locations/{locationId}/preparation-assignments/{assignmentId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1preparation-assignments~1{assignmentId}'
+  /api/v1/platform/production/self/locations/{locationId}/preparation-assignments:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1self~1locations~1{locationId}~1preparation-assignments'
+  /api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/{assignmentId}/withdraw:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1preparation-assignments~1{assignmentId}~1withdraw'
+  /api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/{assignmentId}/history:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1preparation-assignments~1{assignmentId}~1history'
+  /api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/{assignmentId}/recipe:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1preparation-assignments~1{assignmentId}~1recipe'
+  /api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/{assignmentId}:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1preparation-assignments~1{assignmentId}'
+  /api/v1/platform/production/manage/locations/{locationId}/preparation-assignments/assignees:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1preparation-assignments~1assignees'
+  /api/v1/platform/production/manage/locations/{locationId}/preparation-assignments:
+    $ref: './platform.openapi.json#/paths/~1api~1v1~1platform~1production~1manage~1locations~1{locationId}~1preparation-assignments'
   /api/v1/platform/employee-home/shifts/{shiftId}/transfer-recipients:
     $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1employee-home~1shifts~1{shiftId}~1transfer-recipients"
   /api/v1/platform/me/shift-transfers:
@@ -346,6 +368,28 @@ components:
           schema:
             $ref: '#/components/schemas/ApiError'
   schemas:
+    PreparationAssignmentStartResult:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignmentStartResult'
+    PreparationAssignmentCommandResult:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignmentCommandResult'
+    PreparationAssignmentWithdrawRequest:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignmentWithdrawRequest'
+    PreparationAssignmentStartRequest:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignmentStartRequest'
+    PreparationAssignmentCreateRequest:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignmentCreateRequest'
+    PreparationAssigneePage:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssigneePage'
+    PreparationAssignee:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignee'
+    PreparationAssignmentPage:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignmentPage'
+    PreparationAssignmentHistory:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignmentHistory'
+    PreparationAssignmentDetail:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignmentDetail'
+    PreparationAssignment:
+      $ref: './platform.openapi.json#/components/schemas/PreparationAssignment'
     HealthResponse:
       type: object
       required: [status]

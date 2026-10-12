@@ -24,6 +24,8 @@ import '../knowledge/knowledge_service.dart';
 import 'knowledge_routes.dart';
 import 'recipe_routes.dart';
 import 'preparation_batch_routes.dart';
+import 'preparation_assignment_routes.dart';
+import '../production/preparation_assignment_service.dart';
 import '../production/preparation_batch_service.dart';
 import '../production/recipe_service.dart';
 import 'platform_identity_routes.dart';
@@ -56,6 +58,12 @@ Handler createPlatformHandler(
     .add(MerchandisingRoutes(auth, MerchandisingService(database)).router.call)
     .add(KnowledgeRoutes(auth, KnowledgeService(database)).router.call)
     .add(RecipeRoutes(auth, RecipeService(database)).router.call)
+    .add(
+      PreparationAssignmentRoutes(
+        auth,
+        PreparationAssignmentService(database),
+      ).router.call,
+    )
     .add(
       PreparationBatchRoutes(
         auth,

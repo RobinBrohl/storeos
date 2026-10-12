@@ -38,6 +38,7 @@ import 'stock_count_acceptance.dart';
 import 'knowledge_acceptance.dart';
 import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
+import 'preparation_assignment_acceptance.dart';
 import 'shift_transfer_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'dart:io';
@@ -78,6 +79,7 @@ const _expectedPendingMigrations = [
   '0022_preparation_batches',
   '0023_one_way_shift_transfers',
   '0024_bounded_purchase_orders',
+  '0025_planned_preparation_assignments',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1329,6 +1331,39 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       },
     );
     final transferToken = transferLogin['token'] as String;
+    await seedPreparationAssignments(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: workerToken,
+        expected: status,
+      ),
+      locationId,
+      manifest['employeeId'] as String,
+      transferEmployee,
+    );
+    await verifyRestoredAssignments(
+      database,
+      await auth.authenticate(adminToken),
+      await auth.authenticate(workerToken),
+      await auth.authenticate(transferToken),
+    );
+    await verifyAssignmentGrants(owner, _schema, runtimeUser);
+    await verifyRestoredPreparation(
+      database,
+      await auth.authenticate(adminToken),
+      await auth.authenticate(workerToken),
+      expectedBatches: 9,
+      expectedReceipts: 20,
+    );
     final transferRecords = await seedShiftTransfers(
       (method, route, body, status) => api.request(
         method,
@@ -1406,9 +1441,12 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       },
       'recipes': {
         'preparationMigration': '0022_preparation_batches',
-        'preparationBatches': 5,
-        'preparationReceipts': 11,
-        'preparationCorrections': 2,
+        'assignmentMigration': '0025_planned_preparation_assignments',
+        'assignmentCount': 7,
+        'assignmentReceipts': 12,
+        'preparationBatches': 9,
+        'preparationReceipts': 20,
+        'preparationCorrections': 4,
         'preparationReplayAndZeroVerified': true,
         'migration': '0021_recipe_compositions',
         'recipeCount': 3,

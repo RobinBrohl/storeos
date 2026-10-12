@@ -1,11 +1,16 @@
 # P4.14 acceptance matrix
 
-Delivery: **IMPLEMENTED LOCALLY**. This record freezes local implementation evidence;
-independent functional review and targeted F01/F02 re-review returned APPROVE;
-both findings are CLOSED. Focused Codex Security returned SECURITY APPROVE and
-final remediation verification passed. Implementation-commit CI and final P4.14
-closure remain PENDING.
+Delivery: **DONE/CLOSED — accepted implementation** at
+`0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`. Current independently reconciled
+acceptance: **107 PASS / 2 QUALIFIED / 0 FAIL**, across 109 unique criteria.
+Functional and targeted F01/F02 reviews returned APPROVE; both findings are CLOSED.
+Focused Codex Security returned SECURITY APPROVE and final remediation passed.
+All five jobs in [exact implementation CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556)
+completed successfully for that SHA on main (push event, attempt 1).
+Documentation-closure publication and its own exact-commit CI remain PENDING;
+that separate publication gate is not an extra implementation qualification.
 P4.15 is UNSELECTED. Recorded delivery evidence does not mutate or establish Stock.
+See the [dated closure](phase-4-14-purchase-order-deliveries.md#final-documentation-closure--2026-10-12).
 
 Evidence keys below are reproducible from repository root with the pinned SDKs.
 Every database run uses a unique disposable PostgreSQL project and restricted runtime
@@ -51,6 +56,7 @@ credentials. `.local` logs are sanitized local evidence, excluded from Git.
   counts and before/after SHA-256/size/UTC timestamp inventories in `.local/p414/final`.
   Full regression, all fifteen prior/new host journeys, three migration cases, numeric
   browser stages, print, crypto, redaction/diagnostics/setup and diff checks are explicit.
+- **CI**: [push run 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556), workflow `.github/workflows/ci.yml`, branch main, exact implementation SHA `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`; workflow and all five required jobs completed/success.
 - **SRC**: inspection of ADR 0028, shared DTO, Domain/Application/repository/routes,
   migration 0026, audit/grants and client source. Static evidence does not substitute
   for the separately identified executed journeys or external review gates.
@@ -161,11 +167,16 @@ credentials. `.local` logs are sanitized local evidence, excluded from Git.
 | 102 | Final source SHA-256/size/UTC timestamp match | FINAL and remediation before/after inventories; approved source unchanged except commit approval documentation | PASS — commit preparation verifies the complete inventory and approval-only documentation delta |
 | 103 | Independent adversarial review | User-confirmed functional APPROVE and targeted F01/F02 APPROVE; both CLOSED | PASS |
 | 104 | Focused Codex Security | User-confirmed SECURITY APPROVE | PASS |
-| 105 | Exact implementation-commit remote CI | Explicit push authorization, then exact-SHA CI required | QUALIFIED — PENDING; no remote implementation CI outcome claimed |
+| 105 | Exact implementation-commit remote CI | CI; SHA 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df / push run 38277299556 / all five jobs completed successfully | PASS |
 | 106 | Standing physical/device/privacy/recovery boundaries retained | ADR/delivery/debt documentation | QUALIFIED — no physical, native-device, accessibility, retention/export/offboarding, key-custody or RPO/RTO certification claimed |
 | 107 | Only justified dependency metadata exception | Client SDK flutter_driver direct-dev classification; identical resolved versions/hashes | PASS |
-| 108 | Local delivery record, ADR and live status remain truthful | SRC; IMPLEMENTED LOCALLY / both APPROVE / F01-F02 CLOSED / SECURITY APPROVE / verification PASS / CI and final closure PENDING / P4.15 UNSELECTED | PASS |
+| 108 | Local delivery record, ADR and live status remain truthful | SRC; DONE/CLOSED accepted implementation / both APPROVE / F01-F02 CLOSED / SECURITY APPROVE / verification PASS / implementation CI SUCCESS / documentation publication and its own CI PENDING / P4.15 UNSELECTED | PASS |
 | 109 | Normally served client assets protected | Baseline restoration: 39 matching files; FINAL served-client-before/after inventories | QUALIFIED — first release check temporarily overwrote the proxy mount; restored from published HEAD, but original pre-build byte hashes unavailable |
+
+## Historical pre-publication acceptance statement
+
+This statement retains the approval hand-off before implementation publication.
+Its then-pending criterion 105 is superseded by exact CI evidence at final closure.
 
 Current approval acceptance: **106 PASS / 3 QUALIFIED / 0 FAIL**. Remaining
 qualifications are exact implementation CI (105), standing operator/hardware limits
@@ -202,3 +213,31 @@ source and execution scope; no old verification artifact is overwritten.
   contents, sizes and timestamps. All disposable projects are cleaned up.
 
 See the [bounded remediation record](phase-4-14-purchase-order-deliveries.md#bounded-low-review-remediation--2026-10-12).
+
+## Final documentation closure reconciliation — 2026-10-12
+
+The 109 IDs and requirement labels are retained without deletion or renumbering.
+Only criterion 105 changes result from QUALIFIED to PASS after direct verification
+of exact implementation CI. All other results are unchanged. Criteria 106 and 109,
+including their original qualification text, remain intact. Recounted current totals
+are **107 PASS / 2 QUALIFIED / 0 FAIL**; the expectation did not determine the count.
+
+The independent APPROVE, targeted APPROVE/F01-F02 CLOSED, SECURITY APPROVE, local
+verification and exact implementation CI establish accepted P4.14 implementation.
+They do not certify physical goods, native-device/accessibility, raw-SQL writer trust,
+privacy lifecycle, memory-only recovery, key custody or RPO/RTO, and do not erase the
+historical static-client incident. Documentation publication and its own exact-SHA
+CI remain PENDING until separately authorized publication and verification.
+
+Historical implementation hand-off header, retained as originally recorded:
+
+> Delivery: **IMPLEMENTED LOCALLY**. This record freezes local implementation evidence;
+> independent functional review and targeted F01/F02 re-review returned APPROVE;
+> both findings are CLOSED. Focused Codex Security returned SECURITY APPROVE and
+> final remediation verification passed. Implementation-commit CI and final P4.14
+> closure remain PENDING.
+> P4.15 is UNSELECTED. Recorded delivery evidence does not mutate or establish Stock.
+
+Historical criterion 105 at the same hand-off (current result is in the active matrix):
+
+> | 105 | Exact implementation-commit remote CI | Explicit push authorization, then exact-SHA CI required | QUALIFIED — PENDING; no remote implementation CI outcome claimed |

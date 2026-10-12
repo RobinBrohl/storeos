@@ -121,7 +121,7 @@ Public ports should express product dependencies without circular Domain ownersh
 | --- | --- | --- |
 | Knowledge extensions | Suggestions and separate review beyond delivered P4.5/P4.6 | Concrete Task guidance is delivered through [ADR 0020](../adr/0020-task-knowledge-guidance.md); further consumers/lifecycle changes need separate contracts. Reads never change execution history. |
 | Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
-| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.12 Purchasing intent is DONE/CLOSED; documentation closure CI 38156014870 successful; P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 IMPLEMENTED LOCALLY; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE and final remediation PASS; implementation-commit CI and final closure PENDING. P4.15 UNSELECTED. |
+| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.12 Purchasing intent is DONE/CLOSED; documentation closure CI 38156014870 successful; P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 UNSELECTED. |
 | Purchasing / Receiving extensions | Receipt/source cost evidence beyond bounded P4.12 order intent | Article/unit references; future authorized Stock commands for accepted physical receipts require separate selection. Not Stock ledger owner or invented valuation. |
 | Sales integration | Canonical SalesSource/import/checkpoint, Sale/Line source references, mapping and import health | Core validates authority/identity and coordinates explicit Stock/report effects. Vendor adapter acquires/converts; checkout/payment/fiscal archive ownership separate. |
 | Pricing | Effective prices/currency and approval rules | Article references; Menu consumes approved price contract. No implicit price column in Article. |
@@ -142,7 +142,7 @@ complete source/replacement Task links and exact snapshot verification. The
 application coordinator uses public owner ports for Identity/People, Workforce,
 Tasks and guidance validation; it never accesses their foreign repositories.
 F01/F02/F03 are CLOSED; targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187 establish closure. Further
-Workforce capabilities remain unselected. P4.12 delivers accepted bounded Purchasing intent under ADR 0026, with documentation closure CI 38156014870 successful; P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 IMPLEMENTED LOCALLY; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE and final remediation PASS; implementation-commit CI and final closure PENDING. P4.15 UNSELECTED.
+Workforce capabilities remain unselected. P4.12 delivers accepted bounded Purchasing intent under ADR 0026, with documentation closure CI 38156014870 successful; P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 UNSELECTED.
 
 Own each schema change through a new tested migration; retain IDs, snapshots and
 supported contracts. Do not let a future integration write Core tables directly.
@@ -181,7 +181,9 @@ ledger revisions, old/new Purchasing operation namespace protection, terminal ca
 and minimized audit. Order versions and old receipt meanings remain unchanged.
 Organization/Platform retain scope/authorization; frozen Order lines define units.
 No foreign repositories, Stock writer, physical inventory effects or events are added.
-Recorded delivery evidence does not mutate or establish Stock. P4.14 is IMPLEMENTED
-LOCALLY; both independent reviews APPROVE, F01/F02 CLOSED, SECURITY APPROVE and
-final remediation PASS. Implementation-commit CI and final P4.14 closure are PENDING.
+Recorded delivery evidence does not mutate or establish Stock. P4.14 is DONE/CLOSED
+as an accepted implementation at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`;
+both independent reviews APPROVE, F01/F02 CLOSED, SECURITY APPROVE and verification PASS.
+All five [implementation CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556)
+jobs succeeded. Documentation-closure publication and its own CI remain PENDING.
 P4.15 is UNSELECTED. Earlier unselected mentions describe their historical baselines.

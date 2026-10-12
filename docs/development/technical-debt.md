@@ -336,9 +336,15 @@ are retained in [dated P4.13 closure](phase-4-13-planned-preparation-assignments
 
 ## P4.14 standing boundaries
 
-P4.14 is IMPLEMENTED LOCALLY with both independent reviews APPROVE, F01/F02 CLOSED,
-SECURITY APPROVE and final remediation PASS. Implementation-commit CI and final
-P4.14 closure remain PENDING. It preserves P4.12 I01–I03 INFO and every prior
+P4.14 is DONE/CLOSED as an accepted implementation at
+`0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`, with functional and targeted APPROVE,
+F01/F02 CLOSED, SECURITY APPROVE and final remediation PASS. All five jobs in
+[implementation CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556)
+succeeded. Documentation-closure publication and its own CI remain PENDING.
+Acceptance is 107 PASS / 2 QUALIFIED / 0 FAIL: standing operational limits and the
+historical static-client-asset incident remain qualified; original pre-build byte
+identity cannot be established. See the [dated closure](phase-4-14-purchase-order-deliveries.md#final-documentation-closure--2026-10-12).
+This preserves P4.12 I01–I03 INFO and every prior
 qualification. New delivery checks independently reject SQL NULL/UNKNOWN and exact
 receipt mismatches. Reasons, references and quantities stay in protected business
 evidence. Raw SQL trust, memory-only client retry recovery, hardware/accessibility,

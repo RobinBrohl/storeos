@@ -1,10 +1,19 @@
 # ADR 0028: Purchase Order delivery evidence and immutable terminal reconciliation
 
 Date: 2026-10-12. Decision: accepted for the user-selected P4.14 implementation.
-Delivery: IMPLEMENTED LOCALLY. Independent functional review and targeted F01/F02
-re-review: APPROVE; both findings CLOSED. Focused Codex Security: SECURITY APPROVE.
-Final remediation verification: PASS. Implementation-commit CI and final P4.14
-closure remain PENDING. P4.15 is UNSELECTED.
+Delivery: **DONE/CLOSED — accepted implementation** at
+`0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`; functional and targeted APPROVE,
+F01/F02 CLOSED, SECURITY APPROVE and verification PASS. All five jobs in
+[implementation CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556)
+succeeded. Documentation-closure publication and its own CI remain PENDING.
+P4.15 is UNSELECTED. See the [dated closure](../development/phase-4-14-purchase-order-deliveries.md#final-documentation-closure--2026-10-12).
+
+Historical pre-publication status recorded in the implementation commit:
+
+> Delivery: IMPLEMENTED LOCALLY. Independent functional review and targeted F01/F02
+> re-review: APPROVE; both findings CLOSED. Focused Codex Security: SECURITY APPROVE.
+> Final remediation verification: PASS. Implementation-commit CI and final P4.14
+> closure remain PENDING. P4.15 is UNSELECTED.
 
 ## Context
 

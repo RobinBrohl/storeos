@@ -1,5 +1,86 @@
 # P4.14 — Purchase Order Delivery Evidence and Reconciliation
 
+Status: **DONE/CLOSED — accepted implementation** at
+`0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`. P4.15 is **UNSELECTED**.
+**Documentation-closure publication and its own exact-commit CI remain PENDING.**
+
+## Final documentation closure — 2026-10-12
+
+The accepted implementation was published by one explicitly authorized non-force
+push from baseline `9e9cae3055b324413b93784491055beb20e826c4` to
+`0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`. Local HEAD, cached origin/main and live
+remote main agreed at the implementation SHA; the tree/index were clean, the stash
+empty and one worktree present before this documentation-only closure.
+
+[GitHub Actions push run 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556)
+uses `.github/workflows/ci.yml`, branch `main`, event `push`, attempt 1, and the exact
+implementation SHA above. The workflow is completed/success; every required job
+completed successfully on that SHA:
+
+| Required job | Job ID | Status | Conclusion |
+| --- | --- | --- | --- |
+| dart | 114905785848 | completed | success |
+| flutter | 114905785910 | completed | success |
+| numeric-guided-work-e2e | 114905785881 | completed | success |
+| backup-restore-acceptance | 114905785981 | completed | success |
+| update-recovery-acceptance | 114905786142 | completed | success |
+
+The review chronology is retained in order:
+
+1. Independent functional review returned **APPROVE** with two LOW follow-ups.
+2. Bounded F01 remediation invalidated the loaded delivery register and cursor after
+   confirmed Order/delivery commands, retaining filters and session fencing.
+3. Bounded F02 remediation replaced weak raw-SQL negatives with canonical complete
+   controls, specific rejection assertions and full rollback/same-ID replay proof.
+4. Targeted independent F01/F02 re-review returned **APPROVE**; both findings are **CLOSED**.
+5. Focused Codex Security returned **SECURITY APPROVE**.
+6. Final remediation verification returned **PASS**; the unchanged implementation
+   was committed and published, then its exact implementation CI succeeded.
+
+Executed local evidence retains its original scope: the original 1,451 package
+passes and sixteen verification phases, followed by 195 focused remediation passes
+(51 API / 135 server / 9 client), 414 complete client passes, real controller/HTTP/
+PostgreSQL and actual Chrome/page-reload journeys, both affected analyzers, formatting
+and diff checks. Those earlier inventories are not rewritten as closure-source runs.
+This closure changes Markdown only; no full regression, Security scan, migration,
+backup/update acceptance or deployment operation is repeated or newly claimed.
+
+The [109-criterion acceptance matrix](phase-4-14-acceptance.md) independently totals
+**107 PASS / 2 QUALIFIED / 0 FAIL**. Criterion 105 is now PASS because exact
+implementation CI has completed; criteria 106 and 109 remain QUALIFIED:
+
+- **Standing operational limits (106):** physical goods verification, native devices/
+  accessibility, supported-writer/raw-SQL trust, memory-only uncertain-command recovery,
+  retention/export/offboarding, key custody, RPO/RTO and recovery activation are not
+  certified by implementation acceptance. M1/M3/M4, P4.5 F01/F02 follow-ups, P4.12
+  I01–I03 INFO, P4.9 history and P4.13 qualifications remain; M2 stays CLOSED.
+- **Historical static-client incident (109):** an earlier invalidated release check
+  temporarily replaced the normal proxy's served client. All 39 files were restored
+  from a pinned published-baseline rebuild and matched it. Original pre-build hashes
+  were unavailable, so exact previous-build byte identity remains qualified. No
+  database write, container restart or image replacement occurred. Subsequent final
+  and remediation checks preserved served contents, sizes and timestamps. The original
+  incident record below remains unchanged; this closure does not erase or reclassify it.
+
+**Recorded delivery evidence does not mutate or establish Stock.** P4.1–P4.14 are
+DONE/CLOSED as accepted implementations. No active P4.14 review remediation or required
+Security fix remains; accepted limits are not unrelated debt closure. P4.15 remains
+UNSELECTED and no next capability is selected.
+
+Implementation publication and its CI are complete. This documentation closure is
+prepared as one local Markdown-only commit; its publication requires separate user
+authorization, followed by verification of its own exact-SHA push CI. No documentation-
+closure publication SHA, workflow run or successful closure CI is claimed in this
+record before those gates exist. Local verification evidence is retained separately
+under `.local/p414-closure`; it is not included in the closure commit.
+
+## Historical implementation and remediation hand-off records
+
+The following record is retained verbatim from the implementation commit, apart
+from its already-reused document title. Earlier IMPLEMENTED LOCALLY and PENDING
+states describe their original stages, including the approval/publication gate;
+the dated final documentation closure above supplies the current disposition.
+
 Status: **IMPLEMENTED LOCALLY**. Independent functional review: **APPROVE**.
 Targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
 Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.

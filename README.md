@@ -1,12 +1,13 @@
 # StoreOS
 
-P4.14 Purchase Order Delivery Evidence and Reconciliation is **IMPLEMENTED LOCALLY**.
+P4.14 Purchase Order Delivery Evidence and Reconciliation is **DONE/CLOSED — accepted implementation** at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`.
 Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
 Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.
-Implementation-commit CI and final P4.14 closure remain **PENDING**.
+All five jobs succeeded in [exact implementation-commit CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556). Acceptance: **107 PASS / 2 QUALIFIED / 0 FAIL**.
+**Documentation-closure publication and its own exact-commit CI remain PENDING**; neither has been completed by this local documentation commit.
 Recorded delivery evidence does not mutate or establish Stock. P4.15 is **UNSELECTED**.
-See the [P4.14 delivery record](docs/development/phase-4-14-purchase-order-deliveries.md) for the bounded workflow and verification.
-P4.1–P4.13 remain DONE/CLOSED. P4.13 closure commit 9e9cae3055b324413b93784491055beb20e826c4
+See the [P4.14 delivery record](docs/development/phase-4-14-purchase-order-deliveries.md#final-documentation-closure--2026-10-12) for the bounded workflow and verification.
+P4.1–P4.14 remain DONE/CLOSED as accepted implementations. P4.13 closure commit 9e9cae3055b324413b93784491055beb20e826c4
 and exact closure CI 38229127545 completed successfully; their verified publication
 supersedes the pending drafting statements retained below.
 

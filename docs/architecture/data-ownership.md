@@ -94,6 +94,10 @@ reconciliation. Existing terminal Order commands capture a distinct immutable bo
 the same authorized transaction. Old and new Purchasing receipts share one Company UUID
 namespace. No foreign business repository/table or Stock mutation is introduced.
 Recorded delivery evidence does not mutate or establish Stock.
-See [ADR 0028](../adr/0028-purchase-order-delivery-evidence.md). Delivery is IMPLEMENTED
-LOCALLY with both independent reviews APPROVE, F01/F02 CLOSED, SECURITY APPROVE and
-final remediation PASS. Implementation-commit CI and final P4.14 closure are PENDING.
+See [ADR 0028](../adr/0028-purchase-order-delivery-evidence.md). P4.14 is DONE/CLOSED
+as an accepted implementation at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`:
+both independent reviews APPROVE, F01/F02 CLOSED, SECURITY APPROVE and verification PASS.
+All five jobs in [implementation CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556)
+succeeded. Documentation-closure publication and its own CI remain PENDING.
+The [dated closure](../development/phase-4-14-purchase-order-deliveries.md#final-documentation-closure--2026-10-12)
+retains the static-client incident and standing operational qualifications. P4.15 is UNSELECTED.

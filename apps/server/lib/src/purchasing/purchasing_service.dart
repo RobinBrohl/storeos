@@ -9,6 +9,8 @@ import '../platform/organization_service.dart';
 import '../platform/platform_database.dart';
 import 'purchase_order.dart';
 import 'purchasing_repository.dart';
+import 'purchasing_delivery_repository.dart';
+import 'purchase_order_delivery.dart';
 
 class PurchasingService {
   PurchasingService(this.database)
@@ -23,6 +25,11 @@ class PurchasingService {
   final PurchasingRepository _repository;
   final PurchasingArticlePort _articles;
   final OrganizationService _organization;
+  PurchasingDeliveryRepository get _deliveries => PurchasingDeliveryRepository(
+    database.schema,
+    database.companyId,
+    database.locationId,
+  );
   Future<T> _run<T>(
     SessionPrincipal p,
     String permission,
@@ -50,6 +57,22 @@ class PurchasingService {
     } on PurchasingInputException catch (e) {
       throw PlatformFailure(400, 'invalid_request', e.message);
     } on ServerException catch (e) {
+      if (e.code == '23505' &&
+          e.constraintName == 'purchasing_operation_namespace') {
+        throw const PlatformFailure(
+          409,
+          'operation_conflict',
+          'Operation identity is already bound.',
+        );
+      }
+      if (e.code == '23505' &&
+          e.constraintName == 'purchasing_delivery_reference_unique') {
+        throw const PlatformFailure(
+          409,
+          'reference_conflict',
+          'Delivery reference is already reserved for this Order.',
+        );
+      }
       if (e.code == '23505' &&
           e.constraintName == 'purchasing_order_reference_unique') {
         throw const PlatformFailure(
@@ -230,12 +253,22 @@ class PurchasingService {
       final c = PurchasingCommandInput.fromJson(kind, body),
           creating = kind.endsWith('_create');
       final id = purchasingId(creating ? c.payload['id'] : target);
+      if (!supplier) await _deliveries.lock(tx, id);
       final d = await _repository.find(tx, id, supplier: supplier);
       if (!creating && d == null) {
         throw const PlatformFailure(
           404,
           'not_found',
           'Purchasing resource not found.',
+        );
+      }
+      final deliveryTracking = await _deliveries.installed(tx);
+      if (deliveryTracking &&
+          await _deliveries.commandReceipt(tx, c.operationId) != null) {
+        throw const PlatformFailure(
+          409,
+          'operation_conflict',
+          'Operation identity is already bound.',
         );
       }
       final r = await _repository.receipt(tx, c.operationId);
@@ -397,6 +430,12 @@ class PurchasingService {
             'replayed': false,
           };
       await _repository.accept(tx, id, actor.id, c, result);
+      if (deliveryTracking &&
+          !supplier &&
+          d?['status'] == 'issued' &&
+          {'order_close', 'order_cancel'}.contains(kind)) {
+        await _deliveries.captureTerminal(tx, id);
+      }
       await database.audit(
         tx,
         actor,
@@ -443,6 +482,249 @@ class PurchasingService {
     return jsonEncode(sorted([a['reference'], a['supplier'], a['lines']])) ==
         jsonEncode(sorted([b['reference'], b['supplier'], b['lines']]));
   }
+
+  Future<Map<String, dynamic>> deliveryCommand(
+    SessionPrincipal p,
+    String location,
+    String orderId,
+    String? deliveryId,
+    String kind,
+    Map<String, dynamic> body,
+  ) => _run(p, 'purchasing.orders.manage', location, (
+    tx,
+    actor,
+    location,
+  ) async {
+    final order = purchasingId(orderId);
+    await _deliveries.lock(tx, order);
+    final d = await _get(tx, order, false);
+    final c = PurchasingDeliveryInput.fromJson(kind, body);
+    final id = purchasingId(
+      kind == 'delivery_declare' ? c.payload['deliveryId'] : deliveryId,
+    );
+    final previous = await _deliveries.delivery(tx, order, id);
+    if (kind != 'delivery_declare' && previous == null) {
+      throw const PlatformFailure(
+        404,
+        'not_found',
+        'Delivery not found in this Order.',
+      );
+    }
+    if (await _repository.receipt(tx, c.operationId) != null) {
+      throw const PlatformFailure(
+        409,
+        'operation_conflict',
+        'Operation identity is already bound.',
+      );
+    }
+    final receipt = await _deliveries.commandReceipt(tx, c.operationId);
+    if (receipt != null) {
+      if (receipt['actor_id'] != actor.id ||
+          receipt['kind'] != kind ||
+          receipt['order_id'] != order ||
+          receipt['delivery_id'] != id ||
+          receipt['location_id'] != location ||
+          PurchasingDeliveryInput.fromJson(
+                receipt['kind'] as String,
+                Map<String, dynamic>.from(receipt['payload'] as Map),
+              ).canonical !=
+              c.canonical) {
+        throw const PlatformFailure(
+          409,
+          'operation_conflict',
+          'Operation identity is already bound.',
+        );
+      }
+      return {
+        ...Map<String, dynamic>.from(receipt['result'] as Map),
+        'replayed': true,
+      };
+    }
+    final summary = await _deliveries.summary(tx, order);
+    PurchaseOrderDelivery.requireChange(d, summary, previous, c);
+    final revision = (previous?['revision'] as int? ?? 0) + 1;
+    final ledger = (summary['ledgerVersion'] as int) + 1;
+    await _deliveries.append(
+      tx,
+      order,
+      id,
+      actor.id,
+      revision,
+      ledger,
+      previous?['localReference'] as String? ??
+          c.payload['localReference'] as String,
+      c,
+    );
+    final result = <String, dynamic>{
+      'delivery': await _deliveries.delivery(tx, order, id),
+      'summary': await _deliveries.summary(tx, order),
+      'replayed': false,
+    };
+    await _deliveries.acceptDelivery(
+      tx,
+      order,
+      id,
+      actor.id,
+      revision,
+      ledger,
+      c,
+      result,
+    );
+    await database.audit(
+      tx,
+      actor,
+      'purchasing.delivery.${switch (kind) {
+        'delivery_declare' => 'declared',
+        'delivery_correct' => 'corrected',
+        _ => 'voided',
+      }}',
+      'purchase_order_delivery',
+      id,
+      locationId: location,
+      changes: {
+        'orderId': order,
+        'deliveryId': id,
+        'operationId': c.operationId,
+        'revisionNumber': revision,
+        'ledgerVersion': ledger,
+      },
+    );
+    return result;
+  });
+
+  Future<Map<String, dynamic>> deliverySummary(
+    SessionPrincipal p,
+    String location,
+    String orderId,
+  ) => _run(p, 'purchasing.orders.manage', location, (tx, a, location) async {
+    final order = purchasingId(orderId), d = await _get(tx, order, false);
+    final terminal = await _deliveries.terminal(tx, order);
+    return {
+      'summary': await _deliveries.summary(tx, order),
+      'terminalSnapshot': terminal,
+      'trackingAtClosure': d['terminalAt'] == null
+          ? 'not_terminal'
+          : d['issuedAt'] == null
+          ? 'not_issued'
+          : terminal == null
+          ? 'unavailable'
+          : 'available',
+    };
+  });
+
+  Future<Map<String, dynamic>> deliveryDetail(
+    SessionPrincipal p,
+    String location,
+    String orderId,
+    String deliveryId,
+  ) => _run(p, 'purchasing.orders.manage', location, (tx, a, location) async {
+    final order = purchasingId(orderId);
+    await _get(tx, order, false);
+    final d = await _deliveries.delivery(tx, order, purchasingId(deliveryId));
+    if (d == null) {
+      throw const PlatformFailure(
+        404,
+        'not_found',
+        'Delivery not found in this Order.',
+      );
+    }
+    return d;
+  });
+
+  Future<Map<String, dynamic>> deliveryList(
+    SessionPrincipal p,
+    String location,
+    String orderId, {
+    String? deliveryId,
+    String? after,
+  }) => _run(p, 'purchasing.orders.manage', location, (tx, a, location) async {
+    final order = purchasingId(orderId),
+        delivery = deliveryId == null ? null : purchasingId(deliveryId);
+    await _get(tx, order, false);
+    if (delivery != null &&
+        await _deliveries.delivery(tx, order, delivery) == null) {
+      throw const PlatformFailure(
+        404,
+        'not_found',
+        'Delivery not found in this Order.',
+      );
+    }
+    final scope = _scope(
+      delivery == null ? 'deliveries' : 'delivery-history',
+      location,
+      {'order': order, 'delivery': delivery},
+    );
+    final cursor = _cursor(after, scope, version: delivery != null);
+    return _page(
+      await _deliveries.deliveries(
+        tx,
+        order,
+        delivery: delivery,
+        after: delivery == null ? cursor as String? : null,
+        afterRevision: delivery == null ? null : cursor as int?,
+      ),
+      scope,
+      key: delivery == null ? 'deliveryId' : 'revision',
+    );
+  });
+
+  Future<Map<String, dynamic>> deliveryRegister(
+    SessionPrincipal p,
+    String location, {
+    String? status,
+    String? supplierId,
+    String? q,
+    String? after,
+  }) => _run(p, 'purchasing.orders.manage', location, (tx, a, location) async {
+    if (status != null && !{'issued', 'closed', 'cancelled'}.contains(status)) {
+      throw const PlatformFailure(
+        400,
+        'invalid_request',
+        'Invalid delivery-register status.',
+      );
+    }
+    final query = q == null || q.trim().isEmpty ? '' : purchasingText(q, 200),
+        sid = supplierId == null ? null : purchasingId(supplierId);
+    final scope = _scope('delivery-register', location, {
+      'status': status,
+      'supplier': sid,
+      'q': query,
+    });
+    final rows = await _repository.execute(
+      tx,
+      "SELECT id::text,reference,supplier_id::text,supplier_name,status,version FROM ${database.schema}.purchasing_orders WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) AND issued_at IS NOT NULL AND status IN ('issued','closed','cancelled') AND (CAST(@status AS text) IS NULL OR status=@status) AND (CAST(@supplier AS uuid) IS NULL OR supplier_id=CAST(@supplier AS uuid)) AND strpos(lower(reference),lower(@q))>0 AND (CAST(@after AS uuid) IS NULL OR id>CAST(@after AS uuid)) ORDER BY id LIMIT 51",
+      {
+        'status': status,
+        'supplier': sid,
+        'q': query,
+        'after': _cursor(after, scope),
+      },
+    );
+    final items = <Map<String, dynamic>>[];
+    for (final row in rows) {
+      final d = row.toColumnMap(),
+          summary = await _deliveries.summary(tx, d['id'] as String);
+      items.add({
+        'id': d['id'],
+        'reference': d['reference'],
+        'supplierId': d['supplier_id'],
+        'supplierName': d['supplier_name'],
+        'status': d['status'],
+        'orderVersion': d['version'],
+        'ledgerVersion': summary['ledgerVersion'],
+        'declarationCount': summary['declarationCount'],
+        'hasRecordedRemainder': (summary['lines'] as List).any(
+          (l) => l['recordedRemainder'] != '0.000',
+        ),
+        'hasOverdelivery': (summary['lines'] as List).any(
+          (l) => l['overdelivery'] != '0.000',
+        ),
+        'hasTerminalSnapshot':
+            await _deliveries.terminal(tx, d['id'] as String) != null,
+      });
+    }
+    return _page(items, scope);
+  });
 
   Future<Map<String, dynamic>> detail(
     SessionPrincipal p,

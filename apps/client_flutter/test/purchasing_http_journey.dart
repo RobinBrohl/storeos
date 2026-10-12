@@ -91,6 +91,56 @@ void main() {
       expect(await c.supplierRetire(), PurchasingOutcome.confirmed);
       expect(c.supplierDetail!['status'], 'retired');
       expect(c.detail!['supplier'], frozen['supplier']);
+      final deliveryLine = c.detail!['lines'][1]['id'] as String;
+      Future<PurchasingOutcome> declare(
+        String reference,
+        String quantity, {
+        String? reason,
+      }) => c.deliveryCommand(
+        'declare',
+        reference: reference,
+        reason: reason,
+        lines: [
+          {'orderLineId': deliveryLine, 'quantity': quantity},
+        ],
+      );
+      expect(
+        await declare('Delivery A <script>', '5'),
+        PurchasingOutcome.uncertain,
+      );
+      final deliveryPending = c.pending!;
+      expect(await c.retry(), PurchasingOutcome.confirmed);
+      final deliveryA = c.deliveryDetail!['deliveryId'] as String;
+      expect(await declare('Delivery B', '7'), PurchasingOutcome.confirmed);
+      expect(
+        await declare('Delivery extra', '1', reason: 'Accepted excess'),
+        PurchasingOutcome.confirmed,
+      );
+      expect(
+        await c.deliveryCommand('void', reason: 'Mistaken duplicate'),
+        PurchasingOutcome.confirmed,
+      );
+      await c.selectDelivery(deliveryA);
+      expect(
+        await c.deliveryCommand(
+          'correct',
+          reason: 'Correct to four',
+          lines: [
+            {'orderLineId': deliveryLine, 'quantity': '4'},
+          ],
+        ),
+        PurchasingOutcome.confirmed,
+      );
+      expect(
+        await c.deliveryCommand(
+          'correct',
+          reason: 'Restore measured five',
+          lines: [
+            {'orderLineId': deliveryLine, 'quantity': '5'},
+          ],
+        ),
+        PurchasingOutcome.confirmed,
+      );
       expect(
         await c.lifecycle(
           'close',
@@ -113,6 +163,34 @@ void main() {
       expect(result['replayed'], true);
       await c.select(frozen['id'] as String);
       expect(c.detail!['status'], 'closed');
+      await c.selectDelivery(deliveryA);
+      expect(
+        await c.deliveryCommand(
+          'correct',
+          reason: 'After closure correction',
+          lines: [
+            {'orderLineId': deliveryLine, 'quantity': '4'},
+          ],
+        ),
+        PurchasingOutcome.confirmed,
+      );
+      expect(
+        c.deliverySummary!['summary']['lines'][1]['effectiveDelivered'],
+        '11.000',
+      );
+      expect(
+        c.deliverySummary!['terminalSnapshot']['summary']['lines'][1]['effectiveDelivered'],
+        '12.000',
+      );
+      final deliveryReplay = await s.authorized(
+        (token) => api.post(token, deliveryPending.route, deliveryPending.body),
+      );
+      expect(deliveryReplay['delivery']['lines'][0]['quantity'], '5.000');
+      expect(
+        deliveryReplay['summary']['lines'][1]['effectiveDelivered'],
+        '5.000',
+      );
+      expect(deliveryReplay['replayed'], true);
       await s.signOut();
     },
   );

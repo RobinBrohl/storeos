@@ -40,7 +40,9 @@ void main() {
               '-File',
               '../../infra/backup/Backup-StoreOS.ps1',
               '-Database',
-              'storeos_p412_test',
+              Uri.parse(
+                Platform.environment['STOREOS_TEST_DATABASE']!,
+              ).pathSegments.single,
               '-BackupDirectory',
               temporary.path,
             ]);
@@ -93,6 +95,7 @@ void main() {
               [
                 '0024_bounded_purchase_orders',
                 '0025_planned_preparation_assignments',
+                '0026_purchase_order_delivery_evidence',
               ],
             );
             expect(await purchasingLegacyEvidence(f), before);

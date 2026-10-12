@@ -333,3 +333,16 @@ and from P4.12 I01–I03:
 
 All 60 actual Security conclusions, including qualified restored authorization,
 are retained in [dated P4.13 closure](phase-4-13-planned-preparation-assignments.md#focused-security-conclusions).
+
+## P4.14 standing boundaries
+
+P4.14 is IMPLEMENTED LOCALLY with both independent reviews APPROVE, F01/F02 CLOSED,
+SECURITY APPROVE and final remediation PASS. Implementation-commit CI and final
+P4.14 closure remain PENDING. It preserves P4.12 I01–I03 INFO and every prior
+qualification. New delivery checks independently reject SQL NULL/UNKNOWN and exact
+receipt mismatches. Reasons, references and quantities stay in protected business
+evidence. Raw SQL trust, memory-only client retry recovery, hardware/accessibility,
+retention/export/offboarding, physical verification, key custody and RPO/RTO remain
+standing limits. The touched update report names the actual chain through 0026;
+this does not rewrite P4.13's historical report qualification or close unrelated debt.
+M1/M3/M4 remain; M2 remains CLOSED. No P4.15 selection or physical receiving is added.

@@ -8,6 +8,7 @@ import 'purchasing_fixture.dart';
 import 'recipe_fixture.dart';
 import 'preparation_batch_fixture.dart';
 import 'task_knowledge_fixture.dart';
+import 'preparation_assignment_integration_test.dart' show manage, request;
 
 const purchasingLegacyTables = [
   'stock_levels',
@@ -36,9 +37,16 @@ const purchasingLegacyTables = [
   'event_receipts',
 ];
 Future<Map<String, Object?>> purchasingLegacyEvidence(
-  MerchandisingFixture f,
-) async => {
-  for (final table in purchasingLegacyTables)
+  MerchandisingFixture f, {
+  bool includeAssignments = false,
+}) async => {
+  for (final table in [
+    ...purchasingLegacyTables,
+    if (includeAssignments) ...[
+      'production_preparation_assignments',
+      'production_preparation_assignment_commands',
+    ],
+  ])
     table: (await f.owner.execute(
       "SELECT count(*),md5(string_agg(to_jsonb(t)::text,'' ORDER BY to_jsonb(t)::text)) FROM \"${f.schema}\".$table t",
     )).single.toList(),
@@ -112,6 +120,14 @@ Future<void> purchasingJourney({required bool browser}) async {
   await socket.close();
   await withMerchandisingFixture((f) async {
     await seedPurchasingLegacy(f);
+    final assignmentRecipe = await existingBatchRecipe(f),
+        assignmentWorker = await batchWorker(f, 'p414_assignment_worker');
+    await f.call(
+      'POST',
+      manage,
+      body: request(assignmentRecipe, assignmentWorker),
+      expected: 201,
+    );
     final other = await f.createLocation('Other purchasing Location');
     await f.call(
       'POST',
@@ -126,6 +142,9 @@ Future<void> purchasingJourney({required bool browser}) async {
       },
     );
     final otherToken = await f.login('purchasing_other_admin');
+    if (browser) {
+      await f.account('p414_replacement_admin', role: 'admin');
+    }
     final a = await f.stockArticle(
           sku: 'P412-A',
           name:
@@ -137,7 +156,19 @@ Future<void> purchasingJourney({required bool browser}) async {
           name: 'Second Article',
           unit: 'piece',
         );
-    final legacy = await purchasingLegacyEvidence(f);
+    final legacy = await purchasingLegacyEvidence(f, includeAssignments: true);
+    final largeArticles = <String>[];
+    if (browser) {
+      for (var i = 0; i < 50; i++) {
+        largeArticles.add(
+          (await f.stockArticle(
+            sku: 'P414-LARGE-$i',
+            name: 'Literal <script> Article $i',
+            unit: i.isEven ? 'kg' : 'piece',
+          )).id,
+        );
+      }
+    }
     expect((legacy['stock_count_commands'] as List).first, greaterThan(0));
     expect((legacy['task_transfer_links'] as List).first, greaterThan(0));
     expect(
@@ -148,13 +179,83 @@ Future<void> purchasingJourney({required bool browser}) async {
         client = HttpClient(),
         proxy = await HttpServer.bind('127.0.0.1', 0);
     var changed = false, stale = false, dropped = false, replays = 0;
+    bool deliveryDropped = false;
+    String? deliveryBody;
+    String? gateMode;
+    Completer<void>? gate;
+    bool held = false;
     String? issueBody, orderId;
     Map? frozen;
     proxy.listen((request) async {
       try {
         final bytes = await request.fold<List<int>>([], (a, b) => a..addAll(b)),
             issue =
-                request.method == 'POST' && request.uri.path.endsWith('/issue');
+                request.method == 'POST' &&
+                request.uri.path.endsWith('/issue') &&
+                (orderId == null ||
+                    request.uri.path.contains('/orders/$orderId/'));
+        if (request.uri.path == '/api/v1/platform/p414-test-gate') {
+          request.response.headers.set(
+            'access-control-allow-origin',
+            'http://127.0.0.1:$webPort',
+          );
+          request.response.headers.set(
+            'access-control-allow-headers',
+            'authorization,content-type',
+          );
+          request.response.headers.set(
+            'access-control-allow-methods',
+            'POST,OPTIONS',
+          );
+          if (request.method == 'OPTIONS') {
+            request.response.statusCode = 204;
+            await request.response.close();
+            return;
+          }
+          final token = request.headers
+              .value('authorization')
+              ?.replaceFirst('Bearer ', '');
+          final principal = await f.auth.authenticate(token);
+          await f.database.runAuthorized(
+            principal,
+            'purchasing.orders.manage',
+            (tx, a) async {},
+          );
+          final action = jsonDecode(utf8.decode(bytes))['action'];
+          if (action == 'release') {
+            if (gate != null && !gate!.isCompleted) gate!.complete();
+            gateMode = null;
+          } else if (action != 'status') {
+            gateMode = action as String;
+            gate = Completer<void>();
+            held = false;
+          }
+          request.response.headers.contentType = ContentType.json;
+          request.response.write(jsonEncode({'held': held}));
+          await request.response.close();
+          return;
+        }
+        if (gateMode == 'fail_refresh' &&
+            request.method == 'GET' &&
+            RegExp(
+              r'/purchasing/locations/[^/]+/orders/[^/]+$',
+            ).hasMatch(request.uri.path)) {
+          gateMode = null;
+          request.response.statusCode = 503;
+          request.response.headers.set(
+            'access-control-allow-origin',
+            'http://127.0.0.1:$webPort',
+          );
+          request.response.headers.contentType = ContentType.json;
+          request.response.write(
+            jsonEncode({
+              'code': 'database_unavailable',
+              'message': 'Injected current-detail refresh failure.',
+            }),
+          );
+          await request.response.close();
+          return;
+        }
         final before = issue ? await purchasingEvidence(f) : null;
         if (issue && dropped) expect(utf8.decode(bytes), issueBody);
         final outgoing = await client.openUrl(
@@ -171,6 +272,47 @@ Future<void> purchasingJourney({required bool browser}) async {
         outgoing.add(bytes);
         final response = await outgoing.close(),
             data = await response.fold<List<int>>([], (a, b) => a..addAll(b));
+        if (gateMode == 'hold_read' &&
+                request.method == 'GET' &&
+                request.uri.path.endsWith('/delivery-summary') ||
+            gateMode == 'hold_write' &&
+                request.method == 'POST' &&
+                request.uri.path.endsWith('/deliveries')) {
+          held = true;
+          await gate!.future;
+        }
+        if (request.method == 'POST' &&
+            request.uri.path.endsWith('/deliveries') &&
+            response.statusCode == 201 &&
+            !deliveryDropped) {
+          deliveryDropped = true;
+          deliveryBody = utf8.decode(bytes);
+          await f.restart(port: upstreamPort);
+          request.response.statusCode = 503;
+          response.headers.forEach((n, vs) {
+            if (n.startsWith('access-control-')) {
+              for (final v in vs) {
+                request.response.headers.add(n, v);
+              }
+            }
+          });
+          request.response.headers.contentType = ContentType.json;
+          request.response.write(
+            jsonEncode({
+              'code': 'database_unavailable',
+              'message':
+                  'Committed delivery response lost by acceptance gateway.',
+            }),
+          );
+          await request.response.close();
+          return;
+        }
+        if (request.method == 'POST' &&
+            request.uri.path.endsWith('/deliveries') &&
+            response.statusCode == 201 &&
+            jsonDecode(utf8.decode(data))['replayed'] == true) {
+          expect(utf8.decode(bytes), deliveryBody);
+        }
         if (request.method == 'PUT' &&
             request.uri.path.contains('/purchasing/') &&
             request.uri.path.contains('/orders/') &&
@@ -265,6 +407,7 @@ Future<void> purchasingJourney({required bool browser}) async {
             'STOREOS_PURCHASING_URL': 'http://127.0.0.1:${proxy.port}',
             'STOREOS_PURCHASING_A': a.id,
             'STOREOS_PURCHASING_B': b.id,
+            'STOREOS_PURCHASING_LARGE': largeArticles.join(','),
           };
       await defines.writeAsString(jsonEncode(data));
       final process = await Process.run(
@@ -273,7 +416,7 @@ Future<void> purchasingJourney({required bool browser}) async {
             ? [
                 'drive',
                 '--no-pub',
-                '--driver=test_driver/integration_test.dart',
+                '--driver=test_driver/purchasing.dart',
                 '--target=integration_test/purchasing_test.dart',
                 '-d',
                 'web-server',
@@ -314,6 +457,7 @@ Future<void> purchasingJourney({required bool browser}) async {
       expect(stale, true);
       expect(dropped, true);
       expect(replays, 2);
+      expect(deliveryDropped, true);
       final current = (await f.call('GET', '$purchasingOrders/$orderId')).body;
       expect(current['status'], 'closed');
       expect(current['lines'], frozen!['lines']);
@@ -321,13 +465,13 @@ Future<void> purchasingJourney({required bool browser}) async {
       expect(current['version'], 5);
       expect(
         (await f.owner.execute(
-          "SELECT count(*) FROM \"${f.schema}\".purchasing_commands WHERE kind='order_issue'",
+          "SELECT count(*) FROM \"${f.schema}\".purchasing_commands WHERE kind='order_issue' AND order_id='$orderId'",
         )).single.first,
         1,
       );
       expect(
         (await f.owner.execute(
-          "SELECT count(*) FROM \"${f.schema}\".audit_entries WHERE action='purchasing.order.issued'",
+          "SELECT count(*) FROM \"${f.schema}\".audit_entries WHERE action='purchasing.order.issued' AND entity_id='$orderId'",
         )).single.first,
         1,
       );
@@ -343,8 +487,12 @@ Future<void> purchasingJourney({required bool browser}) async {
         token: otherToken,
         expected: 403,
       );
-      expect(await purchasingLegacyEvidence(f), legacy);
+      expect(
+        await purchasingLegacyEvidence(f, includeAssignments: true),
+        legacy,
+      );
     } finally {
+      if (gate != null && !gate!.isCompleted) gate!.complete();
       await proxy.close(force: true);
       client.close(force: true);
       await directory.delete(recursive: true);

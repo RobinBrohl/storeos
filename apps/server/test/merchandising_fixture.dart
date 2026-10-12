@@ -347,7 +347,10 @@ Future<void> withMerchandisingFixture(
   );
   if (fixedSchema != null &&
       (fixedSchema != 'storeos_platform' ||
-          endpoint.database != 'storeos_p412_test')) {
+          endpoint.database != 'storeos_p412_test' &&
+              !RegExp(
+                r'^storeos_p414_[a-f0-9]{16}_test$',
+              ).hasMatch(endpoint.database))) {
     throw StateError(
       'Fixed schema requires the dedicated P4.12 disposable database.',
     );

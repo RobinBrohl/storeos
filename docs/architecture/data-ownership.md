@@ -84,3 +84,16 @@ control access to Employee-owned work and do not transfer command actor identity
 Historical scoped R1 context survives replacement/retirement; fresh execution still
 checks current eligibility. See [ADR 0027](../adr/0027-planned-preparation-assignment.md).
 No retention/export/offboarding period or employee-data readiness decision is implied.
+
+## P4.14 delivery evidence
+
+Purchasing exclusively owns purchasing_delivery_revisions, purchasing_delivery_revision_lines,
+purchasing_delivery_commands and purchasing_delivery_terminal_snapshots. Original identities
+reserve references; immutable full replacement/void revisions determine current per-line
+reconciliation. Existing terminal Order commands capture a distinct immutable boundary in
+the same authorized transaction. Old and new Purchasing receipts share one Company UUID
+namespace. No foreign business repository/table or Stock mutation is introduced.
+Recorded delivery evidence does not mutate or establish Stock.
+See [ADR 0028](../adr/0028-purchase-order-delivery-evidence.md). Delivery is IMPLEMENTED
+LOCALLY with both independent reviews APPROVE, F01/F02 CLOSED, SECURITY APPROVE and
+final remediation PASS. Implementation-commit CI and final P4.14 closure are PENDING.

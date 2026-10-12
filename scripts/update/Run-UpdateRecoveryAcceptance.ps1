@@ -371,7 +371,7 @@ try {
                 'encrypted PostgreSQL restore point before migration',
                 'forward-only migration with checksum and prefix validation',
                 'single-transaction migration atomicity',
-                'current application after a successful 0011/0012/0013/0014/0015/0016/0017/0018/0019/0020/0021/0022/0023 upgrade',
+                'current application after a successful 0011/0012/0013/0014/0015/0016/0017/0018/0019/0020/0021/0022/0023/0024/0025/0026 upgrade',
                 'isolated recovery of pre-update PostgreSQL state',
                 'recovery fencing',
                 'operator-verifiable evidence'

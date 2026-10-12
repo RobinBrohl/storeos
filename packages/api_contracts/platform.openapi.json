@@ -19873,6 +19873,1265 @@
           }
         }
       }
+    },
+    "/api/v1/platform/purchasing/locations/{locationId}/delivery-register": {
+      "get": {
+        "operationId": "purchasingDeliveryRegister",
+        "summary": "Purchasing delivery Register",
+        "description": "Current session, purchasing.orders.manage and configured Company/Location/Order/Delivery scope precede receipt lookup. Recorded delivery evidence does not mutate or establish Stock. Exact authorized replay returns original revision and summary at acceptance. Full replacement corrections and voids preserve history, including after termination. Administrative close captures a separate immutable boundary. No unlike-unit Order total. Local reference is operator chosen; no physical shipment deduplication. Unknown/duplicate decoded JSON and query members are rejected.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Canonical Company/Location/endpoint/resource/filter bound keyset; not authority."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "issued",
+                "closed",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "supplierId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchasingDeliveryRegisterPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_cursor, invalid_request",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden, origin_forbidden",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/delivery-summary": {
+      "get": {
+        "operationId": "purchasingDeliverySummary",
+        "summary": "Purchasing delivery Summary",
+        "description": "Current session, purchasing.orders.manage and configured Company/Location/Order/Delivery scope precede receipt lookup. Recorded delivery evidence does not mutate or establish Stock. Exact authorized replay returns original revision and summary at acceptance. Full replacement corrections and voids preserve history, including after termination. Administrative close captures a separate immutable boundary. No unlike-unit Order total. Local reference is operator chosen; no physical shipment deduplication. Unknown/duplicate decoded JSON and query members are rejected.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchasingDeliverySummaryDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden, origin_forbidden",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries": {
+      "get": {
+        "operationId": "purchasingDeliveryList",
+        "summary": "Purchasing delivery List",
+        "description": "Current session, purchasing.orders.manage and configured Company/Location/Order/Delivery scope precede receipt lookup. Recorded delivery evidence does not mutate or establish Stock. Exact authorized replay returns original revision and summary at acceptance. Full replacement corrections and voids preserve history, including after termination. Administrative close captures a separate immutable boundary. No unlike-unit Order total. Local reference is operator chosen; no physical shipment deduplication. Unknown/duplicate decoded JSON and query members are rejected.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Canonical Company/Location/endpoint/resource/filter bound keyset; not authority."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchasingDeliveryPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_cursor, invalid_request",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden, origin_forbidden",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "purchasingDeliveryDeclare",
+        "summary": "Purchasing delivery Declare",
+        "description": "Current session, purchasing.orders.manage and configured Company/Location/Order/Delivery scope precede receipt lookup. Recorded delivery evidence does not mutate or establish Stock. Exact authorized replay returns original revision and summary at acceptance. Full replacement corrections and voids preserve history, including after termination. Administrative close captures a separate immutable boundary. No unlike-unit Order total. Local reference is operator chosen; no physical shipment deduplication. Unknown/duplicate decoded JSON and query members are rejected.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Streamed UTF-8 bound 16384 bytes; bounded canonical receipt payload/result 32768/65536 SQL bytes. Server derives actors, snapshots, units, sequences and totals. Reason is required if effective overdelivery increases.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchasingDeliveryDeclare"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Original accepted evidence; replay creates no effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchasingDeliveryResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_json, invalid_request",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden, origin_forbidden",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "already_exists, ledger_version_conflict, operation_conflict, order_state_conflict, quantity_limit, reference_conflict, version_conflict, version_limit",
+            "x-error-codes": [
+              "already_exists",
+              "ledger_version_conflict",
+              "operation_conflict",
+              "order_state_conflict",
+              "quantity_limit",
+              "reference_conflict",
+              "version_conflict",
+              "version_limit"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "invalid_order_line, overdelivery_reason_required",
+            "x-error-codes": [
+              "invalid_order_line",
+              "overdelivery_reason_required"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}": {
+      "get": {
+        "operationId": "purchasingDeliveryDetail",
+        "summary": "Purchasing delivery Detail",
+        "description": "Current session, purchasing.orders.manage and configured Company/Location/Order/Delivery scope precede receipt lookup. Recorded delivery evidence does not mutate or establish Stock. Exact authorized replay returns original revision and summary at acceptance. Full replacement corrections and voids preserve history, including after termination. Administrative close captures a separate immutable boundary. No unlike-unit Order total. Local reference is operator chosen; no physical shipment deduplication. Unknown/duplicate decoded JSON and query members are rejected.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "deliveryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchasingDeliveryRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request",
+            "x-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden, origin_forbidden",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}/history": {
+      "get": {
+        "operationId": "purchasingDeliveryHistory",
+        "summary": "Purchasing delivery History",
+        "description": "Current session, purchasing.orders.manage and configured Company/Location/Order/Delivery scope precede receipt lookup. Recorded delivery evidence does not mutate or establish Stock. Exact authorized replay returns original revision and summary at acceptance. Full replacement corrections and voids preserve history, including after termination. Administrative close captures a separate immutable boundary. No unlike-unit Order total. Local reference is operator chosen; no physical shipment deduplication. Unknown/duplicate decoded JSON and query members are rejected.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "deliveryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "description": "Canonical Company/Location/endpoint/resource/filter bound keyset; not authority."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchasingDeliveryPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_cursor, invalid_request",
+            "x-error-codes": [
+              "invalid_cursor",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden, origin_forbidden",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}/correct": {
+      "post": {
+        "operationId": "purchasingDeliveryCorrect",
+        "summary": "Purchasing delivery Correct",
+        "description": "Current session, purchasing.orders.manage and configured Company/Location/Order/Delivery scope precede receipt lookup. Recorded delivery evidence does not mutate or establish Stock. Exact authorized replay returns original revision and summary at acceptance. Full replacement corrections and voids preserve history, including after termination. Administrative close captures a separate immutable boundary. No unlike-unit Order total. Local reference is operator chosen; no physical shipment deduplication. Unknown/duplicate decoded JSON and query members are rejected.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "deliveryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Streamed UTF-8 bound 16384 bytes; bounded canonical receipt payload/result 32768/65536 SQL bytes. Server derives actors, snapshots, units, sequences and totals. Reason is required if effective overdelivery increases.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchasingDeliveryCorrect"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted evidence; replay creates no effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchasingDeliveryResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_json, invalid_request",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden, origin_forbidden",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ledger_version_conflict, no_change, operation_conflict, quantity_limit, revision_conflict, version_conflict, version_limit",
+            "x-error-codes": [
+              "ledger_version_conflict",
+              "no_change",
+              "operation_conflict",
+              "quantity_limit",
+              "revision_conflict",
+              "version_conflict",
+              "version_limit"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "invalid_order_line",
+            "x-error-codes": [
+              "invalid_order_line"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}/void": {
+      "post": {
+        "operationId": "purchasingDeliveryVoid",
+        "summary": "Purchasing delivery Void",
+        "description": "Current session, purchasing.orders.manage and configured Company/Location/Order/Delivery scope precede receipt lookup. Recorded delivery evidence does not mutate or establish Stock. Exact authorized replay returns original revision and summary at acceptance. Full replacement corrections and voids preserve history, including after termination. Administrative close captures a separate immutable boundary. No unlike-unit Order total. Local reference is operator chosen; no physical shipment deduplication. Unknown/duplicate decoded JSON and query members are rejected.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "deliveryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Streamed UTF-8 bound 16384 bytes; bounded canonical receipt payload/result 32768/65536 SQL bytes. Server derives actors, snapshots, units, sequences and totals. Reason is required if effective overdelivery increases.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchasingDeliveryVoid"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted evidence; replay creates no effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchasingDeliveryResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_json, invalid_request",
+            "x-error-codes": [
+              "invalid_json",
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "x-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden, origin_forbidden",
+            "x-error-codes": [
+              "forbidden",
+              "origin_forbidden"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "x-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ledger_version_conflict, no_change, operation_conflict, quantity_limit, revision_conflict, version_conflict, version_limit",
+            "x-error-codes": [
+              "ledger_version_conflict",
+              "no_change",
+              "operation_conflict",
+              "quantity_limit",
+              "revision_conflict",
+              "version_conflict",
+              "version_limit"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "body_too_large",
+            "x-error-codes": [
+              "body_too_large"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type",
+            "x-error-codes": [
+              "unsupported_media_type"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "x-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "database_unavailable",
+            "x-error-codes": [
+              "database_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./openapi.yaml#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -29473,6 +30732,563 @@
           },
           "replayed": {
             "type": "boolean"
+          }
+        }
+      },
+      "PurchasingDeliveryDeclare": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedOrderVersion",
+          "expectedLedgerVersion",
+          "deliveryId",
+          "localReference",
+          "reason",
+          "lines"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedOrderVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expectedLedgerVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "deliveryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "localReference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "orderLineId",
+                "quantity"
+              ],
+              "properties": {
+                "orderLineId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "quantity": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+                  "description": "Positive exact thousandths, through 999999999999.999; JSON numbers and unit overrides forbidden."
+                }
+              }
+            }
+          }
+        }
+      },
+      "PurchasingDeliveryCorrect": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedOrderVersion",
+          "expectedLedgerVersion",
+          "expectedRevision",
+          "reason",
+          "lines"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedOrderVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expectedLedgerVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "lines": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "orderLineId",
+                "quantity"
+              ],
+              "properties": {
+                "orderLineId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "quantity": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+                  "description": "Positive exact thousandths, through 999999999999.999; JSON numbers and unit overrides forbidden."
+                }
+              }
+            }
+          }
+        }
+      },
+      "PurchasingDeliveryVoid": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "expectedOrderVersion",
+          "expectedLedgerVersion",
+          "expectedRevision",
+          "reason"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedOrderVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expectedLedgerVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "PurchasingDeliveryRevision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deliveryId",
+          "orderId",
+          "locationId",
+          "revision",
+          "ledgerVersion",
+          "kind",
+          "localReference",
+          "reason",
+          "actorId",
+          "recordedAt",
+          "operationId",
+          "lines"
+        ],
+        "properties": {
+          "deliveryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "ledgerVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "delivery_declare",
+              "delivery_correct",
+              "delivery_void"
+            ]
+          },
+          "localReference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "actorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lines": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "orderLineId",
+                "quantity"
+              ],
+              "properties": {
+                "orderLineId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "quantity": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+                  "description": "Positive exact thousandths, through 999999999999.999; JSON numbers and unit overrides forbidden."
+                }
+              }
+            }
+          }
+        }
+      },
+      "PurchasingDeliverySummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "orderId",
+          "ledgerVersion",
+          "declarationCount",
+          "lines"
+        ],
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ledgerVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "declarationCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "lines": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "orderLineId",
+                "orderedQuantity",
+                "effectiveDelivered",
+                "recordedRemainder",
+                "overdelivery"
+              ],
+              "properties": {
+                "orderLineId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "orderedQuantity": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,12}\\.[0-9]{3}$"
+                },
+                "effectiveDelivered": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,12}\\.[0-9]{3}$"
+                },
+                "recordedRemainder": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,12}\\.[0-9]{3}$"
+                },
+                "overdelivery": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,12}\\.[0-9]{3}$"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PurchasingDeliveryTerminal": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "orderVersion",
+          "actorId",
+          "terminalAt",
+          "status",
+          "summary"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "actorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "terminalAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "closed",
+              "cancelled"
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/PurchasingDeliverySummary"
+          }
+        }
+      },
+      "PurchasingDeliverySummaryDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "summary",
+          "terminalSnapshot",
+          "trackingAtClosure"
+        ],
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/PurchasingDeliverySummary"
+          },
+          "terminalSnapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PurchasingDeliveryTerminal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trackingAtClosure": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable",
+              "not_terminal",
+              "not_issued"
+            ]
+          }
+        }
+      },
+      "PurchasingDeliveryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "delivery",
+          "summary",
+          "replayed"
+        ],
+        "properties": {
+          "delivery": {
+            "$ref": "#/components/schemas/PurchasingDeliveryRevision"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/PurchasingDeliverySummary"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PurchasingDeliveryRegisterEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "reference",
+          "supplierId",
+          "supplierName",
+          "status",
+          "orderVersion",
+          "ledgerVersion",
+          "declarationCount",
+          "hasRecordedRemainder",
+          "hasOverdelivery",
+          "hasTerminalSnapshot"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "supplierId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "supplierName": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "issued",
+              "closed",
+              "cancelled"
+            ]
+          },
+          "orderVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "ledgerVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "declarationCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "hasRecordedRemainder": {
+            "type": "boolean"
+          },
+          "hasOverdelivery": {
+            "type": "boolean"
+          },
+          "hasTerminalSnapshot": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PurchasingDeliveryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PurchasingDeliveryRevision"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PurchasingDeliveryRegisterPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PurchasingDeliveryRegisterEntry"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       }

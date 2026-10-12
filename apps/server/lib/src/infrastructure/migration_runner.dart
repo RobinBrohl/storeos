@@ -308,6 +308,14 @@ class MigrationRunner {
             'GRANT UPDATE (status,version,accepted_by,accepted_at,acceptance_operation_id,terminal_by,terminal_at,terminal_reason,terminal_operation_id,terminal_kind,replacement_shift_id) ON $_schema.workforce_shift_transfer_requests TO $role',
           );
         }
+        if (known.containsKey('0026_purchase_order_delivery_evidence')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.purchasing_delivery_revisions, $_schema.purchasing_delivery_revision_lines, $_schema.purchasing_delivery_commands, $_schema.purchasing_delivery_terminal_snapshots TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.purchasing_delivery_revisions, $_schema.purchasing_delivery_revision_lines, $_schema.purchasing_delivery_commands, $_schema.purchasing_delivery_terminal_snapshots FROM $role',
+          );
+        }
         if (known.containsKey('0024_bounded_purchase_orders')) {
           await tx.execute(
             'GRANT SELECT, INSERT ON $_schema.purchasing_suppliers, $_schema.purchasing_orders, $_schema.purchasing_order_lines, $_schema.purchasing_commands TO $role',

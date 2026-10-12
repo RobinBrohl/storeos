@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
 import '../application/purchasing_controller.dart';
+import 'purchasing_delivery_panel.dart';
 
 class PurchasingSection extends StatefulWidget {
   const PurchasingSection({required this.controller, super.key});
@@ -118,8 +119,10 @@ class _PurchasingSectionState extends State<PurchasingSection> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'This records no transmission, delivery, receipt or Stock change.',
+              Text(
+                c.detail?['status'] == 'issued'
+                    ? 'This captures recorded reconciliation administratively. It does not establish physical receipt or change Stock.'
+                    : 'Cancellation before issue creates no issued-delivery lifecycle or Stock change.',
               ),
               TextField(
                 key: const Key('purchasing-terminal-reason'),
@@ -206,7 +209,8 @@ class _PurchasingSectionState extends State<PurchasingSection> {
                 ? purchasingOrderText(
                     Map<String, dynamic>.from(c.lastConfirmed!['order'] as Map),
                   )
-                : (c.lastConfirmed!['supplier'] as Map).toString(),
+                : (c.lastConfirmed!['supplier'] ?? c.lastConfirmed!['delivery'])
+                      .toString(),
           ),
           const Text(
             'Current authoritative detail is loaded separately below.',
@@ -503,6 +507,10 @@ class _PurchasingSectionState extends State<PurchasingSection> {
             ],
           ),
         ],
+        PurchasingDeliveryPanel(
+          key: const Key('purchasing-delivery-panel'),
+          controller: c,
+        ),
         for (final h in c.history)
           ExpansionTile(
             title: Text('${h['kind']} · version ${h['appliedVersion']}'),

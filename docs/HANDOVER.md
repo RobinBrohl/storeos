@@ -1,5 +1,17 @@
 # StoreOS handover
 
+P4.14 Purchase Order Delivery Evidence and Reconciliation is **IMPLEMENTED LOCALLY**.
+Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
+Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.
+Implementation-commit CI and final P4.14 closure remain **PENDING**.
+Recorded delivery evidence does not mutate or establish Stock. P4.15 is **UNSELECTED**.
+See the [P4.14 delivery record](development/phase-4-14-purchase-order-deliveries.md) for the bounded workflow and verification.
+P4.1–P4.13 remain DONE/CLOSED. P4.13 closure commit 9e9cae3055b324413b93784491055beb20e826c4
+and exact closure CI 38229127545 completed successfully; their verified publication
+supersedes the pending drafting statements retained below.
+
+## Historical closure context
+
 P4.13 **Planned Preparation Assignment** is **DONE/CLOSED — accepted implementation**
 at `625bb7ef9643989e2182c966d87839115a0cca6f` (`Add planned preparation assignments`).
 F01 is **CLOSED** after bounded canonical Location UUID remediation and independent
@@ -253,7 +265,7 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 ## Next Recommended Work
 
 1. P4.10 Preparation Batch is DONE/CLOSED with no active remediation.
-   P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 docs publication/closure-commit CI pending. P4.14 UNSELECTED.
+   P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 IMPLEMENTED LOCALLY; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE and final remediation PASS; implementation-commit CI and final closure PENDING. P4.15 UNSELECTED.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

@@ -114,7 +114,9 @@ void main() {
   }
   test('all 15 scoped operations, strict DTOs and resolvable refs', () {
     final purchasing = paths.entries.where(
-      (e) => e.key.toString().contains('/purchasing/'),
+      (e) =>
+          e.key.toString().contains('/purchasing/') &&
+          !e.key.toString().contains('deliver'),
     );
     expect(purchasing.fold<int>(0, (n, e) => n + (e.value as Map).length), 15);
     final index = File('openapi.yaml').readAsStringSync();

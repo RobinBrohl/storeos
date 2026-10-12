@@ -54,3 +54,7 @@ original alternatives, decisions or dated verification to reflect later delivery
 records accepted P4.13, DONE/CLOSED: F01 CLOSED, targeted APPROVE, SECURITY APPROVE
 and successful exact implementation CI 38224661628. Final documentation publication
 and its own closure-commit CI remain PENDING. P4.14 is UNSELECTED.
+
+[ADR 0028: Purchase Order delivery evidence and immutable terminal reconciliation](0028-purchase-order-delivery-evidence.md)
+records selected P4.14. Delivery is IMPLEMENTED LOCALLY; independent review, focused
+Codex Security and implementation-commit CI remain PENDING. P4.15 is UNSELECTED.

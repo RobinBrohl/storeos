@@ -1,5 +1,17 @@
 # Actual implementation status
 
+P4.14 Purchase Order Delivery Evidence and Reconciliation is **IMPLEMENTED LOCALLY**.
+Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
+Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.
+Implementation-commit CI and final P4.14 closure remain **PENDING**.
+Recorded delivery evidence does not mutate or establish Stock. P4.15 is **UNSELECTED**.
+See the [P4.14 delivery record](../development/phase-4-14-purchase-order-deliveries.md) for the bounded workflow and verification.
+P4.1–P4.13 remain DONE/CLOSED. P4.13 closure commit 9e9cae3055b324413b93784491055beb20e826c4
+and exact closure CI 38229127545 completed successfully; their verified publication
+supersedes the pending drafting statements retained below.
+
+## Historical closure context
+
 P4.13 **Planned Preparation Assignment** is **DONE/CLOSED — accepted implementation**
 at `625bb7ef9643989e2182c966d87839115a0cca6f` (`Add planned preparation assignments`).
 F01 is **CLOSED** after bounded canonical Location UUID remediation and independent
@@ -176,7 +188,9 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P4.11 One-way Shift Transfer before execution | DONE / CLOSED | Implementation `b82dda89374ed9b4182630de4991b0d1569b8ae8`; migration 0023 / ADR 0025. Exact named recipient consent and independent approval cancel original pristine future Shift/Tasks and publish exact replacement work with immutable Shift/Task lineage, linkage-bound consent and final database-clock validation. | Initial CHANGES REQUIRED, F01/F02/F03 CLOSED, targeted APPROVE; 177 PASS / 0 QUALIFIED / 0 FAIL. SECURITY APPROVE; all five jobs green in [exact-commit CI 38125193187](https://github.com/RobinBrohl/storeos/actions/runs/38125193187). Final 1,133 package tests, 21/21 phases, 11/11 conditional journeys and 3/3 numeric browser stages PASS. [Final closure](../development/phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11); no active remediation; P4.12 was unselected at this closure. |
 | P4.12 Bounded Purchase Orders with Minimal Supplier Identity | DONE / CLOSED | Implementation `f9122f21cde5149685059a184114b6d958a2bd32`; migration 0024 / ADR 0026. Company Suppliers and configured local Orders, exact immutable snapshots, internal issue, administrative cancel/close and eight durable receipts. | Initial CHANGES REQUIRED; F01 CLOSED, targeted APPROVE, SECURITY APPROVE; **93 PASS / 3 QUALIFIED / 0 FAIL**. All five jobs succeeded in [implementation-commit CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998). [Final closure](../development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11); documentation closure CI 38156014870 succeeded. P4.13 acceptance is recorded below. P4.14 UNSELECTED. |
 
-| P4.13 Planned Preparation Assignment | DONE / CLOSED (accepted implementation) | Exact approved revision/Employee/Location/count, manager create/withdraw, own atomic linked Batch start and durable replay; migration 0025 / ADR 0027. | [Closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12), [matrix](../development/phase-4-13-acceptance.md): 99 PASS / 1 QUALIFIED / 0 FAIL. F01 CLOSED, targeted APPROVE, SECURITY APPROVE, exact implementation CI 38224661628 success. Documentation publication/closure-commit CI PENDING. P4.14 UNSELECTED. |
+| P4.13 Planned Preparation Assignment | DONE / CLOSED (accepted implementation) | Exact approved revision/Employee/Location/count, manager create/withdraw, own atomic linked Batch start and durable replay; migration 0025 / ADR 0027. | [Closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12), [matrix](../development/phase-4-13-acceptance.md): 99 PASS / 1 QUALIFIED / 0 FAIL. F01 CLOSED, targeted APPROVE, SECURITY APPROVE, exact implementation CI 38224661628 success. Closure publication/CI 38229127545 verified successful. |
+
+| P4.14 Purchase Order Delivery Evidence and Reconciliation | IMPLEMENTED LOCALLY | Four append-only evidence tables, exact per-line quantities, full replacement/void history, shared Purchasing operation UUID namespace and immutable terminal reconciliation; migration 0026 / ADR 0028. | [Delivery record](../development/phase-4-14-purchase-order-deliveries.md), [acceptance](../development/phase-4-14-acceptance.md). Functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE and final remediation PASS; implementation-commit CI and final closure PENDING. P4.15 UNSELECTED. |
 
 ## Accepted manual Stock boundaries
 
@@ -276,7 +290,7 @@ read acknowledgment, native-device/accessibility acceptance or offline queue is 
 ## Planned and deferred scope
 
 P4.1–P4.13 are DONE/CLOSED as accepted implementations, with no active P4.11/P4.12/P4.13 remediation. P4.12 retains three accepted limitations and nonblocking Security INFO I01–I03; see [live debt](../development/technical-debt.md#p412-security-info-observations).
-P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 docs publication/closure-commit CI pending. P4.14 UNSELECTED.
+P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 IMPLEMENTED LOCALLY; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE and final remediation PASS; implementation-commit CI and final closure PENDING. P4.15 UNSELECTED.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |

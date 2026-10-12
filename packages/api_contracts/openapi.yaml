@@ -354,6 +354,20 @@ paths:
     $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1close"
   /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/history:
     $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1history"
+  /api/v1/platform/purchasing/locations/{locationId}/delivery-register:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1delivery-register"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/delivery-summary:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1delivery-summary"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1deliveries"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1deliveries~1{deliveryId}"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}/history:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1deliveries~1{deliveryId}~1history"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}/correct:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1deliveries~1{deliveryId}~1correct"
+  /api/v1/platform/purchasing/locations/{locationId}/orders/{orderId}/deliveries/{deliveryId}/void:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1purchasing~1locations~1{locationId}~1orders~1{orderId}~1deliveries~1{deliveryId}~1void"
 components:
   securitySchemes:
     session:

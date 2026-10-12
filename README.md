@@ -1,5 +1,17 @@
 # StoreOS
 
+P4.14 Purchase Order Delivery Evidence and Reconciliation is **IMPLEMENTED LOCALLY**.
+Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
+Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.
+Implementation-commit CI and final P4.14 closure remain **PENDING**.
+Recorded delivery evidence does not mutate or establish Stock. P4.15 is **UNSELECTED**.
+See the [P4.14 delivery record](docs/development/phase-4-14-purchase-order-deliveries.md) for the bounded workflow and verification.
+P4.1–P4.13 remain DONE/CLOSED. P4.13 closure commit 9e9cae3055b324413b93784491055beb20e826c4
+and exact closure CI 38229127545 completed successfully; their verified publication
+supersedes the pending drafting statements retained below.
+
+## Historical closure context
+
 P4.13 **Planned Preparation Assignment** is **DONE/CLOSED — accepted implementation**
 at `625bb7ef9643989e2182c966d87839115a0cca6f` (`Add planned preparation assignments`).
 F01 is **CLOSED** after bounded canonical Location UUID remediation and independent

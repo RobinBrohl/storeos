@@ -7,6 +7,7 @@ export 'src/shift_transfers.dart';
 
 export 'src/preparation_batches.dart';
 export 'src/purchasing.dart';
+export 'src/purchasing_delivery.dart';
 
 export 'src/recipes.dart';
 

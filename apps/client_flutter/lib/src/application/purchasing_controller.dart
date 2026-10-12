@@ -15,6 +15,13 @@ class PendingPurchasingCommand {
     PurchasingCommandInput input,
   ) : kind = input.kind,
       body = input.payload;
+  PendingPurchasingCommand.delivery(
+    this.identity,
+    this.route,
+    PurchasingDeliveryInput input,
+  ) : kind = input.kind,
+      body = input.payload;
+  bool uncertain = false;
   final Object identity;
   final String route, kind;
   final Map<String, dynamic> body;
@@ -53,6 +60,12 @@ class PurchasingController extends ChangeNotifier {
       history = [],
       lines = [];
   Map<String, dynamic>? detail, supplierDetail, selectedSupplier, lastConfirmed;
+  Map<String, dynamic>? deliverySummary, deliveryDetail;
+  List<Map<String, dynamic>> deliveryItems = [],
+      deliveryHistory = [],
+      deliveryRegisterItems = [];
+  String? deliveryCursor, deliveryHistoryCursor, deliveryRegisterCursor;
+  String deliveryQuery = '';
   String reference = '', supplierQuery = '', articleQuery = '';
   bool reselectSupplier = false,
       reviewed = false,
@@ -65,7 +78,7 @@ class PurchasingController extends ChangeNotifier {
   bool get canManageSuppliers => platform.allows('purchasing.suppliers.manage');
   bool get canIssue => platform.allows('purchasing.orders.issue');
   String get root =>
-      '/purchasing/locations/${session.user?.locationId ?? ''}/orders';
+      '/purchasing/locations/${session.user == null ? '' : purchasingId(session.user!.locationId)}/orders';
   bool _current(Object? id) =>
       !_disposed &&
       id != null &&
@@ -82,6 +95,15 @@ class PurchasingController extends ChangeNotifier {
     busy = false;
     pending = null;
     detail = null;
+    deliverySummary = null;
+    deliveryDetail = null;
+    deliveryItems = [];
+    deliveryHistory = [];
+    deliveryRegisterItems = [];
+    deliveryCursor = null;
+    deliveryHistoryCursor = null;
+    deliveryRegisterCursor = null;
+    deliveryQuery = '';
     supplierDetail = null;
     selectedSupplier = null;
     lastConfirmed = null;
@@ -171,6 +193,8 @@ class PurchasingController extends ChangeNotifier {
     if (locked) return;
     status = value;
     supplierFilter = supplier;
+    deliveryRegisterItems = [];
+    deliveryRegisterCursor = null;
     items = [];
     nextCursor = null;
     await load();
@@ -242,17 +266,137 @@ class PurchasingController extends ChangeNotifier {
 
   Future<void> select(String order) => _read((id) async {
     detail = null;
+    _clearDeliveries();
     history = [];
     historyCursor = null;
     lastConfirmed = null;
     notice = null;
-    detail = await _get(id, '$root/$order');
+    await _refreshOrder(id, order);
     refreshWarning = null;
-    _editor(detail!);
   });
+  void _clearDeliveries() {
+    deliverySummary = null;
+    deliveryDetail = null;
+    deliveryItems = [];
+    deliveryHistory = [];
+    deliveryCursor = null;
+    deliveryHistoryCursor = null;
+  }
+
+  Future<void> _refreshOrder(Object id, String order) async {
+    final d = await _get(id, '$root/$order');
+    final summary = await _get(id, '$root/$order/delivery-summary');
+    final deliveries = await _get(id, '$root/$order/deliveries');
+    if (!_current(id)) return;
+    detail = d;
+    deliverySummary = summary;
+    deliveryItems = _rows(deliveries);
+    deliveryCursor = deliveries['nextCursor'] as String?;
+    _editor(d);
+  }
+
+  Future<void> loadDeliveryRegister({bool more = false}) => _read((id) async {
+    if (status == 'draft') {
+      deliveryRegisterItems = [];
+      deliveryRegisterCursor = null;
+      return;
+    }
+    final page = await _get(
+      id,
+      '/purchasing/locations/${purchasingId(session.user!.locationId)}/delivery-register',
+      query: {
+        if (status != null && status != 'draft') 'status': status!,
+        'supplierId': ?supplierFilter,
+        'q': deliveryQuery,
+        if (more && deliveryRegisterCursor != null)
+          'after': deliveryRegisterCursor!,
+      },
+    );
+    deliveryRegisterItems = [
+      if (more) ...deliveryRegisterItems,
+      ..._rows(page),
+    ];
+    deliveryRegisterCursor = page['nextCursor'] as String?;
+  });
+  void setDeliveryQuery(String value) {
+    if (locked) return;
+    deliveryQuery = value;
+    deliveryRegisterItems = [];
+    deliveryRegisterCursor = null;
+    _notify();
+  }
+
+  Future<void> moreDeliveries() => _read((id) async {
+    final order = detail?['id'];
+    if (order == null || deliveryCursor == null) return;
+    final page = await _get(
+      id,
+      '$root/$order/deliveries',
+      query: {'after': deliveryCursor!},
+    );
+    deliveryItems = [...deliveryItems, ..._rows(page)];
+    deliveryCursor = page['nextCursor'] as String?;
+  });
+  Future<void> selectDelivery(String delivery) => _read((id) async {
+    deliveryDetail = null;
+    deliveryHistory = [];
+    deliveryHistoryCursor = null;
+    final order = detail?['id'];
+    if (order == null) return;
+    deliveryDetail = await _get(
+      id,
+      '$root/$order/deliveries/${purchasingId(delivery)}',
+    );
+  });
+  Future<void> readDeliveryHistory({bool more = false}) => _read((id) async {
+    final order = detail?['id'], delivery = deliveryDetail?['deliveryId'];
+    if (order == null || delivery == null) return;
+    final page = await _get(
+      id,
+      '$root/$order/deliveries/$delivery/history',
+      query: {
+        if (more && deliveryHistoryCursor != null)
+          'after': deliveryHistoryCursor!,
+      },
+    );
+    deliveryHistory = [if (more) ...deliveryHistory, ..._rows(page)];
+    deliveryHistoryCursor = page['nextCursor'] as String?;
+  });
+  Future<PurchasingOutcome> deliveryCommand(
+    String action, {
+    String? reference,
+    String? reason,
+    List<Map<String, dynamic>> lines = const [],
+  }) {
+    final d = detail, s = deliverySummary?['summary'], r = deliveryDetail;
+    if (d == null || s == null || action != 'declare' && r == null) {
+      return Future.value(PurchasingOutcome.rejected);
+    }
+    return _submit(
+      'delivery_$action',
+      '$root/${d['id']}/deliveries${action == 'declare' ? '' : '/${r!['deliveryId']}/$action'}',
+      () => {
+        'operationId': _newId(),
+        'expectedOrderVersion': d['version'],
+        'expectedLedgerVersion': s['ledgerVersion'],
+        if (action == 'declare') ...{
+          'deliveryId': _newId(),
+          'localReference': reference,
+        } else
+          'expectedRevision': r!['revision'],
+        'reason':
+            action == 'declare' && (reason == null || reason.trim().isEmpty)
+            ? null
+            : reason,
+        if (action != 'void') 'lines': lines,
+      },
+    );
+  }
+
   void newDraft() {
     if (locked) return;
     detail = null;
+    _clearDeliveries();
     history = [];
     historyCursor = null;
     lastConfirmed = null;
@@ -466,11 +610,17 @@ class PurchasingController extends ChangeNotifier {
     // Guard precedes validation, IDs, line copying and any async dispatch.
     busy = true;
     try {
-      pending = PendingPurchasingCommand(
-        _identity!,
-        route,
-        PurchasingCommandInput.fromJson(kind, body()),
-      );
+      pending = kind.startsWith('delivery_')
+          ? PendingPurchasingCommand.delivery(
+              _identity!,
+              route,
+              PurchasingDeliveryInput.fromJson(kind, body()),
+            )
+          : PendingPurchasingCommand(
+              _identity!,
+              route,
+              PurchasingCommandInput.fromJson(kind, body()),
+            );
     } on FormatException catch (e) {
       busy = false;
       error = e.message;
@@ -509,12 +659,23 @@ class PurchasingController extends ChangeNotifier {
       pending = null;
       notice = 'Command confirmed by the server.';
       final supplier = c.kind.startsWith('supplier_'),
-          d = result[supplier ? 'supplier' : 'order'] as Map;
+          delivery = c.kind.startsWith('delivery_'),
+          d =
+              result[supplier
+                      ? 'supplier'
+                      : delivery
+                      ? 'delivery'
+                      : 'order']
+                  as Map;
+      final selectedDelivery = delivery ? d['deliveryId'] as String : null;
       if (supplier) {
         supplierDetail = null;
         suppliers = [];
       } else {
         detail = null;
+        _clearDeliveries();
+        deliveryRegisterItems = [];
+        deliveryRegisterCursor = null;
         lines = [];
         reviewed = false;
         items = [];
@@ -522,18 +683,28 @@ class PurchasingController extends ChangeNotifier {
       }
       _notify();
       try {
-        final fresh = await _get(
-          id,
-          supplier ? '/purchasing/suppliers/${d['id']}' : '$root/${d['id']}',
-        );
         if (supplier) {
-          supplierDetail = fresh;
+          supplierDetail = await _get(id, '/purchasing/suppliers/${d['id']}');
         } else {
-          detail = fresh;
-          _editor(fresh);
+          await _refreshOrder(
+            id,
+            (delivery ? d['orderId'] : d['id']) as String,
+          );
+          if (selectedDelivery != null) {
+            deliveryDetail = await _get(
+              id,
+              '$root/${d['orderId']}/deliveries/$selectedDelivery',
+            );
+          }
         }
       } catch (_) {
         if (_current(id)) {
+          if (!supplier) {
+            detail = null;
+            _clearDeliveries();
+            lines = [];
+            editorRevision++;
+          }
           refreshWarning =
               'Command confirmed. Reload authoritative detail before another command.';
         }
@@ -544,15 +715,22 @@ class PurchasingController extends ChangeNotifier {
     } on StoreApiException catch (e) {
       if (!_current(id)) return PurchasingOutcome.fenced;
       if ({400, 401, 403, 404, 409, 413, 415, 422}.contains(e.statusCode)) {
+        if (c.uncertain && c.kind.startsWith('delivery_')) {
+          error =
+              'Earlier outcome remains unconfirmed. Current rejection does not establish rollback. Retry the exact command or reload after session replacement.';
+          return PurchasingOutcome.uncertain;
+        }
         pending = null;
         error = '${e.code}: ${e.message}';
         return PurchasingOutcome.rejected;
       }
       error = 'Outcome unconfirmed. Retry the exact same command.';
+      c.uncertain = true;
       return PurchasingOutcome.uncertain;
     } catch (_) {
       if (!_current(id)) return PurchasingOutcome.fenced;
       error = 'Outcome unconfirmed. Retry the exact same command.';
+      c.uncertain = true;
       return PurchasingOutcome.uncertain;
     } finally {
       if (_current(id)) {

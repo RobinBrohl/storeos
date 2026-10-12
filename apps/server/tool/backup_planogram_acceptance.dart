@@ -6,6 +6,7 @@ import 'preparation_acceptance.dart';
 import 'preparation_assignment_acceptance.dart';
 import 'shift_transfer_acceptance.dart';
 import 'purchasing_acceptance.dart';
+import 'purchasing_delivery_acceptance.dart';
 import 'package:storeos_server/src/stock/stock_count_service.dart';
 
 import 'package:postgres/postgres.dart';
@@ -78,6 +79,13 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       otherLocation: evidence['alternateLocationId'] as String,
     );
     final s = quotedSchema(schema);
+    await verifyPurchasingDeliveries(
+      db,
+      manager,
+      principal,
+      evidence['deliveryRecords'] as List,
+      otherLocation: evidence['alternateLocationId'] as String,
+    );
     otherWorkerToken = (await auth.login(
       LoginRequest(
         username: 'backup_accept_other_worker',
@@ -310,6 +318,13 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       remoteKey: 'isolated-planogram-scope-restore',
     )).token;
     final alternateManager = await alternateAuth.authenticate(alternateToken);
+    await verifyPurchasingDeliveries(
+      db,
+      manager,
+      principal,
+      evidence['deliveryRecords'] as List,
+      otherManager: alternateManager,
+    );
     await verifyPurchasing(
       db,
       manager,

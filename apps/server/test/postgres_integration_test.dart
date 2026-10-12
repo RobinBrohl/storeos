@@ -225,6 +225,7 @@ void main() {
             '0023_one_way_shift_transfers',
             '0024_bounded_purchase_orders',
             '0025_planned_preparation_assignments',
+            '0026_purchase_order_delivery_evidence',
           ],
         );
         final account = await connection.execute(
@@ -659,6 +660,7 @@ void main() {
           '0023_one_way_shift_transfers',
           '0024_bounded_purchase_orders',
           '0025_planned_preparation_assignments',
+          '0026_purchase_order_delivery_evidence',
         ]);
         expect(await runner.apply(), isEmpty);
         final account = (await connection.execute(

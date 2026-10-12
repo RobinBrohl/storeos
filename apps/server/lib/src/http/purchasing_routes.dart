@@ -22,6 +22,123 @@ class PurchasingRoutes {
     const root = '/api/v1/platform/purchasing';
     final supplier = '$root/suppliers',
         orders = '$root/locations/<locationId>/orders';
+    router.get('$root/locations/<locationId>/delivery-register', (
+      Request r,
+      String location,
+    ) async {
+      query(r, {'status', 'supplierId', 'q', 'after'});
+      return jsonResponse(
+        200,
+        await service.deliveryRegister(
+          await auth.authenticate(bearerToken(r)),
+          location,
+          status: r.url.queryParameters['status'],
+          supplierId: r.url.queryParameters['supplierId'],
+          q: r.url.queryParameters['q'],
+          after: r.url.queryParameters['after'],
+        ),
+      );
+    });
+    router.get('$orders/<id>/delivery-summary', (
+      Request r,
+      String location,
+      String id,
+    ) async {
+      query(r, {});
+      return jsonResponse(
+        200,
+        await service.deliverySummary(
+          await auth.authenticate(bearerToken(r)),
+          location,
+          id,
+        ),
+      );
+    });
+    router.get('$orders/<id>/deliveries', (
+      Request r,
+      String location,
+      String id,
+    ) async {
+      query(r, {'after'});
+      return jsonResponse(
+        200,
+        await service.deliveryList(
+          await auth.authenticate(bearerToken(r)),
+          location,
+          id,
+          after: r.url.queryParameters['after'],
+        ),
+      );
+    });
+    router.get('$orders/<id>/deliveries/<delivery>', (
+      Request r,
+      String location,
+      String id,
+      String delivery,
+    ) async {
+      query(r, {});
+      return jsonResponse(
+        200,
+        await service.deliveryDetail(
+          await auth.authenticate(bearerToken(r)),
+          location,
+          id,
+          delivery,
+        ),
+      );
+    });
+    router.get('$orders/<id>/deliveries/<delivery>/history', (
+      Request r,
+      String location,
+      String id,
+      String delivery,
+    ) async {
+      query(r, {'after'});
+      return jsonResponse(
+        200,
+        await service.deliveryList(
+          await auth.authenticate(bearerToken(r)),
+          location,
+          id,
+          deliveryId: delivery,
+          after: r.url.queryParameters['after'],
+        ),
+      );
+    });
+    Future<Response> deliveryWrite(
+      Request r,
+      String location,
+      String order,
+      String? delivery,
+      String kind,
+    ) async {
+      query(r, {});
+      final principal = await auth.authenticate(bearerToken(r));
+      return jsonResponse(
+        kind == 'delivery_declare' ? 201 : 200,
+        await service.deliveryCommand(
+          principal,
+          location,
+          order,
+          delivery,
+          kind,
+          await readJson(r, limit: 16384, rejectDuplicateNames: true),
+        ),
+      );
+    }
+
+    router.post(
+      '$orders/<id>/deliveries',
+      (Request r, String location, String id) =>
+          deliveryWrite(r, location, id, null, 'delivery_declare'),
+    );
+    for (final action in ['correct', 'void']) {
+      router.post(
+        '$orders/<id>/deliveries/<delivery>/$action',
+        (Request r, String location, String id, String delivery) =>
+            deliveryWrite(r, location, id, delivery, 'delivery_$action'),
+      );
+    }
     router.get(supplier, (Request r) async {
       query(r, {'status', 'q', 'after'});
       return jsonResponse(

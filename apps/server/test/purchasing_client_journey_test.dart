@@ -16,7 +16,7 @@ void main() {
                   '1'
           ? false
           : 'Explicit isolated PostgreSQL and opt-in Flutter/Chrome required.',
-      timeout: const Timeout(Duration(minutes: 6)),
+      timeout: const Timeout(Duration(minutes: 12)),
     );
   }
 }

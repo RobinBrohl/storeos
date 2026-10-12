@@ -62,6 +62,8 @@ class AuditRepository {
       'recipeId',
       'supplierId',
       'orderId',
+      'deliveryId',
+      'ledgerVersion',
       'producedArticleId',
       'startsAt',
       'endsAt',

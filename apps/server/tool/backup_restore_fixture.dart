@@ -26,6 +26,7 @@ import 'task_guidance_acceptance.dart';
 import 'backup_planogram_acceptance.dart';
 import 'stock_count_acceptance.dart';
 import 'purchasing_acceptance.dart';
+import 'purchasing_delivery_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -59,6 +60,11 @@ const _evidenceTables = <String, String>{
   'purchasing_orders': 'company_id,id',
   'purchasing_order_lines': 'company_id,order_id,position',
   'purchasing_commands': 'company_id,operation_id',
+  'purchasing_delivery_revisions': 'company_id,order_id,ledger_version',
+  'purchasing_delivery_revision_lines':
+      'company_id,order_id,delivery_id,revision,order_line_id',
+  'purchasing_delivery_commands': 'company_id,operation_id',
+  'purchasing_delivery_terminal_snapshots': 'company_id,order_id',
   'articles': 'id',
   'article_location_assortment': 'id',
   'stock_levels': 'id',
@@ -151,12 +157,7 @@ Future<void> _prepare(Map<String, String> env, String source) async {
   try {
     owner = await Connection.open(ownerEndpoint, settings: _connectionSettings);
     await _requireRestrictedRole(owner, runtimeUser);
-    await MigrationRunner(
-      connection: owner,
-      migrationsDirectory: Directory('migrations'),
-      schemaName: _schema,
-      runtimeDatabaseUser: runtimeUser,
-    ).apply();
+    await applyPreDeliveryMigrations(owner, _schema, runtimeUser);
     await BootstrapService(
       connection: owner,
       passwordHasher: PasswordHasher(),
@@ -210,6 +211,36 @@ Future<void> _prepare(Map<String, String> env, String source) async {
       adminPassword: adminPassword,
       workerUser: workerUser,
       workerPassword: workerPassword,
+    );
+    owner = await Connection.open(ownerEndpoint, settings: _connectionSettings);
+    await MigrationRunner(
+      connection: owner,
+      migrationsDirectory: Directory('migrations'),
+      schemaName: _schema,
+      runtimeDatabaseUser: runtimeUser,
+    ).apply();
+    await owner.close();
+    owner = null;
+    final deliveryLogin = await api.request(
+      'POST',
+      '/api/v1/auth/login',
+      body: {'username': adminUser, 'password': adminPassword},
+    );
+    ids['deliveryRecords'] = await seedPurchasingDeliveries(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: deliveryLogin['token'] as String,
+        expected: status,
+      ),
+      locationId,
+    );
+    await api.request(
+      'POST',
+      '/api/v1/auth/logout',
+      token: deliveryLogin['token'] as String,
+      expected: 204,
     );
     final historical =
         await verifyBackupPlanogramReads(ownerEndpoint, _schema, {
@@ -310,6 +341,8 @@ Future<void> _verify(Map<String, String> env, String source) async {
     await verifyAssignmentGrants(targetOwner, _schema, runtimeUser);
     await verifyPurchasingGrants(sourceOwner, _schema, runtimeUser);
     await verifyPurchasingGrants(targetOwner, _schema, runtimeUser);
+    await verifyDeliveryGrants(sourceOwner, _schema, runtimeUser);
+    await verifyDeliveryGrants(targetOwner, _schema, runtimeUser);
     await verifyKnowledgeEvidence(
       sourceOwner,
       _schema,
@@ -1185,9 +1218,13 @@ Future<void> _assertSeededJourney(
   }
   const expectedCounts = {
     'purchasing_suppliers': 2,
-    'purchasing_orders': 6,
-    'purchasing_order_lines': 4,
-    'purchasing_commands': 20,
+    'purchasing_orders': 8,
+    'purchasing_order_lines': 6,
+    'purchasing_commands': 27,
+    'purchasing_delivery_revisions': 9,
+    'purchasing_delivery_revision_lines': 8,
+    'purchasing_delivery_commands': 9,
+    'purchasing_delivery_terminal_snapshots': 1,
     'articles': 8,
     'production_recipes': 3,
     'production_recipe_revisions': 7,

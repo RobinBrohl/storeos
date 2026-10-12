@@ -93,7 +93,9 @@ void main() {
               '-File',
               '../../infra/backup/Backup-StoreOS.ps1',
               '-Database',
-              'storeos_p412_test',
+              Uri.parse(
+                Platform.environment['STOREOS_TEST_DATABASE']!,
+              ).pathSegments.single,
               '-BackupDirectory',
               temporary.path,
             ]);
@@ -148,7 +150,10 @@ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {{schema}}.p413_late
                 schemaName: f.schema,
                 runtimeDatabaseUser: f.runtimeUser,
               ).apply(),
-              ['0025_planned_preparation_assignments'],
+              [
+                '0025_planned_preparation_assignments',
+                '0026_purchase_order_delivery_evidence',
+              ],
             );
             expect(await priorEvidence(f), before);
             expect(

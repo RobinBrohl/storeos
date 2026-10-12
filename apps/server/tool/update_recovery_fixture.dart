@@ -33,6 +33,7 @@
 // database downgrade, application downgrade or replacement activation.
 import 'dart:convert';
 import 'purchasing_acceptance.dart';
+import 'purchasing_delivery_acceptance.dart';
 import 'merchandising_acceptance.dart';
 import 'stock_count_acceptance.dart';
 import 'knowledge_acceptance.dart';
@@ -80,6 +81,7 @@ const _expectedPendingMigrations = [
   '0023_one_way_shift_transfers',
   '0024_bounded_purchase_orders',
   '0025_planned_preparation_assignments',
+  '0026_purchase_order_delivery_evidence',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -1417,6 +1419,23 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       purchasingRecords,
     );
     await verifyPurchasingGrants(owner, _schema, runtimeUser);
+    final deliveryRecords = await seedPurchasingDeliveries(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      locationId,
+    );
+    await verifyPurchasingDeliveries(
+      database,
+      await auth.authenticate(adminToken),
+      await auth.authenticate(workerToken),
+      deliveryRecords,
+    );
+    await verifyDeliveryGrants(owner, _schema, runtimeUser);
     await api.request(
       'POST',
       '/api/v1/auth/logout',
@@ -1424,12 +1443,19 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       expected: 204,
     );
     await _writeJson(resultFile, {
+      'deliveries': {
+        'migration': '0026_purchase_order_delivery_evidence',
+        'revisions': 9,
+        'receipts': 9,
+        'terminalSnapshots': 1,
+        'originalReplayAndTerminalComparisonVerified': true,
+      },
       'purchasing': {
         'migration': '0024_bounded_purchase_orders',
         'suppliers': 2,
-        'orders': 6,
-        'lines': 4,
-        'receipts': 20,
+        'orders': 8,
+        'lines': 6,
+        'receipts': 27,
         'allEightKindsAndExactReplayVerified': true,
       },
       'transfers': {

@@ -1,7 +1,11 @@
 # ADR 0027: Planned preparation with retained approved execution authority
 
 Date: 2026-10-11. Decision: Accepted for the user-selected P4.13 implementation.
-Local implementation does not close independent review, focused Security or remote CI.
+Delivery update, 2026-10-12: P4.13 is DONE/CLOSED — accepted implementation;
+F01 CLOSED, targeted independent APPROVE, focused SECURITY APPROVE and successful
+exact implementation CI 38224661628. Final documentation publication/closure-commit
+CI remains PENDING. The decision and implemented behavior are unchanged; see
+[dated closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12).
 
 ## Context
 

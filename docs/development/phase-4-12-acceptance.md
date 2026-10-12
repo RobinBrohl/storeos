@@ -1,5 +1,12 @@
 # P4.12 acceptance matrix
 
+Historical P4.12 documentation-closure snapshot (2026-10-11): the gate/selection
+statements below describe that drafting state. Closure was subsequently published
+at d48856f8 with successful CI 38156014870. P4.13 is now DONE/CLOSED — accepted
+implementation; its documentation publication/closure-commit CI remains PENDING.
+P4.14 UNSELECTED. See [current P4.13 closure](phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12)
+and [actual status](../roadmap/status.md).
+
 Selected capability: Bounded Purchase Orders with Minimal Supplier Identity. Historical selection baseline: `main` / `604d1d198b158b1907dd000ea435d94dbae0dec1`. Accepted implementation: `f9122f21cde5149685059a184114b6d958a2bd32`, **DONE/CLOSED**. P4.1–P4.11 remain DONE/CLOSED; P4.13 UNSELECTED. Documentation-only closure commit and its own exact-head CI remain **PENDING PUBLICATION**.
 
 Historical assessments remain distinct: initial implementation **90 PASS / 6 QUALIFIED / 0 FAIL** (1,241 package tests); independent adversarial review **CHANGES REQUIRED: 89 PASS / 6 QUALIFIED / 1 FAIL**. Criterion 36 failed because accepted uppercase Location UUID routes broke exact replay (F01, LOW PRODUCT DEFECT / COMMIT BLOCKER). The [remediation record](phase-4-12-bounded-purchase-orders.md#independent-finding-f01-and-bounded-remediation) retains pre-fix failures and the canonical Location fix. Post-F01 final-source assessment and targeted independent **APPROVE** each returned **90 PASS / 6 QUALIFIED / 0 FAIL**, with F01 **CLOSED**. Subsequent **SECURITY APPROVE** and exact implementation CI success complete criteria 91–93.

@@ -1,21 +1,26 @@
 # Development roadmap
 
-P4.13 **Planned Preparation Assignment** is **IMPLEMENTED LOCALLY**, with migration
-`0025_planned_preparation_assignments.sql` and ADR 0027. Manager requests retain an
-exact approved RecipeRevision and one eligible Employee; explicit Employee start opens
-one atomic linked Batch. Requested, original actual and corrected effective counts stay
-distinct. Independent review returned **CHANGES REQUIRED** (95 PASS / 4 QUALIFIED / 1 FAIL)
-for F01, a MEDIUM product defect and commit blocker. F01 is **REMEDIATED LOCALLY**;
-targeted independent re-review, focused Security and changed-commit remote CI are **PENDING**.
-P4.14 is **UNSELECTED**. P4.1–P4.12 remain DONE/CLOSED. Baseline closure
-`d48856f8eb0ccf4565295616606fe674bc0f2b49` and all five jobs in
-[closure CI 38156014870](https://github.com/RobinBrohl/storeos/actions/runs/38156014870)
-were verified before implementation. All P4.13 changes remain unstaged/uncommitted on
-that original `main` HEAD. See [implementation](../development/phase-4-13-planned-preparation-assignments.md) and
-[local acceptance](../development/phase-4-13-acceptance.md).
+P4.13 **Planned Preparation Assignment** is **DONE/CLOSED — accepted implementation**
+at `625bb7ef9643989e2182c966d87839115a0cca6f` (`Add planned preparation assignments`).
+F01 is **CLOSED** after bounded canonical Location UUID remediation and independent
+**APPROVE** (153 PASS / 0 FAIL / 0 SKIP). Focused Codex Security returned
+**SECURITY APPROVE**; all five jobs succeeded in
+[exact implementation-commit CI 38224661628](https://github.com/RobinBrohl/storeos/actions/runs/38224661628).
+Current acceptance: **99 PASS / 1 QUALIFIED / 0 FAIL**; final-source regression:
+**1,367 package passes**, **16/16 phases**, **15 host journeys + 2 migration/recovery
+cases**, Numeric Guided Work **3/3 PASS**. Migration chain **0001–0025**;
+0001–0024 and dependencies unchanged. Exact RecipeRevision/Employee/Location/planned
+count remain immutable; own explicit start opens one linked Batch atomically.
+Requested, original actual and effective corrected counts remain distinct.
+No active P4.13 implementation remediation remains. P4.1–P4.12 remain DONE/CLOSED;
+P4.12 closure CI 38156014870 was verified before P4.13 implementation.
+**Final documentation publication and its own closure-commit CI: PENDING**.
+These Markdown edits remain unstaged/uncommitted; no closure SHA/run/outcome is claimed.
+**P4.14 UNSELECTED**. See [dated closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12)
+and [acceptance matrix](../development/phase-4-13-acceptance.md).
 
 The following P4.12 passage preserves its historical documentation-closure drafting state.
-The baseline verification above supersedes its then-pending publication statements.
+P4.12 closure commit d48856f8 and CI 38156014870 supersede its then-pending publication statements.
 
 P4.12 **Bounded Purchase Orders with Minimal Supplier Identity** is **DONE/CLOSED (accepted implementation)** at `f9122f21cde5149685059a184114b6d958a2bd32` (`Add bounded purchase orders`) on `main`. Initial independent CHANGES REQUIRED led to bounded F01 remediation **CLOSED** and targeted independent **APPROVE**; focused Codex Security returned **SECURITY APPROVE**. All five jobs succeeded in [implementation-commit CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998). Current acceptance: **93 PASS / 3 QUALIFIED / 0 FAIL**, with **1,261 final-source package tests**, **16/16 verification phases**, **13/13 opt-in journeys** and **3/3 numeric browser stages** PASS. Migration chain: **0001–0024**, latest `0024_bounded_purchase_orders.sql`; historical 0001–0023 unchanged, no 0025. P4.1–P4.11 remain DONE/CLOSED; **P4.13 remains UNSELECTED**. The final documentation-only closure commit and its own exact-head remote CI are **PENDING PUBLICATION**; no closure SHA, run or outcome exists yet. See [P4.12 closure evidence](../development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11).
 
@@ -128,7 +133,7 @@ re-review returned **SECURITY APPROVE**. All five exact-HEAD jobs succeeded in
 Existing P4.1–P4.6 closure remains intact. Next after the documentation closure commit:
 P4.8 selection followed that closure; its final closure is recorded above.
 
-See [P4.7 evidence](../development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md). P4.8 is DONE/CLOSED within its selected bounded Stock-count contract. P4.9 composition is DONE/CLOSED with F01–F05 closed, targeted APPROVE, SECURITY APPROVE and green exact-commit CI. P4.10 preparation evidence is DONE/CLOSED with targeted APPROVE, SECURITY APPROVE and green exact-commit CI; P4.11 is DONE/CLOSED with targeted APPROVE, SECURITY APPROVE and green exact-commit CI; P4.12 is DONE/CLOSED with successful implementation acceptance; documentation closure publication/CI pending. P4.13 is IMPLEMENTED LOCALLY; F01 remediated locally, targeted independent re-review, focused Security and changed-commit CI pending. P4.14 UNSELECTED.
+See [P4.7 evidence](../development/phase-4-7-task-planogram-guidance.md) and [ADR 0021](../adr/0021-task-planogram-assignment-guidance.md). P4.8 is DONE/CLOSED within its selected bounded Stock-count contract. P4.9 composition is DONE/CLOSED with F01–F05 closed, targeted APPROVE, SECURITY APPROVE and green exact-commit CI. P4.10 preparation evidence is DONE/CLOSED with targeted APPROVE, SECURITY APPROVE and green exact-commit CI; P4.11 is DONE/CLOSED with targeted APPROVE, SECURITY APPROVE and green exact-commit CI; P4.12 is DONE/CLOSED with successful implementation acceptance; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 docs publication/closure-commit CI pending. P4.14 UNSELECTED.
 
 M3 containment applies to every new API. M1 gates the adoption of a real-user
 proxy deployment. Wider RBAC, remote access, Knowledge extensions, Planogram extensions, Recipe extensions, Menus and

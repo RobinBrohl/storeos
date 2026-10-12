@@ -103,8 +103,8 @@ reload/session replacement loses only memory tracking, never durable server evid
 is **DONE/CLOSED (accepted implementation)**: F01 CLOSED, independent targeted
 APPROVE, focused SECURITY APPROVE and successful implementation CI 38152045998.
 The [96-criterion matrix](development/phase-4-12-acceptance.md) is 93 PASS /
-3 QUALIFIED / 0 FAIL. Documentation closure publication and its own exact-head CI
-remain pending; P4.13 remains UNSELECTED.
+3 QUALIFIED / 0 FAIL. P4.12 documentation closure was subsequently published at
+d48856f8 with successful CI 38156014870. P4.13's accepted implementation is recorded below.
 
 Issue is internal approval of ordering intent; it proves neither transmission,
 Supplier acceptance, delivery, Goods Receipt nor Stock increase. Administrative
@@ -120,17 +120,23 @@ trace NULL retirement/terminal timestamps and JSON comparison checks: commit blo
 NO, supported-API exploit NOT ESTABLISHED, complete handcrafted-SQL transaction
 exploit NOT REPRODUCED. PostgreSQL CHECK accepts SQL NULL/UNKNOWN; these checks
 are not hardened. Future hardening requires an authorized new migration and
-regression evidence, without automatically allocating P4.13. Security's fresh
+regression evidence, without automatically allocating a future slice. P4.12 Security's fresh
 Flutter SDK-cache lockfile block and one blocked, unretried delegated dynamic step
 remain disclosed in the closure record. Standing M1/M2 CLOSED/M3/M4, P4.5 F01/F02
 and P4.9 historical qualification dispositions remain unchanged.
 
 ## P4.13 assignment boundary
 
-Local assignment implementation adds Employee-attributable planning/execution evidence.
+Accepted P4.13 assignment implementation adds Employee-attributable planning/execution evidence.
 Operator retention, access/export/offboarding and operational recovery decisions remain
 required before real employee-data use. Memory-only uncertain retry tracking and physical
-device/accessibility acceptance remain qualified. P4.13 F01 is remediated locally;
-targeted independent re-review, focused Security and changed-commit CI are pending.
+device/accessibility acceptance remain qualified. P4.13 is DONE/CLOSED — accepted
+implementation: F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation
+CI 38224661628 success; 99 PASS / 1 QUALIFIED / 0 FAIL. Documentation publication and
+its own closure-commit CI remain PENDING. Security executed zero fresh client cases
+because a temporary-file safeguard blocked execution; matched earlier client evidence
+was used. Restored authorization is bounded to the tested fenced fixture, not broader
+offboarding/old-backup policy. All 60 conclusions and nonblocking E01–E03 evidence
+observations are preserved in [dated closure](development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12).
 P4.14 is UNSELECTED. There is no scheduling,
 attendance/HACCP inference, automatic Stock effect or Task/Shift completion coupling.

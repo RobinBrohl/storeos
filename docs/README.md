@@ -1,5 +1,27 @@
 # Documentation index
 
+P4.13 **Planned Preparation Assignment** is **DONE/CLOSED — accepted implementation**
+at `625bb7ef9643989e2182c966d87839115a0cca6f` (`Add planned preparation assignments`).
+F01 is **CLOSED** after bounded canonical Location UUID remediation and independent
+**APPROVE** (153 PASS / 0 FAIL / 0 SKIP). Focused Codex Security returned
+**SECURITY APPROVE**; all five jobs succeeded in
+[exact implementation-commit CI 38224661628](https://github.com/RobinBrohl/storeos/actions/runs/38224661628).
+Current acceptance: **99 PASS / 1 QUALIFIED / 0 FAIL**; final-source regression:
+**1,367 package passes**, **16/16 phases**, **15 host journeys + 2 migration/recovery
+cases**, Numeric Guided Work **3/3 PASS**. Migration chain **0001–0025**;
+0001–0024 and dependencies unchanged. Exact RecipeRevision/Employee/Location/planned
+count remain immutable; own explicit start opens one linked Batch atomically.
+Requested, original actual and effective corrected counts remain distinct.
+No active P4.13 implementation remediation remains. P4.1–P4.12 remain DONE/CLOSED;
+P4.12 closure CI 38156014870 was verified before P4.13 implementation.
+**Final documentation publication and its own closure-commit CI: PENDING**.
+These Markdown edits remain unstaged/uncommitted; no closure SHA/run/outcome is claimed.
+**P4.14 UNSELECTED**. See [dated closure](development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12)
+and [acceptance matrix](development/phase-4-13-acceptance.md).
+
+The following P4.12 passage preserves its historical closure drafting state;
+closure commit d48856f8 and CI 38156014870 supersede its pending publication statements.
+
 P4.12 **Bounded Purchase Orders with Minimal Supplier Identity** is **DONE/CLOSED (accepted implementation)** at `f9122f21cde5149685059a184114b6d958a2bd32` (`Add bounded purchase orders`) on `main`. Initial independent CHANGES REQUIRED led to bounded F01 remediation **CLOSED** and targeted independent **APPROVE**; focused Codex Security returned **SECURITY APPROVE**. All five jobs succeeded in [implementation-commit CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998). Current acceptance: **93 PASS / 3 QUALIFIED / 0 FAIL**, with **1,261 final-source package tests**, **16/16 verification phases**, **13/13 opt-in journeys** and **3/3 numeric browser stages** PASS. Migration chain: **0001–0024**, latest `0024_bounded_purchase_orders.sql`; historical 0001–0023 unchanged, no 0025. P4.1–P4.11 remain DONE/CLOSED; **P4.13 remains UNSELECTED**. The final documentation-only closure commit and its own exact-head remote CI are **PENDING PUBLICATION**; no closure SHA, run or outcome exists yet. See [P4.12 closure evidence](development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11) and [acceptance matrix](development/phase-4-12-acceptance.md).
 
 The following P4.11/P4.10 closure records are historical.

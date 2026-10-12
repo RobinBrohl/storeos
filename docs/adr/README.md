@@ -29,7 +29,8 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0023](0023-approved-article-recipe-composition.md) | Approved Article composition, declared batch, frozen references and exact publication replay |
 | [0024](0024-preparation-batch-evidence.md) | Location-scoped preparation declarations, retained Recipe revision, immutable terminal evidence and append-only count corrections; P4.10 DONE/CLOSED, F01–F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 37632074236 |
 | [0025](0025-one-way-shift-transfer-before-execution.md) | One-way future Shift transfer with exact recipient consent, independent approval and immutable lineage; P4.11 DONE/CLOSED |
-| [0026](0026-bounded-purchase-order-intent.md) | Minimal Company Supplier identity, local PurchaseOrder intent, frozen selections and eight durable commands; P4.12 DONE/CLOSED, F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; docs publication/CI pending |
+| [0026](0026-bounded-purchase-order-intent.md) | Minimal Company Supplier identity, local PurchaseOrder intent, frozen selections and eight durable commands; P4.12 DONE/CLOSED, F01 CLOSED, targeted APPROVE, SECURITY APPROVE, implementation CI 38152045998 and closure CI 38156014870 successful |
+| [0027](0027-planned-preparation-assignment.md) | Production-owned immutable preparation requests with retained approved revision authority and atomic Batch linkage; P4.13 DONE/CLOSED — accepted implementation, F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful; docs publication/closure-commit CI pending |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).
 
@@ -47,8 +48,9 @@ P4.3 is DONE/CLOSED per the [closure evidence](../development/phase-4-3-manual-s
 The broader unit catalog/conversion and costing questions remain open. Do not rewrite the
 original alternatives, decisions or dated verification to reflect later delivery.
 
-[ADR 0025: One-way Shift transfer before execution](0025-one-way-shift-transfer-before-execution.md) records the delivered P4.11 contract: **DONE/CLOSED**, F01/F02/F03 CLOSED, targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187. [ADR 0026](0026-bounded-purchase-order-intent.md) records accepted P4.12, DONE/CLOSED with all three implementation review/CI gates complete; documentation closure publication/CI pending. P4.13 is IMPLEMENTED LOCALLY; independent review, focused Security and changed-commit CI pending. P4.14 UNSELECTED.
+[ADR 0025: One-way Shift transfer before execution](0025-one-way-shift-transfer-before-execution.md) records the delivered P4.11 contract: **DONE/CLOSED**, F01/F02/F03 CLOSED, targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187. [ADR 0026](0026-bounded-purchase-order-intent.md) records accepted P4.12, DONE/CLOSED with all three implementation review/CI gates complete; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 docs publication/closure-commit CI pending. P4.14 UNSELECTED.
 
 [ADR 0027: Planned preparation with retained approved execution authority](0027-planned-preparation-assignment.md)
-records user-selected P4.13, IMPLEMENTED LOCALLY. Independent review, focused Security
-and changed-commit remote CI remain pending. P4.14 is UNSELECTED.
+records accepted P4.13, DONE/CLOSED: F01 CLOSED, targeted APPROVE, SECURITY APPROVE
+and successful exact implementation CI 38224661628. Final documentation publication
+and its own closure-commit CI remain PENDING. P4.14 is UNSELECTED.

@@ -1,21 +1,26 @@
 # Actual implementation status
 
-P4.13 **Planned Preparation Assignment** is **IMPLEMENTED LOCALLY**, with migration
-`0025_planned_preparation_assignments.sql` and ADR 0027. Manager requests retain an
-exact approved RecipeRevision and one eligible Employee; explicit Employee start opens
-one atomic linked Batch. Requested, original actual and corrected effective counts stay
-distinct. Independent review returned **CHANGES REQUIRED** (95 PASS / 4 QUALIFIED / 1 FAIL)
-for F01, a MEDIUM product defect and commit blocker. F01 is **REMEDIATED LOCALLY**;
-targeted independent re-review, focused Security and changed-commit remote CI are **PENDING**.
-P4.14 is **UNSELECTED**. P4.1–P4.12 remain DONE/CLOSED. Baseline closure
-`d48856f8eb0ccf4565295616606fe674bc0f2b49` and all five jobs in
-[closure CI 38156014870](https://github.com/RobinBrohl/storeos/actions/runs/38156014870)
-were verified before implementation. All P4.13 changes remain unstaged/uncommitted on
-that original `main` HEAD. See [implementation](../development/phase-4-13-planned-preparation-assignments.md) and
-[local acceptance](../development/phase-4-13-acceptance.md).
+P4.13 **Planned Preparation Assignment** is **DONE/CLOSED — accepted implementation**
+at `625bb7ef9643989e2182c966d87839115a0cca6f` (`Add planned preparation assignments`).
+F01 is **CLOSED** after bounded canonical Location UUID remediation and independent
+**APPROVE** (153 PASS / 0 FAIL / 0 SKIP). Focused Codex Security returned
+**SECURITY APPROVE**; all five jobs succeeded in
+[exact implementation-commit CI 38224661628](https://github.com/RobinBrohl/storeos/actions/runs/38224661628).
+Current acceptance: **99 PASS / 1 QUALIFIED / 0 FAIL**; final-source regression:
+**1,367 package passes**, **16/16 phases**, **15 host journeys + 2 migration/recovery
+cases**, Numeric Guided Work **3/3 PASS**. Migration chain **0001–0025**;
+0001–0024 and dependencies unchanged. Exact RecipeRevision/Employee/Location/planned
+count remain immutable; own explicit start opens one linked Batch atomically.
+Requested, original actual and effective corrected counts remain distinct.
+No active P4.13 implementation remediation remains. P4.1–P4.12 remain DONE/CLOSED;
+P4.12 closure CI 38156014870 was verified before P4.13 implementation.
+**Final documentation publication and its own closure-commit CI: PENDING**.
+These Markdown edits remain unstaged/uncommitted; no closure SHA/run/outcome is claimed.
+**P4.14 UNSELECTED**. See [dated closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12)
+and [acceptance matrix](../development/phase-4-13-acceptance.md).
 
 The following P4.12 passage preserves its historical documentation-closure drafting state.
-The baseline verification above supersedes its then-pending publication statements.
+P4.12 closure commit d48856f8 and CI 38156014870 supersede its then-pending publication statements.
 
 P4.12 **Bounded Purchase Orders with Minimal Supplier Identity** is **DONE/CLOSED (accepted implementation)** at `f9122f21cde5149685059a184114b6d958a2bd32` (`Add bounded purchase orders`) on `main`. Initial independent CHANGES REQUIRED led to bounded F01 remediation **CLOSED** and targeted independent **APPROVE**; focused Codex Security returned **SECURITY APPROVE**. All five jobs succeeded in [implementation-commit CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998). Current acceptance: **93 PASS / 3 QUALIFIED / 0 FAIL**, with **1,261 final-source package tests**, **16/16 verification phases**, **13/13 opt-in journeys** and **3/3 numeric browser stages** PASS. Migration chain: **0001–0024**, latest `0024_bounded_purchase_orders.sql`; historical 0001–0023 unchanged, no 0025. P4.1–P4.11 remain DONE/CLOSED; **P4.13 remains UNSELECTED**. The final documentation-only closure commit and its own exact-head remote CI are **PENDING PUBLICATION**; no closure SHA, run or outcome exists yet. See [P4.12 closure evidence](../development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11).
 
@@ -169,9 +174,9 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | P4.9 Approved Article Recipe / Composition — composition only | DONE / CLOSED | Implementation `e5e6d5c2999bb9f8132161b43ad1537aa403973c`; migration 0021 / ADR 0023. Separate Company-wide Recipe, one declared batch, exact thousandths, frozen ordered Article references, immutable published/discarded revisions, initial-draft recovery, terminal retirement and Company-scoped publication replay. No Stock or Task effect. | Initial independent CHANGES REQUIRED, F01–F05 remediation, targeted APPROVE; 151 PASS / 1 QUALIFIED / 0 FAIL. Criterion 152 is historical forensic evidence scope only. Focused SECURITY APPROVE; all five jobs green in [exact-commit CI 37581798736](https://github.com/RobinBrohl/storeos/actions/runs/37581798736). [Final closure](../development/phase-4-9-recipe-compositions.md#final-documentation-closure--2026-10-07) preserves real Flutter/HTTP/PostgreSQL and Chrome, 50-line acceptance, backup/update/recovery and final-source regression. No active remediation. |
 | P4.10 Preparation Batch | DONE / CLOSED | Implementation `e637187b17d4617212acf42b99a07500e9488c3d`; migration 0022 / ADR 0024. Location-scoped Employee declarations, exact published RecipeRevision pin, immutable original completion/cancellation, five durable receipt kinds and append-only manager corrections including zero. No Stock, Task/Shift or yield/output-unit effects. | Initial CHANGES REQUIRED; F01/F02 CLOSED, targeted APPROVE, F03 nonblocking docs follow-up CLOSED; 156 PASS / 0 QUALIFIED / 0 FAIL, 931 package tests, 18/18 focused Flutter tests, 19/19 phases. Focused SECURITY APPROVE; all five jobs green in [exact-commit CI 37632074236](https://github.com/RobinBrohl/storeos/actions/runs/37632074236). [Final closure](../development/phase-4-10-preparation-batches.md#final-documentation-closure--2026-10-07); no active remediation. |
 | P4.11 One-way Shift Transfer before execution | DONE / CLOSED | Implementation `b82dda89374ed9b4182630de4991b0d1569b8ae8`; migration 0023 / ADR 0025. Exact named recipient consent and independent approval cancel original pristine future Shift/Tasks and publish exact replacement work with immutable Shift/Task lineage, linkage-bound consent and final database-clock validation. | Initial CHANGES REQUIRED, F01/F02/F03 CLOSED, targeted APPROVE; 177 PASS / 0 QUALIFIED / 0 FAIL. SECURITY APPROVE; all five jobs green in [exact-commit CI 38125193187](https://github.com/RobinBrohl/storeos/actions/runs/38125193187). Final 1,133 package tests, 21/21 phases, 11/11 conditional journeys and 3/3 numeric browser stages PASS. [Final closure](../development/phase-4-11-one-way-shift-transfers.md#final-documentation-closure--2026-10-11); no active remediation; P4.12 was unselected at this closure. |
-| P4.12 Bounded Purchase Orders with Minimal Supplier Identity | DONE / CLOSED | Implementation `f9122f21cde5149685059a184114b6d958a2bd32`; migration 0024 / ADR 0026. Company Suppliers and configured local Orders, exact immutable snapshots, internal issue, administrative cancel/close and eight durable receipts. | Initial CHANGES REQUIRED; F01 CLOSED, targeted APPROVE, SECURITY APPROVE; **93 PASS / 3 QUALIFIED / 0 FAIL**. All five jobs succeeded in [implementation-commit CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998). [Final closure](../development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11); documentation closure commit/CI pending publication. P4.13 IMPLEMENTED LOCALLY; its three review/publication gates pending. P4.14 UNSELECTED. |
+| P4.12 Bounded Purchase Orders with Minimal Supplier Identity | DONE / CLOSED | Implementation `f9122f21cde5149685059a184114b6d958a2bd32`; migration 0024 / ADR 0026. Company Suppliers and configured local Orders, exact immutable snapshots, internal issue, administrative cancel/close and eight durable receipts. | Initial CHANGES REQUIRED; F01 CLOSED, targeted APPROVE, SECURITY APPROVE; **93 PASS / 3 QUALIFIED / 0 FAIL**. All five jobs succeeded in [implementation-commit CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998). [Final closure](../development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11); documentation closure CI 38156014870 succeeded. P4.13 acceptance is recorded below. P4.14 UNSELECTED. |
 
-| P4.13 Planned Preparation Assignment | IMPLEMENTED LOCALLY | Exact approved revision/Employee/Location/count, manager create/withdraw, own atomic linked Batch start and durable replay; migration 0025 / ADR 0027. | [Local evidence](../development/phase-4-13-acceptance.md). F01 remediated locally; targeted independent re-review, focused Security and changed-commit remote CI PENDING. P4.14 UNSELECTED. |
+| P4.13 Planned Preparation Assignment | DONE / CLOSED (accepted implementation) | Exact approved revision/Employee/Location/count, manager create/withdraw, own atomic linked Batch start and durable replay; migration 0025 / ADR 0027. | [Closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12), [matrix](../development/phase-4-13-acceptance.md): 99 PASS / 1 QUALIFIED / 0 FAIL. F01 CLOSED, targeted APPROVE, SECURITY APPROVE, exact implementation CI 38224661628 success. Documentation publication/closure-commit CI PENDING. P4.14 UNSELECTED. |
 
 ## Accepted manual Stock boundaries
 
@@ -270,8 +275,8 @@ read acknowledgment, native-device/accessibility acceptance or offline queue is 
 
 ## Planned and deferred scope
 
-P4.1–P4.12 are DONE/CLOSED, with no active P4.11/P4.12 remediation. P4.12 retains three accepted limitations and nonblocking Security INFO I01–I03; see [live debt](../development/technical-debt.md#p412-security-info-observations).
-P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure publication/CI pending. P4.13 is IMPLEMENTED LOCALLY; independent review, focused Security and changed-commit CI pending. P4.14 UNSELECTED.
+P4.1–P4.13 are DONE/CLOSED as accepted implementations, with no active P4.11/P4.12/P4.13 remediation. P4.12 retains three accepted limitations and nonblocking Security INFO I01–I03; see [live debt](../development/technical-debt.md#p412-security-info-observations).
+P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 docs publication/closure-commit CI pending. P4.14 UNSELECTED.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |

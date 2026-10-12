@@ -1,15 +1,21 @@
 # P4.13 acceptance matrix
 
-State: **IMPLEMENTED LOCALLY; F01 REMEDIATED LOCALLY; TARGETED INDEPENDENT RE-REVIEW PENDING**.
+State, 2026-10-12: **DONE/CLOSED — accepted implementation; F01 CLOSED**.
+Current acceptance: **99 PASS / 1 QUALIFIED / 0 FAIL** across all 100 criteria.
+Independent targeted APPROVE, focused SECURITY APPROVE and exact implementation
+CI success close criteria 89–91. Criterion 92 remains QUALIFIED. Documentation
+closure publication and its own exact-head CI are **PENDING**, outside criterion 91.
 Original criteria 01–92 plus expansions 93–100.
 Chronology: initial implementation **96 PASS / 4 QUALIFIED / 0 FAIL**; supplied
 independent **CHANGES REQUIRED**, **95 PASS / 4 QUALIFIED / 1 FAIL** for criterion 04,
 F01 **MEDIUM PRODUCT DEFECT / COMMIT BLOCKER**. The finding is retained in [P].
-Post-remediation local self-assessment:
-**96 PASS / 4 QUALIFIED / 0 FAIL**, conditional on the completed frozen verifier
-reporting `result: pass` and unchanged source content/timestamps. This record must be
-read with `.local/p413/final/summary.json` and its source manifests. Any failed phase
-or source edit invalidates the local PASS claims until verification completes again.
+Historical post-remediation local assessment and independent approval record:
+**96 PASS / 4 QUALIFIED / 0 FAIL**. Later Security approval and verified
+implementation-commit CI support the current 99/1/0 result. The completed frozen
+verifier reports `result: pass`; `.local/p413/final/summary.json` and identical source
+manifests preserve the 594-file pre-closure execution baseline. All file hashes were
+matched again before docs edits. This Markdown reconciliation changes that inventory;
+the original fingerprint remains historical evidence, not a hash of the edited tree.
 No skipped database/browser test is counted as PASS; conditional package skips are
 reported separately and executed explicitly in opt-in and migration phases.
 
@@ -17,14 +23,15 @@ Evidence keys: D decision/ownership; M migration; S/X real PostgreSQL/HTTP regre
 U retained pre-fix failures and post-fix UUID spelling/replay/scope/eligibility HTTP tests;
 C strict contracts; O all twelve operation status/code/baseline parity; F Flutter state;
 J restricted PostgreSQL controller gateway; H actual Chrome; B encrypted recovery probe;
-R populated forward/rollback/pre-0025 recovery; V frozen complete verifier; P delivery record.
+R populated forward/rollback/pre-0025 recovery; V frozen complete verifier; P delivery record;
+I independent targeted re-review; Q actual focused Security conclusions; G exact implementation CI.
 
 | No. | Criterion | Result | Concrete evidence / disposition |
 | --- | --- | --- | --- |
 | 01 | baseline | PASS | [P]: exact baseline HEAD, cached/live origin and five-job closure CI. |
 | 02 | scope/non-goals | PASS | [D], [P]: selected bounded Production ownership and exclusions. |
 | 03 | Production ownership | PASS | [D], [P]: selected bounded Production ownership and exclusions. |
-| 04 | manager assignment creation | PASS | [U], [S], [X], [J]: F01 pre-fix HTTP/PG failure retained; canonical lowercase/uppercase/mixed picker and creation, scope/eligibility denials, exact replay and concurrent creation pass after bounded remediation. Targeted independent approval remains pending. |
+| 04 | manager assignment creation | PASS | [U], [S], [X], [J], [I]: F01 pre-fix HTTP/PG failure retained; canonical lowercase/uppercase/mixed picker and creation, scope/eligibility denials, exact replay and concurrent creation pass. Targeted independent APPROVE closes F01. |
 | 05 | employee identity eligibility | PASS | [S], [X], [J]: authorized persisted workflows, retained pin, observed lock ordering, original replay and unchanged evidence. |
 | 06 | configured Location isolation | PASS | [S], [X], [J]: authorized persisted workflows, retained pin, observed lock ordering, original replay and unchanged evidence. |
 | 07 | Company isolation | PASS | [S], [X], [J]: authorized persisted workflows, retained pin, observed lock ordering, original replay and unchanged evidence. |
@@ -108,10 +115,10 @@ R populated forward/rollback/pre-0025 recovery; V frozen complete verifier; P de
 | 85 | complete regression | PASS | [V]: four complete packages, release/analyzers/format, fifteen opt-in journeys, operational/diagnostic phases and identical source manifests. |
 | 86 | all opt-in journeys | PASS | [V]: four complete packages, release/analyzers/format, fifteen opt-in journeys, operational/diagnostic phases and identical source manifests. |
 | 87 | final-source consistency | PASS | [V]: four complete packages, release/analyzers/format, fifteen opt-in journeys, operational/diagnostic phases and identical source manifests. |
-| 88 | documentation honest gate state | PASS | [P]: local implementation state and unselected P4.14; historical closure evidence retained. |
-| 89 | independent review gate | QUALIFIED | Supplied independent CHANGES REQUIRED (F01) retained. F01 locally remediated; TARGETED INDEPENDENT RE-REVIEW PENDING. No independent approval claimed. |
-| 90 | focused Security gate | QUALIFIED | PENDING focused Codex Security; mandatory subsequent gate, not run in this implementation turn. |
-| 91 | remote implementation CI gate | QUALIFIED | PENDING user publication and exact changed-commit CI; baseline CI does not verify unstaged P4.13. |
+| 88 | documentation honest gate state | PASS | [P]: accepted implementation, separate pending docs publication/CI, historical chronology and unselected P4.14. |
+| 89 | independent review gate | PASS | [I], [P]: targeted independent APPROVE; F01 CLOSED; 153 PASS / 0 FAIL / 0 SKIP. Initial CHANGES REQUIRED remains historical. |
+| 90 | focused Security gate | PASS | [Q]: SECURITY APPROVE; all 74 changed files, zero identified vulnerabilities/blockers/required fixes; 57 fresh PostgreSQL cases plus 28 separate fault subprobes. Fresh client execution was blocked; retained matched evidence used. |
+| 91 | remote implementation CI gate | PASS | [G]: exact implementation SHA 625bb7ef9643989e2182c966d87839115a0cca6f, run 38224661628 completed/success; all five required jobs successful. Future docs-closure CI is a separate pending publication gate. |
 | 92 | accepted standing limitations | QUALIFIED | [P]: supported-writer/raw-SQL, memory-only tracking, hardware/accessibility, operator privacy/retention/export/offboarding/recovery and standing debt retained. |
 | 93 | replacement Account retains Employee ownership without prior-actor replay | PASS | [X]: valid replacement link can start pending work, but old actor operation conflicts; revoked and fresh unlinked sessions denied. |
 | 94 | deferred migration fault after grants and ledger insertion | PASS | [R]: injected deferred ledger trigger fires after grants; exact pre-update catalog/data/ledger restored. |
@@ -136,3 +143,6 @@ R populated forward/rollback/pre-0025 recovery; V frozen complete verifier; P de
 [R]: ../../apps/server/test/preparation_assignment_upgrade_recovery_test.dart
 [V]: ../../scripts/preparation/Run-P413FinalVerification.ps1
 [P]: phase-4-13-planned-preparation-assignments.md
+[I]: ../../.local/p413/re-review/summary.json
+[Q]: phase-4-13-planned-preparation-assignments.md#focused-security-conclusions
+[G]: https://github.com/RobinBrohl/storeos/actions/runs/38224661628

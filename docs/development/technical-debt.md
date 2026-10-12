@@ -206,7 +206,7 @@ preserves chronology and evidence.
 Memory-only uncertain-command recovery, supported-writer/raw-SQL boundaries,
 physical-device/accessibility gaps, M1 pilot gate, M2 CLOSED, M3 endpoint containment,
 M4 broader error taxonomy and P4.5 F01/F02 nonblocking follow-ups remain unchanged.
-P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure publication/CI pending. P4.13 is IMPLEMENTED LOCALLY; F01 remediated locally, targeted independent re-review, focused Security and changed-commit CI pending. P4.14 UNSELECTED.
+P4.10 Preparation Batch and P4.11 One-way Shift Transfer are DONE/CLOSED. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 docs publication/closure-commit CI pending. P4.14 UNSELECTED.
 
 ## P4.10 closed review gates and retained limits
 
@@ -258,8 +258,8 @@ targeted **APPROVE** (90 PASS / 6 QUALIFIED / 0 FAIL), focused **SECURITY APPROV
 and successful exact implementation-commit [CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998),
 all five jobs. Current acceptance is **93 PASS / 3 QUALIFIED / 0 FAIL**. No actionable
 independent review finding, required Security remediation or commit blocker remains.
-Documentation-only closure commit and its own exact-head CI remain pending publication;
-P4.13 is IMPLEMENTED LOCALLY; F01 remediated locally, targeted independent re-review, focused Security and changed-commit CI pending. P4.14 UNSELECTED. See [closure](phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11),
+P4.12 documentation closure was published at d48856f8; its CI 38156014870 succeeded.
+P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 docs publication/closure-commit CI pending. P4.14 UNSELECTED. See [closure](phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11),
 [acceptance matrix](phase-4-12-acceptance.md) and [ADR 0026](../adr/0026-bounded-purchase-order-intent.md).
 
 F01 was a LOW PRODUCT DEFECT and commit blocker on criterion 36: authorization
@@ -300,15 +300,18 @@ transaction exploit is **NOT REPRODUCED**. These concern defense-in-depth agains
 malformed SQL evidence under the supported-writer boundary, not reproduced API exploits.
 The checks are **not already hardened**. Migration 0024 remains unchanged; any bounded
 hardening needs an explicitly authorized **new migration** and regression evidence.
-No migration 0025 is created here; no P4.13 allocation is made. I01–I03 remain distinct
+That P4.12 INFO assessment created no migration 0025 or P4.13 allocation. P4.13 subsequently delivered its separate assignment migration 0025; I01–I03 remain unremediated. I01–I03 remain distinct
 from M1–M4 and do not change their taxonomy or dispositions.
 
-## P4.13 local implementation gates and retained debt
+## P4.13 accepted implementation and retained debt
 
-Planned Preparation Assignment is IMPLEMENTED LOCALLY. Independent review returned
-CHANGES REQUIRED for MEDIUM product defect / commit blocker F01. F01 is REMEDIATED
-LOCALLY; targeted independent re-review, focused Security and changed-commit remote CI
-are PENDING. It does not close unrelated debt.
+Planned Preparation Assignment is DONE/CLOSED — accepted implementation. The initial
+independent CHANGES REQUIRED finding F01 (MEDIUM product defect / commit blocker)
+is CLOSED after bounded canonical Location UUID remediation and targeted APPROVE
+(153 PASS / 0 FAIL / 0 SKIP). Focused SECURITY APPROVE and exact implementation CI
+38224661628 success complete implementation gates. Current matrix: 99 PASS /
+1 QUALIFIED / 0 FAIL. Documentation publication/closure-commit CI remains PENDING.
+This acceptance does not close unrelated debt.
 P4.14 is UNSELECTED. [Implementation](phase-4-13-planned-preparation-assignments.md) and
 [acceptance](phase-4-13-acceptance.md) retain the qualifications explicitly.
 M1 proxy/login-limiter pilot gate, M2 CLOSED, M3 endpoint-local containment, M4 global
@@ -318,3 +321,15 @@ privacy/retention/export/offboarding/RPO/RTO decisions keep their existing dispo
 The new retained revision exception is restricted to valid persisted assignments;
 standalone Batch opening continues to require the exact current approved revision.
 No broad employee-data production readiness, offline writes or multi-site sync is claimed.
+
+Focused Security's nonblocking evidence observations are distinct from vulnerabilities
+and from P4.12 I01–I03:
+
+| Observation | Disposition |
+| --- | --- |
+| E01 — Documentation/evidence lag | CLOSED by this docs-only reconciliation: targeted APPROVE, F01 CLOSED, Security approval and successful implementation CI now appear as current status; original chronology remains. |
+| E02 — Update-report prose lag | OPEN reporting follow-up, nonblocking. Retained update run f24a8bab07f84a36 lists upgrades only through 0023 in prose; structured migration/smoke evidence correctly passes through 0025. Scripts/generated reports remain unchanged in this docs-only pass. |
+| E03 — Fresh Security client safeguard limitation | Retained evidence limitation, nonblocking: zero fresh client cases; matched earlier client evidence used. Earlier independent Flutter/controller and actual Chrome acceptance remain separate. |
+
+All 60 actual Security conclusions, including qualified restored authorization,
+are retained in [dated P4.13 closure](phase-4-13-planned-preparation-assignments.md#focused-security-conclusions).

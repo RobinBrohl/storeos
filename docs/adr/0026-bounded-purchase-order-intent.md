@@ -1,5 +1,12 @@
 # ADR 0026: Bounded purchase order intent and durable snapshots
 
+Historical P4.12 documentation-closure snapshot (2026-10-11): the gate/selection
+statements below describe that drafting state. Closure was subsequently published
+at d48856f8 with successful CI 38156014870. P4.13 is now DONE/CLOSED — accepted
+implementation; its documentation publication/closure-commit CI remains PENDING.
+P4.14 UNSELECTED. See [current P4.13 closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12)
+and [actual status](../roadmap/status.md).
+
 Date: 2026-10-11. Decision: Accepted. P4.12 implementation is DONE/CLOSED: F01 CLOSED, targeted independent APPROVE, focused SECURITY APPROVE and successful implementation-commit CI 38152045998. Documentation closure publication and its own exact-head CI remain pending. See [closure evidence](../development/phase-4-12-bounded-purchase-orders.md#final-documentation-closure--2026-10-11).
 
 ## Context

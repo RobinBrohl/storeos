@@ -1,5 +1,12 @@
 # P4.12: Bounded purchase orders with minimal Supplier identity
 
+Historical P4.12 documentation-closure snapshot (2026-10-11): the gate/selection
+statements below describe that drafting state. Closure was subsequently published
+at d48856f8 with successful CI 38156014870. P4.13 is now DONE/CLOSED — accepted
+implementation; its documentation publication/closure-commit CI remains PENDING.
+P4.14 UNSELECTED. See [current P4.13 closure](phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12)
+and [actual status](../roadmap/status.md).
+
 Historical selection/implementation baseline (before review and commit): selected MEDIUM capability, 2026-10-11. Baseline: clean `main` at `604d1d198b158b1907dd000ea435d94dbae0dec1`, matching cached and live origin; exact baseline CI 38126471288 succeeded in all five jobs. P4.1–P4.11 remain DONE/CLOSED. At that implementation handoff, work was unstaged/uncommitted on `main`; P4.13 was and remains UNSELECTED.
 
 Current state: **P4.12 DONE/CLOSED (accepted implementation)** at `f9122f21cde5149685059a184114b6d958a2bd32` (`Add bounded purchase orders`). F01 is **CLOSED**, targeted independent re-review **APPROVE**, focused Codex Security **SECURITY APPROVE**, and exact implementation-commit [CI 38152045998](https://github.com/RobinBrohl/storeos/actions/runs/38152045998) **COMPLETE / SUCCESS**. Current accepted matrix: **93 PASS / 3 QUALIFIED / 0 FAIL**. The documentation-only closure commit and its own exact-head remote CI remain **PENDING PUBLICATION**; no closure SHA, CI run or outcome is claimed. **P4.13 remains UNSELECTED**.

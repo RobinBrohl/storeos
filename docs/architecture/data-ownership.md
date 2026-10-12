@@ -73,7 +73,9 @@ implemented; see [module boundaries](module-boundaries.md) and [open questions](
 
 ## Planned preparation evidence
 
-P4.13 Production owns Company/Location-scoped Employee preparation requests and immutable
+P4.13 is DONE/CLOSED — accepted implementation; final documentation publication and
+its own closure-commit CI remain PENDING. See [dated closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12).
+Production owns Company/Location-scoped Employee preparation requests and immutable
 create/withdraw/start receipts. Exact RecipeRevision, target Employee, Location and
 requested count remain immutable. One linked PreparationBatch owns actual execution,
 original completion/cancellation and append-only corrections. Assignment stays started

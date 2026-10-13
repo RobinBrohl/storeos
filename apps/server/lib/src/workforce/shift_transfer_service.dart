@@ -2,6 +2,7 @@ import 'package:postgres/postgres.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
 import '../platform/platform_database.dart';
 import 'shift_transfer_repository.dart';
+import 'shift_handoff_claim_service.dart';
 export 'shift_transfer.dart';
 
 /// Public Workforce transfer port for the Application coordinator.
@@ -11,8 +12,10 @@ class ShiftTransferService {
         db.schema,
         db.companyId,
         db.locationId,
-      );
+      ),
+      _claims = ShiftHandoffClaimService(db);
   final ShiftTransferRepository _repository;
+  final ShiftHandoffClaimService _claims;
   Future<Map<String, dynamic>?> find(TxSession tx, String id) =>
       _repository.find(tx, id);
   Future<List<Map<String, dynamic>>> page(
@@ -29,7 +32,7 @@ class ShiftTransferService {
     after: after,
   );
   Future<bool> pending(TxSession tx, String shift) =>
-      _repository.pending(tx, shift);
+      _claims.occupied(tx, shift);
   Future<void> propose(
     TxSession tx,
     ShiftDto shift,
@@ -38,22 +41,30 @@ class ShiftTransferService {
     int sourceAccountVersion,
     int recipientAccountVersion,
     ShiftTransferCommandInput c,
-  ) => _repository.propose(
-    tx,
-    shift,
-    source,
-    recipient,
-    sourceAccountVersion,
-    recipientAccountVersion,
-    c,
-  );
+  ) async {
+    await _repository.propose(
+      tx,
+      shift,
+      source,
+      recipient,
+      sourceAccountVersion,
+      recipientAccountVersion,
+      c,
+    );
+    await _claims.claimTransfer(tx, c.payload['requestId'] as String);
+  }
+
   Future<void> transition(
     TxSession tx,
     String id,
     String actor,
     ShiftTransferCommandInput c, {
     String? replacement,
-  }) => _repository.transition(tx, id, actor, c, replacement: replacement);
+  }) async {
+    await _repository.transition(tx, id, actor, c, replacement: replacement);
+    if (c.kind != 'accept') await _claims.releaseTransfer(tx, id);
+  }
+
   Future<Map<String, dynamic>?> receipt(TxSession tx, String operation) =>
       _repository.receipt(tx, operation);
   Future<void> commitReceipt(

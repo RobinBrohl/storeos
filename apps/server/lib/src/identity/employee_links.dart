@@ -70,6 +70,28 @@ class EmployeeLinks {
     return account.version;
   }
 
+  /// Revalidate a persisted swap identity basis without releasing Account data.
+  /// The caller separately establishes current swap command/resource authority.
+  Future<bool> matchesSwapIdentityBasis(
+    TxSession tx, {
+    required String employeeId,
+    required String accountId,
+    required String linkId,
+    required int accountVersion,
+  }) async {
+    final current = await forEmployee(tx, employeeId);
+    if (current == null ||
+        current.companyId != _database.companyId ||
+        current.locationId != _database.locationId ||
+        current.accountId != accountId ||
+        current.id != linkId) {
+      return false;
+    }
+    // Both handoff protocols admit the same fixed Employee/Admin identity roles;
+    // authorization for a particular workflow remains with its coordinator.
+    return await transferAccountVersion(tx, current) == accountVersion;
+  }
+
   /// Current assignability for Stock counts, without exposing Account records
   /// or allowing another module to read Identity tables.
   Future<bool> canRecordStockCount(

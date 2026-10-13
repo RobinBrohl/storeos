@@ -36,10 +36,15 @@ void main() {
       final tables = (await f.owner.execute(
         "SELECT tablename FROM pg_tables WHERE schemaname='${f.schema}' AND tablename<>'schema_migrations' ORDER BY tablename",
       )).map((r) => r[0] as String).toList();
+      // Preserve all predecessor fields; 0028's nullable creation anchors are
+      // new metadata, asserted separately after the forward migration.
+      String originalRow(String table) => table == 'shifts'
+          ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])"
+          : 'to_jsonb(t)';
       Future<String> evidence() async => jsonEncode({
         for (final table in tables)
           table: (await f.owner.execute(
-            "SELECT count(*),md5(string_agg(to_jsonb(t)::text,'' ORDER BY to_jsonb(t)::text)) FROM \"${f.schema}\".$table t",
+            "SELECT count(*),md5(string_agg(${originalRow(table)}::text,'' ORDER BY ${originalRow(table)}::text)) FROM \"${f.schema}\".$table t",
           )).single.toList(),
       });
       Future<String> catalog() async => jsonEncode(
@@ -97,6 +102,12 @@ void main() {
         runtimeDatabaseUser: f.runtimeUser,
       ).apply();
       expect(await evidence(), before);
+      expect(
+        (await f.owner.execute(
+          'SELECT count(*) FROM ${f.schema}.shifts WHERE swap_request_id IS NOT NULL OR swap_leg IS NOT NULL',
+        )).single.first,
+        0,
+      );
       final counts = jsonDecode(before) as Map;
       for (final table in [
         'production_recipes',

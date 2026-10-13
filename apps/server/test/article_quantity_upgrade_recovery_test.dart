@@ -20,11 +20,12 @@ const quantityTables = [
 Future<Map<String, Object?>> dataHash(
   Connection connection,
   String schema,
-  List<String> tables,
-) async => {
+  List<String> tables, {
+  bool beforeSwapMigration = false,
+}) async => {
   for (final table in tables)
     table: (await connection.execute(
-      'SELECT count(*),md5(string_agg(to_jsonb(t)::text,\'\' ORDER BY to_jsonb(t)::text)) FROM "$schema".$table t',
+      "SELECT count(*),md5(string_agg(${beforeSwapMigration && table == 'shifts' ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])" : 'to_jsonb(t)'}::text,'' ORDER BY ${beforeSwapMigration && table == 'shifts' ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])" : 'to_jsonb(t)'}::text)) FROM \"$schema\".$table t",
     )).single.toList(),
 };
 void main() {
@@ -45,7 +46,12 @@ void main() {
         final tables = (await f.owner.execute(
           "SELECT tablename FROM pg_tables WHERE schemaname='${f.schema}' AND tablename NOT IN ('auth_sessions','schema_migrations') ORDER BY tablename",
         )).map((r) => r.first as String).toList();
-        final prior = await dataHash(f.owner, f.schema, tables),
+        final prior = await dataHash(
+              f.owner,
+              f.schema,
+              tables,
+              beforeSwapMigration: true,
+            ),
             priorCatalog = await catalog(f);
         final temp = await Directory.systemTemp.createTemp(
           'storeos_p415_recovery_',
@@ -84,7 +90,15 @@ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {{schema}}.p415_late
             throwsA(isA<PgException>()),
           );
           expect(await catalog(f), priorCatalog);
-          expect(await dataHash(f.owner, f.schema, tables), prior);
+          expect(
+            await dataHash(
+              f.owner,
+              f.schema,
+              tables,
+              beforeSwapMigration: true,
+            ),
+            prior,
+          );
           for (final table in quantityTables) {
             expect(
               (await f.owner.execute(
@@ -100,9 +114,23 @@ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {{schema}}.p415_late
               schemaName: f.schema,
               runtimeDatabaseUser: f.runtimeUser,
             ).apply(),
-            ['0027_article_quantities'],
+            ['0027_article_quantities', '0028_bilateral_shift_swaps'],
           );
-          expect(await dataHash(f.owner, f.schema, tables), prior);
+          expect(
+            await dataHash(
+              f.owner,
+              f.schema,
+              tables,
+              beforeSwapMigration: true,
+            ),
+            prior,
+          );
+          expect(
+            (await f.owner.execute(
+              'SELECT count(*) FROM ${f.schema}.shifts WHERE swap_request_id IS NOT NULL OR swap_leg IS NOT NULL',
+            )).single.first,
+            0,
+          );
           expect(
             await MigrationRunner(
               connection: f.owner,

@@ -11,6 +11,7 @@ import '../platform/platform_database.dart';
 import '../tasks/task_instance_service.dart';
 import '../workforce/workforce_service.dart';
 import '../workforce/shift_transfer_service.dart';
+import '../workforce/shift_handoff_claim_service.dart';
 
 /// Authorized orchestration through public owner ports, in one Company transaction.
 class ShiftTransferApplication {
@@ -48,6 +49,12 @@ class ShiftTransferApplication {
         await _organization.requireConfiguredLocation(tx, database.locationId);
         return work(tx, actor);
       });
+    } on ShiftHandoffConflict {
+      throw const PlatformFailure(
+        409,
+        'transfer_already_pending',
+        'Close the existing request first.',
+      );
     } on TransferInputException catch (e) {
       throw PlatformFailure(400, e.code, e.message);
     } on FormatException {

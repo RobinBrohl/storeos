@@ -848,6 +848,7 @@ void main() {
         '0025_planned_preparation_assignments',
         '0026_purchase_order_delivery_evidence',
         '0027_article_quantities',
+        '0028_bilateral_shift_swaps',
       ]);
       expect(await runner.apply(), isEmpty);
       expect(await state(), before);
@@ -868,6 +869,14 @@ Map<String, dynamic> _draft(Map<String, dynamic> input) => Map.from(input)
   ..remove('locationId');
 
 Future<void> _expectLegacyGuidanceNull(_Fixture f) async {
+  expect(
+    (await f.owner.execute(
+      'SELECT count(*) FROM "${f.schema}".shifts '
+      'WHERE swap_request_id IS NOT NULL OR swap_leg IS NOT NULL',
+    )).single.first,
+    0,
+    reason: 'Migration 0028 must not invent swap creation for legacy Shifts.',
+  );
   for (final table in ['task_template_revisions', 'task_instances']) {
     expect(
       (await f.owner.execute(

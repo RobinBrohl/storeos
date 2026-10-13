@@ -44,12 +44,16 @@ void main() {
             'production_preparation_assignments',
             'production_preparation_assignment_commands',
           ];
+          // Compare every pre-upgrade field; assert new NULL anchors separately.
+          String originalRow(String table) => table == 'shifts'
+              ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])"
+              : 'to_jsonb(t)';
           Future<Map<String, Object?>> evidence(
             Connection connection,
           ) async => {
             for (final t in tables)
               t: (await connection.execute(
-                "SELECT count(*),md5(string_agg(to_jsonb(t)::text,'' ORDER BY to_jsonb(t)::text)) FROM storeos_platform.$t t",
+                "SELECT count(*),md5(string_agg(${originalRow(t)}::text,'' ORDER BY ${originalRow(t)}::text)) FROM storeos_platform.$t t",
               )).single.toList(),
           };
           final before = await evidence(f.owner),
@@ -121,9 +125,16 @@ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {{schema}}.p414_late
               [
                 '0026_purchase_order_delivery_evidence',
                 '0027_article_quantities',
+                '0028_bilateral_shift_swaps',
               ],
             );
             expect(await evidence(f.owner), before);
+            expect(
+              (await f.owner.execute(
+                'SELECT count(*) FROM ${f.schema}.shifts WHERE swap_request_id IS NOT NULL OR swap_leg IS NOT NULL',
+              )).single.first,
+              0,
+            );
             expect(
               await MigrationRunner(
                 connection: f.owner,

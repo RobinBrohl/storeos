@@ -1,5 +1,28 @@
 # Actual implementation status
 
+## Current P4.16 Stage A — 2026-10-13
+
+**P4.16 IN PROGRESS. Stage A / Steps 1–4: independently approved, owner-authorized local implementation commit.** Owner
+authorization covers strict contracts/domain, migration 0028, one shared Workforce
+claim authority/owner ports and P4.11 compatibility. Branch
+`codex/p416-bilateral-shift-swaps` starts at
+`3b2d66f07ef7f261a74e922e32cbe656d8998837`; main remains unchanged. The
+[Stage A handoff](../development/phase-4-16-stage-a.md) records the complete inventory,
+real restricted PostgreSQL proofs and all passes/skips. Full P4.16 remains incomplete;
+coordinator, new permissions/audit/HTTP/OpenAPI, Flutter and recovery Steps 5–10
+are unimplemented and unauthorized. The independent Stage A review required
+changes for existing-Shift substitution, unreadable receipt encodings and terminal
+DTO kind mismatch. Bounded fixes and regressions passed locally: full server
+842 PASS / 0 FAIL / 21 explicit opt-in SKIP; both P4.11 controller/Chrome opt-ins
+passed separately. Targeted independent **STAGE A APPROVE** closes F01–F03 with
+no new findings; 114 focused PostgreSQL/P4.11 tests and 5 additional probes passed.
+The handoff records exact refusal/rollback, preservation and all nineteen remaining
+opt-in gaps. One local commit includes the reviewed 60-path scope and three
+directly related documentation finalizations. Fetched remote main remains at the
+approved parent; no push/merge/rebase/deployment, full Security acceptance,
+exact implementation CI/publication or
+DONE/CLOSED claim. The design-only statements below retain their earlier context.
+
 ## Current P4.16 design status — 2026-10-13
 
 **P4.16 Employee-Proposed Bilateral Swap of Pristine Future Shifts: SELECTED /

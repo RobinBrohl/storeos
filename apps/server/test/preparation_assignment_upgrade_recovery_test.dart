@@ -34,10 +34,13 @@ const priorTables = [
   'merchandising_planogram_assignments',
   'audit_entries',
 ];
-Future<Map<String, Object?>> priorEvidence(MerchandisingFixture f) async => {
+Future<Map<String, Object?>> priorEvidence(
+  MerchandisingFixture f, {
+  bool beforeSwapMigration = false,
+}) async => {
   for (final table in priorTables)
     table: (await f.owner.execute(
-      "SELECT count(*),md5(string_agg(to_jsonb(t)::text,'' ORDER BY to_jsonb(t)::text)) FROM \"${f.schema}\".$table t",
+      "SELECT count(*),md5(string_agg(${beforeSwapMigration && table == 'shifts' ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])" : 'to_jsonb(t)'}::text,'' ORDER BY ${beforeSwapMigration && table == 'shifts' ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])" : 'to_jsonb(t)'}::text)) FROM \"${f.schema}\".$table t",
     )).single.toList(),
 };
 Future<List<Object?>> assignmentHash(MerchandisingFixture f) async => [
@@ -78,7 +81,7 @@ void main() {
               'reason': 'Preserved pre-update close evidence',
             },
           );
-          final before = await priorEvidence(f),
+          final before = await priorEvidence(f, beforeSwapMigration: true),
               beforeCatalog = await catalog(f),
               temporary = await Directory.systemTemp.createTemp(
                 'storeos_p413_recovery_',
@@ -136,7 +139,7 @@ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {{schema}}.p413_late
               throwsA(isA<ServerException>()),
             );
             expect(await catalog(f), beforeCatalog);
-            expect(await priorEvidence(f), before);
+            expect(await priorEvidence(f, beforeSwapMigration: true), before);
             expect(
               (await f.owner.execute(
                 "SELECT to_regclass('${f.schema}.production_preparation_assignments')",
@@ -154,9 +157,16 @@ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {{schema}}.p413_late
                 '0025_planned_preparation_assignments',
                 '0026_purchase_order_delivery_evidence',
                 '0027_article_quantities',
+                '0028_bilateral_shift_swaps',
               ],
             );
-            expect(await priorEvidence(f), before);
+            expect(await priorEvidence(f, beforeSwapMigration: true), before);
+            expect(
+              (await f.owner.execute(
+                'SELECT count(*) FROM ${f.schema}.shifts WHERE swap_request_id IS NOT NULL OR swap_leg IS NOT NULL',
+              )).single.first,
+              0,
+            );
             expect(
               await MigrationRunner(
                 connection: f.owner,

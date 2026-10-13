@@ -1190,6 +1190,7 @@ void main() {
             '0025_planned_preparation_assignments',
             '0026_purchase_order_delivery_evidence',
             '0027_article_quantities',
+            '0028_bilateral_shift_swaps',
           ],
         );
         await f.assertLedgerInvariant(level.id);

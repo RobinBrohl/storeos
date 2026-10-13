@@ -52,11 +52,6 @@ class ShiftTransferRepository {
       'after': after,
     },
   )).map(_row).toList();
-  Future<bool> pending(TxSession tx, String shift) async => (await _execute(
-    tx,
-    "$_select AND source_shift_id=CAST(@shift AS uuid) AND status IN ('proposed','accepted') LIMIT 1",
-    {'shift': shift},
-  )).isNotEmpty;
   Future<void> propose(
     TxSession tx,
     ShiftDto shift,

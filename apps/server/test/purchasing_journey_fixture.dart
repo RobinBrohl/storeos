@@ -39,6 +39,7 @@ const purchasingLegacyTables = [
 Future<Map<String, Object?>> purchasingLegacyEvidence(
   MerchandisingFixture f, {
   bool includeAssignments = false,
+  bool beforeSwapMigration = false,
 }) async => {
   for (final table in [
     ...purchasingLegacyTables,
@@ -48,7 +49,7 @@ Future<Map<String, Object?>> purchasingLegacyEvidence(
     ],
   ])
     table: (await f.owner.execute(
-      "SELECT count(*),md5(string_agg(to_jsonb(t)::text,'' ORDER BY to_jsonb(t)::text)) FROM \"${f.schema}\".$table t",
+      "SELECT count(*),md5(string_agg(${beforeSwapMigration && table == 'shifts' ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])" : 'to_jsonb(t)'}::text,'' ORDER BY ${beforeSwapMigration && table == 'shifts' ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])" : 'to_jsonb(t)'}::text)) FROM \"${f.schema}\".$table t",
     )).single.toList(),
 };
 Future<void> seedPurchasingLegacy(MerchandisingFixture f) async {

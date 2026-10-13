@@ -5,6 +5,54 @@ import 'package:storeos_api_contracts/api_contracts.dart';
 class TaskInstanceRepository {
   TaskInstanceRepository(this.schema, this.companyId);
   final String schema, companyId;
+  Future<void> linkSwap(
+    TxSession tx,
+    String location,
+    String request,
+    String leg,
+    TaskInstanceDto source,
+    TaskInstanceDto replacement,
+  ) async {
+    await tx.execute(
+      Sql.named(
+        '''INSERT INTO $schema.task_swap_links
+      (company_id,location_id,request_id,leg,source_shift_id,replacement_shift_id,source_task_id,replacement_task_id,template_id,revision_id,position)
+      VALUES(CAST(@company AS uuid),CAST(@location AS uuid),CAST(@request AS uuid),@leg,CAST(@sourceShift AS uuid),CAST(@replacementShift AS uuid),CAST(@source AS uuid),CAST(@replacement AS uuid),CAST(@template AS uuid),CAST(@revision AS uuid),@position)''',
+      ),
+      parameters: {
+        'company': companyId,
+        'location': location,
+        'request': request,
+        'leg': leg,
+        'sourceShift': source.shiftId,
+        'replacementShift': replacement.shiftId,
+        'source': source.id,
+        'replacement': replacement.id,
+        'template': source.templateId,
+        'revision': source.revisionId,
+        'position': source.position,
+      },
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> swapLinks(
+    TxSession tx,
+    String location,
+    String request,
+    String leg,
+  ) async => (await tx.execute(
+    Sql.named(
+      '''SELECT source_task_id::text AS "sourceTaskId",replacement_task_id::text AS "replacementTaskId",
+        source_shift_id::text AS "sourceShiftId",replacement_shift_id::text AS "replacementShiftId",template_id::text AS "templateId",revision_id::text AS "revisionId",position
+        FROM $schema.task_swap_links WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) AND request_id=CAST(@request AS uuid) AND leg=@leg ORDER BY position''',
+    ),
+    parameters: {
+      'company': companyId,
+      'location': location,
+      'request': request,
+      'leg': leg,
+    },
+  )).map((r) => r.toColumnMap()).toList();
   Future<bool> pristine(TxSession tx, String shift) async => (await tx.execute(
     Sql.named(
       '''SELECT 1 FROM $schema.task_instances t

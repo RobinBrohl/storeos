@@ -175,6 +175,30 @@ class ShiftRepository {
     },
   )).isNotEmpty;
 
+  /// Exclusions and incoming intervals come only from the persisted exact pair.
+  Future<bool> overlapsSwap(
+    TxSession tx,
+    String location,
+    String request,
+  ) async {
+    final rows = await tx.execute(
+      Sql.named(
+        '''SELECT
+      (SELECT count(*) FROM $schema.workforce_shift_swap_legs WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid) AND request_id=CAST(@request AS uuid)) AS legs,
+      EXISTS(SELECT 1 FROM $schema.workforce_shift_swap_legs l JOIN $schema.shifts s
+        ON s.company_id=l.company_id AND s.location_id=l.location_id AND s.employee_id=l.incoming_employee_id
+        WHERE l.company_id=CAST(@company AS uuid) AND l.location_id=CAST(@location AS uuid) AND l.request_id=CAST(@request AS uuid)
+        AND s.status='published' AND s.starts_at<l.ends_at AND s.ends_at>l.starts_at
+        AND s.id NOT IN (SELECT source_shift_id FROM $schema.workforce_shift_swap_legs WHERE company_id=l.company_id AND request_id=l.request_id)) AS overlap''',
+      ),
+      parameters: {..._scope, 'location': location, 'request': request},
+    );
+    if (rows.single[0] != 2) {
+      throw StateError('Persisted two-leg pair required.');
+    }
+    return rows.single[1] as bool;
+  }
+
   Future<bool> overlaps(TxSession tx, Shift current) => overlapsWindow(
     tx,
     current.view.id,

@@ -1,5 +1,13 @@
 # Module boundaries
 
+Current design selection, 2026-10-13: **P4.16 bilateral pristine-future Shift swaps
+are SELECTED / DESIGN IN PROGRESS; implementation NOT AUTHORIZED**. The selected
+ownership extension is described below and in
+[ADR 0030](../adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md).
+Earlier P4.15 pending/unselected wording retains its closure context; it does not
+describe the current P4.16 selection. Implemented ownership below remains actual
+code, not an assertion that the new ports/tables already exist.
+
 P4.15 implementation adds Inventory-owned immutable Article quantity anchors,
 packaging revisions and quantity command receipts. Stock owns prospective
 immutable bindings and alternate-unit manual correction evidence/receipts.
@@ -14,7 +22,8 @@ units, quantities, snapshots, counts and contracts remain intact. See
 with test-only correction `c132a88feb619268c65fae69d3eeff64d5363218`. Targeted functional
 APPROVE, F01–F03 CLOSED, SECURITY APPROVE and [successful main CI](https://github.com/RobinBrohl/storeos/actions/runs/38323585842)
 (attempt 1, all five jobs) establish the gates. Separate documentation-closure
-commit publication and its own exact-commit CI remain PENDING. P4.16 is UNSELECTED.
+commit publication and its own exact-commit CI remain PENDING. P4.16 was UNSELECTED
+at that closure; current owner-authorized design selection is recorded above.
 All six qualifications in the [closure](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13)
 remain. No automatic Goods Receipt/Stock posting, Recipe/Purchasing conversion,
 production consumption, POS ingestion or costing is introduced. Historical
@@ -141,19 +150,40 @@ Public ports should express product dependencies without circular Domain ownersh
 | --- | --- | --- |
 | Knowledge extensions | Suggestions and separate review beyond delivered P4.5/P4.6 | Concrete Task guidance is delivered through [ADR 0020](../adr/0020-task-knowledge-guidance.md); further consumers/lifecycle changes need separate contracts. Reads never change execution history. |
 | Merchandising extensions | Future HQ rollout, acknowledgment and deviations beyond P4.4 | Separately approved contracts; Tasks would own rollout work. No foreign Stock writes or general CAD. |
-| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.12 Purchasing intent is DONE/CLOSED; documentation closure CI 38156014870 successful; P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 UNSELECTED. |
+| Production extensions | Future yield, production orders, consumption and costing beyond delivered composition and preparation evidence | Require separately selected contracts; Inventory retains Article identity and Stock retains physical evidence. P4.12 Purchasing intent is DONE/CLOSED; documentation closure CI 38156014870 successful; P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 SELECTED / DESIGN IN PROGRESS (design only; implementation NOT AUTHORIZED). |
 | Purchasing / Receiving extensions | Receipt/source cost evidence beyond bounded P4.12 order intent | Article/unit references; future authorized Stock commands for accepted physical receipts require separate selection. Not Stock ledger owner or invented valuation. |
 | Sales integration | Canonical SalesSource/import/checkpoint, Sale/Line source references, mapping and import health | Core validates authority/identity and coordinates explicit Stock/report effects. Vendor adapter acquires/converts; checkout/payment/fiscal archive ownership separate. |
 | Pricing | Effective prices/currency and approval rules | Article references; Menu consumes approved price contract. No implicit price column in Article. |
 | Menu / public publishing | Structured Menu revisions, themes/print artifacts and explicit public publication | Optional Article/Recipe/price references. Publisher owns artifact deployment/status, not public operational DB access. |
 | Communications | Boards, announcements and Chat content/membership lifecycle | Identity/scope and operator privacy policy; Notifications owns delivery, not message content. No generic Slack system or employee scoring. |
 | Notifications | Durable event-based delivery/retry/failure/preferences/contact use | Domain facts with minimal authorized payloads; not business approval or proof of readership. |
-| Workforce extension | ShiftSwapRequest proposals/comments/responses and responsible approval | Final current-state checks and schedule mutation coordinated via Workforce/Tasks ports; no recipient-only schedule change. |
+| Workforce extension | P4.16 selected design: bilateral requests, immutable legs/consents/decisions, paired Shift lineage, receipts and shared handoff claims | Protocol B and one authorized coordinator use existing owners' public ports. Tasks owns paired Task lineage. Design only; broader comments, scheduling and begun-work reconciliation remain future. |
 | HACCP | ControlPlan/Execution, measurements, deviations and corrective actions | Tasks presents control work; HACCP retains authoritative safety evidence. Generic task numbers are not certified records. |
 | Reporting / Finance | Defined metrics, provenance, scoped exports and later finance records | Authorized projections; no business-table ownership, fabricated margins or assumed valuation. |
 | Remote access boundary | Authenticated workplace/remote context and capability allowlist, optional gateway | Identity/grants/resource authorization remains in Core. No mandatory private device/cloud and no automatic remote full-admin exposure. |
 
 ## Evolution rules
+
+### Selected P4.16 ownership extension (not implemented)
+
+Workforce will own one active handoff-claim authority for both P4.11 source Shifts
+and P4.16 legs, alongside bilateral request/leg/lifecycle/receipt/Shift lineage
+evidence. Claims are a current projection; guarded terminal deletion retains all
+business evidence. P4.11's local index and accepted receipts/lineage remain intact.
+One Application coordinator validates both consents and creates both replacements
+in the same authorized Company transaction. It does not own another Shift model.
+
+Tasks will capture exact ordered work references, validate pristine source sets,
+materialize exact replacement work and own immutable task_swap_links. A narrow
+Tasks-owned SQL integrity port supports deferred approval/reference checks; no
+Application/Workforce repository gains foreign Task-table access. People/Identity
+retain eligibility/link/account-version facts; Knowledge/Merchandising retain pin
+validation and content. Existing P4.11-specific Task lineage is not reused for swap
+request IDs. There is no consumer requiring events or notifications.
+
+See the [complete contract](../development/phase-4-16-bilateral-shift-swaps.md) and
+[file-level plan](../development/phase-4-16-implementation-plan.md). No new application
+port, table or migration is delivered by this documentation selection.
 
 P4.11 is **DONE/CLOSED** and implements the one-way, future/pristine Shift transfer described in
 [ADR 0025](../adr/0025-one-way-shift-transfer-before-execution.md). Workforce owns
@@ -161,8 +191,8 @@ requests, consent, decisions, Shift lineage and Company-scoped receipts. Tasks o
 complete source/replacement Task links and exact snapshot verification. The
 application coordinator uses public owner ports for Identity/People, Workforce,
 Tasks and guidance validation; it never accesses their foreign repositories.
-F01/F02/F03 are CLOSED; targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187 establish closure. Further
-Workforce capabilities remain unselected. P4.12 delivers accepted bounded Purchasing intent under ADR 0026, with documentation closure CI 38156014870 successful; P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 UNSELECTED.
+F01/F02/F03 are CLOSED; targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187 establish closure.
+Broader Workforce capabilities remain unselected; P4.16 bilateral swaps are selected for design only. P4.12 delivers accepted bounded Purchasing intent under ADR 0026, with documentation closure CI 38156014870 successful; P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 SELECTED / DESIGN IN PROGRESS (design only; implementation NOT AUTHORIZED).
 
 Own each schema change through a new tested migration; retain IDs, snapshots and
 supported contracts. Do not let a future integration write Core tables directly.

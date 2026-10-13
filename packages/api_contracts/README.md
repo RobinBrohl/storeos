@@ -77,3 +77,20 @@ Stock contracts remain unchanged. New routes are in `platform.openapi.json` and
 referenced by `openapi.yaml`; `tool/article_quantity_openapi.dart` supplies the
 bounded additions and `article_quantity_openapi_test.dart` verifies the artifact.
 See the [P4.15 contract](../../docs/development/phase-4-15-article-quantities.md).
+
+## P4.16 selected interface design (not implemented)
+
+P4.16 bilateral pristine-future Shift swaps are SELECTED / DESIGN IN PROGRESS;
+implementation is NOT AUTHORIZED. The [interface contract](../../docs/development/phase-4-16-bilateral-shift-swaps.md#7-planned-http-and-flutter-contract)
+specifies future strict request/offer/confirmation/closure/manager commands,
+request-specific summaries and original receipt versus current actionability.
+Proposed roots are `/api/v1/platform/me/shift-swaps` and
+`/api/v1/platform/locations/{locationId}/shift-swaps`, with own-work colleague
+discovery and B-only own counterpart discovery. No colleague-roster permission.
+
+No shift_swaps.dart, routes, generated OpenAPI additions or new contract tests
+exist in this documentation selection. Existing P4.11 payloads, response evidence,
+receipt namespace and lineage remain intact. Future shared busy handling is a
+bounded compatibility addition, tested before release. M3/M4 containment, strict
+negative cases and release Web compilation remain gates; a design table is not
+an implemented API. See the [file-level plan](../../docs/development/phase-4-16-implementation-plan.md).

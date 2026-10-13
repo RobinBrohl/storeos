@@ -1,5 +1,24 @@
 # Actual implementation status
 
+## Current P4.16 design status — 2026-10-13
+
+**P4.16 Employee-Proposed Bilateral Swap of Pristine Future Shifts: SELECTED /
+DESIGN IN PROGRESS. Implementation NOT AUTHORIZED.** Owner-authorized documentation
+selection on `main` at `8a0198f3430cb7ec636e952522dda7cf930b7fca`.
+Protocol B and shared P4.11/P4.16 handoff claims are specified in the
+[contract](../development/phase-4-16-bilateral-shift-swaps.md),
+[ADR 0030](../adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md) and
+[implementation plan](../development/phase-4-16-implementation-plan.md).
+The owner supplied independent **ARCHITECTURE APPROVE**; LOW/nonblocking F01 is
+resolved by the documentation-only Step 3 overlap-repository correction. Database
+enforcement is NOT VERIFIED. No implementation, migration 0028, test acceptance,
+independent implementation review or P4.16 CI outcome is claimed.
+Existing migration chain remains 0001–0027. P4.1–P4.15
+remain DONE/CLOSED with their accepted boundaries and retained qualifications.
+Earlier pending/unselected statements retain their dated evidence context.
+
+## Retained P4.15 closure summary
+
 P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
 Correction is **DONE/CLOSED — accepted implementation** at
 `f4ffffaae235307424133c4ed280328df3e33f01`, with test-only correction
@@ -14,7 +33,7 @@ fix has [main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs
 SUCCESS, attempt 1, all five jobs. Historical failure evidence is preserved.
 **Separate documentation-closure commit publication and its own exact-commit CI: PENDING.**
 No publication or CI result exists for this local documentation commit.
-**P4.16 is UNSELECTED.**
+**P4.16 was UNSELECTED at that closure; current design selection is recorded above.**
 
 Inventory quantity anchors/revisions, prospective immutable Stock bindings,
 reviewed exact manual targets and terminal suspension are delivered. All six
@@ -227,7 +246,7 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 | Slice | Status | Delivered boundary | Evidence |
 | --- | --- | --- | --- |
 | P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock Correction | DONE/CLOSED — accepted implementation | Inventory anchors/revisions/direct packaging; immutable prospective Stock binding, exact reviewed manual targets and retained conversion evidence. Migration 0027 / ADR 0029; no automatic downstream posting. | Implementation `f4ffffaae235307424133c4ed280328df3e33f01`; test-only fix `c132a88feb619268c65fae69d3eeff64d5363218`. Targeted APPROVE, F01–F03 CLOSED, SECURITY APPROVE; **7 PASS / 6 QUALIFIED / 0 FAIL**. [Main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842): SUCCESS, attempt 1, 5/5. [Chronology/qualifications](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13). Separate documentation-closure publication/own CI PENDING. |
-| P4.16 | UNSELECTED | No next bounded capability selected; strategic roadmap unchanged. | Requires a separate selection contract; no implementation or acceptance claimed. |
+| P4.16 | SELECTED / DESIGN IN PROGRESS | Employee-proposed bilateral swap of pristine future Shifts, protocol B, shared handoff claims and atomic paired replacement. Implementation NOT AUTHORIZED. | [Contract](../development/phase-4-16-bilateral-shift-swaps.md), [ADR 0030](../adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md), [plan](../development/phase-4-16-implementation-plan.md). Owner-supplied ARCHITECTURE APPROVE; F01 documentation correction resolved. Database enforcement NOT VERIFIED; no implementation/acceptance/implementation-review/CI claim. |
 
 ## Accepted manual Stock boundaries
 
@@ -327,12 +346,12 @@ read acknowledgment, native-device/accessibility acceptance or offline queue is 
 ## Planned and deferred scope
 
 P4.1–P4.15 are DONE/CLOSED as accepted implementations, with no active P4.11/P4.12/P4.13 remediation. P4.12 retains three accepted limitations and nonblocking Security INFO I01–I03; see [live debt](../development/technical-debt.md#p412-security-info-observations).
-P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 UNSELECTED.
+P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 SELECTED / DESIGN IN PROGRESS (design only; implementation NOT AUTHORIZED).
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
-| Workforce / Tasks / Wiki extension | MIXED | P4.6 exact Task pins are DONE/CLOSED. Recurrence, recommendations, qualification workflows and swaps remain future slices; begun-work reconciliation remains open. |
+| Workforce / Tasks / Wiki extension | MIXED | P4.6 exact Task pins are DONE/CLOSED. P4.16 bilateral pristine-future swaps are SELECTED / DESIGN IN PROGRESS only. Recurrence, recommendations, qualification workflows and broader swaps remain future; begun-work reconciliation remains open. |
 | Inventory / Stock / Purchasing / Production extensions | PLANNED | Beyond delivered Article/Assortment/manual Stock, counts, composition/preparation evidence, Purchasing intent/delivery evidence and P4.15 quantity semantics/exact manual targets: broader conversions, automatic receiving/posting, yield/Stock-producing batches, Recipe extensions and valuation require separately selected contracts. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |

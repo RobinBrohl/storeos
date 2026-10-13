@@ -1,5 +1,14 @@
 # Documentation index
 
+Current selection, 2026-10-13: **P4.16 Employee-Proposed Bilateral Swap of Pristine
+Future Shifts — SELECTED / DESIGN IN PROGRESS; implementation NOT AUTHORIZED**.
+See the [contract](development/phase-4-16-bilateral-shift-swaps.md),
+[ADR 0030](adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md) and
+[file-level plan](development/phase-4-16-implementation-plan.md).
+[Actual status](roadmap/status.md) separates this documentation selection from
+accepted P4.1–P4.15 implementations. Earlier closure snapshots below retain their
+historical publication/selection wording.
+
 P4.13 **Planned Preparation Assignment** is **DONE/CLOSED — accepted implementation**
 at `625bb7ef9643989e2182c966d87839115a0cca6f` (`Add planned preparation assignments`).
 F01 is **CLOSED** after bounded canonical Location UUID remediation and independent
@@ -160,6 +169,8 @@ than retroactively changing review/CI outcomes.
 - [Implementation review](development/implementation-review-2026-09-27.md): dated foundation review.
 
 ## Slice contracts and evidence
+
+- [P4.16 bilateral pristine-future Shift swaps](development/phase-4-16-bilateral-shift-swaps.md): SELECTED / DESIGN IN PROGRESS; protocol B and shared handoff claims, design only. [Implementation plan](development/phase-4-16-implementation-plan.md); no application/SQL/test/OpenAPI work authorized yet.
 
 - [P4.9 approved Article Recipe / Composition](development/phase-4-9-recipe-compositions.md): DONE/CLOSED; F01–F05 closed, targeted APPROVE, 151 PASS / 1 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI. Criterion 152 is historical evidence qualification only.
 - [P4.8 selected-article Stock counts](development/phase-4-8-stock-counts.md): DONE/CLOSED; targeted APPROVE, 124/124 PASS, SECURITY APPROVE and green exact-commit CI.

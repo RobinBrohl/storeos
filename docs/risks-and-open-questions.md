@@ -68,7 +68,7 @@ boundary; it does not close every future case.
 | Public publishing | OPEN | Artifact format, hosting/update/status/rollback boundary before website publication; operational DB/admin APIs stay private. No selected cloud vendor. |
 | Boards / Chat membership and privacy | OPEN | Bounded operational use case and controlled admin access before communication design. Boards may precede Chat. |
 | Communication retention / offboarding | OPERATOR DECISION | Purpose, periods, export/delete, membership removal, backups/restored access and notification contact use before real communications. No full chat body in default email. |
-| ShiftSwapRequest approval | OPEN | Recipient response, comments, responsible approval, stale-version revalidation and atomic mutation before swaps. Linked cancel/replacement is a candidate, not a decided ADR; begun work/marketplace deferred. |
+| ShiftSwapRequest approval | ANSWERED for selected P4.16 design; NOT IMPLEMENTED | [ADR 0030](adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md): B offers an own counterpart, A confirms the immutable pair, independent manager approves atomic paired cancellation/replacement. One shared P4.11/P4.16 claim authority; no peer-roster grant or silent stale expiry. Broader comments, begun work and marketplace remain deferred. |
 | Remote employee access | OPEN | Authenticated context allowlist, gateway/VPN trust, identity assurance/MFA/recovery and revocation before remote self-service. Network IP alone is insufficient. |
 | No private-device use | ANSWERED as product principle | Private smartphone/app is optional; preserve in-store access and print/email/kiosk alternatives. Concrete delivery/access arrangements remain OPERATOR DECISION. |
 | Canonical external-POS source | OPEN | Actual vendor API/export contract, configured Company/Location authority, source identity/checkpoints, retry/gap detection and explicit product mapping before ingest slice. DSFinV-K backfill is not itself a real-time API. |
@@ -78,6 +78,29 @@ boundary; it does not close every future case.
 | AI / autonomy | DEFERRED | Demonstrated benefit, approved scoped sources, uncertainty and human critical decisions before optional activation. |
 
 ## Current technical and operator gates
+
+### P4.16 selected-design risks — 2026-10-13
+
+P4.16 is **SELECTED / DESIGN IN PROGRESS**, documentation only; implementation is
+NOT AUTHORIZED. [Contract](development/phase-4-16-bilateral-shift-swaps.md) cases
+A01–A16 and [plan](development/phase-4-16-implementation-plan.md) define required
+future proof. The owner supplied independent ARCHITECTURE APPROVE; LOW/nonblocking
+F01 is resolved by the documentation-only Step 3 overlap-repository correction.
+Database enforcement is NOT VERIFIED. No implementation acceptance,
+implementation-review or P4.16 CI result exists.
+
+| Risk | Selected mitigation and unexecuted gate |
+| --- | --- |
+| Colleague schedule disclosure / consent mismatch | B-only own candidate discovery; deliberate leg disclosure; B exact offer and A explicit same-pair confirmation. Negative scope/actor/roster and stale-pair tests required. |
+| Competing transfer/swap reservations | One Workforce claim projection with Company/Shift PK, typed scoped ownership and exact deferred consistency. Populate every active/stale P4.11 claim; prove both-order races and old replay/history preservation. |
+| Partial or invalid schedule exchange | One transaction, both originals cancelled before either replacement publishes, exact final-roster overlap check, complete two-leg lineage, late-failure rollback and deferred database-time guard. |
+| Stale claim accumulation | Preserve explicit P4.11 closure semantics; visible non-actionable status and participant/manager terminal closure. No silent expiry, claim stealing or task-execution lock. |
+| Mistaking design for delivery/compliance | Separate implementation authorization, independent functional/Security review and exact-commit CI. Only existing assignment/link/overlap/pristine rules; no automatic labor-law/qualification/availability claim. |
+
+No known architectural contradiction prevents this bounded design. Migration/
+grants/finality proofs remain future gates. Existing retention/offboarding/recovery/
+device policy and P4.15 qualifications/debt keep their disposition; no invented
+new policy prerequisite or global cleanup is allocated to this slice.
 
 P4.3 software acceptance is DONE/CLOSED; F01/F06/F07 and targeted-review findings
 R1/R2/R3 are CLOSED by `f9c8b07`, review APPROVE and green changed-commit CI

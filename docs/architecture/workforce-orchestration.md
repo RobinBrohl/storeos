@@ -49,12 +49,30 @@ Bei unterbrochener Verbindung zum Standortserver darf der Client zuletzt geladen
 - Existing pristine cancellation/interval amendment is answered; what applies to reassignment and begun/completed work remains open.
 - Welche Regeln haben Vorrang, wenn Sicherheitsrisiko, Frist und personelle Überlastung kollidieren?
 
-## Future shift-swap coordination
+## Selected P4.16 bilateral swap coordination (design only)
 
-Workforce owns ShiftSwapRequest proposals, recipient responses and comments.
-Acceptance by the recipient is not schedule approval. A responsible authorized
-person approves after current version, identity, eligibility, overlap and applicable
-rule checks; permitted schedule changes and audit/evidence commit atomically through
-module ports. The current immutable employee assignment requires an explicit design;
-linked cancel/replacement is a candidate, not an accepted decision. See
-[vision](../vision.md#shift-swaps) and [open questions](../risks-and-open-questions.md).
+P4.16 is SELECTED / DESIGN IN PROGRESS on 2026-10-13; implementation is NOT
+AUTHORIZED. Protocol B: A requests using own Shift and named B; B deliberately
+offers an own counterpart; A confirms that immutable pair; an independent manager
+approves or rejects. Neither initial invitation nor either consent changes schedules.
+Employees gain no general colleague-roster access.
+
+Workforce owns request/leg/consent/decision/Shift lineage/receipt evidence and a
+single active handoff-claim authority shared with P4.11. Requested swaps claim A;
+offered/confirmed swaps claim both originals; terminal parents release all claims.
+Staleness changes actionability, not persisted consent or claim occupancy. Existing
+work execution and interval/cancellation commands can continue and stale a request.
+
+One authorized Company coordinator revalidates both current Shift versions,
+pristine Task sets, captured links/Account versions, incoming assignment intervals
+and exact guidance. It checks the final roster excluding exactly both originals,
+cancels both before replacement publication, and commits both exact legs, Tasks-owned
+correspondences, audit/receipts and claim release atomically. A deferred final guard
+checks complete effects and fresh database time before both captured starts.
+This implements no labor-law, absence, qualification or availability validation.
+
+See the [contract](../development/phase-4-16-bilateral-shift-swaps.md),
+[ADR 0030](../adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md) and
+[implementation plan](../development/phase-4-16-implementation-plan.md). Broader
+comments, recommendations, begun work, partial exchange, remote/offline/multi-site
+access remain future. P4.11 historical closure above is unchanged.

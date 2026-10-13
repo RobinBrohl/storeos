@@ -1,5 +1,14 @@
 # Domain model
 
+P4.16 is **SELECTED / DESIGN IN PROGRESS**, 2026-10-13, for owner-authorized design
+only. Implementation is NOT AUTHORIZED. Its selected concepts are a bilateral
+SwapRequest, immutable A/B source legs and exact consents, paired replacement
+lineage, durable command receipts and one shared Workforce handoff-claim projection.
+They are not existing tables or a second Shift ownership model. Protocol B reveals
+B's selected Shift only after B offers it; A then confirms the exact pair before
+independent approval. See [ADR 0030](../adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md)
+and the [contract](../development/phase-4-16-bilateral-shift-swaps.md).
+
 Reconciled 2026-10-04. The first table describes **implemented concepts** through
 P1b.9 and P4.3; later sections are target concepts, not claims of existing columns,
 tables or APIs. [Status](../roadmap/status.md) owns acceptance, and
@@ -83,7 +92,7 @@ execution or global employee overlap coordination.
 | Recipe / revision | Optional extension of a normal Article, with ingredient Articles, units, quantities/yield and instructions. Not a second manufactured-Article identity. |
 | Menu / revision | Structured sections/items and templates/print; optional Article/Recipe reference, approved price source and explicit public artifact publication. |
 | Board / Chat / notification | Durable published notice vs conversation vs delivery. Separate ownership and retention/access policies. |
-| ShiftSwapRequest | Proposal/recipient response/comments plus required responsible approval. Approval revalidates and atomically applies permitted schedule changes. |
+| ShiftSwapRequest | P4.16 selected design, not implemented: request -> B own counterpart offer -> A exact confirmation -> independent approval, with shared claims and atomic paired cancellation/replacement. Broader comments/marketplace/begun-work handling remain future. |
 | SalesSource / import / checkpoint / Sale / SaleLine / ExternalReference | Conceptual Core ingestion responsibilities for existing external POS, not final tables or StoreOS checkout. Stable external identity/provenance and explicit mapping; unresolved effects visible. |
 | Production / Receiving / control execution | Their own domain evidence; Stock owns resulting physical movement, Tasks owns guided presentation. |
 | EmployeeSkill / absence / actual time | Distinct from minimal profile, planned shift and task activity. No inferred attendance or unnecessary HR replication. |

@@ -1,5 +1,21 @@
 # Development roadmap
 
+## Current P4.16 selection — 2026-10-13
+
+**SELECTED / DESIGN IN PROGRESS:** Employee-Proposed Bilateral Swap of Pristine
+Future Shifts. The owner authorizes design/documentation only, not implementation,
+on baseline `8a0198f3430cb7ec636e952522dda7cf930b7fca`.
+Protocol B adds exact A/B consent and independent approval; a single Workforce
+claim authority protects P4.11 source Shifts and both swap legs. Approval is one
+atomic paired cancellation/replacement with exact Task/guidance evidence.
+See the [contract](../development/phase-4-16-bilateral-shift-swaps.md),
+[ADR 0030](../adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md) and
+[file-level plan](../development/phase-4-16-implementation-plan.md).
+Migration 0028, code, tests and generated contracts do not exist for this slice;
+the actual chain remains 0001–0027. Long-term sequencing remains flexible.
+
+## Retained P4.15 closure summary
+
 P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
 Correction is **DONE/CLOSED — accepted implementation** at
 `f4ffffaae235307424133c4ed280328df3e33f01`, with test-only correction
@@ -13,7 +29,8 @@ fix has [main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs
 SUCCESS, attempt 1, all five jobs. The failed run remains historical evidence.
 **Separate documentation-closure commit publication and its own exact-commit CI: PENDING.**
 No publication or CI success is claimed for this local documentation commit.
-**P4.16 is UNSELECTED.** No next capability or strategic sequence is selected here.
+**P4.16 was UNSELECTED at that closure.** Current owner-authorized design selection
+is recorded above; no implementation or broader strategic sequence is selected.
 
 The six qualifications remain: memory-only uncertain retries; immutable anchors,
 bindings and permanent suspension; F04 nonblocking debt; operator/device readiness;
@@ -130,7 +147,8 @@ parallel implementation or preselect a subsequent capability.
 ## Historical near-term implementation direction
 
 The following selection passages retain their earlier phase context. Current
-P4.15 closure and P4.16 UNSELECTED are recorded above; no next slice is selected.
+P4.15 closure is retained above; P4.16 is now selected for design only. The passages
+below retain their historical sequencing context and authorize no implementation.
 
 P4.3 Manual Stock Foundation is **DONE/CLOSED**: foundation `e8ce8c3`, accepted
 correction `f9c8b07`, independent targeted review APPROVE, 28/28 PASS and all five
@@ -248,7 +266,8 @@ retain opaque frozen unit labels; labels never declare quantity meaning.
 Supplier/order intent and Purchasing delivery evidence retain their separate
 accepted contracts. Broader conversions, automatic receiving/posting,
 batches/expiry, transfers and valuation require separately selected slices.
-P4.16 is **UNSELECTED**; the long-term sequencing and product vision are unchanged.
+P4.16 bilateral swaps are **SELECTED / DESIGN IN PROGRESS**, not implemented;
+the long-term sequencing and product vision are unchanged.
 [ADRs 0015–0018](../adr/README.md).
 
 P4.4 Local Planogram Execution is **DONE/CLOSED**: Location Fixtures, independent

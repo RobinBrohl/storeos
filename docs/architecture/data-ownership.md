@@ -1,5 +1,31 @@
 # Datenhoheit und Schreibzuständigkeit
 
+Current P4.16 selection, 2026-10-13: **SELECTED / DESIGN IN PROGRESS** for bilateral
+pristine-future Shift swaps. Implementation is **NOT AUTHORIZED**. Earlier P4.15
+pending/unselected wording below remains its historical closure context.
+
+## Selected P4.16 data ownership (design only)
+
+Workforce owns local Company/Location-scoped requests, two immutable offered legs,
+exact consent/decision and Shift lineage/receipt evidence, plus one shared active
+Shift-handoff claim projection for P4.11/P4.16. Tasks owns ordered paired Task
+correspondence and source snapshot validation. Identity/People retain Account/link
+and minimal Employee eligibility authority. No second Shift owner or replicated
+writer is introduced.
+
+Participant views reveal only deliberately disclosed request legs; no peer-roster
+grant or execution/HR data. Account/Employee identifiers and bounded closure reasons
+are attributed business data under existing operator retention/access/export/
+offboarding policy. New swap audit contains minimized identifiers/transitions.
+Terminal deletion of a claim removes current occupancy, not the immutable request,
+consent, receipt or lineage evidence. Restore preserves claims alongside their
+active parents and current authorization/recovery fencing; stale consent is not
+reactivated automatically. No new cleanup or deletion policy is selected.
+
+These are future persistence/interface responsibilities, not implemented data.
+See [ADR 0030](../adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md) and
+the [contract](../development/phase-4-16-bilateral-shift-swaps.md).
+
 P4.15 adds Inventory-owned Company Article quantity anchors, revision content
 and receipts; Stock owns Location/Article-scoped immutable prospective bindings
 and manual conversion evidence/receipts. All are operational business data,
@@ -12,7 +38,8 @@ P4.15 is **DONE/CLOSED — accepted implementation** at
 `c132a88feb619268c65fae69d3eeff64d5363218`. Targeted functional APPROVE,
 F01–F03 CLOSED, SECURITY APPROVE and [successful exact-commit main CI](https://github.com/RobinBrohl/storeos/actions/runs/38323585842)
 (attempt 1, all five jobs) establish acceptance. Separate documentation-closure
-commit publication and its own exact-commit CI remain PENDING. P4.16 is UNSELECTED.
+commit publication and its own exact-commit CI remain PENDING. P4.16 was UNSELECTED
+at that closure; current owner-authorized design selection is recorded above.
 Immutable anchors/bindings, permanent suspension and all other qualifications
 remain in the [closure](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13).
 See [ADR 0029](../adr/0029-explicit-article-quantity-semantics.md). This is manual

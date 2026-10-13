@@ -1,5 +1,10 @@
 # Architecture Decision Records
 
+Current P4.16 design decision: [ADR 0030](0030-bilateral-shift-consent-and-shared-handoff-claims.md)
+is accepted for owner-selected design/documentation only. Delivery is SELECTED /
+DESIGN IN PROGRESS; implementation is NOT AUTHORIZED. Earlier P4.15 closure
+references to P4.16 UNSELECTED below retain that earlier selection context.
+
 ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Nummern sind stabil; eine Änderung der Grundentscheidung bekommt eine neue ADR und verlinkt die abgelöste. Details, die vor der Implementierung noch geprüft werden müssen, stehen im Abschnitt „Offene Prüfungen“ und sind keine stillschweigend freigegebenen Features.
 
 | Nr. | Entscheidung |
@@ -32,6 +37,7 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0026](0026-bounded-purchase-order-intent.md) | Minimal Company Supplier identity, local PurchaseOrder intent, frozen selections and eight durable commands; P4.12 DONE/CLOSED, F01 CLOSED, targeted APPROVE, SECURITY APPROVE, implementation CI 38152045998 and closure CI 38156014870 successful |
 | [0027](0027-planned-preparation-assignment.md) | Production-owned immutable preparation requests with retained approved revision authority and atomic Batch linkage; P4.13 DONE/CLOSED — accepted implementation, F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful; docs publication/closure-commit CI pending |
 | [0029](0029-explicit-article-quantity-semantics.md) | Accepted P4.15 immutable Article quantity anchors, versioned direct packaging, prospective Stock bindings and exact reviewed manual targets; DONE/CLOSED — accepted implementation, targeted APPROVE, F01–F03 CLOSED, SECURITY APPROVE and successful main CI 38323585842; separate documentation-closure publication and its own exact-commit CI PENDING; P4.16 UNSELECTED |
+| [0030](0030-bilateral-shift-consent-and-shared-handoff-claims.md) | Owner-selected P4.16 design: employee-controlled bilateral consent, one shared Workforce handoff-claim authority and atomic exact paired replacement; SELECTED / DESIGN IN PROGRESS, implementation NOT AUTHORIZED |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).
 
@@ -53,7 +59,8 @@ ADR 0029's exact alternate-unit manual targets are now P4.15 **DONE/CLOSED — a
 implementation**, with targeted functional APPROVE, F01–F03 CLOSED, SECURITY APPROVE
 and successful [main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842).
 Separate documentation-closure publication and its own exact-commit CI remain
-PENDING. P4.16 is UNSELECTED. See the [complete chronology and six qualifications](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13).
+PENDING. P4.16 was UNSELECTED at that closure; current selected design is ADR 0030.
+See the [complete chronology and six qualifications](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13).
 
 ## Historical delivery snapshots
 

@@ -1,5 +1,31 @@
 # StoreOS handover
 
+## Current P4.16 selection — 2026-10-13
+
+**P4.16 Employee-Proposed Bilateral Swap of Pristine Future Shifts is SELECTED /
+DESIGN IN PROGRESS. Implementation is NOT AUTHORIZED.** The owner authorized
+selection and documentation only on clean `main` at
+`8a0198f3430cb7ec636e952522dda7cf930b7fca` (HEAD/cached origin matched).
+Protocol B: A requests with own Shift and named B; B offers an own counterpart;
+A confirms the exact immutable pair; an independent manager approves the two-leg
+atomic cancellation/replacement. No colleague-roster grant or pre-approval schedule
+effect. One Workforce claim authority covers both P4.11 and both swap legs.
+See the [contract](development/phase-4-16-bilateral-shift-swaps.md),
+[ADR 0030](adr/0030-bilateral-shift-consent-and-shared-handoff-claims.md) and
+[file-level plan](development/phase-4-16-implementation-plan.md).
+
+Independent architecture verdict supplied by the owner: **ARCHITECTURE APPROVE**.
+LOW/nonblocking F01 is resolved by the documentation-only Step 3 overlap-repository
+correction. Database enforcement is **NOT VERIFIED**. No P4.16 implementation,
+migration, tests, generated contracts, implementation review or CI result exists.
+Migration chain remains 0001–0027; next number is 0028 at this baseline.
+No known architectural contradiction blocks the bounded design; executable proof
+and separate implementation authorization remain gates. P4.1–P4.15 acceptance and
+all P4.15 qualifications/debt are retained. Historical pending/unselected wording
+below describes its dated closure context, not the current P4.16 selection.
+
+## Retained P4.15 closure summary
+
 P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
 Correction is **DONE/CLOSED — accepted implementation** at
 `f4ffffaae235307424133c4ed280328df3e33f01`, with the bounded test-only correction
@@ -14,7 +40,7 @@ successful [exact-commit main CI 38323585842](https://github.com/RobinBrohl/stor
 attempt 1, all five jobs. The failure and correction remain distinct historical evidence.
 **Separate documentation-closure commit publication and its own exact-commit CI: PENDING.**
 No publication or CI success is claimed for this local documentation commit.
-**P4.16 is UNSELECTED.**
+**P4.16 was UNSELECTED at that closure; current design selection is recorded above.**
 
 Memory-only uncertain retries, immutable anchors/bindings, permanent suspension,
 F04 nonblocking [debt](development/technical-debt.md#p415-nonblocking-location-picker-debt),
@@ -295,7 +321,7 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 ## Next Recommended Work
 
 1. P4.10 Preparation Batch is DONE/CLOSED with no active remediation.
-   P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 UNSELECTED.
+   P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 SELECTED / DESIGN IN PROGRESS (design only; implementation NOT AUTHORIZED).
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

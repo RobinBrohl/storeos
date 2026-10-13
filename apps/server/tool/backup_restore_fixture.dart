@@ -89,6 +89,7 @@ const _evidenceTables = <String, String>{
   'shift_template_selections': 'shift_id, position',
   'workforce_shift_transfer_requests': 'company_id, id',
   'workforce_shift_transfer_commands': 'company_id, operation_id',
+  'workforce_shift_handoff_claims': 'company_id, shift_id',
   'task_transfer_links': 'company_id, request_id, position',
   'merchandising_fixtures': 'id',
   'merchandising_planograms': 'id',
@@ -105,6 +106,27 @@ const _evidenceTables = <String, String>{
   'task_execution_commands': 'operation_id',
   'audit_entries': 'id',
 };
+
+/// Current HTTP writers require the complete schema, including shared claims.
+/// Apply it before opening runtime connections; populated legacy upgrades are
+/// exercised separately by the dedicated migration/recovery tests.
+Future<List<String>> applyBackupMigrations(
+  Connection owner,
+  String schema,
+  String runtimeUser,
+) async {
+  final runner = MigrationRunner(
+    connection: owner,
+    migrationsDirectory: Directory('migrations'),
+    schemaName: schema,
+    runtimeDatabaseUser: runtimeUser,
+  );
+  final applied = await runner.apply();
+  if ((await runner.apply()).isNotEmpty) {
+    throw StateError('Backup schema application was not idempotent.');
+  }
+  return applied;
+}
 
 Future<void> main() async {
   try {
@@ -157,7 +179,7 @@ Future<void> _prepare(Map<String, String> env, String source) async {
   try {
     owner = await Connection.open(ownerEndpoint, settings: _connectionSettings);
     await _requireRestrictedRole(owner, runtimeUser);
-    await applyPreDeliveryMigrations(owner, _schema, runtimeUser);
+    await applyBackupMigrations(owner, _schema, runtimeUser);
     await BootstrapService(
       connection: owner,
       passwordHasher: PasswordHasher(),
@@ -212,15 +234,6 @@ Future<void> _prepare(Map<String, String> env, String source) async {
       workerUser: workerUser,
       workerPassword: workerPassword,
     );
-    owner = await Connection.open(ownerEndpoint, settings: _connectionSettings);
-    await MigrationRunner(
-      connection: owner,
-      migrationsDirectory: Directory('migrations'),
-      schemaName: _schema,
-      runtimeDatabaseUser: runtimeUser,
-    ).apply();
-    await owner.close();
-    owner = null;
     final deliveryLogin = await api.request(
       'POST',
       '/api/v1/auth/login',
@@ -320,6 +333,17 @@ Future<void> _verify(Map<String, String> env, String source) async {
     final restored = await _snapshot(targetOwner, _schema);
     if (!restored.sameEvidence(current)) {
       throw StateError('Restored evidence differs from the source.');
+    }
+    final sourceClaims = await verifyTransferHandoffClaims(
+      sourceOwner,
+      _schema,
+    );
+    final restoredClaims = await verifyTransferHandoffClaims(
+      targetOwner,
+      _schema,
+    );
+    if (jsonEncode(sourceClaims) != jsonEncode(restoredClaims)) {
+      throw StateError('Restored handoff claims differ from the source.');
     }
     await verifyRecipeEvidence(
       sourceOwner,
@@ -427,6 +451,10 @@ Future<void> _verify(Map<String, String> env, String source) async {
       'sourceDatabase': source,
       'targetDatabase': target,
       'sourcePreserved': true,
+      'handoffClaims': {
+        ...restoredClaims,
+        'sourceAndRestoredClaimsEqual': true,
+      },
       'tables': current.toTableJson(restored),
       'sequences': current.toSequenceJson(restored),
       'sourceActiveSessions': sourceSessions,
@@ -1224,7 +1252,8 @@ Future<void> _assertSeededJourney(
     'purchasing_delivery_revisions': 9,
     'purchasing_delivery_revision_lines': 8,
     'purchasing_delivery_commands': 9,
-    'purchasing_delivery_terminal_snapshots': 1,
+    // Current-schema seeding also snapshots the issued zero-ledger close/cancel.
+    'purchasing_delivery_terminal_snapshots': 3,
     'articles': 8,
     'production_recipes': 3,
     'production_recipe_revisions': 7,
@@ -1254,6 +1283,7 @@ Future<void> _assertSeededJourney(
     'shifts': 12,
     'workforce_shift_transfer_requests': 9,
     'workforce_shift_transfer_commands': 21,
+    'workforce_shift_handoff_claims': 2,
     'task_transfer_links': 1,
     'task_template_revisions': 5,
     'task_instances': 15,
@@ -1264,8 +1294,23 @@ Future<void> _assertSeededJourney(
   };
   for (final entry in expectedCounts.entries) {
     if (snapshot.tables[entry.key]?.count != entry.value) {
-      throw StateError('Seeded ${entry.key} count differs from the plan.');
+      throw StateError(
+        'Seeded ${entry.key} count differs from the plan: '
+        'expected ${entry.value}, actual ${snapshot.tables[entry.key]?.count}.',
+      );
     }
+  }
+  await verifyTransferHandoffClaims(owner, schema);
+  final terminalShapes = await owner.execute(
+    'SELECT kind,ledger_version,count(*) '
+    'FROM "$schema".purchasing_delivery_terminal_snapshots '
+    'GROUP BY kind,ledger_version ORDER BY kind,ledger_version',
+  );
+  if (jsonEncode(terminalShapes.map((r) => r.toList()).toList()) !=
+      '[["order_cancel",0,1],["order_close",0,1],["order_close",2,1]]') {
+    throw StateError(
+      'Current-schema Purchasing terminal evidence is incomplete.',
+    );
   }
   final statuses = await owner.execute(
     'SELECT status FROM "$schema".task_instances ORDER BY status',

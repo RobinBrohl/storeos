@@ -45,7 +45,7 @@ void main() {
           schemaName: schema,
           runtimeDatabaseUser: Platform.environment['STOREOS_DB_USER'],
         ).apply();
-        expect(applied.last, '0027_article_quantities');
+        expect(applied.last, '0028_bilateral_shift_swaps');
       } finally {
         await connection.execute('DROP SCHEMA IF EXISTS "$schema" CASCADE');
         await connection.close();

@@ -6,6 +6,7 @@ export 'src/article_quantities.dart';
 export 'src/preparation_assignments.dart';
 
 export 'src/shift_transfers.dart';
+export 'src/shift_swaps.dart';
 
 export 'src/preparation_batches.dart';
 export 'src/purchasing.dart';

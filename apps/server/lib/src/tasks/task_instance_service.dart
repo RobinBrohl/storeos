@@ -7,6 +7,16 @@ import 'task_instance_repository.dart';
 import '../knowledge/knowledge_guidance_port.dart';
 import '../merchandising/planogram_guidance_port.dart';
 
+Object? _swapOrdered(Object? value) {
+  if (value is Map<String, dynamic>) {
+    return {
+      for (final k in value.keys.toList()..sort()) k: _swapOrdered(value[k]),
+    };
+  }
+  if (value is List) return value.map(_swapOrdered).toList();
+  return value;
+}
+
 /// Tasks owns selection validation and snapshots; no workforce table access.
 class TaskInstanceService {
   TaskInstanceService(this.database)
@@ -19,6 +29,88 @@ class TaskInstanceService {
   final TaskInstanceRepository _instances;
   final KnowledgeGuidancePort _knowledge;
   final PlanogramGuidancePort _planogram;
+
+  Future<List<Map<String, dynamic>>> captureSwapWork(
+    TxSession tx,
+    ShiftDto shift,
+  ) async {
+    await validateTransfer(tx, shift);
+    return transferSummary(tx, shift.id);
+  }
+
+  Future<void> validateSwapWork(
+    TxSession tx,
+    ShiftDto shift,
+    List<Map<String, dynamic>> references, {
+    required String incoming,
+    PlatformActor? publisher,
+  }) async {
+    await validateTransfer(tx, shift, publisher: publisher);
+    final current = await transferSummary(tx, shift.id);
+    // Typed DTO validation establishes canonical ordered fields before comparison.
+    ShiftSwapLegDto.fromJson({
+      'leg': 'a',
+      'sourceShiftId': shift.id,
+      'sourceVersion': shift.version,
+      'sourceEmployeeId': shift.draft.employeeId,
+      'incomingEmployeeId': incoming,
+      'startsAt': shift.draft.startsAt.toUtc().toIso8601String(),
+      'endsAt': shift.draft.endsAt.toUtc().toIso8601String(),
+      'tasks': references,
+      'taskLinks': <Object?>[],
+      'replacementShiftId': null,
+    });
+    if (jsonEncode(_swapOrdered(current)) !=
+        jsonEncode(_swapOrdered(references))) {
+      throw const PlatformFailure(
+        422,
+        'shift_not_swappable',
+        'Captured work changed.',
+      );
+    }
+  }
+
+  Future<void> createSwapReplacement(
+    TxSession tx,
+    PlatformActor actor, {
+    required ShiftDto source,
+    required String requestId,
+    required String leg,
+    required String replacementShiftId,
+    required String incoming,
+  }) async {
+    if (!{'a', 'b'}.contains(leg)) throw StateError('Exact swap leg required.');
+    await createForShift(
+      tx,
+      actor,
+      shiftId: replacementShiftId,
+      employeeId: incoming,
+      locationId: source.locationId,
+      selections: source.draft.selections,
+    );
+    final originals = await _instances.forShifts(tx, [source.id]),
+        replacements = await _instances.forShifts(tx, [replacementShiftId]);
+    if (originals.isEmpty || originals.length != replacements.length) {
+      throw StateError('Incomplete paired work.');
+    }
+    for (var i = 0; i < originals.length; i++) {
+      final a = await detail(tx, source.id, originals[i].id),
+          b = await detail(tx, replacementShiftId, replacements[i].id);
+      if (a.position != b.position ||
+          a.templateId != b.templateId ||
+          a.revisionId != b.revisionId ||
+          jsonEncode(a.content!.toJson()) != jsonEncode(b.content!.toJson())) {
+        throw StateError('Swap snapshots differ.');
+      }
+      await _instances.linkSwap(tx, source.locationId, requestId, leg, a, b);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> swapLinks(
+    TxSession tx,
+    String request,
+    String leg,
+  ) => _instances.swapLinks(tx, database.locationId, request, leg);
 
   /// Bounded transfer projection deliberately omits all execution evidence.
   Future<List<Map<String, dynamic>>> transferSummary(

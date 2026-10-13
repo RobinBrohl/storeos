@@ -293,3 +293,48 @@ Future<void> verifyTransferGrants(
     }
   }
 }
+
+/// Bounded recovery evidence for the active P4.11 parents seeded by these tools.
+Future<Map<String, dynamic>> verifyTransferHandoffClaims(
+  Connection owner,
+  String schema, {
+  int expectedActive = 2,
+}) async {
+  final s = quotedSchema(schema);
+  final inconsistentParents = await owner.execute('''
+    SELECT count(*) FROM $s.workforce_shift_transfer_requests r
+    WHERE (SELECT count(*) FROM $s.workforce_shift_handoff_claims c
+      WHERE c.company_id=r.company_id AND c.location_id=r.location_id
+        AND c.transfer_request_id=r.id AND c.shift_id=r.source_shift_id)
+      <> CASE WHEN r.status IN ('proposed','accepted') THEN 1 ELSE 0 END
+  ''');
+  final inconsistentClaims = await owner.execute('''
+    SELECT count(*) FROM $s.workforce_shift_handoff_claims c
+    LEFT JOIN $s.workforce_shift_transfer_requests r
+      ON r.company_id=c.company_id AND r.location_id=c.location_id
+        AND r.id=c.transfer_request_id AND r.source_shift_id=c.shift_id
+    LEFT JOIN $s.shifts s ON s.company_id=c.company_id
+      AND s.location_id=c.location_id AND s.id=c.shift_id
+    WHERE r.id IS NULL OR s.id IS NULL
+      OR r.status NOT IN ('proposed','accepted')
+      OR c.swap_request_id IS NOT NULL OR c.leg IS NOT NULL
+  ''');
+  final evidence = (await owner.execute('''
+    SELECT count(*), md5(coalesce(string_agg(
+      to_jsonb(c)::text || to_jsonb(r)::text, ''
+      ORDER BY c.company_id,c.shift_id),''))
+    FROM $s.workforce_shift_handoff_claims c
+    JOIN $s.workforce_shift_transfer_requests r
+      ON r.company_id=c.company_id AND r.id=c.transfer_request_id
+  ''')).single;
+  if (inconsistentParents.single.first != 0 ||
+      inconsistentClaims.single.first != 0 ||
+      evidence.first != expectedActive) {
+    throw StateError('Active transfer handoff claims are inconsistent.');
+  }
+  return {
+    'activeTransferClaims': evidence.first,
+    'claimsAndParentsDigest': evidence[1],
+    'exactScopedParentConsistencyVerified': true,
+  };
+}

@@ -1,5 +1,29 @@
 # StoreOS handover
 
+## Current P4.16 Stage A — 2026-10-13
+
+The owner separately authorized Steps 1–4, bounded remediation of independently
+reproduced F01–F03 and one local implementation commit. **Stage A is independently
+approved; the local implementation commit is on `codex/p416-bilateral-shift-swaps` from**
+`3b2d66f07ef7f261a74e922e32cbe656d8998837`. Strict DTO/domain foundations, migration
+0028, shared handoff claims, owner ports and compatible P4.11 integration are
+delivered locally. See the [Stage A handoff](development/phase-4-16-stage-a.md)
+for all files, populated upgrade/rollback/concurrency proofs and executed checks.
+Full P4.16 is incomplete; Steps 5–10 remain unimplemented and unauthorized.
+The independent Stage A review required changes. Database-owned replacement
+creation provenance, safely replayable receipt encodings and exact terminal DTO
+kinds address its three findings; remediation is verified locally (full server
+842 PASS / 21 explicit opt-in SKIP, all three counterexamples refused, both P4.11
+controller/Chrome opt-ins PASS). The targeted independent re-review returned
+**STAGE A APPROVE: F01–F03 CLOSED, no new findings**, with 114 focused PostgreSQL/
+P4.11 tests and 5 additional probes passing. Finalization verifies the exact
+60-path scope; only three status/handoff documents are updated from reviewed bytes.
+Remote main was fetched and remains at the parent baseline. No full Security
+acceptance, exact implementation CI, push, merge, rebase or deployment is claimed.
+Nineteen other opt-in cases remain unexecuted with their acceptance gates retained.
+The design-only authorization statements below describe the prior
+design baseline and are superseded only for this separately authorized Stage A.
+
 ## Current P4.16 selection — 2026-10-13
 
 **P4.16 Employee-Proposed Bilateral Swap of Pristine Future Shifts is SELECTED /

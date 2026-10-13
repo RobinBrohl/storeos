@@ -788,7 +788,7 @@ void shiftCancellationTests() {
           (await f.owner.execute(
                 'SELECT jsonb_agg((to_jsonb(s)-ARRAY[\'cancelled_at\',\'cancelled_by\','
                 '\'cancellation_reason\',\'cancellation_version\',\'amended_at\','
-                '\'amended_by\',\'amendment_version\']) ORDER BY id)::text '
+                '\'amended_by\',\'amendment_version\',\'swap_request_id\',\'swap_leg\']) ORDER BY id)::text '
                 'FROM "${f.schema}".shifts s',
               )).single.first
               as String,
@@ -830,6 +830,7 @@ void shiftCancellationTests() {
           '0025_planned_preparation_assignments',
           '0026_purchase_order_delivery_evidence',
           '0027_article_quantities',
+          '0028_bilateral_shift_swaps',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

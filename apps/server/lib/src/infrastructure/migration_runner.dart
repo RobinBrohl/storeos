@@ -98,6 +98,23 @@ class MigrationRunner {
         final role = '"${runtimeUser.replaceAll('"', '""')}"';
         await tx.execute('GRANT USAGE ON SCHEMA $_schema TO $role');
         await tx.execute('GRANT SELECT ON $_schema.schema_migrations TO $role');
+        if (known.containsKey('0028_bilateral_shift_swaps')) {
+          await tx.execute(
+            'GRANT SELECT, INSERT ON $_schema.workforce_shift_swap_requests, $_schema.workforce_shift_swap_legs, $_schema.workforce_shift_swap_commands, $_schema.task_swap_links, $_schema.workforce_shift_handoff_claims TO $role',
+          );
+          await tx.execute(
+            'REVOKE UPDATE, DELETE, TRUNCATE ON $_schema.workforce_shift_swap_requests, $_schema.workforce_shift_swap_legs, $_schema.workforce_shift_swap_commands, $_schema.task_swap_links, $_schema.workforce_shift_handoff_claims FROM $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (status,version,offered_by,offered_at,offer_operation_id,confirmed_by,confirmed_at,confirmation_operation_id,terminal_by,terminal_at,terminal_operation_id,terminal_kind,terminal_reason) ON $_schema.workforce_shift_swap_requests TO $role',
+          );
+          await tx.execute(
+            'GRANT UPDATE (replacement_shift_id) ON $_schema.workforce_shift_swap_legs TO $role',
+          );
+          await tx.execute(
+            'GRANT DELETE ON $_schema.workforce_shift_handoff_claims TO $role',
+          );
+        }
         await tx.execute('GRANT SELECT ON $_schema.accounts TO $role');
         await tx.execute(
           'GRANT SELECT, INSERT, DELETE ON $_schema.auth_sessions TO $role',

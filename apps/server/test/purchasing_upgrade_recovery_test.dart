@@ -25,7 +25,10 @@ void main() {
       await withMerchandisingFixture(
         (f) async {
           await seedPurchasingLegacy(f);
-          final before = await purchasingLegacyEvidence(f),
+          final before = await purchasingLegacyEvidence(
+                f,
+                beforeSwapMigration: true,
+              ),
               beforeCatalog = await catalog(f),
               temporary = await Directory.systemTemp.createTemp(
                 'storeos_p412_recovery_',
@@ -78,7 +81,10 @@ void main() {
               throwsA(isA<ServerException>()),
             );
             expect(await catalog(f), beforeCatalog);
-            expect(await purchasingLegacyEvidence(f), before);
+            expect(
+              await purchasingLegacyEvidence(f, beforeSwapMigration: true),
+              before,
+            );
             expect(
               (await f.owner.execute(
                 "SELECT to_regclass('${f.schema}.purchasing_orders')",
@@ -97,9 +103,19 @@ void main() {
                 '0025_planned_preparation_assignments',
                 '0026_purchase_order_delivery_evidence',
                 '0027_article_quantities',
+                '0028_bilateral_shift_swaps',
               ],
             );
-            expect(await purchasingLegacyEvidence(f), before);
+            expect(
+              await purchasingLegacyEvidence(f, beforeSwapMigration: true),
+              before,
+            );
+            expect(
+              (await f.owner.execute(
+                'SELECT count(*) FROM ${f.schema}.shifts WHERE swap_request_id IS NOT NULL OR swap_leg IS NOT NULL',
+              )).single.first,
+              0,
+            );
             expect(
               await MigrationRunner(
                 connection: f.owner,

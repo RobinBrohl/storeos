@@ -9,6 +9,7 @@ import 'recipe_fixture.dart';
 import 'preparation_batch_fixture.dart';
 import 'task_knowledge_fixture.dart';
 import 'preparation_assignment_integration_test.dart' show manage, request;
+import 'shift_swap_legacy_fixture.dart' show seedReleasedTransfers;
 
 const purchasingLegacyTables = [
   'stock_levels',
@@ -39,6 +40,7 @@ const purchasingLegacyTables = [
 Future<Map<String, Object?>> purchasingLegacyEvidence(
   MerchandisingFixture f, {
   bool includeAssignments = false,
+  bool beforeSwapMigration = false,
 }) async => {
   for (final table in [
     ...purchasingLegacyTables,
@@ -48,7 +50,7 @@ Future<Map<String, Object?>> purchasingLegacyEvidence(
     ],
   ])
     table: (await f.owner.execute(
-      "SELECT count(*),md5(string_agg(to_jsonb(t)::text,'' ORDER BY to_jsonb(t)::text)) FROM \"${f.schema}\".$table t",
+      "SELECT count(*),md5(string_agg(${beforeSwapMigration && table == 'shifts' ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])" : 'to_jsonb(t)'}::text,'' ORDER BY ${beforeSwapMigration && table == 'shifts' ? "(to_jsonb(t)-ARRAY['swap_request_id','swap_leg'])" : 'to_jsonb(t)'}::text)) FROM \"${f.schema}\".$table t",
     )).single.toList(),
 };
 Future<void> seedPurchasingLegacy(MerchandisingFixture f) async {
@@ -68,8 +70,17 @@ Future<void> seedPurchasingLegacy(MerchandisingFixture f) async {
     '$batchManage/${opening['batchId']}/count-corrections',
     body: batchCorrection(),
   );
-  final g = await guidedScenario(f),
-      recipient = await batchWorker(f, 'purchasing_legacy_recipient'),
+  final g = await guidedScenario(f);
+  final hasSharedClaims =
+      (await f.owner.execute(
+        "SELECT to_regclass('${f.schema}.workforce_shift_handoff_claims')",
+      )).single.first !=
+      null;
+  if (!hasSharedClaims) {
+    await seedReleasedTransfers(f, includeStale: false);
+    return;
+  }
+  final recipient = await batchWorker(f, 'purchasing_legacy_recipient'),
       id = newUuid();
   final shift = newUuid(),
       start = DateTime.now().toUtc().add(const Duration(days: 2));

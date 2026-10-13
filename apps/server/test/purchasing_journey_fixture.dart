@@ -9,6 +9,7 @@ import 'recipe_fixture.dart';
 import 'preparation_batch_fixture.dart';
 import 'task_knowledge_fixture.dart';
 import 'preparation_assignment_integration_test.dart' show manage, request;
+import 'shift_swap_legacy_fixture.dart' show seedReleasedTransfers;
 
 const purchasingLegacyTables = [
   'stock_levels',
@@ -69,8 +70,17 @@ Future<void> seedPurchasingLegacy(MerchandisingFixture f) async {
     '$batchManage/${opening['batchId']}/count-corrections',
     body: batchCorrection(),
   );
-  final g = await guidedScenario(f),
-      recipient = await batchWorker(f, 'purchasing_legacy_recipient'),
+  final g = await guidedScenario(f);
+  final hasSharedClaims =
+      (await f.owner.execute(
+        "SELECT to_regclass('${f.schema}.workforce_shift_handoff_claims')",
+      )).single.first !=
+      null;
+  if (!hasSharedClaims) {
+    await seedReleasedTransfers(f, includeStale: false);
+    return;
+  }
+  final recipient = await batchWorker(f, 'purchasing_legacy_recipient'),
       id = newUuid();
   final shift = newUuid(),
       start = DateTime.now().toUtc().add(const Duration(days: 2));

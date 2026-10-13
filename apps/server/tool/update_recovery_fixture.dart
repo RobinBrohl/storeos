@@ -3,7 +3,7 @@
 // scripts/update/Run-UpdateRecoveryAcceptance.ps1 creates the database, grants
 // the restricted runtime role CONNECT and drops the database again. The owner
 // connection builds the pre-update schema and seed; the runtime role serves the
-// API only after the pending migrations (0011 through 0022) have been applied.
+// API only after the pending migrations (0011 through 0028) have been applied.
 //
 // Modes (STOREOS_UPDATE_MODE):
 //  - prepare: apply exactly migrations 0001-0010 from a byte-identical copy of
@@ -11,7 +11,7 @@
 //    evidence with owner SQL, capture stable projections and write the private
 //    run manifest plus a non-secret prepare result.
 //  - upgrade: apply the real repository migrations through the production
-//    MigrationRunner (only 0011 through 0022 may be pending), verify checksums,
+//    MigrationRunner (only 0011 through 0028 may be pending), verify checksums,
 //    idempotency, preservation of the pre-update projections, the new
 //    0011/0012 columns, constraints and the published-interval exclusion
 //    invariant, the 0013 article master, 0014 assortment and 0015 manual stock
@@ -83,6 +83,7 @@ const _expectedPendingMigrations = [
   '0025_planned_preparation_assignments',
   '0026_purchase_order_delivery_evidence',
   '0027_article_quantities',
+  '0028_bilateral_shift_swaps',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,
@@ -478,7 +479,9 @@ Future<void> _upgrade(Map<String, String> env, String source) async {
     ).apply();
     if (!_sameList(applied, _expectedPendingMigrations)) {
       throw StateError(
-        'The update did not apply exactly the pending migrations.',
+        'The update did not apply exactly the pending migrations: '
+        'expected ${jsonEncode(_expectedPendingMigrations)}, '
+        'applied ${jsonEncode(applied)}.',
       );
     }
     final second = await MigrationRunner(
@@ -1403,6 +1406,13 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       transferRecords,
     );
     await verifyTransferGrants(owner, _schema, runtimeUser);
+    final handoffClaims = await verifyTransferHandoffClaims(owner, _schema);
+    // Preserve the upgraded source's active claims/parents across isolated
+    // recovery of the older 0010 restore point, which predates these tables.
+    await _writePrivateManifest(
+      File(_required(env, 'STOREOS_UPDATE_MANIFEST')),
+      {...manifest, 'upgradedHandoffClaims': handoffClaims},
+    );
     final purchasingRecords = await seedPurchasing(
       (method, route, body, status) => api.request(
         method,
@@ -1465,6 +1475,7 @@ Future<void> _smoke(Map<String, String> env, String source) async {
         'receipts': 21,
         'taskLinks': 1,
         'exactReplayVerified': true,
+        'handoffClaims': handoffClaims,
       },
       'recipes': {
         'preparationMigration': '0022_preparation_batches',
@@ -1667,6 +1678,22 @@ Future<void> _recovery(Map<String, String> env, String source) async {
         sourceMigrations.versions.last != _expectedPendingMigrations.last) {
       throw StateError('The upgraded source is not at the latest migration.');
     }
+    final sourceClaims = await verifyTransferHandoffClaims(
+      sourceOwner,
+      _schema,
+    );
+    if (jsonEncode(sourceClaims) !=
+        jsonEncode(manifest['upgradedHandoffClaims'])) {
+      throw StateError('Recovery changed upgraded handoff claims or parents.');
+    }
+    if ((await targetOwner.execute(
+          "SELECT to_regclass('$_schema.workforce_shift_handoff_claims')",
+        )).single.first !=
+        null) {
+      throw StateError(
+        'The recovered 0010 target contains post-prefix claims.',
+      );
+    }
     final sourceState = await sourceOwner.execute(
       Sql.named(
         'SELECT status, version FROM $_schema.shifts '
@@ -1721,6 +1748,8 @@ Future<void> _recovery(Map<String, String> env, String source) async {
       'sourceAtLatest': true,
       'sourceSmokeEvidencePresent': true,
       'sourceDistinctFromTarget': true,
+      'sourceHandoffClaimsPreserved': true,
+      'targetPredatesHandoffClaims': true,
     });
     stdout.writeln('update_recovery_fixture_recovered');
   } finally {

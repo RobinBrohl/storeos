@@ -8,7 +8,136 @@ The original implementation review required changes for F01–F03. The targeted
 independent re-review returned **STAGE A APPROVE**, with all three findings CLOSED
 and no new findings. This approves Steps 1–4 only. Full Security acceptance,
 exact implementation CI, publication and P4.16 closure remain unclaimed.
-ADR 0030 and the selected consent protocol are unchanged.
+ADR 0030 and the selected consent protocol are unchanged. The publication and
+local CI fixture remediation below supersede the earlier pre-publication wording
+only for their explicitly recorded scope; the new local changes await review.
+
+## CI recovery fixture remediation — 2026-10-13, local and uncommitted
+
+The owner authorized diagnosis and bounded local remediation after publishing
+`04c60ebf774943160f67d2829802a40037149ecc` on
+`codex/p416-bilateral-shift-swaps` and opening [Draft PR #1](https://github.com/RobinBrohl/storeos/pull/1).
+[Push CI 38428859546](https://github.com/RobinBrohl/storeos/actions/runs/38428859546)
+and [PR CI 38428903352](https://github.com/RobinBrohl/storeos/actions/runs/38428903352)
+both failed backup/restore and update/recovery acceptance. This remediation does
+not claim successful remote CI, a new independent verdict or merge authorization.
+HEAD remains the published commit; main remains
+`3b2d66f07ef7f261a74e922e32cbe656d8998837`. **P4.16 remains IN PROGRESS.**
+
+### Demonstrated causes and corrections
+
+Both original PowerShell wrappers were reproduced using the committed source in
+an ignored isolated copy, a new Docker Compose project, Linux PostgreSQL 17,
+fresh private test secrets and the actual restricted `storeos` runtime role.
+No normally operating database, backup destination or served Flutter assets were
+used. Diagnostic-only instrumentation in the disposable copy printed migration
+version names without altering the failing equality assertion.
+
+- Update/recovery applied the exact ordered **0011–0028** list, but its expected
+  list contained only **0011–0027**. The single missing 0028 entry explains the
+  original failure. The fix adds that entry and useful version-only mismatch
+  diagnostics; exact comparison, repository checksums, prefix preservation and
+  second-application idempotence remain mandatory.
+- Backup preparation started the current HTTP writer after only migrations
+  **0001–0025**. Valid transfer proposal reached the shared occupancy lookup and
+  failed with **SQLSTATE 42P01**, missing relation
+  `storeos_platform.workforce_shift_handoff_claims`; PostgreSQL reported
+  `parserOpenTable` / `parse_relation.c`. The HTTP boundary correctly classified
+  this as `500 internal_error`. The fixture now applies the entire current
+  migration chain, checks a second empty application, then opens runtime HTTP
+  connections. No claim guard, grant or production error classification changed.
+
+The backup fixture now snapshots shared claims and proves both directions of
+scoped claim/active-parent consistency on source and restored databases, including
+exact claim/parent digests. Its nine transfer requests and 21 historical receipts
+retain exact replay; the two active requests each own one claim and terminal
+requests own none. Update recovery records these active claims/parents after its
+smoke and proves they remain unchanged on the upgraded source when the old 0010
+restore point is recovered. That target correctly predates the claim schema and
+retains its session/plugin revocation and runtime CONNECT fence.
+
+Current-schema Purchasing seeding produces three terminal snapshots rather than
+the previous one: issued zero-ledger cancellation, issued zero-ledger closure,
+and the tracked closure at ledger version 2. The fixture asserts these three
+exact shapes as well as their count; no assertion becomes optional. The original
+populated legacy upgrade proofs remain separate recovery tests.
+
+Executing those previously opt-in legacy tests reproduced the same missing-table
+failure in `seedPurchasingLegacy`. Before 0028, it now uses the existing immutable
+released P4.11 writer pinned at `3b2d66f07ef7f261a74e922e32cbe656d8998837` to
+seed all nine historical transfer lifecycle cases. Existing guidance/production/
+Stock seed evidence remains populated. Current-schema seeds keep the current
+writer. The existing 0027 stale-backfill fixture retains its original default
+two additional stale requests. This is test-only seeding, not a runtime fallback.
+
+### Exact remediation inventory
+
+1. `apps/server/tool/backup_restore_fixture.dart`: migration-before-HTTP ordering,
+   idempotence, claim snapshot/restore checks and exact dependent terminal shapes.
+2. `apps/server/tool/update_recovery_fixture.dart`: exact 0028 inventory and
+   upgraded-source claim preservation across isolated 0010 recovery.
+3. `apps/server/tool/shift_transfer_acceptance.dart`: bounded scoped claim/parent
+   consistency and digest verifier shared by the recovery fixtures.
+4. `apps/server/test/backup_recovery_regression_test.dart`: original valid HTTP
+   proposal returns 500 at the old prefix with no request/receipt persisted;
+   after applying 0026–0028, the same command returns 201, acquires its scoped
+   claim, replays exactly and releases the claim through participant closure.
+5. `apps/server/test/purchasing_journey_fixture.dart`: use released transfer
+   seeding only for legacy prefixes that predate shared claims.
+6. `apps/server/test/shift_swap_legacy_fixture.dart`: reuse its pinned released
+   writer for those earlier prefixes while retaining actual 0027 stale defaults.
+7. `docs/development/phase-4-16-stage-a.md`: this evidence and bounded handoff.
+
+### Local verification
+
+The original wrapper commands, run from the isolated copy with its fresh Compose
+configuration and locked offline package resolution, were:
+
+```powershell
+pwsh -NoProfile -File scripts/backup/Run-BackupRestoreAcceptance.ps1 -DartPath C:\dev\flutter\bin\cache\dart-sdk\bin\dart.exe -SkipPackageResolution
+pwsh -NoProfile -File scripts/update/Run-UpdateRecoveryAcceptance.ps1 -DartPath C:\dev\flutter\bin\cache\dart-sdk\bin\dart.exe -SkipPackageResolution
+```
+
+| Evidence | Result |
+| --- | --- |
+| Original backup and update wrappers | Both reproduced, exit 1; [backup before](../../.local/p416-ci-remediation/backup-before.log), [update before](../../.local/p416-ci-remediation/update-before.log), [sanitized PostgreSQL error](../../.local/p416-ci-remediation/postgres-before-errors.log). |
+| Same backup wrapper after remediation | **PASS**, exit 0: preparation, encrypted backup, restore, verification, tamper rejection, fencing and cleanup; [report](../../.local/p416-ci-remediation/baseline/.local/backup-acceptance/af96b3798cb04f8e/report.json). Two exact scoped active claims and parents preserved. |
+| Same update wrapper after remediation | **PASS**, exit 0: exact 18 pending migrations 0011–0028, 28 total, checksums/prefix/preservation, empty second run, HTTP smoke, encrypted 0010 recovery, source claim preservation, fencing and cleanup; [report](../../.local/p416-ci-remediation/baseline/.local/update-recovery/219a06cd1aad4a37/report.json). |
+| Existing P4.12/P4.13/P4.14/P4.15 encrypted recovery opt-ins with final seed helper | **4 PASS / 0 FAIL / 0 SKIP**; actual populated upgrade, late rollback, retained evidence, isolated fenced recovery and exact replay; [log](../../.local/p416-ci-remediation/prior-recovery.log). |
+| Final populated 0027→0028 rollback/backfill/stale/replay and HTTP regression | **2 PASS / 0 FAIL / 0 SKIP**; [log](../../.local/p416-ci-remediation/final-migration-http.log). |
+| Full server regression | **843 PASS / 0 FAIL / 21 explicit opt-in SKIP**; [log](../../.local/p416-ci-remediation/server-full.log). Includes P4.11 HTTP lifecycle/replay/authorization, shared occupancy/release/concurrency, restricted SQL integrity and F01/F02 adversarial negatives. |
+| API contracts, including F03 terminal kind regressions | **362 PASS / 0 FAIL / 0 SKIP**; [log](../../.local/p416-ci-remediation/api-tests.log). |
+| Server/contracts analyzers and format checks | **PASS**, no analyzer issues; 238 server and 65 contract files formatted with zero changes; pinned Dart 3.13.4. |
+| Backup/update acceptance report redaction checks | **PASS**; [backup log](../../.local/p416-ci-remediation/backup-redaction.log), [update log](../../.local/p416-ci-remediation/update-redaction.log). |
+
+The full server run started before the final legacy seed-helper adjustment; the
+final four encrypted recovery tests and two migration/HTTP regressions above
+cover that subsequent test-only adjustment. The fixture files executed by the
+original wrappers and the final legacy recovery helpers match the corresponding
+current source bytes. Counts overlap and are not an additive unique-test total.
+The disposable Compose container, volume and network were removed after success;
+its generated private test secrets were cleared. Reports remain local and ignored.
+
+All migrations 0001–0028 and production libraries are unchanged. Historical
+0001–0027 raw checkout SHA-256 values remain identical, including retained line
+endings. Existing published 0028's SHA-256 remains
+`5742ff40bd68fb5acbd80e6b8e56ed986d0d403b03f34c957e1dc7fc87bc25be`.
+Its deployment/checksum boundary is preserved; no migration history is rewritten
+and no new production migration is required for these fixture corrections.
+
+The original F01–F03 closure applies to the reviewed published implementation;
+its provenance, receipt, terminal-kind and shared-claim enforcement are unchanged.
+The new fixture patch is **ready for independent targeted review** and has not
+received that review. No Stage B coordinator,
+swap HTTP/OpenAPI/UI, full four-actor workflow, full P4.16 functional/Security
+approval, full swap recovery acceptance or Linux/remote CI rerun is claimed.
+The four recovery opt-ins above were freshly executed. Seventeen of the full
+run's 21 skips were not freshly executed for this patch; this includes the two
+P4.11 controller/Chrome cases whose prior separate PASS evidence remains retained.
+Fifteen of the previously nineteen unexecuted cases remain future gates with
+their original qualifications and historical P4.11/P4.15 evidence retained.
+No commit, push, merge, deployment or CI rerun is authorized
+or performed for this local patch.
 
 ## Independent approval and local commit finalization — 2026-10-13
 

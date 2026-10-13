@@ -6,9 +6,15 @@ import 'merchandising_fixture.dart';
 
 /// Seed through the immutable released P4.11 implementation at actual 0027.
 /// Keeping its package mapping separate avoids a test-only bypass in production.
-Future<Map<String, dynamic>> seedActual0027Transfers(
-  MerchandisingFixture f,
-) async {
+Future<Map<String, dynamic>> seedActual0027Transfers(MerchandisingFixture f) =>
+    seedReleasedTransfers(f);
+
+/// Earlier recovery prefixes must be seeded by the released P4.11 writer;
+/// the current writer requires 0028 and must not be used before that migration.
+Future<Map<String, dynamic>> seedReleasedTransfers(
+  MerchandisingFixture f, {
+  bool includeStale = true,
+}) async {
   const baseline = '3b2d66f07ef7f261a74e922e32cbe656d8998837';
   final root = Directory(
     '../../.local/p416-stage-a/legacy_${newUuid()}',
@@ -85,7 +91,7 @@ void main() { test('Seed actual released P4.11 at 0027',() async {
     (await f.call(method,route,token:token,body:body,expected:status,platform:false)).body;
   final records=await seedShiftTransfers((m,r,p,s)=>call(f.adminToken!,m,r,p,s),(m,r,p,s)=>call(a.token,m,r,p,s),(m,r,p,s)=>call(b.token,m,r,p,s),
     merchandisingTestLocation,a.employee,b.employee,template,revision);
-  for(var n=0;n<2;n++) {
+  for(var n=0;n<${includeStale ? 2 : 0};n++) {
     final shift=newUuid(),request=newUuid(),start=DateTime.now().toUtc().add(Duration(days:7,hours:n*3));
     await f.call('POST','/shifts',expected:201,body:{'id':shift,'locationId':merchandisingTestLocation,'employeeId':a.employee,
       'startsAt':start.toIso8601String(),'endsAt':start.add(const Duration(hours:1)).toIso8601String(),'selections':[{'templateId':template,'revisionId':revision}]});

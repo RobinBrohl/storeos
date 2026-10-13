@@ -1,9 +1,22 @@
 # P4.15 — Explicit Article quantity semantics
 
-Status: APPROVED IMPLEMENTATION; final-source verification PASS; local implementation commit authorized.
-Targeted functional APPROVE; F01/F02/F03 CLOSED; SECURITY APPROVE with no required
-remediation, reported by the user on 2026-10-13. Publication/remote CI pending;
-P4.15 is not DONE/CLOSED.
+Status: **DONE/CLOSED — accepted implementation** at
+`f4ffffaae235307424133c4ed280328df3e33f01`, with bounded test-only correction
+`c132a88feb619268c65fae69d3eeff64d5363218` on `main`. Targeted functional APPROVE;
+F01/F02/F03 CLOSED; SECURITY APPROVE, no required fixes. Final acceptance:
+**7 PASS / 6 QUALIFIED / 0 FAIL**. Migration chain: **0001–0027**.
+Feature CI 38317916154 and corrected main CI 38323585842 succeeded, all five jobs.
+Original main CI 38320235803 remains a recorded FAILURE from the demonstrated
+audit-privacy substring test defect. See the [final closure](#final-documentation-closure--2026-10-13)
+for the complete chronology and exact URLs.
+**Separate documentation-closure commit publication and its own exact-commit CI: PENDING.**
+No publication or CI success is claimed for this local documentation commit.
+**P4.16 is UNSELECTED.**
+
+The following selection and authorization passage records the pre-publication
+snapshot; subsequent publication, main integration, test correction and authorized
+documentation closure are recorded at the end without rewriting historical results.
+
 Selected 2026-10-12 on clean synchronized `main` at
 `f83fece49671946f3a83240458464434ef09573c`; branch
 `codex/p415-article-quantities`. One local implementation commit was authorized
@@ -172,7 +185,10 @@ Local logs/fixtures/manifests are ignored artifacts, not committed delivery reco
 Older failed migration-syntax and browser-focus attempts remain local history;
 their errors were corrected and are superseded by the successful runs above.
 
-## Qualifications and remaining gates
+## Historical qualifications and gates before publication
+
+This section retains the earlier verification/publication snapshot. Current gate
+completion and all six retained qualifications are reconciled in the final closure.
 
 The initial broad run's 21 skips are separately opted-in browser/recovery/client
 journeys across current and earlier slices; they are not failed tests or automatic
@@ -273,6 +289,10 @@ remains historical evidence. The subsequent external functional and Security
 approvals and final-source verification are recorded below.
 
 ## Final approval and implementation verification — 2026-10-13
+
+This is the historical local verification snapshot before publication and main CI.
+Its pending statements are superseded by the final closure below; its executed
+results, failed diagnostic attempts and conditional-skip accounting are retained.
 
 Review provenance: the user supplied targeted independent functional **APPROVE**,
 F01/F02/F03 **CLOSED**, focused Codex Security **SECURITY APPROVE**, and no required
@@ -382,7 +402,7 @@ Private local credential/generated-file checks and the complete staged inventory
 are required before the one authorized commit. None of these local results claims
 remote CI, production deployment, push, merge or P4.15 DONE/CLOSED.
 
-### Safe publication and exact-commit CI
+### Historical publication procedure before authorization
 
 This delivery authorizes one local implementation commit only. P4.15 remains
 publication/remote-CI pending, with no merge or DONE/CLOSED transition.
@@ -403,3 +423,115 @@ After separate push authorization:
    encrypted quantity recovery opt-ins retain their explicit local acceptance records.
 5. Record that exact SHA, run URL, event, attempt and job outcomes before proposing
    any separately authorized merge/publication closure. No remote CI result is claimed here.
+
+## Final documentation closure — 2026-10-13
+
+P4.15 is **DONE/CLOSED — accepted implementation**. Implementation commit:
+`f4ffffaae235307424133c4ed280328df3e33f01` (`Add explicit article quantities and exact stock targets`).
+The bounded test-only correction is `c132a88feb619268c65fae69d3eeff64d5363218`
+(`Fix quantity audit privacy assertions`), whose parent is the implementation.
+This documentation-only closure began on clean synchronized `main` at that fix SHA.
+The feature branch remains preserved at the original implementation SHA.
+
+Independent targeted functional review returned **APPROVE**; F01/F02/F03 are
+**CLOSED**. Focused Codex Security returned **SECURITY APPROVE**, with no required
+fixes. These are the user-supplied independent verdicts recorded above, not new
+reviews manufactured by this closure. No unchanged production code was re-reviewed.
+
+### Publication and CI chronology
+
+| Event | Exact source and result |
+| --- | --- |
+| Implementation selection and commit | Selected on `f83fece49671946f3a83240458464434ef09573c`; implementation `f4ffffaae235307424133c4ed280328df3e33f01`, 70 files. |
+| Feature publication | One non-force feature push; [CI 38317916154](https://github.com/RobinBrohl/storeos/actions/runs/38317916154), `push`, `codex/p415-article-quantities`, exact implementation SHA, attempt 1: SUCCESS, all five jobs. |
+| Main integration | Authorized fast-forward-only integration and one non-force main push to the same implementation SHA; no new merge commit or content change. |
+| Original main CI failure | [CI 38320235803](https://github.com/RobinBrohl/storeos/actions/runs/38320235803), `push`, `main`, implementation SHA, attempt 1: FAILURE. Dart failed; the other four jobs succeeded. Server: 731 PASS / 1 FAIL / 21 conditional SKIP. Subsequent HTTP readiness/login smoke was skipped. This failed run was not rerun or relabeled as success. |
+| Bounded test-only correction | `c132a88feb619268c65fae69d3eeff64d5363218`, one changed file: `apps/server/test/article_quantity_integration_test.dart`. No production, migration, API schema, Flutter, dependency, CI configuration or unrelated-test change. One non-force main push. |
+| Corrected exact-commit main CI | [CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842), `push`, `main`, exact correction SHA, attempt 1: SUCCESS, all five jobs. Both the structural privacy regression and the original kg/g/replay integration case passed. Server: 733 PASS / 21 conditional SKIP. |
+| Separate documentation closure | One local documentation-only commit is authorized. Its publication and its own exact-commit CI remain PENDING. Its SHA is supplied by the Git handoff; no push or CI success is claimed for it here. |
+
+The original failure was a demonstrated test-assertion defect at the then-current
+`article_quantity_integration_test.dart:304`: serialized audit JSON was required
+not to contain `1250`. The valid Article UUID
+`2db8c724-12b2-46ec-a512-e4125093bd5c` contained those digits. The correction matches
+decoded audit fields against exact per-action allowed keys and types. Canonical
+UUIDs and positive integer version metadata can contain those digits; business
+quantities, factors, reasons, labels, nested contents and free text are rejected
+as extra fields or invalid values. The integration fixture uses the demonstrated
+UUID deterministically. Five audit records, Stock/evidence integrity and exact
+replay remain asserted. The failed CI URL is also retained in the test comment.
+
+The correction passed three isolated PostgreSQL integration repetitions with
+ordering seeds 41501, 41502 and 41503: **12/12 each**. The full affected server
+suite passed **733 tests / 21 conditional SKIP**; analyzer reported no issues;
+formatting checked **223 files / 0 changes**. The first sandboxed compiler attempt
+was blocked before loading tests by a temporary-file permission error; the same
+privacy test passed with the required execution permission. No assertion was
+disabled or weakened to bypass an application failure. Disposable PostgreSQL
+resources were removed; normal container identities and 39 served Web asset
+hashes/timestamps remained unchanged. No normal database writer was used.
+
+Earlier final-source verification remains **1,487 package PASS / 21 conditional
+SKIP**, with **21 separately executed opt-ins PASS** as reconciled above. Those
+skipped entries are not converted into package passes. The later server-only
+test-fix result and exact-commit CI are separate executed evidence; no new combined
+four-package local total is inferred. Migration `0027_article_quantities.sql`
+and historical 0001–0026, semantic anchors, bindings and existing contracts are
+unchanged by the correction and this documentation closure.
+
+All five configured jobs completed SUCCESS in corrected main CI:
+
+| Job | Main CI 38323585842, exact `c132a88feb619268c65fae69d3eeff64d5363218`, attempt 1 |
+| --- | --- |
+| dart | SUCCESS |
+| flutter | SUCCESS |
+| numeric-guided-work-e2e | SUCCESS |
+| backup-restore-acceptance | SUCCESS |
+| update-recovery-acceptance | SUCCESS |
+
+### Retained acceptance and boundaries
+
+Final acceptance remains **7 PASS / 6 QUALIFIED / 0 FAIL**. This is the bounded
+local acceptance matrix, not an invented independent review score. The six
+qualifications remain explicit:
+
+| Qualification | Closure disposition |
+| --- | --- |
+| Q1 — memory-only recovery | Browser/process reload or genuine session/Location replacement can lose uncertain client tracking. A live uncertain command retains frozen identity/payload through later rejection and permits exact retry only; durable server receipts/evidence remain. |
+| Q2 — immutable semantics | One Article anchor and one prospective Stock binding remain immutable. Suspension is permanent. Anchor replacement, rebinding, resumption or Stock rebasing needs a separate reviewed contract. |
+| Q3 — F04 debt | Pre-existing long-name Location-picker overflow remains ACTIVE / NONBLOCKING [technical debt](technical-debt.md#p415-nonblocking-location-picker-debt). It was not fixed or suppressed in this slice. |
+| Q4 — physical/readiness evidence | Native devices, scanners/printers, accessibility and broad production/operator readiness are not established by browser/API or CI checks. |
+| Q5 — plugin-specific execution | Quantity routes retain the existing session-only boundary without plugin grants. Dedicated P4.15 plugin-token journeys were not separately executed. |
+| Q6 — broader acceptance boundaries | The historical local verification did not freshly execute numeric/global backup/update wrappers. The feature and corrected-main CI now separately execute those configured jobs successfully. This does not broaden their declared acceptance, replace dedicated P4.15 Chrome/encrypted-recovery evidence or establish arbitrary recovery, hardware or operator readiness. |
+
+The delivered contract is explicit quantity configuration/binding and reasoned,
+reviewed exact absolute manual Stock targets, with compatible mass/volume/count
+units and bounded direct Article packaging. It does not deliver automatic Goods
+Receipt, automatic Stock posting, Recipe/Purchasing conversion, production
+consumption, POS ingestion, costing, density, cross-dimensional/cross-Article
+conversion, variable-weight packs, offline queues or synchronization. Inventory
+and Stock ownership/public ports, self-hosted modular-monolith operation and
+operator data ownership remain intact; the long-term vision and strategic roadmap
+are unchanged. **P4.16 is UNSELECTED.**
+
+### Documentation publication gate
+
+**The separate documentation-closure commit publication and its own exact-commit
+CI remain PENDING.** This local documentation reconciliation does not claim a
+push or CI result for its own commit. No full application regression rerun is
+needed or claimed for Markdown-only changes.
+
+Documentation verification checked 250 local links/heading anchors without errors,
+current status consistency, the nine-file Markdown-only scope and preserved
+historical verification/qualification blocks, ADR decision and strategic roadmap.
+The three CI run identities, exact SHAs, events, branches, attempts and outcomes
+were rechecked; external approvals remain the supplied review evidence.
+
+After separate publication authorization, fetch and verify clean local `main`,
+the exact local documentation SHA, its parent
+`c132a88feb619268c65fae69d3eeff64d5363218` and unchanged remote `main`. Stop on
+unexpected work or protection requiring another path. Push that verified result
+once without force to `origin/main`; verify the remote SHA; select its exact-SHA
+`main`/`push` CI run and require completed SUCCESS for all five configured jobs.
+Record that documentation SHA, URL, event, attempt and results separately from
+implementation/correction CI. No next capability is selected by that step.

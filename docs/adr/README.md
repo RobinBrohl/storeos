@@ -31,7 +31,7 @@ ADRs halten langlebige Entscheidungen samt Alternativen und Folgen fest. Die Num
 | [0025](0025-one-way-shift-transfer-before-execution.md) | One-way future Shift transfer with exact recipient consent, independent approval and immutable lineage; P4.11 DONE/CLOSED |
 | [0026](0026-bounded-purchase-order-intent.md) | Minimal Company Supplier identity, local PurchaseOrder intent, frozen selections and eight durable commands; P4.12 DONE/CLOSED, F01 CLOSED, targeted APPROVE, SECURITY APPROVE, implementation CI 38152045998 and closure CI 38156014870 successful |
 | [0027](0027-planned-preparation-assignment.md) | Production-owned immutable preparation requests with retained approved revision authority and atomic Batch linkage; P4.13 DONE/CLOSED — accepted implementation, F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful; docs publication/closure-commit CI pending |
-| [0029](0029-explicit-article-quantity-semantics.md) | Accepted P4.15 immutable Article quantity anchors, versioned direct packaging, prospective Stock bindings and exact reviewed manual targets; targeted APPROVE, F01–F03 CLOSED, SECURITY APPROVE; publication/remote CI pending |
+| [0029](0029-explicit-article-quantity-semantics.md) | Accepted P4.15 immutable Article quantity anchors, versioned direct packaging, prospective Stock bindings and exact reviewed manual targets; DONE/CLOSED — accepted implementation, targeted APPROVE, F01–F03 CLOSED, SECURITY APPROVE and successful main CI 38323585842; separate documentation-closure publication and its own exact-commit CI PENDING; P4.16 UNSELECTED |
 
 Write new ADRs in English with Context, Decision, Alternatives, Consequences and Open Questions, plus a status such as Proposed, Accepted or Superseded by ADR …. Preserve existing filenames and historical German records. See the [language policy](../development/workflow.md).
 
@@ -48,6 +48,17 @@ foundation is committed at `e8ce8c3`, with acceptance correction `f9c8b07`;
 P4.3 is DONE/CLOSED per the [closure evidence](../development/phase-4-3-manual-stock.md#final-acceptance-closure--2026-10-04).
 The broader unit catalog/conversion and costing questions remain open. Do not rewrite the
 original alternatives, decisions or dated verification to reflect later delivery.
+
+ADR 0029's exact alternate-unit manual targets are now P4.15 **DONE/CLOSED — accepted
+implementation**, with targeted functional APPROVE, F01–F03 CLOSED, SECURITY APPROVE
+and successful [main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842).
+Separate documentation-closure publication and its own exact-commit CI remain
+PENDING. P4.16 is UNSELECTED. See the [complete chronology and six qualifications](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13).
+
+## Historical delivery snapshots
+
+The following pending/unselected statements retain their earlier drafting context;
+current P4.15 status is recorded above and does not rewrite those historical results.
 
 [ADR 0025: One-way Shift transfer before execution](0025-one-way-shift-transfer-before-execution.md) records the delivered P4.11 contract: **DONE/CLOSED**, F01/F02/F03 CLOSED, targeted APPROVE, 177 PASS / 0 QUALIFIED / 0 FAIL, SECURITY APPROVE and green exact-commit CI 38125193187. [ADR 0026](0026-bounded-purchase-order-intent.md) records accepted P4.12, DONE/CLOSED with all three implementation review/CI gates complete; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 docs publication/closure-commit CI pending. P4.14 UNSELECTED.
 

@@ -1,20 +1,33 @@
 # Actual implementation status
 
 P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
-Correction is **APPROVED IMPLEMENTATION / PUBLICATION PENDING** on `codex/p415-article-quantities` from
-`f83fece49671946f3a83240458464434ef09573c`. Inventory profiles and immutable
-anchors/revisions, explicit prospective Stock bindings, exact reviewed targets,
-conversion evidence and terminal suspension are the bounded slice. Migration
-0027 is new and unchanged by remediation. Independent targeted functional review:
-**APPROVE**; F01/F02/F03: **CLOSED**. Focused Codex Security: **SECURITY APPROVE**,
-no required remediation (user-reported 2026-10-13). F04 is nonblocking existing
-Location-picker debt. Final-source verification: **1,487 package PASS / 21 conditional SKIP**,
-with all 21 opt-ins passed separately; grouped acceptance **7 PASS / 6 QUALIFIED / 0 FAIL**.
-The authorized local implementation commit contains 70 files. Publication, exact-commit
-remote CI and closure remain pending; P4.15 is not DONE/CLOSED.
-Memory-only retries, immutable bindings and permanent suspension remain accepted. See the
-[contract/evidence](../development/phase-4-15-article-quantities.md).
-Older P4.15 UNSELECTED passages retain their historical context.
+Correction is **DONE/CLOSED — accepted implementation** at
+`f4ffffaae235307424133c4ed280328df3e33f01`, with test-only correction
+`c132a88feb619268c65fae69d3eeff64d5363218` on `main`. Targeted functional **APPROVE**,
+F01/F02/F03 **CLOSED**, focused **SECURITY APPROVE** and no required security fixes
+establish the review gates. Acceptance: **7 PASS / 6 QUALIFIED / 0 FAIL**; migration
+chain **0001–0027**, with historical migrations preserved.
+[Feature CI 38317916154](https://github.com/RobinBrohl/storeos/actions/runs/38317916154): SUCCESS, 5/5.
+[Original main CI 38320235803](https://github.com/RobinBrohl/storeos/actions/runs/38320235803):
+FAILURE from a false-positive audit-privacy substring test. The bounded test-only
+fix has [main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842):
+SUCCESS, attempt 1, all five jobs. Historical failure evidence is preserved.
+**Separate documentation-closure commit publication and its own exact-commit CI: PENDING.**
+No publication or CI result exists for this local documentation commit.
+**P4.16 is UNSELECTED.**
+
+Inventory quantity anchors/revisions, prospective immutable Stock bindings,
+reviewed exact manual targets and terminal suspension are delivered. All six
+qualifications remain: memory-only uncertain recovery; immutable anchors/bindings
+and permanent suspension; F04 nonblocking debt; operator/device readiness;
+plugin-specific execution; broader acceptance boundaries. No automatic Goods
+Receipt/Stock posting, Recipe/Purchasing conversion, production consumption, POS
+ingestion or costing is claimed. See [closure and qualification details](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13).
+
+## Historical P4.14 closure context
+
+The following passage retains its earlier drafting/publication state. Its P4.15
+UNSELECTED statement is historical and superseded by the current status above.
 
 P4.14 Purchase Order Delivery Evidence and Reconciliation is **DONE/CLOSED — accepted implementation** at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`.
 Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
@@ -207,7 +220,14 @@ hold dated evidence; [vision](../vision.md) is not an implementation checklist.
 
 | P4.13 Planned Preparation Assignment | DONE / CLOSED (accepted implementation) | Exact approved revision/Employee/Location/count, manager create/withdraw, own atomic linked Batch start and durable replay; migration 0025 / ADR 0027. | [Closure](../development/phase-4-13-planned-preparation-assignments.md#final-documentation-closure--2026-10-12), [matrix](../development/phase-4-13-acceptance.md): 99 PASS / 1 QUALIFIED / 0 FAIL. F01 CLOSED, targeted APPROVE, SECURITY APPROVE, exact implementation CI 38224661628 success. Closure publication/CI 38229127545 verified successful. |
 
-| P4.14 Purchase Order Delivery Evidence and Reconciliation | DONE / CLOSED (accepted implementation) | Four append-only evidence tables, exact per-line quantities, full replacement/void history, shared Purchasing operation UUID namespace and immutable terminal reconciliation; migration 0026 / ADR 0028. | [Delivery record](../development/phase-4-14-purchase-order-deliveries.md), [acceptance](../development/phase-4-14-acceptance.md). Implementation `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS; **107 PASS / 2 QUALIFIED / 0 FAIL**. All five jobs succeeded in [implementation CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556). Documentation-closure publication and its own CI PENDING. P4.15 UNSELECTED. |
+| P4.14 Purchase Order Delivery Evidence and Reconciliation | DONE / CLOSED (accepted implementation) | Four append-only evidence tables, exact per-line quantities, full replacement/void history, shared Purchasing operation UUID namespace and immutable terminal reconciliation; migration 0026 / ADR 0028. | [Delivery record](../development/phase-4-14-purchase-order-deliveries.md), [acceptance](../development/phase-4-14-acceptance.md). Implementation `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS; **107 PASS / 2 QUALIFIED / 0 FAIL**. All five jobs succeeded in [implementation CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556). Documentation-closure publication and its own CI PENDING. P4.15 was UNSELECTED at the historical P4.14 closure; current acceptance follows. |
+
+### P4.15 closure and P4.16 status
+
+| Slice | Status | Delivered boundary | Evidence |
+| --- | --- | --- | --- |
+| P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock Correction | DONE/CLOSED — accepted implementation | Inventory anchors/revisions/direct packaging; immutable prospective Stock binding, exact reviewed manual targets and retained conversion evidence. Migration 0027 / ADR 0029; no automatic downstream posting. | Implementation `f4ffffaae235307424133c4ed280328df3e33f01`; test-only fix `c132a88feb619268c65fae69d3eeff64d5363218`. Targeted APPROVE, F01–F03 CLOSED, SECURITY APPROVE; **7 PASS / 6 QUALIFIED / 0 FAIL**. [Main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842): SUCCESS, attempt 1, 5/5. [Chronology/qualifications](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13). Separate documentation-closure publication/own CI PENDING. |
+| P4.16 | UNSELECTED | No next bounded capability selected; strategic roadmap unchanged. | Requires a separate selection contract; no implementation or acceptance claimed. |
 
 ## Accepted manual Stock boundaries
 
@@ -306,14 +326,14 @@ read acknowledgment, native-device/accessibility acceptance or offline queue is 
 
 ## Planned and deferred scope
 
-P4.1–P4.13 are DONE/CLOSED as accepted implementations, with no active P4.11/P4.12/P4.13 remediation. P4.12 retains three accepted limitations and nonblocking Security INFO I01–I03; see [live debt](../development/technical-debt.md#p412-security-info-observations).
-P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 UNSELECTED.
+P4.1–P4.15 are DONE/CLOSED as accepted implementations, with no active P4.11/P4.12/P4.13 remediation. P4.12 retains three accepted limitations and nonblocking Security INFO I01–I03; see [live debt](../development/technical-debt.md#p412-security-info-observations).
+P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 UNSELECTED.
 
 | Domain | Delivery | Boundary |
 | --- | --- | --- |
 | P2 device offline / headquarters sync | PLANNED | No client persistent queue, native-device acceptance, distributed authority transfer or selective replication. Local server operation without WAN is separate. |
 | Workforce / Tasks / Wiki extension | MIXED | P4.6 exact Task pins are DONE/CLOSED. Recurrence, recommendations, qualification workflows and swaps remain future slices; begun-work reconciliation remains open. |
-| Inventory / Stock / Purchasing / Production extensions | PLANNED | Beyond delivered Article/Assortment/manual Stock, P4.8 selected-article counts, P4.9 composition and P4.10 preparation evidence and accepted P4.12 order intent: units/conversions, receiving, broader inventory workflows, yield/Stock-producing batches, Recipe extensions and valuation. |
+| Inventory / Stock / Purchasing / Production extensions | PLANNED | Beyond delivered Article/Assortment/manual Stock, counts, composition/preparation evidence, Purchasing intent/delivery evidence and P4.15 quantity semantics/exact manual targets: broader conversions, automatic receiving/posting, yield/Stock-producing batches, Recipe extensions and valuation require separately selected contracts. |
 | External POS canonical ingestion | PLANNED | No SalesSource, import/checkpoint, mapping or automatic sales effect implementation exists. Candidate sequencing requires a real source and explicit contract. |
 | Configurable RBAC / remote / communications | PLANNED | Current roles are fixed; direct grants, context-restricted remote access, Boards, Chat and notification delivery are vision. |
 | HACCP, Pricing, Menu/publishing, reporting/finance | PLANNED | No certified safety module, cost/margin basis, structured Menu/public publisher or finance capability exists. |

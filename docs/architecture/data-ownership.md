@@ -7,7 +7,17 @@ persisted locally and included in the operator's encrypted PostgreSQL backup.
 Actor UUIDs provide required attribution without copying Employee profiles.
 There is no hard delete, replication or alternate writer. Retention/export policy
 remains an operator decision; no unlimited retention period is introduced.
-See [ADR 0029](../adr/0029-explicit-article-quantity-semantics.md).
+P4.15 is **DONE/CLOSED — accepted implementation** at
+`f4ffffaae235307424133c4ed280328df3e33f01`, with test-only correction
+`c132a88feb619268c65fae69d3eeff64d5363218`. Targeted functional APPROVE,
+F01–F03 CLOSED, SECURITY APPROVE and [successful exact-commit main CI](https://github.com/RobinBrohl/storeos/actions/runs/38323585842)
+(attempt 1, all five jobs) establish acceptance. Separate documentation-closure
+commit publication and its own exact-commit CI remain PENDING. P4.16 is UNSELECTED.
+Immutable anchors/bindings, permanent suspension and all other qualifications
+remain in the [closure](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13).
+See [ADR 0029](../adr/0029-explicit-article-quantity-semantics.md). This is manual
+Stock correction only; no automatic Goods Receipt/Stock posting, Recipe/Purchasing
+conversion, consumption, POS ingestion or costing is established.
 
 Current implementation is one locally configured Company with local authorized writers; the multi-site matrix below is future direction, not deployed replication. [Actual status](../roadmap/status.md) separates these scopes.
 
@@ -109,4 +119,4 @@ both independent reviews APPROVE, F01/F02 CLOSED, SECURITY APPROVE and verificat
 All five jobs in [implementation CI 38277299556](https://github.com/RobinBrohl/storeos/actions/runs/38277299556)
 succeeded. Documentation-closure publication and its own CI remain PENDING.
 The [dated closure](../development/phase-4-14-purchase-order-deliveries.md#final-documentation-closure--2026-10-12)
-retains the static-client incident and standing operational qualifications. P4.15 is UNSELECTED.
+retains the static-client incident and standing operational qualifications. P4.15 was UNSELECTED at that historical P4.14 closure; current P4.15 acceptance is recorded above.

@@ -1,23 +1,33 @@
 # StoreOS handover
 
 P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
-Correction is **APPROVED IMPLEMENTATION / PUBLICATION PENDING** on `codex/p415-article-quantities`, based
-on synchronized `f83fece49671946f3a83240458464434ef09573c`. See the
-[bounded contract and verification](development/phase-4-15-article-quantities.md)
-and [ADR 0029](adr/0029-explicit-article-quantity-semantics.md). Independent targeted
-functional review: **APPROVE**; F01/F02/F03: **CLOSED**. Focused Codex Security:
-**SECURITY APPROVE**, with no required remediation (reported by the user on 2026-10-13).
-One local implementation commit is authorized after final verification. Publication,
-exact-commit remote CI, merge and DONE/CLOSED remain pending. The older
-P4.15 UNSELECTED statements below describe their historical closure context.
-The initial CHANGES REQUIRED review and bounded remediation are retained in the
-contract. F04, the pre-existing long-Location-name picker overflow, is nonblocking
-[technical debt](development/technical-debt.md#p415-nonblocking-location-picker-debt).
-Memory-only retries, immutable bindings and permanent suspension remain accepted
-qualifications. Final-source verification: **1,487 package PASS / 21 conditional SKIP**;
-all 21 opt-ins passed separately. Local grouped acceptance: **7 PASS / 6 QUALIFIED / 0 FAIL**.
-The authorized local implementation commit contains 70 files; use the Git handoff for
-its SHA. No push, merge, remote CI success or P4.15 DONE/CLOSED is claimed.
+Correction is **DONE/CLOSED — accepted implementation** at
+`f4ffffaae235307424133c4ed280328df3e33f01`, with the bounded test-only correction
+`c132a88feb619268c65fae69d3eeff64d5363218` on `main`. Targeted functional review:
+**APPROVE**; F01/F02/F03: **CLOSED**; focused Codex Security: **SECURITY APPROVE**,
+no required fixes. Acceptance: **7 PASS / 6 QUALIFIED / 0 FAIL**. Migration chain:
+**0001–0027**, with historical migrations preserved.
+All five jobs succeeded in [feature CI 38317916154](https://github.com/RobinBrohl/storeos/actions/runs/38317916154).
+[Original main CI 38320235803](https://github.com/RobinBrohl/storeos/actions/runs/38320235803)
+failed on a false-positive audit-privacy substring assertion; the test-only fix has
+successful [exact-commit main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842),
+attempt 1, all five jobs. The failure and correction remain distinct historical evidence.
+**Separate documentation-closure commit publication and its own exact-commit CI: PENDING.**
+No publication or CI success is claimed for this local documentation commit.
+**P4.16 is UNSELECTED.**
+
+Memory-only uncertain retries, immutable anchors/bindings, permanent suspension,
+F04 nonblocking [debt](development/technical-debt.md#p415-nonblocking-location-picker-debt),
+operator/device readiness, plugin-specific execution and broader acceptance boundaries
+remain qualified. This delivers reviewed manual targets only; no automatic Goods
+Receipt/Stock posting, Recipe/Purchasing conversion, production consumption, POS
+ingestion or costing. See the [closure and six qualifications](development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13)
+and [ADR 0029](adr/0029-explicit-article-quantity-semantics.md).
+
+## Historical P4.14 closure context
+
+The following passage retains its earlier drafting/publication state. Its P4.15
+UNSELECTED statement is historical and superseded by the current status above.
 
 P4.14 Purchase Order Delivery Evidence and Reconciliation is **DONE/CLOSED — accepted implementation** at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`.
 Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
@@ -285,7 +295,7 @@ RPO/RTO, key custody/off-host restore and supported devices. No compliance certi
 ## Next Recommended Work
 
 1. P4.10 Preparation Batch is DONE/CLOSED with no active remediation.
-   P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 UNSELECTED.
+   P4.11 is DONE/CLOSED: F01/F02/F03 CLOSED, targeted APPROVE, SECURITY APPROVE and green exact-commit CI 38125193187. P4.12 is DONE/CLOSED with F01 CLOSED, targeted APPROVE, SECURITY APPROVE and successful implementation CI 38152045998; documentation closure CI 38156014870 successful. P4.13 is DONE/CLOSED — accepted implementation; F01 CLOSED, targeted APPROVE, SECURITY APPROVE and exact implementation CI 38224661628 successful. P4.13 closure publication/CI 38229127545 verified successful. P4.14 DONE/CLOSED — accepted implementation at 0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df; functional and targeted APPROVE, F01/F02 CLOSED, SECURITY APPROVE, verification PASS, implementation CI 38277299556 SUCCESS; documentation-closure publication and its own CI PENDING. P4.15 DONE/CLOSED — accepted implementation; implementation/correction/main CI are recorded above; separate documentation-closure publication and its own CI PENDING. P4.16 UNSELECTED.
 2. Resolve M1 when adopting a real-user proxy topology; apply M3 containment to
    every API-adding slice and the remaining debt only at its stated triggers.
 

@@ -1,5 +1,32 @@
 # StoreOS
 
+P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
+Correction is **DONE/CLOSED — accepted implementation** at
+`f4ffffaae235307424133c4ed280328df3e33f01`, with the test-only correction
+`c132a88feb619268c65fae69d3eeff64d5363218` on `main`. Targeted functional **APPROVE**,
+F01/F02/F03 **CLOSED**, focused **SECURITY APPROVE**, no required security fixes.
+Acceptance: **7 PASS / 6 QUALIFIED / 0 FAIL**. Migration chain: **0001–0027**.
+[Feature CI 38317916154](https://github.com/RobinBrohl/storeos/actions/runs/38317916154)
+succeeded, 5/5. [Original main CI 38320235803](https://github.com/RobinBrohl/storeos/actions/runs/38320235803)
+failed on a false-positive audit-privacy substring test. The bounded correction has
+[successful main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842),
+attempt 1, all five jobs; the original failure remains historical evidence.
+**Separate documentation-closure commit publication and its own exact-commit CI: PENDING.**
+This local documentation commit has not been published or verified by CI.
+**P4.16 is UNSELECTED.**
+
+Memory-only uncertain retries, immutable anchors/bindings, permanent suspension,
+F04 nonblocking debt, operator/device readiness, plugin-specific execution and
+broader acceptance boundaries remain qualified. The slice supplies reviewed
+manual targets, with no automatic Goods Receipt/Stock posting, Recipe/Purchasing
+conversion, production consumption, POS ingestion or costing. See the
+[closure and six qualifications](docs/development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13).
+
+## Historical P4.14 closure context
+
+The following passage retains its earlier drafting/publication state. Its P4.15
+UNSELECTED statement is historical and superseded by the current status above.
+
 P4.14 Purchase Order Delivery Evidence and Reconciliation is **DONE/CLOSED — accepted implementation** at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`.
 Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
 Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.

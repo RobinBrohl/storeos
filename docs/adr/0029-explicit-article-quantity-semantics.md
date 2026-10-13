@@ -1,7 +1,12 @@
 # ADR 0029 — Explicit Article quantity semantics and manual targets
 
-Status: Accepted for bounded P4.15 implementation; targeted functional APPROVE and
-SECURITY APPROVE reported by the user on 2026-10-13. Publication/remote CI pending.
+Status: Accepted; P4.15 is DONE/CLOSED — accepted implementation at
+`f4ffffaae235307424133c4ed280328df3e33f01`, with test-only correction
+`c132a88feb619268c65fae69d3eeff64d5363218`. Targeted functional APPROVE,
+F01–F03 CLOSED and SECURITY APPROVE, with no required security fixes.
+[Exact-commit main CI](https://github.com/RobinBrohl/storeos/actions/runs/38323585842)
+succeeded, attempt 1, all five jobs. Separate documentation-closure commit
+publication and its own exact-commit CI remain PENDING; P4.16 is UNSELECTED.
 Date: 2026-10-12.
 
 ## Decision

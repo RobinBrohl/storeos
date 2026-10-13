@@ -1,5 +1,31 @@
 # Development roadmap
 
+P4.15 Explicit Article Quantity Semantics and Exact Alternate-Unit Manual Stock
+Correction is **DONE/CLOSED — accepted implementation** at
+`f4ffffaae235307424133c4ed280328df3e33f01`, with test-only correction
+`c132a88feb619268c65fae69d3eeff64d5363218` on `main`. Targeted functional **APPROVE**,
+F01/F02/F03 **CLOSED**, focused **SECURITY APPROVE**, no required security fixes.
+Acceptance: **7 PASS / 6 QUALIFIED / 0 FAIL**; migration chain **0001–0027**.
+[Feature CI 38317916154](https://github.com/RobinBrohl/storeos/actions/runs/38317916154)
+succeeded, 5/5. [Original main CI 38320235803](https://github.com/RobinBrohl/storeos/actions/runs/38320235803)
+failed on a false-positive audit-privacy substring assertion; the bounded test-only
+fix has [main CI 38323585842](https://github.com/RobinBrohl/storeos/actions/runs/38323585842):
+SUCCESS, attempt 1, all five jobs. The failed run remains historical evidence.
+**Separate documentation-closure commit publication and its own exact-commit CI: PENDING.**
+No publication or CI success is claimed for this local documentation commit.
+**P4.16 is UNSELECTED.** No next capability or strategic sequence is selected here.
+
+The six qualifications remain: memory-only uncertain retries; immutable anchors,
+bindings and permanent suspension; F04 nonblocking debt; operator/device readiness;
+plugin-specific execution; broader acceptance boundaries. No automatic Goods
+Receipt/Stock posting, Recipe/Purchasing conversion, production consumption, POS
+ingestion or costing is delivered. See [closure and qualifications](../development/phase-4-15-article-quantities.md#final-documentation-closure--2026-10-13).
+
+## Historical P4.14 closure context
+
+The following passage retains its earlier drafting/publication state. Its P4.15
+UNSELECTED statement is historical and superseded by the current status above.
+
 P4.14 Purchase Order Delivery Evidence and Reconciliation is **DONE/CLOSED — accepted implementation** at `0c62bdf977727c8fa9ddf645e09cc1b34c0ab4df`.
 Independent functional review and targeted F01/F02 re-review: **APPROVE**; both findings **CLOSED**.
 Focused Codex Security: **SECURITY APPROVE**. Final remediation verification: **PASS**.
@@ -101,7 +127,10 @@ A new slice needs a real use case, owner, permission/audit/error contract and
 bounded acceptance. This document proposes sequencing; it does not authorize
 parallel implementation or preselect a subsequent capability.
 
-## Near-term implementation direction
+## Historical near-term implementation direction
+
+The following selection passages retain their earlier phase context. Current
+P4.15 closure and P4.16 UNSELECTED are recorded above; no next slice is selected.
 
 P4.3 Manual Stock Foundation is **DONE/CLOSED**: foundation `e8ce8c3`, accepted
 correction `f9c8b07`, independent targeted review APPROVE, 28/28 PASS and all five
@@ -212,10 +241,14 @@ and minimize HR data.
 ## P4 – Artikel, Einkauf und Bestand
 
 Article and location Assortment are delivered. P4.3 Manual Stock is **DONE/CLOSED**,
-including the committed and accepted adjustment retry correction. Future
-units/conversions, Suppliers, orders, receiving, batches/expiry, inventory counts,
-transfers and valuation require
-separate slices; a frozen unit label suffices for current manual stock.
+including the accepted adjustment retry correction. P4.15 is **DONE/CLOSED — accepted
+implementation**: explicit quantity anchors/direct packaging, prospective bindings
+and reviewed exact alternate-unit manual targets. Legacy unconfigured workflows
+retain opaque frozen unit labels; labels never declare quantity meaning.
+Supplier/order intent and Purchasing delivery evidence retain their separate
+accepted contracts. Broader conversions, automatic receiving/posting,
+batches/expiry, transfers and valuation require separately selected slices.
+P4.16 is **UNSELECTED**; the long-term sequencing and product vision are unchanged.
 [ADRs 0015–0018](../adr/README.md).
 
 P4.4 Local Planogram Execution is **DONE/CLOSED**: Location Fixtures, independent

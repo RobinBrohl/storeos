@@ -233,7 +233,7 @@ class RemovedPackageApi extends Api {
 }
 
 Future<SessionController> signed(Auth auth) async {
-  final session = SessionController(auth);
+  final session = SessionController(auth, now: () => time);
   await session.signIn(username: 'admin', password: 'fixture');
   return session;
 }

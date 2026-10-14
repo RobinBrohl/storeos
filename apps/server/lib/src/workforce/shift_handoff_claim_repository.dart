@@ -27,6 +27,19 @@ class ShiftHandoffClaimRepository {
     }
   }
 
+  Future<bool> ownsSwap(TxSession tx, String request, int count) async {
+    final rows = await tx.execute(
+      Sql.named(
+        '''SELECT count(*) FROM $schema.workforce_shift_swap_legs l
+      JOIN $schema.workforce_shift_handoff_claims c ON c.company_id=l.company_id AND c.location_id=l.location_id
+        AND c.shift_id=l.source_shift_id AND c.swap_request_id=l.request_id AND c.leg=l.leg
+      WHERE l.company_id=CAST(@company AS uuid) AND l.location_id=CAST(@location AS uuid) AND l.request_id=CAST(@request AS uuid)''',
+      ),
+      parameters: {..._scope, 'request': request},
+    );
+    return rows.single.first == count;
+  }
+
   Future<void> claimSwap(TxSession tx, String request, String leg) async {
     final rows = await tx.execute(
       Sql.named(

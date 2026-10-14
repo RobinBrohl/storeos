@@ -14,6 +14,16 @@ class WorkforceService {
   final ShiftRepository _repository;
   Future<bool> overlapsSwap(TxSession tx, String request) =>
       _repository.overlapsSwap(tx, database.locationId, request);
+  Future<bool> overlapsSwapCandidate(
+    TxSession tx,
+    String request,
+    String candidate,
+  ) => _repository.overlapsSwapCandidate(
+    tx,
+    database.locationId,
+    request,
+    candidate,
+  );
   Future<bool> overlapsTransfer(
     TxSession tx,
     ShiftDto source,

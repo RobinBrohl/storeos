@@ -111,7 +111,10 @@ void main() {
         schemaName: f.schema,
         runtimeDatabaseUser: f.runtimeUser,
       );
-      expect(await runner.apply(), ['0028_bilateral_shift_swaps']);
+      expect(await runner.apply(), [
+        '0028_bilateral_shift_swaps',
+        '0029_swap_leg_future_error',
+      ]);
       expect(await evidence(), before);
       expect(
         (await f.owner.execute(

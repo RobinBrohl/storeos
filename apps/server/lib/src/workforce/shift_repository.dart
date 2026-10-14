@@ -206,6 +206,44 @@ class ShiftRepository {
     current.view.draft.startsAt,
     current.view.draft.endsAt,
   );
+
+  /// Candidate exclusions derive from the invitation and B's scoped own Shift.
+  Future<bool> overlapsSwapCandidate(
+    TxSession tx,
+    String location,
+    String request,
+    String candidate,
+  ) async {
+    final rows = await tx.execute(
+      Sql.named(
+        '''WITH pair AS (
+      SELECT a.source_shift_id AS a_id,b.id AS b_id,a.starts_at AS a_start,a.ends_at AS a_end,
+        b.starts_at AS b_start,b.ends_at AS b_end,r.source_employee_id AS a_owner,r.recipient_employee_id AS b_owner
+      FROM $schema.workforce_shift_swap_requests r JOIN $schema.workforce_shift_swap_legs a
+        ON a.company_id=r.company_id AND a.request_id=r.id AND a.leg='a'
+      JOIN $schema.shifts b ON b.company_id=r.company_id AND b.location_id=r.location_id
+        AND b.employee_id=r.recipient_employee_id AND b.id=CAST(@candidate AS uuid)
+      WHERE r.company_id=CAST(@company AS uuid) AND r.location_id=CAST(@location AS uuid)
+        AND r.id=CAST(@request AS uuid) AND r.status='requested')
+      SELECT EXISTS(SELECT 1 FROM pair), EXISTS(SELECT 1 FROM pair p JOIN $schema.shifts s
+        ON s.company_id=CAST(@company AS uuid) AND s.location_id=CAST(@location AS uuid)
+        AND s.status='published' AND s.id NOT IN(p.a_id,p.b_id)
+        AND ((s.employee_id=p.b_owner AND s.starts_at<p.a_end AND s.ends_at>p.a_start)
+          OR (s.employee_id=p.a_owner AND s.starts_at<p.b_end AND s.ends_at>p.b_start)))''',
+      ),
+      parameters: {
+        ..._scope,
+        'location': location,
+        'request': request,
+        'candidate': candidate,
+      },
+    );
+    if (rows.single[0] != true) {
+      throw StateError('Scoped invitation/candidate required.');
+    }
+    return rows.single[1] as bool;
+  }
+
   Future<void> publish(TxSession tx, Shift current, String actorId) async {
     final result = await tx.execute(
       Sql.named(

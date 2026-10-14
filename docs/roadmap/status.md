@@ -1,5 +1,22 @@
 # Actual implementation status
 
+## Current P4.16 Stage B1 — 2026-10-13
+
+**P4.16 IN PROGRESS. Stage B1 / Step 5: verified local uncommitted implementation;
+independent review required.** Owner-authorized internal
+Application lifecycle, paired approval, current authorization before exact replay,
+scoped projections and direct restricted PostgreSQL tests are present on
+`codex/p416-stage-b1-swap-orchestration` from integrated main
+`525abb7c975d08d8c93aeca3ac72e58ccbb38ce3`.
+Verification: 48 direct B1 PASS; full restricted PostgreSQL server 890 PASS /
+21 explicit opt-in SKIP / 0 FAIL, including Stage A/P4.11/affected P4.15.
+Only the necessary fixed swap permission registry/minimized audit support moves
+forward from Step 6. [Handoff](../development/phase-4-16-stage-b1.md) records scope,
+owner ports, rollback evidence and verification. No HTTP/OpenAPI/Flutter swaps,
+new SQL migration, expanded recovery acceptance, B1 independent verdict, Security
+approval, publication or full P4.16 completion. Next: independent adversarial B1
+review; Steps 6–10 remain undelivered. Earlier dated assertions below are historical.
+
 ## Current P4.16 Stage A — 2026-10-13
 
 **P4.16 IN PROGRESS. Stage A / Steps 1–4: independently approved, owner-authorized local implementation commit.** Owner

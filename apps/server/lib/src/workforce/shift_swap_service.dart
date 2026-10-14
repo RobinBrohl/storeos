@@ -14,6 +14,21 @@ class ShiftSwapService {
       _repository.find(tx, request);
   Future<List<Map<String, dynamic>>> legs(TxSession tx, String request) =>
       _repository.legs(tx, request);
+  Future<List<Map<String, dynamic>>> page(
+    TxSession tx, {
+    String? employee,
+    String? direction,
+    String? status,
+    String? after,
+  }) => _repository.page(
+    tx,
+    employee: employee,
+    direction: direction,
+    status: status,
+    after: after,
+  );
+  Future<List<ShiftSwapCommandResult>> history(TxSession tx, String request) =>
+      _repository.history(tx, request);
   Future<void> request(
     TxSession tx,
     ShiftSwapCommandInput c,

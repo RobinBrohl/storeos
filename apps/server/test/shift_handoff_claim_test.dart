@@ -24,7 +24,7 @@ void main() {
         (await f.owner.execute(
           "SELECT count(*) FROM ${f.schema}.schema_migrations",
         )).single.first,
-        28,
+        29,
       );
       await f.pool.runTx((tx) async {
         final rows = await tx.execute(

@@ -71,6 +71,26 @@ class EmployeeLinks {
   }
 
   /// Revalidate a persisted swap identity basis without releasing Account data.
+  Future<int?> swapAccountVersion(TxSession tx, EmployeeLinkDto link) async {
+    final current = await forEmployee(tx, link.employeeId);
+    final account = await _accounts.user(tx, link.accountId);
+    if (current?.id != link.id ||
+        current?.version != link.version ||
+        link.revokedAt != null ||
+        link.companyId != _database.companyId ||
+        link.locationId != _database.locationId ||
+        account == null ||
+        !account.isActive ||
+        account.locationId != link.locationId ||
+        !permissionsForRole(
+          account.role,
+        ).contains('workforce.swaps.self.respond')) {
+      return null;
+    }
+    return account.version;
+  }
+
+  /// Revalidate a persisted swap identity basis without releasing Account data.
   /// The caller separately establishes current swap command/resource authority.
   Future<bool> matchesSwapIdentityBasis(
     TxSession tx, {
@@ -87,9 +107,7 @@ class EmployeeLinks {
         current.id != linkId) {
       return false;
     }
-    // Both handoff protocols admit the same fixed Employee/Admin identity roles;
-    // authorization for a particular workflow remains with its coordinator.
-    return await transferAccountVersion(tx, current) == accountVersion;
+    return await swapAccountVersion(tx, current) == accountVersion;
   }
 
   /// Current assignability for Stock counts, without exposing Account records

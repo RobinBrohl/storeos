@@ -1,5 +1,19 @@
 # StoreOS handover
 
+## Current P4.16 Stage B1 — 2026-10-13
+
+The owner separately authorized Step 5's internal bilateral swap Application
+coordinator, directly required owner ports and local tests. The integrated Stage A
+baseline is `525abb7c975d08d8c93aeca3ac72e58ccbb38ce3`; local work is uncommitted
+on `codex/p416-stage-b1-swap-orchestration`. Internal implementation is verified:
+48 direct B1 tests PASS; full restricted PostgreSQL server 890 PASS / 21 explicit
+opt-in SKIP / 0 FAIL. See the [Stage B1 handoff](development/phase-4-16-stage-b1.md).
+Four fixed swap permissions and minimized audit support are bounded prerequisites
+moved forward from Step 6. No new migration, HTTP/OpenAPI/Flutter swap delivery,
+expanded recovery acceptance, independent B1 review or P4.16 closure is claimed.
+The next gate is independent adversarial Stage B1 review. Earlier Stage A/design
+passages retain their dated historical assertions.
+
 ## Current P4.16 Stage A — 2026-10-13
 
 The owner separately authorized Steps 1–4, bounded remediation of independently

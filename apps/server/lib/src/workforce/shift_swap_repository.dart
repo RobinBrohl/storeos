@@ -34,6 +34,49 @@ class ShiftSwapRepository {
     {'request': request},
   )).map((r) => Map<String, dynamic>.unmodifiable(r.toColumnMap())).toList();
 
+  Future<List<Map<String, dynamic>>> page(
+    TxSession tx, {
+    String? employee,
+    String? direction,
+    String? status,
+    String? after,
+  }) async => (await _execute(
+    tx,
+    '''SELECT * FROM $schema.workforce_shift_swap_requests
+      WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid)
+      AND (CAST(@employee AS uuid) IS NULL OR
+        (CAST(@direction AS text) IS NULL AND (source_employee_id=CAST(@employee AS uuid) OR recipient_employee_id=CAST(@employee AS uuid))) OR
+        (@direction='outgoing' AND source_employee_id=CAST(@employee AS uuid)) OR
+        (@direction='incoming' AND recipient_employee_id=CAST(@employee AS uuid)))
+      AND (CAST(@status AS text) IS NULL OR status=@status)
+      AND (CAST(@after AS uuid) IS NULL OR id>CAST(@after AS uuid)) ORDER BY id LIMIT 51''',
+    {
+      'employee': employee,
+      'direction': direction,
+      'status': status,
+      'after': after,
+    },
+  )).map((r) => Map<String, dynamic>.unmodifiable(r.toColumnMap())).toList();
+
+  /// Original accepted results, never the private receipt actor/payload columns.
+  Future<List<ShiftSwapCommandResult>> history(
+    TxSession tx,
+    String request,
+  ) async =>
+      (await _execute(
+            tx,
+            '''SELECT result FROM $schema.workforce_shift_swap_commands
+      WHERE company_id=CAST(@company AS uuid) AND location_id=CAST(@location AS uuid)
+        AND request_id=CAST(@request AS uuid) ORDER BY accepted_version''',
+            {'request': request},
+          ))
+          .map(
+            (r) => ShiftSwapCommandResult.fromJson(
+              r.first as Map<String, dynamic>,
+            ),
+          )
+          .toList();
+
   Future<void> request(
     TxSession tx,
     ShiftSwapCommandInput c,

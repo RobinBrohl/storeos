@@ -114,7 +114,11 @@ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {{schema}}.p415_late
               schemaName: f.schema,
               runtimeDatabaseUser: f.runtimeUser,
             ).apply(),
-            ['0027_article_quantities', '0028_bilateral_shift_swaps'],
+            [
+              '0027_article_quantities',
+              '0028_bilateral_shift_swaps',
+              '0029_swap_leg_future_error',
+            ],
           );
           expect(
             await dataHash(

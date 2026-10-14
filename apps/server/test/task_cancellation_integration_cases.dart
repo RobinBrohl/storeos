@@ -582,6 +582,7 @@ void cancellationTests() {
           '0026_purchase_order_delivery_evidence',
           '0027_article_quantities',
           '0028_bilateral_shift_swaps',
+          '0029_swap_leg_future_error',
         ]);
         expect(await runner.apply(), isEmpty);
         expect(await snapshot(), before);

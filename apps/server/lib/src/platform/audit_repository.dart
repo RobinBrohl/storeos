@@ -51,6 +51,8 @@ class AuditRepository {
       'shiftId',
       'requestId',
       'sourceShiftId',
+      'sourceShiftIds',
+      'replacementShiftIds',
       'replacementShiftId',
       'sourceEmployeeId',
       'recipientEmployeeId',

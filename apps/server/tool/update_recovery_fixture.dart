@@ -3,7 +3,7 @@
 // scripts/update/Run-UpdateRecoveryAcceptance.ps1 creates the database, grants
 // the restricted runtime role CONNECT and drops the database again. The owner
 // connection builds the pre-update schema and seed; the runtime role serves the
-// API only after the pending migrations (0011 through 0028) have been applied.
+// API only after the pending migrations (0011 through 0029) have been applied.
 //
 // Modes (STOREOS_UPDATE_MODE):
 //  - prepare: apply exactly migrations 0001-0010 from a byte-identical copy of
@@ -11,7 +11,7 @@
 //    evidence with owner SQL, capture stable projections and write the private
 //    run manifest plus a non-secret prepare result.
 //  - upgrade: apply the real repository migrations through the production
-//    MigrationRunner (only 0011 through 0028 may be pending), verify checksums,
+//    MigrationRunner (only 0011 through 0029 may be pending), verify checksums,
 //    idempotency, preservation of the pre-update projections, the new
 //    0011/0012 columns, constraints and the published-interval exclusion
 //    invariant, the 0013 article master, 0014 assortment and 0015 manual stock
@@ -84,6 +84,7 @@ const _expectedPendingMigrations = [
   '0026_purchase_order_delivery_evidence',
   '0027_article_quantities',
   '0028_bilateral_shift_swaps',
+  '0029_swap_leg_future_error',
 ];
 const _connectionSettings = ConnectionSettings(
   sslMode: SslMode.disable,

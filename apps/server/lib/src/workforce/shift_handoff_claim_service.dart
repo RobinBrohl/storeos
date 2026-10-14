@@ -18,6 +18,8 @@ class ShiftHandoffClaimService {
   final ShiftHandoffClaimRepository _repository;
   Future<bool> occupied(TxSession tx, String shift) =>
       _repository.occupied(tx, shift);
+  Future<bool> ownsSwap(TxSession tx, String request, int count) =>
+      _repository.ownsSwap(tx, request, count);
   Future<void> _claim(Future<void> Function() insert) async {
     try {
       await insert();

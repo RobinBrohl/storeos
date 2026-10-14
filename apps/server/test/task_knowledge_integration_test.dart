@@ -634,6 +634,7 @@ void main() {
             '0026_purchase_order_delivery_evidence',
             '0027_article_quantities',
             '0028_bilateral_shift_swaps',
+            '0029_swap_leg_future_error',
           ],
         );
         for (var i = 0; i < tables.length; i++) {

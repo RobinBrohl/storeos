@@ -14,8 +14,7 @@ import '../workforce/workforce_service.dart';
 import '../workforce/shift_swap_service.dart';
 import '../workforce/shift_handoff_claim_service.dart';
 
-/// Internal Application capability. Every command uses one authorized Company
-/// transaction and public owner ports; transport composition belongs to Stage B2.
+/// Every command uses one authorized Company transaction and public owner ports.
 class ShiftSwapApplication {
   ShiftSwapApplication(this.database)
     : _swaps = ShiftSwapService(database),
@@ -473,194 +472,232 @@ class ShiftSwapApplication {
   }) => _run(
     p,
     self ? 'workforce.swaps.self.read' : 'workforce.swaps.manage',
-    (tx, actor) async {
-      final c = ShiftSwapCommandInput.fromJson(kind, body);
-      if ((kind == 'request') != (id == null) || (kind == 'request' && !self)) {
-        throw const PlatformFailure(
-          400,
-          'invalid_request',
-          'Invalid swap command target.',
-        );
-      }
-      final request = kind == 'request'
-          ? c.payload['requestId'] as String
-          : shiftUuid(id);
-      final link = self ? await _self(tx, actor) : null;
-      Map<String, dynamic>? r;
-      ShiftDto? source;
-      if (kind == 'request') {
-        source = await _own(
-          tx,
-          c.payload['sourceShiftId'] as String,
-          link!.employeeId,
-        );
-        r = await _swaps.find(tx, request);
-        if (r != null && r['source_employee_id'] != link.employeeId) {
-          throw const PlatformFailure(404, 'not_found', 'Swap not found.');
-        }
-      } else {
-        r = await _get(tx, request, employee: link?.employeeId);
-      }
-      _authorizeCommand(actor, link, r, c, self);
-      // Scope of a selected own counterpart also precedes receipt disclosure.
-      final counterpart = kind == 'offer'
-          ? await _own(
-              tx,
-              c.payload['counterpartShiftId'] as String,
-              link!.employeeId,
-            )
-          : null;
-      final replay = await _swaps.replay(tx, request, actor.id, c);
-      if (replay != null) return replay;
-
-      if (kind == 'request') {
-        if (r != null) {
-          throw const PlatformFailure(
-            409,
-            'operation_conflict',
-            'Request identity already exists.',
-          );
-        }
-        if (source!.version != c.expectedVersion) {
-          throw const PlatformFailure(
-            409,
-            'shift_conflict',
-            'Source Shift changed.',
-          );
-        }
-        await _future(tx, source);
-        await _eligible(tx, source, link!.employeeId);
-        final recipientId = c.payload['recipientEmployeeId'] as String;
-        if (recipientId == link.employeeId) {
-          throw const PlatformFailure(
-            422,
-            'employee_unavailable',
-            'Choose another eligible Employee.',
-          );
-        }
-        await _eligible(tx, source, recipientId);
-        final recipient = await _links.forEmployee(tx, recipientId);
-        final sourceVersion = await _links.swapAccountVersion(tx, link),
-            recipientVersion = recipient == null
-                ? null
-                : await _links.swapAccountVersion(tx, recipient);
-        if (recipient == null ||
-            sourceVersion == null ||
-            recipientVersion == null) {
-          throw const PlatformFailure(
-            422,
-            'employee_unavailable',
-            'Participant identity unavailable.',
-          );
-        }
-        await _tasks.validateTransfer(tx, source, publisher: actor);
-        final refs = await _tasks.captureSwapWork(tx, source);
-        await _swaps.request(
-          tx,
-          c,
-          link,
-          recipient,
-          sourceVersion,
-          recipientVersion,
-        );
-        await _swaps.captureLeg(tx, request, 'a', source, recipientId, refs);
-        await _claims.claimSwapA(tx, request);
-      } else {
-        ShiftSwapRequest(
-          status: r!['status'] as String,
-          version: r['version'] as int,
-          sourceAccount: r['source_account_id'] as String,
-          recipientAccount: r['recipient_account_id'] as String,
-        ).transition(
-          c,
-          actor.id,
-          currentSourceAuthorized: kind == 'source_withdraw',
-        );
-        if (kind == 'offer') {
-          await _fresh(tx, actor, r);
-          if (counterpart!.version != c.payload['expectedCounterpartVersion']) {
-            throw const PlatformFailure(
-              409,
-              'shift_conflict',
-              'Counterpart Shift changed.',
-            );
-          }
-          await _validateCandidate(tx, actor, r, counterpart);
-          await _swaps.captureLeg(
-            tx,
-            request,
-            'b',
-            counterpart,
-            r['source_employee_id'] as String,
-            await _tasks.captureSwapWork(tx, counterpart),
-          );
-          await _claims.claimSwapB(tx, request);
-          if (await _workforce.overlapsSwap(tx, request)) {
-            throw const PlatformFailure(
-              409,
-              'shift_overlap',
-              'Final roster has overlapping published work.',
-            );
-          }
-        } else if (kind == 'confirm' || kind == 'manager_approve') {
-          final originals = await _fresh(tx, actor, r);
-          if (kind == 'manager_approve') {
-            await _approve(tx, actor, request, originals);
-          }
-        }
-        await _swaps.transition(
-          tx,
-          request,
-          actor.id,
-          c,
-          currentSourceAuthorized: kind == 'source_withdraw',
-        );
-        if (!{'offer', 'confirm'}.contains(kind)) {
-          await _claims.releaseSwap(tx, request);
-        }
-      }
-      final evidence = await _evidence(tx, await _get(tx, request));
-      final result = ShiftSwapCommandResult.fromJson({
-        'operationId': c.operationId,
-        'kind': kind,
-        'acceptedVersion': evidence.json['version'],
-        'statusCode': kind == 'request' ? 201 : 200,
-        'request': evidence.toJson(),
-        'replayed': false,
-      });
-      await _swaps.commitReceipt(tx, request, actor.id, c, result);
-      await database.audit(
-        tx,
-        actor,
-        'workforce.swap.${evidence.json['status']}',
-        'shift_swap',
-        request,
-        locationId: database.locationId,
-        changes: {
-          'requestId': request,
-          'operationId': c.operationId,
-          'kind': kind,
-          'expectedVersion': c.expectedVersion,
-          'version': evidence.json['version'],
-          'status': evidence.json['status'],
-          'sourceEmployeeId': evidence.json['sourceEmployeeId'],
-          'recipientEmployeeId': evidence.json['recipientEmployeeId'],
-          'sourceShiftIds': [
-            for (final l in evidence.json['legs'] as List)
-              l['sourceShiftId'] as String,
-          ],
-          if (kind == 'manager_approve')
-            'replacementShiftIds': [
-              for (final l in evidence.json['legs'] as List)
-                l['replacementShiftId'] as String,
-            ],
-        },
-      );
-      return result;
-    },
+    (tx, actor) => _command(tx, actor, id, kind, body, self: self),
     location: location,
     commandKind: kind,
   );
+
+  /// Resolve the shared HTTP withdrawal intent from authorized stored ownership,
+  /// before parsing/replay, inside the same transaction as the exact command.
+  Future<ShiftSwapCommandResult> withdraw(
+    SessionPrincipal p,
+    String id,
+    Map<String, dynamic> body,
+  ) => _run(p, 'workforce.swaps.self.read', (tx, actor) async {
+    final link = await _self(tx, actor);
+    final r = await _get(tx, id, employee: link.employeeId);
+    final source = r['source_employee_id'] == link.employeeId;
+    if (!source && !_captured(r, link, 'recipient')) {
+      throw const PlatformFailure(
+        404,
+        'not_found',
+        'Swap response unavailable.',
+      );
+    }
+    return _command(
+      tx,
+      actor,
+      id,
+      source ? 'source_withdraw' : 'recipient_withdraw',
+      body,
+      self: true,
+      link: link,
+    );
+  });
+
+  Future<ShiftSwapCommandResult> _command(
+    TxSession tx,
+    PlatformActor actor,
+    String? id,
+    String kind,
+    Map<String, dynamic> body, {
+    required bool self,
+    EmployeeLinkDto? link,
+  }) async {
+    final c = ShiftSwapCommandInput.fromJson(kind, body);
+    if ((kind == 'request') != (id == null) || (kind == 'request' && !self)) {
+      throw const PlatformFailure(
+        400,
+        'invalid_request',
+        'Invalid swap command target.',
+      );
+    }
+    final request = kind == 'request'
+        ? c.payload['requestId'] as String
+        : shiftUuid(id);
+    link ??= self ? await _self(tx, actor) : null;
+    Map<String, dynamic>? r;
+    ShiftDto? source;
+    if (kind == 'request') {
+      source = await _own(
+        tx,
+        c.payload['sourceShiftId'] as String,
+        link!.employeeId,
+      );
+      r = await _swaps.find(tx, request);
+      if (r != null && r['source_employee_id'] != link.employeeId) {
+        throw const PlatformFailure(404, 'not_found', 'Swap not found.');
+      }
+    } else {
+      r = await _get(tx, request, employee: link?.employeeId);
+    }
+    _authorizeCommand(actor, link, r, c, self);
+    // Scope of a selected own counterpart also precedes receipt disclosure.
+    final counterpart = kind == 'offer'
+        ? await _own(
+            tx,
+            c.payload['counterpartShiftId'] as String,
+            link!.employeeId,
+          )
+        : null;
+    final replay = await _swaps.replay(tx, request, actor.id, c);
+    if (replay != null) return replay;
+
+    if (kind == 'request') {
+      if (r != null) {
+        throw const PlatformFailure(
+          409,
+          'operation_conflict',
+          'Request identity already exists.',
+        );
+      }
+      if (source!.version != c.expectedVersion) {
+        throw const PlatformFailure(
+          409,
+          'shift_conflict',
+          'Source Shift changed.',
+        );
+      }
+      await _future(tx, source);
+      await _eligible(tx, source, link!.employeeId);
+      final recipientId = c.payload['recipientEmployeeId'] as String;
+      if (recipientId == link.employeeId) {
+        throw const PlatformFailure(
+          422,
+          'employee_unavailable',
+          'Choose another eligible Employee.',
+        );
+      }
+      await _eligible(tx, source, recipientId);
+      final recipient = await _links.forEmployee(tx, recipientId);
+      final sourceVersion = await _links.swapAccountVersion(tx, link),
+          recipientVersion = recipient == null
+              ? null
+              : await _links.swapAccountVersion(tx, recipient);
+      if (recipient == null ||
+          sourceVersion == null ||
+          recipientVersion == null) {
+        throw const PlatformFailure(
+          422,
+          'employee_unavailable',
+          'Participant identity unavailable.',
+        );
+      }
+      await _tasks.validateTransfer(tx, source, publisher: actor);
+      final refs = await _tasks.captureSwapWork(tx, source);
+      await _swaps.request(
+        tx,
+        c,
+        link,
+        recipient,
+        sourceVersion,
+        recipientVersion,
+      );
+      await _swaps.captureLeg(tx, request, 'a', source, recipientId, refs);
+      await _claims.claimSwapA(tx, request);
+    } else {
+      ShiftSwapRequest(
+        status: r!['status'] as String,
+        version: r['version'] as int,
+        sourceAccount: r['source_account_id'] as String,
+        recipientAccount: r['recipient_account_id'] as String,
+      ).transition(
+        c,
+        actor.id,
+        currentSourceAuthorized: kind == 'source_withdraw',
+      );
+      if (kind == 'offer') {
+        await _fresh(tx, actor, r);
+        if (counterpart!.version != c.payload['expectedCounterpartVersion']) {
+          throw const PlatformFailure(
+            409,
+            'shift_conflict',
+            'Counterpart Shift changed.',
+          );
+        }
+        await _validateCandidate(tx, actor, r, counterpart);
+        await _swaps.captureLeg(
+          tx,
+          request,
+          'b',
+          counterpart,
+          r['source_employee_id'] as String,
+          await _tasks.captureSwapWork(tx, counterpart),
+        );
+        await _claims.claimSwapB(tx, request);
+        if (await _workforce.overlapsSwap(tx, request)) {
+          throw const PlatformFailure(
+            409,
+            'shift_overlap',
+            'Final roster has overlapping published work.',
+          );
+        }
+      } else if (kind == 'confirm' || kind == 'manager_approve') {
+        final originals = await _fresh(tx, actor, r);
+        if (kind == 'manager_approve') {
+          await _approve(tx, actor, request, originals);
+        }
+      }
+      await _swaps.transition(
+        tx,
+        request,
+        actor.id,
+        c,
+        currentSourceAuthorized: kind == 'source_withdraw',
+      );
+      if (!{'offer', 'confirm'}.contains(kind)) {
+        await _claims.releaseSwap(tx, request);
+      }
+    }
+    final evidence = await _evidence(tx, await _get(tx, request));
+    final result = ShiftSwapCommandResult.fromJson({
+      'operationId': c.operationId,
+      'kind': kind,
+      'acceptedVersion': evidence.json['version'],
+      'statusCode': kind == 'request' ? 201 : 200,
+      'request': evidence.toJson(),
+      'replayed': false,
+    });
+    await _swaps.commitReceipt(tx, request, actor.id, c, result);
+    await database.audit(
+      tx,
+      actor,
+      'workforce.swap.${evidence.json['status']}',
+      'shift_swap',
+      request,
+      locationId: database.locationId,
+      changes: {
+        'requestId': request,
+        'operationId': c.operationId,
+        'kind': kind,
+        'expectedVersion': c.expectedVersion,
+        'version': evidence.json['version'],
+        'status': evidence.json['status'],
+        'sourceEmployeeId': evidence.json['sourceEmployeeId'],
+        'recipientEmployeeId': evidence.json['recipientEmployeeId'],
+        'sourceShiftIds': [
+          for (final l in evidence.json['legs'] as List)
+            l['sourceShiftId'] as String,
+        ],
+        if (kind == 'manager_approve')
+          'replacementShiftIds': [
+            for (final l in evidence.json['legs'] as List)
+              l['replacementShiftId'] as String,
+          ],
+      },
+    );
+    return result;
+  }
 
   Future<void> _approve(
     TxSession tx,
@@ -832,6 +869,7 @@ class ShiftSwapApplication {
       );
       if (j is! List ||
           j.length != scope.length + 1 ||
+          j.last == null ||
           jsonEncode(j.take(scope.length).toList()) != jsonEncode(scope)) {
         throw const FormatException();
       }
@@ -841,6 +879,32 @@ class ShiftSwapApplication {
         400,
         'invalid_cursor',
         'Invalid scoped swap cursor.',
+      );
+    }
+  }
+
+  String _cursorUuid(Object? value) {
+    try {
+      final id = shiftUuid(value);
+      if (id != value) throw const FormatException();
+      return id;
+    } on FormatException {
+      throw const PlatformFailure(
+        400,
+        'invalid_cursor',
+        'Invalid swap cursor marker.',
+      );
+    }
+  }
+
+  DateTime _cursorInstant(Object? value) {
+    try {
+      return shiftInstant(value);
+    } on FormatException {
+      throw const PlatformFailure(
+        400,
+        'invalid_cursor',
+        'Invalid swap cursor marker.',
       );
     }
   }
@@ -865,7 +929,9 @@ class ShiftSwapApplication {
         'Invalid swap filters.',
       );
     }
-    final employee = self ? (await _self(tx, actor)).employeeId : null;
+    final link = self ? await _self(tx, actor) : null;
+    final employee = link?.employeeId;
+    final accountVersion = await _links.currentReaderAccountVersion(tx, actor);
     final scope = <Object?>[
       'swaps',
       database.companyId,
@@ -873,6 +939,8 @@ class ShiftSwapApplication {
       employee,
       direction,
       status,
+      self ? 'self' : 'manager',
+      _cursorBasis([actor.id, accountVersion, link?.id, link?.version]),
     ];
     final marker = _after(after, scope);
     final rows = await _swaps.page(
@@ -880,7 +948,7 @@ class ShiftSwapApplication {
       employee: employee,
       direction: direction,
       status: status,
-      after: marker == null ? null : shiftUuid(marker),
+      after: marker == null ? null : _cursorUuid(marker),
     );
     final items = rows.take(50).toList();
     return ShiftSwapPageDto.fromJson({
@@ -889,7 +957,7 @@ class ShiftSwapApplication {
     });
   }, location: location);
 
-  /// At most four immutable receipts; HTTP history pagination remains Stage B2.
+  /// At most four immutable receipts, preserving the original internal contract.
   Future<List<ShiftSwapCommandResult>> history(
     SessionPrincipal p,
     String id, {
@@ -902,6 +970,80 @@ class ShiftSwapApplication {
     final employee = self ? (await _self(tx, actor)).employeeId : null;
     final r = await _get(tx, id, employee: employee);
     return List.unmodifiable(await _swaps.history(tx, r['id'] as String));
+  }, location: location);
+
+  /// Two immutable receipts per transport page, ordered by accepted version.
+  /// The cursor names an existing receipt and is bound to current reader scope.
+  Future<Map<String, dynamic>> historyPage(
+    SessionPrincipal p,
+    String id, {
+    bool self = true,
+    String? location,
+    String? after,
+  }) => _run(p, self ? 'workforce.swaps.self.read' : 'workforce.swaps.manage', (
+    tx,
+    actor,
+  ) async {
+    final link = self ? await _self(tx, actor) : null;
+    final r = await _get(tx, id, employee: link?.employeeId);
+    final scope = <Object?>[
+      'swap-history',
+      database.companyId,
+      database.locationId,
+      r['id'],
+      self ? 'self' : 'manager',
+      _cursorBasis([
+        actor.id,
+        link?.id,
+        r['source_account_id'],
+        r['source_link_id'],
+        r['source_account_version'],
+        r['recipient_account_id'],
+        r['recipient_link_id'],
+        r['recipient_account_version'],
+      ]),
+    ];
+    final receipts = await _swaps.history(tx, r['id'] as String);
+    final marker = _after(after, scope);
+    var start = 0;
+    if (after != null) {
+      if (marker is! List ||
+          marker.length != 2 ||
+          marker[0] is! int ||
+          (marker[0] as int) < 1 ||
+          (marker[0] as int) > 4 ||
+          marker[1] is! String) {
+        throw const PlatformFailure(
+          400,
+          'invalid_cursor',
+          'Invalid history cursor.',
+        );
+      }
+      final operation = _cursorUuid(marker[1]);
+      final index = receipts.indexWhere(
+        (receipt) =>
+            receipt.json['acceptedVersion'] == marker[0] &&
+            receipt.json['operationId'] == operation,
+      );
+      if (index < 0) {
+        throw const PlatformFailure(
+          400,
+          'invalid_cursor',
+          'Invalid history cursor.',
+        );
+      }
+      start = index + 1;
+    }
+    final items = receipts.skip(start).take(2).toList();
+    return {
+      'items': [for (final receipt in items) receipt.toJson()],
+      'nextCursor': receipts.length > start + items.length
+          ? _cursor(scope, [
+              items.last.json['acceptedVersion'],
+              items.last.json['operationId'],
+            ])
+          : null,
+    };
   }, location: location);
 
   Future<ShiftSwapColleaguePageDto> colleagues(
@@ -924,7 +1066,7 @@ class ShiftSwapApplication {
       s.version,
     ];
     final raw = _after(after, scope),
-        marker = raw == null ? null : shiftUuid(raw);
+        marker = raw == null ? null : _cursorUuid(raw);
     final eligible = <Map<String, dynamic>>[];
     for (final person in await _people.list(tx)) {
       if (person.id == link.employeeId ||
@@ -1041,8 +1183,8 @@ class ShiftSwapApplication {
           'Invalid counterpart cursor.',
         );
       }
-      time = shiftInstant(raw[0]);
-      marker = shiftUuid(raw[1]);
+      time = _cursorInstant(raw[0]);
+      marker = _cursorUuid(raw[1]);
     }
     // Scan bounded owner pages until 51 eligible rows, retaining the last
     // eligible time/ID so filtered pages never hide later own candidates.

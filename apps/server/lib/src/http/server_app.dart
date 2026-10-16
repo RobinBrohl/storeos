@@ -12,6 +12,8 @@ import '../config.dart';
 import '../infrastructure/auth_store.dart';
 import '../platform/platform_database.dart';
 import 'json_logger.dart';
+import 'api_support.dart' show completeRequestBody;
+import 'upload_lifecycle.dart';
 import '../application/correlation.dart';
 
 class ServerApp {
@@ -57,6 +59,8 @@ class ServerApp {
           response = await platformHandler!(request);
         }
       }
+    } on UploadAborted {
+      rethrow;
     } on _InputFailure catch (error) {
       response = _error(error.status, error.code, error.message);
     } on PlatformFailure catch (error) {
@@ -175,7 +179,11 @@ class ServerApp {
   }
 
   Future<Response> _logout(Request request) async {
-    await auth.logout(_bearerToken(request));
+    final token = _bearerToken(request);
+    await auth.authenticate(token);
+    await completeRequestBody(request);
+    // Revalidate through the unchanged service after the body has completed.
+    await auth.logout(token);
     return Response(204);
   }
 
@@ -234,14 +242,14 @@ class ServerApp {
     }
     final bytes = <int>[];
     await for (final chunk in request.read()) {
-      bytes.addAll(chunk);
-      if (bytes.length > maximumBytes) {
+      if (chunk.length > maximumBytes - bytes.length) {
         throw const _InputFailure(
           413,
           'body_too_large',
           'Request body too large.',
         );
       }
+      bytes.addAll(chunk);
     }
     try {
       final decoded = jsonDecode(utf8.decode(bytes));

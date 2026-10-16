@@ -2,6 +2,8 @@ import 'shift_routes.dart';
 import 'purchasing_routes.dart';
 import '../purchasing/purchasing_service.dart';
 import 'shift_transfer_routes.dart';
+import 'shift_swap_routes.dart';
+import '../application/shift_swap_application.dart';
 import '../application/shift_transfer_application.dart';
 import '../application/shift_application.dart';
 import 'package:shelf/shelf.dart';
@@ -55,6 +57,7 @@ Handler createPlatformHandler(
     .add(
       ShiftTransferRoutes(auth, ShiftTransferApplication(database)).router.call,
     )
+    .add(ShiftSwapRoutes(auth, ShiftSwapApplication(database)).router.call)
     .add(TaskTemplateRoutes(auth, TaskTemplateService(database)).router.call)
     .add(ArticleRoutes(auth, ArticleService(database)).router.call)
     .add(

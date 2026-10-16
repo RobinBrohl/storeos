@@ -51,14 +51,11 @@ class PlatformPluginRoutes {
     ),
   );
 
-  Future<Response> _replayEvent(Request request, String eventId) async =>
-      jsonResponse(
-        200,
-        await _events.replay(
-          await _auth.authenticate(bearerToken(request)),
-          eventId,
-        ),
-      );
+  Future<Response> _replayEvent(Request request, String eventId) async {
+    final principal = await _auth.authenticate(bearerToken(request));
+    await completeRequestBody(request);
+    return jsonResponse(200, await _events.replay(principal, eventId));
+  }
 
   Future<Response> _listPlugins(Request request) async => jsonResponse(
     200,
@@ -105,6 +102,7 @@ class PlatformPluginRoutes {
   );
 
   Future<Response> _ackPluginEvent(Request request, String eventId) async {
+    await completeRequestBody(request);
     await _plugins.acknowledge(bearerToken(request), eventId);
     return Response(204);
   }

@@ -4,6 +4,15 @@ import 'package:shelf/shelf.dart';
 
 import '../platform/platform_database.dart';
 import 'strict_json_names.dart';
+import 'upload_lifecycle.dart';
+
+/// Existing body-ignoring commands accept any finite body, without buffering or
+/// JSON validation. The native upload deadline remains armed until genuine EOF.
+Future<void> completeRequestBody(Request request) async {
+  await request.read().drain<void>();
+  final upload = request.context[UploadLifecycle.contextKey];
+  if (upload is UploadLifecycle) upload.requireComplete();
+}
 
 /// Transport-only helpers shared by the platform routers.
 Future<Map<String, dynamic>> readJson(
@@ -30,14 +39,14 @@ Future<Map<String, dynamic>> readJson(
   }
   final bytes = <int>[];
   await for (final chunk in request.read()) {
-    bytes.addAll(chunk);
-    if (bytes.length > limit) {
+    if (chunk.length > limit - bytes.length) {
       throw const PlatformFailure(
         413,
         'body_too_large',
         'Request body too large.',
       );
     }
+    bytes.addAll(chunk);
   }
   try {
     final source = utf8.decode(bytes);

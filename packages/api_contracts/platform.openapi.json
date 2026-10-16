@@ -6,6 +6,1393 @@
     "description": "Single-company local writer. Platform, employee identity, immutable templates, atomic shift publication, and P1b.4 own confirmation-task execution. No measurement steps, offline writes or plugin task access."
   },
   "paths": {
+    "/api/v1/platform/employee-home/shifts/{shiftId}/swap-colleagues": {
+      "get": {
+        "operationId": "listShiftSwapColleagues",
+        "summary": "listShiftSwapColleagues",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read plus workforce.swaps.self.request, current eligible source linkage and an own future pristine source Shift. Discovery discloses eligible colleague ID/name only; it grants no colleague roster access. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},
+            "description": "Opaque scoped keyset cursor; possession grants no authority. Binds Company, configured Location, endpoint, current reader/participant/request and applicable filters/identity basis. Not a general roster cursor. Empty/invalid/stale or cross-scope cursors return invalid_cursor."
+          }
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapColleaguePage"}}}},
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": ["invalid_cursor","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_cursor","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: resource_limit.",
+            "x-error-codes": ["resource_limit"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["resource_limit"]}}}]}}}
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, planogram_guidance_unavailable, shift_in_progress, shift_not_swappable, shift_not_transferable.",
+            "x-error-codes": ["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {
+                      "properties": {
+                        "code": {"enum":["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"]}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-swaps": {
+      "get": {
+        "operationId": "listManagedShiftSwaps",
+        "summary": "listManagedShiftSwaps",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.manage in the configured Company/Location. A request ID is not authority. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},
+            "description": "Opaque scoped keyset cursor; possession grants no authority. Binds Company, configured Location, endpoint, current reader/participant/request and applicable filters/identity basis. Not a general roster cursor. Empty/invalid/stale or cross-scope cursors return invalid_cursor."
+          },
+          {"name":"status","in":"query","schema":{"type":"string","enum":["requested","offered","confirmed","declined","withdrawn","rejected","approved"]}}
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapPage"}}}},
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": ["invalid_cursor","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_cursor","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-swaps/{requestId}": {
+      "get": {
+        "operationId": "readManagedShiftSwap",
+        "summary": "readManagedShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.manage in the configured Company/Location. A request ID is not authority. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapDetail"}}}},
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": ["invalid_request"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_request"]}}}]}}}
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-swaps/{requestId}/approve": {
+      "post": {
+        "operationId": "approveManagedShiftSwap",
+        "summary": "approveManagedShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.manage in the configured Company/Location. A request ID is not authority. Additionally requires workforce.shifts.manage and tasks.instances.read, current guidance read permissions when pinned, and an approver Account independent of both consenting Accounts. Both exact consents, original work, identity bases, final roster and database-time boundary are revalidated. Both cancellations/replacements, complete ordered lineage, receipt/audit and claim release commit atomically. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "x-storeos-max-utf8-bytes": 8192,
+          "description": "Complete strict JSON object, at most 8192 UTF-8 bytes, duplicate decoded property names and unknown fields rejected. No client actor/Account, replacement IDs, snapshots or server timestamps. JSON consumption reaches genuine native EOF before Application mutation; aborted/cancelled/expired input is not completion. Reason normalization limits are separate from wire bytes.",
+          "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapApprove"}}}
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted command evidence and status; exact replay adds replayed=true after current authorization.",
+            "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCommandResult","properties":{"kind":{"enum":["manager_approve"]}}}}}
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": ["invalid_json","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_json","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: operation_conflict, shift_conflict, shift_overlap, swap_conflict.",
+            "x-error-codes": ["operation_conflict","shift_conflict","shift_overlap","swap_conflict"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {"properties":{"code":{"enum":["operation_conflict","shift_conflict","shift_overlap","swap_conflict"]}}}
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": ["body_too_large"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["body_too_large"]}}}]}}}
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": ["unsupported_media_type"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unsupported_media_type"]}}}]}}}
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, invalid_selection, planogram_guidance_unavailable, shift_in_progress, shift_not_swappable, shift_not_transferable.",
+            "x-error-codes": [
+              "employee_unavailable",
+              "guidance_unavailable",
+              "invalid_selection",
+              "planogram_guidance_unavailable",
+              "shift_in_progress",
+              "shift_not_swappable",
+              "shift_not_transferable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "employee_unavailable",
+                            "guidance_unavailable",
+                            "invalid_selection",
+                            "planogram_guidance_unavailable",
+                            "shift_in_progress",
+                            "shift_not_swappable",
+                            "shift_not_transferable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-swaps/{requestId}/history": {
+      "get": {
+        "operationId": "listManagedShiftSwapHistory",
+        "summary": "listManagedShiftSwapHistory",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.manage in the configured Company/Location. A request ID is not authority. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},
+            "description": "Opaque scoped keyset cursor; possession grants no authority. Binds Company, configured Location, endpoint, current reader/participant/request and applicable filters/identity basis. Not a general roster cursor. Empty/invalid/stale or cross-scope cursors return invalid_cursor."
+          }
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapHistoryPage"}}}},
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": ["invalid_cursor","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_cursor","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/locations/{locationId}/shift-swaps/{requestId}/reject": {
+      "post": {
+        "operationId": "rejectManagedShiftSwap",
+        "summary": "rejectManagedShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.manage in the configured Company/Location. A request ID is not authority. Explicit reason-bearing closure of stages 1–3; stale work can be rejected without fresh approval eligibility. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "x-storeos-max-utf8-bytes": 8192,
+          "description": "Complete strict JSON object, at most 8192 UTF-8 bytes, duplicate decoded property names and unknown fields rejected. No client actor/Account, replacement IDs, snapshots or server timestamps. JSON consumption reaches genuine native EOF before Application mutation; aborted/cancelled/expired input is not completion. Reason normalization limits are separate from wire bytes.",
+          "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapReject"}}}
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted command evidence and status; exact replay adds replayed=true after current authorization.",
+            "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCommandResult","properties":{"kind":{"enum":["manager_reject"]}}}}}
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": ["invalid_json","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_json","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: operation_conflict, swap_conflict.",
+            "x-error-codes": ["operation_conflict","swap_conflict"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["operation_conflict","swap_conflict"]}}}]}}
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": ["body_too_large"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["body_too_large"]}}}]}}}
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": ["unsupported_media_type"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unsupported_media_type"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps": {
+      "get": {
+        "operationId": "listSelfShiftSwaps",
+        "summary": "listSelfShiftSwaps",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read and a current eligible Account–Employee link. Only current source/recipient participants can read this request; IDs and cursors confer no access. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},
+            "description": "Opaque scoped keyset cursor; possession grants no authority. Binds Company, configured Location, endpoint, current reader/participant/request and applicable filters/identity basis. Not a general roster cursor. Empty/invalid/stale or cross-scope cursors return invalid_cursor."
+          },
+          {"name":"status","in":"query","schema":{"type":"string","enum":["requested","offered","confirmed","declined","withdrawn","rejected","approved"]}},
+          {"name":"direction","in":"query","schema":{"type":"string","enum":["incoming","outgoing"]}}
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapPage"}}}},
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": ["invalid_cursor","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_cursor","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      },
+      "post": {
+        "operationId": "requestShiftSwap",
+        "summary": "requestShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read plus workforce.swaps.self.request, current eligible source linkage and an own future pristine source Shift. Discovery discloses eligible colleague ID/name only; it grants no colleague roster access. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "x-storeos-max-utf8-bytes": 8192,
+          "description": "Complete strict JSON object, at most 8192 UTF-8 bytes, duplicate decoded property names and unknown fields rejected. No client actor/Account, replacement IDs, snapshots or server timestamps. JSON consumption reaches genuine native EOF before Application mutation; aborted/cancelled/expired input is not completion. Reason normalization limits are separate from wire bytes.",
+          "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapRequest"}}}
+        },
+        "responses": {
+          "201": {
+            "description": "Original accepted command evidence and status; exact replay adds replayed=true after current authorization.",
+            "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCommandResult","properties":{"kind":{"enum":["request"]}}}}}
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": ["invalid_json","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_json","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: operation_conflict, shift_conflict, swap_already_pending.",
+            "x-error-codes": ["operation_conflict","shift_conflict","swap_already_pending"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["operation_conflict","shift_conflict","swap_already_pending"]}}}]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": ["body_too_large"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["body_too_large"]}}}]}}}
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": ["unsupported_media_type"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unsupported_media_type"]}}}]}}}
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, planogram_guidance_unavailable, shift_in_progress, shift_not_swappable, shift_not_transferable.",
+            "x-error-codes": ["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {
+                      "properties": {
+                        "code": {"enum":["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"]}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps/{requestId}": {
+      "get": {
+        "operationId": "readSelfShiftSwap",
+        "summary": "readSelfShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read and a current eligible Account–Employee link. Only current source/recipient participants can read this request; IDs and cursors confer no access. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapDetail"}}}},
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": ["invalid_request"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_request"]}}}]}}}
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps/{requestId}/confirm": {
+      "post": {
+        "operationId": "confirmSelfShiftSwap",
+        "summary": "confirmSelfShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read and workforce.swaps.self.respond plus the captured source Account/link. Confirmation binds the exact stored offer pair, not a new client-supplied pair. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "x-storeos-max-utf8-bytes": 8192,
+          "description": "Complete strict JSON object, at most 8192 UTF-8 bytes, duplicate decoded property names and unknown fields rejected. No client actor/Account, replacement IDs, snapshots or server timestamps. JSON consumption reaches genuine native EOF before Application mutation; aborted/cancelled/expired input is not completion. Reason normalization limits are separate from wire bytes.",
+          "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapConfirm"}}}
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted command evidence and status; exact replay adds replayed=true after current authorization.",
+            "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCommandResult","properties":{"kind":{"enum":["confirm"]}}}}}
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": ["invalid_json","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_json","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: operation_conflict, shift_conflict, shift_overlap, swap_conflict.",
+            "x-error-codes": ["operation_conflict","shift_conflict","shift_overlap","swap_conflict"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {"properties":{"code":{"enum":["operation_conflict","shift_conflict","shift_overlap","swap_conflict"]}}}
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": ["body_too_large"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["body_too_large"]}}}]}}}
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": ["unsupported_media_type"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unsupported_media_type"]}}}]}}}
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, planogram_guidance_unavailable, shift_in_progress, shift_not_swappable, shift_not_transferable.",
+            "x-error-codes": ["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {
+                      "properties": {
+                        "code": {"enum":["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"]}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps/{requestId}/counterparts": {
+      "get": {
+        "operationId": "listShiftSwapCounterparts",
+        "summary": "listShiftSwapCounterparts",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read plus workforce.swaps.self.respond, the captured recipient Account/link and request-specific invitation. Counterparts expose only B’s own eligible work; A cannot inspect arbitrary peer Shifts. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},
+            "description": "Opaque scoped keyset cursor; possession grants no authority. Binds Company, configured Location, endpoint, current reader/participant/request and applicable filters/identity basis. Not a general roster cursor. Empty/invalid/stale or cross-scope cursors return invalid_cursor."
+          }
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCounterpartPage"}}}},
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": ["invalid_cursor","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_cursor","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: shift_conflict, swap_conflict.",
+            "x-error-codes": ["shift_conflict","swap_conflict"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["shift_conflict","swap_conflict"]}}}]}}
+            }
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, planogram_guidance_unavailable, shift_in_progress, shift_not_swappable, shift_not_transferable.",
+            "x-error-codes": ["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {
+                      "properties": {
+                        "code": {"enum":["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"]}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps/{requestId}/counterparts/{shiftId}": {
+      "get": {
+        "operationId": "readShiftSwapCounterpart",
+        "summary": "readShiftSwapCounterpart",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read plus workforce.swaps.self.respond, the captured recipient Account/link and request-specific invitation. Counterparts expose only B’s own eligible work; A cannot inspect arbitrary peer Shifts. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCounterpartDetail"}}}},
+          "400": {
+            "description": "400: invalid_request.",
+            "x-error-codes": ["invalid_request"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_request"]}}}]}}}
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: shift_conflict, shift_overlap, swap_already_pending, swap_conflict.",
+            "x-error-codes": ["shift_conflict","shift_overlap","swap_already_pending","swap_conflict"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {"properties":{"code":{"enum":["shift_conflict","shift_overlap","swap_already_pending","swap_conflict"]}}}
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, planogram_guidance_unavailable, shift_in_progress, shift_not_swappable, shift_not_transferable.",
+            "x-error-codes": ["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {
+                      "properties": {
+                        "code": {"enum":["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"]}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps/{requestId}/decline": {
+      "post": {
+        "operationId": "declineSelfShiftSwap",
+        "summary": "declineSelfShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read and workforce.swaps.self.respond. Captured B declines requested/1; captured A declines offered/2. Decline accepts no reason. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "x-storeos-max-utf8-bytes": 8192,
+          "description": "Complete strict JSON object, at most 8192 UTF-8 bytes, duplicate decoded property names and unknown fields rejected. No client actor/Account, replacement IDs, snapshots or server timestamps. JSON consumption reaches genuine native EOF before Application mutation; aborted/cancelled/expired input is not completion. Reason normalization limits are separate from wire bytes.",
+          "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapDecline"}}}
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted command evidence and status; exact replay adds replayed=true after current authorization.",
+            "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCommandResult","properties":{"kind":{"enum":["decline"]}}}}}
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": ["invalid_json","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_json","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: operation_conflict, swap_conflict.",
+            "x-error-codes": ["operation_conflict","swap_conflict"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["operation_conflict","swap_conflict"]}}}]}}
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": ["body_too_large"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["body_too_large"]}}}]}}}
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": ["unsupported_media_type"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unsupported_media_type"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps/{requestId}/history": {
+      "get": {
+        "operationId": "listSelfShiftSwapHistory",
+        "summary": "listSelfShiftSwapHistory",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read and a current eligible Account–Employee link. Only current source/recipient participants can read this request; IDs and cursors confer no access. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},
+            "description": "Opaque scoped keyset cursor; possession grants no authority. Binds Company, configured Location, endpoint, current reader/participant/request and applicable filters/identity basis. Not a general roster cursor. Empty/invalid/stale or cross-scope cursors return invalid_cursor."
+          }
+        ],
+        "responses": {
+          "200": {"description":"Authorized scoped evidence.","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapHistoryPage"}}}},
+          "400": {
+            "description": "400: invalid_cursor, invalid_request.",
+            "x-error-codes": ["invalid_cursor","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_cursor","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps/{requestId}/offer": {
+      "post": {
+        "operationId": "offerSelfShiftSwap",
+        "summary": "offerSelfShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read plus workforce.swaps.self.respond, the captured recipient Account/link and request-specific invitation. Counterparts expose only B’s own eligible work; A cannot inspect arbitrary peer Shifts. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "x-storeos-max-utf8-bytes": 8192,
+          "description": "Complete strict JSON object, at most 8192 UTF-8 bytes, duplicate decoded property names and unknown fields rejected. No client actor/Account, replacement IDs, snapshots or server timestamps. JSON consumption reaches genuine native EOF before Application mutation; aborted/cancelled/expired input is not completion. Reason normalization limits are separate from wire bytes.",
+          "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapOffer"}}}
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted command evidence and status; exact replay adds replayed=true after current authorization.",
+            "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCommandResult","properties":{"kind":{"enum":["offer"]}}}}}
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": ["invalid_json","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_json","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: operation_conflict, shift_conflict, shift_overlap, swap_already_pending, swap_conflict.",
+            "x-error-codes": ["operation_conflict","shift_conflict","shift_overlap","swap_already_pending","swap_conflict"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {"properties":{"code":{"enum":["operation_conflict","shift_conflict","shift_overlap","swap_already_pending","swap_conflict"]}}}
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": ["body_too_large"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["body_too_large"]}}}]}}}
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": ["unsupported_media_type"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unsupported_media_type"]}}}]}}}
+          },
+          "422": {
+            "description": "422: employee_unavailable, guidance_unavailable, planogram_guidance_unavailable, shift_in_progress, shift_not_swappable, shift_not_transferable.",
+            "x-error-codes": ["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref":"./openapi.yaml#/components/schemas/ApiError"},
+                    {
+                      "properties": {
+                        "code": {"enum":["employee_unavailable","guidance_unavailable","planogram_guidance_unavailable","shift_in_progress","shift_not_swappable","shift_not_transferable"]}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
+    "/api/v1/platform/me/shift-swaps/{requestId}/withdraw": {
+      "post": {
+        "operationId": "withdrawSelfShiftSwap",
+        "summary": "withdrawSelfShiftSwap",
+        "security": [{"session":[]}],
+        "description": "Requires workforce.swaps.self.read. Current eligible source ownership plus workforce.swaps.self.request may withdraw stages 1–3, including a replacement source Account; captured B plus workforce.swaps.self.respond may withdraw stages 2–3. Server derives intent before parsing/replay; no client actor/kind selector. Current authenticated Company/configured execution Location and resource scope are checked on the server, independently of OpenAPI/UI controls. Current authorization precedes receipt replay. Unknown or duplicate query keys are rejected. Original accepted receipt evidence is separate from current actionability. Native upload expiry may destroy the connection without a completed HTTP error response; no pre-EOF 413 guarantee is made.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "x-storeos-max-utf8-bytes": 8192,
+          "description": "Complete strict JSON object, at most 8192 UTF-8 bytes, duplicate decoded property names and unknown fields rejected. No client actor/Account, replacement IDs, snapshots or server timestamps. JSON consumption reaches genuine native EOF before Application mutation; aborted/cancelled/expired input is not completion. Reason normalization limits are separate from wire bytes.",
+          "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapWithdraw"}}}
+        },
+        "responses": {
+          "200": {
+            "description": "Original accepted command evidence and status; exact replay adds replayed=true after current authorization.",
+            "content": {"application/json":{"schema":{"$ref":"#/components/schemas/ShiftSwapCommandResult","properties":{"kind":{"enum":["source_withdraw","recipient_withdraw"]}}}}}
+          },
+          "400": {
+            "description": "400: invalid_json, invalid_request.",
+            "x-error-codes": ["invalid_json","invalid_request"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["invalid_json","invalid_request"]}}}]}}
+            }
+          },
+          "401": {
+            "description": "401: unauthorized.",
+            "x-error-codes": ["unauthorized"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unauthorized"]}}}]}}}
+          },
+          "403": {
+            "description": "403: forbidden, origin_forbidden.",
+            "x-error-codes": ["forbidden","origin_forbidden"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["forbidden","origin_forbidden"]}}}]}}
+            }
+          },
+          "404": {
+            "description": "404: not_found.",
+            "x-error-codes": ["not_found"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["not_found"]}}}]}}}
+          },
+          "409": {
+            "description": "409: operation_conflict, swap_conflict.",
+            "x-error-codes": ["operation_conflict","swap_conflict"],
+            "content": {
+              "application/json": {"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["operation_conflict","swap_conflict"]}}}]}}
+            }
+          },
+          "413": {
+            "description": "413: body_too_large.",
+            "x-error-codes": ["body_too_large"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["body_too_large"]}}}]}}}
+          },
+          "415": {
+            "description": "415: unsupported_media_type.",
+            "x-error-codes": ["unsupported_media_type"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["unsupported_media_type"]}}}]}}}
+          },
+          "500": {
+            "description": "500: internal_error.",
+            "x-error-codes": ["internal_error"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["internal_error"]}}}]}}}
+          },
+          "503": {
+            "description": "503: database_unavailable.",
+            "x-error-codes": ["database_unavailable"],
+            "content": {"application/json":{"schema":{"allOf":[{"$ref":"./openapi.yaml#/components/schemas/ApiError"},{"properties":{"code":{"enum":["database_unavailable"]}}}]}}}
+          }
+        }
+      }
+    },
     "/api/v1/platform/context": {
       "get": {
         "operationId": "platformContext",
@@ -22524,6 +23911,1173 @@
       }
     },
     "schemas": {
+      "ShiftSwapApprove": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operationId","expectedVersion"],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "expectedVersion": {"type":"integer","const":3,"x-storeos-integer-token":true}
+        }
+      },
+      "ShiftSwapColleague": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["employeeId","displayName"],
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "displayName": {"type":"string","minLength":1,"maxLength":120}
+        }
+      },
+      "ShiftSwapColleaguePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items","nextCursor"],
+        "properties": {
+          "items": {"type":"array","minItems":0,"maxItems":50,"items":{"$ref":"#/components/schemas/ShiftSwapColleague"},"uniqueItems":true},
+          "nextCursor": {"anyOf":[{"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},{"type":"null"}]}
+        },
+        "description": "At most fifty distinct eligible Employee identities, never a colleague roster."
+      },
+      "ShiftSwapCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operationId","kind","acceptedVersion","statusCode","request","replayed"],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "kind": {"type":"string","enum":["request","offer","confirm","decline","source_withdraw","recipient_withdraw","manager_reject","manager_approve"]},
+          "acceptedVersion": {"type":"integer","minimum":1,"maximum":4,"x-storeos-integer-token":true},
+          "statusCode": {"type":"integer","enum":[200,201],"x-storeos-integer-token":true},
+          "request": {"$ref":"#/components/schemas/ShiftSwapEvidence"},
+          "replayed": {"type":"boolean"}
+        },
+        "x-storeos-max-utf8-bytes": 65536,
+        "x-storeos-invariants": [
+          "acceptedVersion equals request.version. operationId equals the matching request/offer/confirmation/terminal operation ID.",
+          "Original accepted evidence/status is returned on exact replay after current authorization; current actionability requires a separate detail read."
+        ],
+        "allOf": [
+          {"if":{"properties":{"kind":{"const":"request"}}},"then":{"properties":{"statusCode":{"const":201},"request":{"properties":{"status":{"const":"requested"}}}}}},
+          {"if":{"properties":{"kind":{"const":"offer"}}},"then":{"properties":{"statusCode":{"const":200},"request":{"properties":{"status":{"const":"offered"}}}}}},
+          {"if":{"properties":{"kind":{"const":"confirm"}}},"then":{"properties":{"statusCode":{"const":200},"request":{"properties":{"status":{"const":"confirmed"}}}}}},
+          {
+            "if": {"properties":{"kind":{"const":"decline"}}},
+            "then": {"properties":{"statusCode":{"const":200},"request":{"properties":{"status":{"const":"declined"},"terminalKind":{"const":"decline"}}}}}
+          },
+          {
+            "if": {"properties":{"kind":{"const":"source_withdraw"}}},
+            "then": {"properties":{"statusCode":{"const":200},"request":{"properties":{"status":{"const":"withdrawn"},"terminalKind":{"const":"source_withdraw"}}}}}
+          },
+          {
+            "if": {"properties":{"kind":{"const":"recipient_withdraw"}}},
+            "then": {"properties":{"statusCode":{"const":200},"request":{"properties":{"status":{"const":"withdrawn"},"terminalKind":{"const":"recipient_withdraw"}}}}}
+          },
+          {
+            "if": {"properties":{"kind":{"const":"manager_reject"}}},
+            "then": {"properties":{"statusCode":{"const":200},"request":{"properties":{"status":{"const":"rejected"},"terminalKind":{"const":"manager_reject"}}}}}
+          },
+          {
+            "if": {"properties":{"kind":{"const":"manager_approve"}}},
+            "then": {"properties":{"statusCode":{"const":200},"request":{"properties":{"status":{"const":"approved"},"terminalKind":{"const":"manager_approve"}}}}}
+          },
+          {"if":{"properties":{"request":{"properties":{"version":{"const":1}}}}},"then":{"properties":{"acceptedVersion":{"const":1}}}},
+          {"if":{"properties":{"request":{"properties":{"version":{"const":2}}}}},"then":{"properties":{"acceptedVersion":{"const":2}}}},
+          {"if":{"properties":{"request":{"properties":{"version":{"const":3}}}}},"then":{"properties":{"acceptedVersion":{"const":3}}}},
+          {"if":{"properties":{"request":{"properties":{"version":{"const":4}}}}},"then":{"properties":{"acceptedVersion":{"const":4}}}}
+        ]
+      },
+      "ShiftSwapConfirm": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operationId","expectedVersion"],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "expectedVersion": {"type":"integer","const":2,"x-storeos-integer-token":true}
+        }
+      },
+      "ShiftSwapCounterpartCandidate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shiftId","version","startsAt","endsAt"],
+        "properties": {
+          "shiftId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "version": {"type":"integer","minimum":1,"maximum":2147483647,"x-storeos-integer-token":true},
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+            "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+            "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+          }
+        },
+        "x-storeos-invariants": ["endsAt is strictly after startsAt."]
+      },
+      "ShiftSwapCounterpartDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["leg","sourceShiftId","sourceVersion","sourceEmployeeId","incomingEmployeeId","startsAt","endsAt","tasks","taskLinks","replacementShiftId"],
+        "properties": {
+          "leg": {"type":"string","const":"b"},
+          "sourceShiftId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "sourceVersion": {"type":"integer","minimum":1,"maximum":2147483647,"x-storeos-integer-token":true},
+          "sourceEmployeeId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "incomingEmployeeId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+            "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+            "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+          },
+          "tasks": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {"$ref":"#/components/schemas/ShiftSwapTaskSummary"},
+            "prefixItems": [
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":0}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":1}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":2}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":3}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":4}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":5}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":6}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":7}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":8}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":9}}}]}
+            ]
+          },
+          "taskLinks": {"type":"array","minItems":0,"maxItems":0,"items":{"$ref":"#/components/schemas/ShiftSwapTaskLink"}},
+          "replacementShiftId": {"type":"null"}
+        },
+        "allOf": [
+          {
+            "if": {"properties":{"replacementShiftId":{"const":null}}},
+            "then": {"properties":{"taskLinks":{"maxItems":0}}},
+            "else": {"properties":{"taskLinks":{"minItems":1}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":1,"maxItems":1}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":1,"maxItems":1}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":2,"maxItems":2}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":2,"maxItems":2}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":3,"maxItems":3}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":3,"maxItems":3}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":4,"maxItems":4}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":4,"maxItems":4}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":5,"maxItems":5}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":5,"maxItems":5}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":6,"maxItems":6}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":6,"maxItems":6}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":7,"maxItems":7}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":7,"maxItems":7}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":8,"maxItems":8}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":8,"maxItems":8}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":9,"maxItems":9}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":9,"maxItems":9}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":10,"maxItems":10}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":10,"maxItems":10}}}
+          }
+        ],
+        "x-storeos-invariants": [
+          "endsAt is strictly after startsAt; sourceEmployeeId differs from incomingEmployeeId.",
+          "Task IDs are unique, positions equal their zero-based array index, and retained references are immutable.",
+          "A replacement differs from its original Shift. When replaced, taskLinks has exactly tasks.length entries in the same order.",
+          "Each link exactly matches its Task id/templateId/revisionId/position and enclosing sourceShiftId/replacementShiftId.",
+          "Replacement Task IDs are unique and disjoint from all original Task IDs."
+        ],
+        "description": "Selected own B candidate before offer: exact original Task summary, no replacement or lineage yet."
+      },
+      "ShiftSwapCounterpartPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items","nextCursor"],
+        "properties": {
+          "items": {"type":"array","minItems":0,"maxItems":50,"items":{"$ref":"#/components/schemas/ShiftSwapCounterpartCandidate"},"uniqueItems":true},
+          "nextCursor": {"anyOf":[{"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},{"type":"null"}]}
+        },
+        "description": "At most fifty distinct eligible own Shift IDs for captured recipient B, ordered by startsAt/id."
+      },
+      "ShiftSwapDecline": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operationId","expectedVersion"],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "expectedVersion": {"type":"integer","minimum":1,"maximum":2,"x-storeos-integer-token":true}
+        }
+      },
+      "ShiftSwapDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["request","participantRole","actionable","nonActionableReason","availableActions"],
+        "properties": {
+          "request": {"$ref":"#/components/schemas/ShiftSwapEvidence"},
+          "participantRole": {"type":"string","enum":["source","recipient","manager"]},
+          "actionable": {"type":"boolean"},
+          "nonActionableReason": {"anyOf":[{"type":"string","pattern":"^[a-z][a-z0-9_]{0,63}$","maxLength":64},{"type":"null"}]},
+          "availableActions": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 3,
+            "items": {"type":"string","enum":["offer","confirm","decline","source_withdraw","recipient_withdraw","manager_reject","manager_approve"]},
+            "uniqueItems": true
+          }
+        },
+        "allOf": [
+          {"if":{"properties":{"actionable":{"const":true}}},"then":{"properties":{"nonActionableReason":{"const":null}}}},
+          {
+            "if": {"properties":{"request":{"properties":{"status":{"enum":["declined","withdrawn","rejected","approved"]}}}}},
+            "then": {"properties":{"actionable":{"const":false}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"source"},"request":{"properties":{"status":{"const":"requested"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["source_withdraw"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"source"},"request":{"properties":{"status":{"const":"offered"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["confirm","decline","source_withdraw"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"source"},"request":{"properties":{"status":{"const":"confirmed"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["source_withdraw"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"source"},"request":{"properties":{"status":{"const":"declined"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"source"},"request":{"properties":{"status":{"const":"withdrawn"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"source"},"request":{"properties":{"status":{"const":"rejected"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"source"},"request":{"properties":{"status":{"const":"approved"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"recipient"},"request":{"properties":{"status":{"const":"requested"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["offer","decline"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"recipient"},"request":{"properties":{"status":{"const":"offered"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["recipient_withdraw"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"recipient"},"request":{"properties":{"status":{"const":"confirmed"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["recipient_withdraw"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"recipient"},"request":{"properties":{"status":{"const":"declined"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"recipient"},"request":{"properties":{"status":{"const":"withdrawn"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"recipient"},"request":{"properties":{"status":{"const":"rejected"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"recipient"},"request":{"properties":{"status":{"const":"approved"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"manager"},"request":{"properties":{"status":{"const":"requested"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["manager_reject"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"manager"},"request":{"properties":{"status":{"const":"offered"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["manager_reject"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"manager"},"request":{"properties":{"status":{"const":"confirmed"}}}}},
+            "then": {"properties":{"availableActions":{"items":{"enum":["manager_reject","manager_approve"]}}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"manager"},"request":{"properties":{"status":{"const":"declined"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"manager"},"request":{"properties":{"status":{"const":"withdrawn"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"manager"},"request":{"properties":{"status":{"const":"rejected"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          },
+          {
+            "if": {"properties":{"participantRole":{"const":"manager"},"request":{"properties":{"status":{"const":"approved"}}}}},
+            "then": {"properties":{"availableActions":{"maxItems":0}}}
+          }
+        ],
+        "description": "Current scoped action hints alongside immutable evidence. Actions never confer permission; fresh server authorization and state validation are required."
+      },
+      "ShiftSwapEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "companyId",
+          "locationId",
+          "sourceEmployeeId",
+          "recipientEmployeeId",
+          "sourceName",
+          "recipientName",
+          "status",
+          "version",
+          "requestedAt",
+          "requestOperationId",
+          "offeredAt",
+          "confirmedAt",
+          "terminalAt",
+          "offerOperationId",
+          "confirmationOperationId",
+          "terminalOperationId",
+          "terminalKind",
+          "terminalReason",
+          "legs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "companyId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "locationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "sourceEmployeeId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "recipientEmployeeId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "sourceName": {"type":"string","minLength":1,"maxLength":120},
+          "recipientName": {"type":"string","minLength":1,"maxLength":120},
+          "status": {"type":"string","enum":["requested","offered","confirmed","declined","withdrawn","rejected","approved"]},
+          "version": {"type":"integer","minimum":1,"maximum":4,"x-storeos-integer-token":true},
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+            "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+          },
+          "requestOperationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "offeredAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+              },
+              {"type":"null"}
+            ]
+          },
+          "confirmedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+              },
+              {"type":"null"}
+            ]
+          },
+          "terminalAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+              },
+              {"type":"null"}
+            ]
+          },
+          "offerOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 36,
+                "maxLength": 36,
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                "description": "Canonical lowercase hexadecimal UUID shape."
+              },
+              {"type":"null"}
+            ]
+          },
+          "confirmationOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 36,
+                "maxLength": 36,
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                "description": "Canonical lowercase hexadecimal UUID shape."
+              },
+              {"type":"null"}
+            ]
+          },
+          "terminalOperationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 36,
+                "maxLength": 36,
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                "description": "Canonical lowercase hexadecimal UUID shape."
+              },
+              {"type":"null"}
+            ]
+          },
+          "terminalKind": {"anyOf":[{"type":"string","enum":["decline","source_withdraw","recipient_withdraw","manager_reject","manager_approve"]},{"type":"null"}]},
+          "terminalReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "x-storeos-trim": false,
+                "x-storeos-min-unicode-scalars": 1,
+                "x-storeos-max-unicode-scalars": 500,
+                "x-storeos-reject-unpaired-surrogates": true,
+                "x-storeos-forbidden-controls-after-trim": "U+0000–001F and U+007F–009F",
+                "description": "Retained normalized reason: already trimmed, 1–500 Unicode scalar values, no C0/C1 controls or unpaired surrogates.",
+                "maxLength": 500,
+                "x-storeos-already-trimmed": true
+              },
+              {"type":"null"}
+            ]
+          },
+          "legs": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {"$ref":"#/components/schemas/ShiftSwapLeg"},
+            "prefixItems": [
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapLeg"},{"properties":{"leg":{"const":"a"}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapLeg"},{"properties":{"leg":{"const":"b"}}}]}
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {"properties":{"offeredAt":{"const":null}}},
+            "then": {"properties":{"offerOperationId":{"const":null}}},
+            "else": {
+              "properties": {
+                "offerOperationId": {
+                  "type": "string",
+                  "minLength": 36,
+                  "maxLength": 36,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "description": "Canonical lowercase hexadecimal UUID shape."
+                }
+              }
+            }
+          },
+          {
+            "if": {"properties":{"confirmedAt":{"const":null}}},
+            "then": {"properties":{"confirmationOperationId":{"const":null}}},
+            "else": {
+              "properties": {
+                "confirmationOperationId": {
+                  "type": "string",
+                  "minLength": 36,
+                  "maxLength": 36,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "description": "Canonical lowercase hexadecimal UUID shape."
+                }
+              }
+            }
+          },
+          {
+            "if": {"properties":{"terminalAt":{"const":null}}},
+            "then": {"properties":{"terminalOperationId":{"const":null}}},
+            "else": {
+              "properties": {
+                "terminalOperationId": {
+                  "type": "string",
+                  "minLength": 36,
+                  "maxLength": 36,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "description": "Canonical lowercase hexadecimal UUID shape."
+                }
+              }
+            }
+          },
+          {
+            "if": {"properties":{"confirmedAt":{"not":{"type":"null"}}}},
+            "then": {
+              "properties": {
+                "offeredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                  "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+                }
+              }
+            }
+          },
+          {"if":{"properties":{"offeredAt":{"const":null}}},"then":{"properties":{"legs":{"maxItems":1}}},"else":{"properties":{"legs":{"minItems":2}}}},
+          {
+            "if": {"properties":{"status":{"const":"requested"}}},
+            "then": {"properties":{"version":{"const":1},"offeredAt":{"type":"null"},"confirmedAt":{"type":"null"},"terminalAt":{"type":"null"},"terminalKind":{"type":"null"}}}
+          },
+          {
+            "if": {"properties":{"status":{"const":"offered"}}},
+            "then": {
+              "properties": {
+                "version": {"const":2},
+                "offeredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                  "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+                },
+                "confirmedAt": {"type":"null"},
+                "terminalAt": {"type":"null"},
+                "terminalKind": {"type":"null"}
+              }
+            }
+          },
+          {
+            "if": {"properties":{"status":{"const":"confirmed"}}},
+            "then": {
+              "properties": {
+                "version": {"const":3},
+                "offeredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                  "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+                },
+                "confirmedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                  "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+                },
+                "terminalAt": {"type":"null"},
+                "terminalKind": {"type":"null"}
+              }
+            }
+          },
+          {
+            "if": {"properties":{"status":{"enum":["declined","withdrawn","rejected","approved"]}}},
+            "then": {
+              "properties": {
+                "terminalAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                  "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+                },
+                "terminalKind": {"enum":["decline","source_withdraw","recipient_withdraw","manager_reject","manager_approve"]}
+              },
+              "allOf": [
+                {
+                  "if": {"properties":{"confirmedAt":{"not":{"type":"null"}}}},
+                  "then": {"properties":{"version":{"const":4}}},
+                  "else": {"if":{"properties":{"offeredAt":{"not":{"type":"null"}}}},"then":{"properties":{"version":{"const":3}}},"else":{"properties":{"version":{"const":2}}}}
+                }
+              ]
+            }
+          },
+          {
+            "if": {"properties":{"status":{"enum":["withdrawn","rejected"]}}},
+            "then": {
+              "properties": {
+                "terminalReason": {
+                  "type": "string",
+                  "minLength": 1,
+                  "x-storeos-trim": false,
+                  "x-storeos-min-unicode-scalars": 1,
+                  "x-storeos-max-unicode-scalars": 500,
+                  "x-storeos-reject-unpaired-surrogates": true,
+                  "x-storeos-forbidden-controls-after-trim": "U+0000–001F and U+007F–009F",
+                  "description": "Retained normalized reason: already trimmed, 1–500 Unicode scalar values, no C0/C1 controls or unpaired surrogates.",
+                  "maxLength": 500,
+                  "x-storeos-already-trimmed": true
+                }
+              }
+            },
+            "else": {"properties":{"terminalReason":{"const":null}}}
+          },
+          {"if":{"properties":{"status":{"const":"declined"}}},"then":{"properties":{"confirmedAt":{"type":"null"},"terminalKind":{"const":"decline"}}}},
+          {"if":{"properties":{"status":{"const":"withdrawn"}}},"then":{"properties":{"terminalKind":{"enum":["source_withdraw","recipient_withdraw"]}}}},
+          {
+            "if": {"properties":{"terminalKind":{"const":"recipient_withdraw"}}},
+            "then": {
+              "properties": {
+                "offeredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                  "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+                }
+              }
+            }
+          },
+          {"if":{"properties":{"status":{"const":"rejected"}}},"then":{"properties":{"terminalKind":{"const":"manager_reject"}}}},
+          {
+            "if": {"properties":{"status":{"const":"approved"}}},
+            "then": {
+              "properties": {
+                "confirmedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+                  "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+                },
+                "terminalKind": {"const":"manager_approve"},
+                "legs": {
+                  "items": {
+                    "properties": {
+                      "replacementShiftId": {
+                        "type": "string",
+                        "minLength": 36,
+                        "maxLength": 36,
+                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                        "description": "Canonical lowercase hexadecimal UUID shape."
+                      },
+                      "taskLinks": {"minItems":1}
+                    }
+                  }
+                }
+              }
+            },
+            "else": {"properties":{"legs":{"items":{"properties":{"replacementShiftId":{"const":null}}}}}}
+          }
+        ],
+        "description": "Immutable disclosed evidence, including original accepted snapshots; it is not current actionability. Every property is required, with explicit nulls where applicable. At most two legs, ten original Tasks per leg and twenty paired Task links overall.",
+        "x-storeos-invariants": [
+          "Source and recipient Employee identities differ; ordered leg a is source-to-recipient and leg b is recipient-to-source.",
+          "Original Shift IDs, replacement Shift IDs, original Task IDs and replacement Task IDs are unique across both legs; original and replacement sets are disjoint.",
+          "Requested/offered/confirmed/terminal instants are chronological. Each non-null instant has its matching operation ID.",
+          "Exact cross-field and cross-array reference identity is validated by ShiftSwapDto and ShiftSwapLegDto; JSON Schema cannot compare arbitrary instance values."
+        ]
+      },
+      "ShiftSwapHistoryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items","nextCursor"],
+        "properties": {
+          "items": {"type":"array","minItems":0,"maxItems":2,"items":{"$ref":"#/components/schemas/ShiftSwapCommandResult"},"uniqueItems":true},
+          "nextCursor": {"anyOf":[{"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},{"type":"null"}]}
+        },
+        "description": "Two immutable original receipts per page, ordered by acceptedVersion; at most four receipts over the lifecycle. Original statusCode/kind/version/replayed metadata is retained."
+      },
+      "ShiftSwapKnowledgePin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["articleId","revisionId"],
+        "properties": {
+          "articleId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "revisionId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          }
+        }
+      },
+      "ShiftSwapLeg": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["leg","sourceShiftId","sourceVersion","sourceEmployeeId","incomingEmployeeId","startsAt","endsAt","tasks","taskLinks","replacementShiftId"],
+        "properties": {
+          "leg": {"type":"string","enum":["a","b"]},
+          "sourceShiftId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "sourceVersion": {"type":"integer","minimum":1,"maximum":2147483647,"x-storeos-integer-token":true},
+          "sourceEmployeeId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "incomingEmployeeId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+            "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$",
+            "description": "Valid explicit UTC/offset calendar instant, years 0001–9999, at most six fractional digits. Server output is UTC; calendar overflow and leap seconds are rejected."
+          },
+          "tasks": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {"$ref":"#/components/schemas/ShiftSwapTaskSummary"},
+            "prefixItems": [
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":0}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":1}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":2}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":3}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":4}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":5}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":6}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":7}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":8}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskSummary"},{"properties":{"position":{"const":9}}}]}
+            ]
+          },
+          "taskLinks": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 10,
+            "items": {"$ref":"#/components/schemas/ShiftSwapTaskLink"},
+            "prefixItems": [
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":0}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":1}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":2}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":3}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":4}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":5}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":6}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":7}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":8}}}]},
+              {"allOf":[{"$ref":"#/components/schemas/ShiftSwapTaskLink"},{"properties":{"position":{"const":9}}}]}
+            ]
+          },
+          "replacementShiftId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 36,
+                "maxLength": 36,
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                "description": "Canonical lowercase hexadecimal UUID shape."
+              },
+              {"type":"null"}
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {"properties":{"replacementShiftId":{"const":null}}},
+            "then": {"properties":{"taskLinks":{"maxItems":0}}},
+            "else": {"properties":{"taskLinks":{"minItems":1}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":1,"maxItems":1}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":1,"maxItems":1}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":2,"maxItems":2}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":2,"maxItems":2}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":3,"maxItems":3}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":3,"maxItems":3}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":4,"maxItems":4}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":4,"maxItems":4}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":5,"maxItems":5}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":5,"maxItems":5}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":6,"maxItems":6}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":6,"maxItems":6}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":7,"maxItems":7}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":7,"maxItems":7}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":8,"maxItems":8}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":8,"maxItems":8}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":9,"maxItems":9}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":9,"maxItems":9}}}
+          },
+          {
+            "if": {"allOf":[{"properties":{"replacementShiftId":{"not":{"type":"null"}}}},{"properties":{"tasks":{"minItems":10,"maxItems":10}}}]},
+            "then": {"properties":{"taskLinks":{"minItems":10,"maxItems":10}}}
+          }
+        ],
+        "x-storeos-invariants": [
+          "endsAt is strictly after startsAt; sourceEmployeeId differs from incomingEmployeeId.",
+          "Task IDs are unique, positions equal their zero-based array index, and retained references are immutable.",
+          "A replacement differs from its original Shift. When replaced, taskLinks has exactly tasks.length entries in the same order.",
+          "Each link exactly matches its Task id/templateId/revisionId/position and enclosing sourceShiftId/replacementShiftId.",
+          "Replacement Task IDs are unique and disjoint from all original Task IDs."
+        ]
+      },
+      "ShiftSwapOffer": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operationId","expectedVersion","counterpartShiftId","expectedCounterpartVersion"],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "expectedVersion": {"type":"integer","const":1,"x-storeos-integer-token":true},
+          "counterpartShiftId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "expectedCounterpartVersion": {"type":"integer","minimum":1,"maximum":2147483647,"x-storeos-integer-token":true}
+        }
+      },
+      "ShiftSwapPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items","nextCursor"],
+        "properties": {
+          "items": {"type":"array","minItems":0,"maxItems":50,"items":{"$ref":"#/components/schemas/ShiftSwapEvidence"},"uniqueItems":true},
+          "nextCursor": {"anyOf":[{"type":"string","minLength":1,"maxLength":2048,"x-storeos-max-utf16-code-units":2048},{"type":"null"}]}
+        },
+        "description": "At most fifty distinct request IDs, keyset ordered; required nextCursor is null at end."
+      },
+      "ShiftSwapPlanogramPin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fixtureId","assignmentId","revisionId"],
+        "properties": {
+          "fixtureId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "assignmentId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "revisionId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          }
+        }
+      },
+      "ShiftSwapReject": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operationId","expectedVersion","reason"],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "expectedVersion": {"type":"integer","minimum":1,"maximum":3,"x-storeos-integer-token":true},
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "x-storeos-trim": true,
+            "x-storeos-min-unicode-scalars": 1,
+            "x-storeos-max-unicode-scalars": 500,
+            "x-storeos-reject-unpaired-surrogates": true,
+            "x-storeos-forbidden-controls-after-trim": "U+0000–001F and U+007F–009F",
+            "description": "Trim using Dart String.trim, then require 1–500 Unicode scalar values, excluding C0/C1 controls and unpaired UTF-16 surrogates. Raw surrounding whitespace is accepted. The 8192 UTF-8 byte body limit is separate; raw maxLength=500 would incorrectly reject accepted inputs. Plain text; excluded from audit/logs."
+          }
+        }
+      },
+      "ShiftSwapRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operationId","requestId","sourceShiftId","expectedSourceVersion","recipientEmployeeId"],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "requestId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "sourceShiftId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "expectedSourceVersion": {"type":"integer","minimum":1,"maximum":2147483647,"x-storeos-integer-token":true},
+          "recipientEmployeeId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          }
+        }
+      },
+      "ShiftSwapTaskLink": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sourceTaskId","replacementTaskId","sourceShiftId","replacementShiftId","templateId","revisionId","position"],
+        "properties": {
+          "sourceTaskId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "replacementTaskId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "sourceShiftId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "replacementShiftId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "templateId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "revisionId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "position": {"type":"integer","minimum":0,"maximum":9,"x-storeos-integer-token":true}
+        }
+      },
+      "ShiftSwapTaskSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id","templateId","revisionId","position","title","knowledgeGuidance","planogramGuidance"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "templateId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "revisionId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "Canonical lowercase hexadecimal UUID shape."
+          },
+          "position": {"type":"integer","minimum":0,"maximum":9,"x-storeos-integer-token":true},
+          "title": {"type":"string","minLength":1,"maxLength":120},
+          "knowledgeGuidance": {"anyOf":[{"$ref":"#/components/schemas/ShiftSwapKnowledgePin"},{"type":"null"}]},
+          "planogramGuidance": {"anyOf":[{"$ref":"#/components/schemas/ShiftSwapPlanogramPin"},{"type":"null"}]}
+        }
+      },
+      "ShiftSwapWithdraw": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operationId","expectedVersion","reason"],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Hexadecimal UUID shape; no UUID version/variant restriction. Input is case-insensitive and normalized to lowercase."
+          },
+          "expectedVersion": {"type":"integer","minimum":1,"maximum":3,"x-storeos-integer-token":true},
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "x-storeos-trim": true,
+            "x-storeos-min-unicode-scalars": 1,
+            "x-storeos-max-unicode-scalars": 500,
+            "x-storeos-reject-unpaired-surrogates": true,
+            "x-storeos-forbidden-controls-after-trim": "U+0000–001F and U+007F–009F",
+            "description": "Trim using Dart String.trim, then require 1–500 Unicode scalar values, excluding C0/C1 controls and unpaired UTF-16 surrogates. Raw surrounding whitespace is accepted. The 8192 UTF-8 byte body limit is separate; raw maxLength=500 would incorrectly reject accepted inputs. Plain text; excluded from audit/logs."
+          }
+        },
+        "description": "One public withdrawal intent. The server derives source/recipient authority from current eligible ownership inside the authorized transaction. Recipient withdrawal requires stage 2 or 3; source withdrawal permits 1–3. No client-controlled actor or kind."
+      },
       "Company": {
         "type": "object",
         "additionalProperties": false,

@@ -1,5 +1,34 @@
 # Actual implementation status
 
+## Current P4.16 Stage B2a native ingress — 2026-10-16
+
+**P4.16 IN PROGRESS.** F01–F03 independently **CLOSED**; latest independent verdict:
+**STAGE B2a CHANGES REQUIRED**, INGRESS-01 MEDIUM (logout before EOF) and
+INGRESS-02 LOW (bodyless GET keep-alive). Both are locally fixed and verified,
+uncommitted, pending targeted independent re-review. See [ADR 0031](../adr/0031-bounded-native-http-ingress.md)
+and [evidence](../development/phase-4-16-stage-b2a.md#ingress-01--ingress-02-local-remediation--2026-10-16).
+Two original unfinished-upload failures and the security-testing interruption
+remain recorded; no restricted probe or scanner-access retry ran. No B2a approval,
+B2b/OpenAPI, Flutter, expanded recovery, publication or full P4.16 acceptance is
+claimed. Migration chain remains 0001–0029. Earlier dated entries retain history.
+
+## Current P4.16 Stage B2a — 2026-10-14
+
+**P4.16 IN PROGRESS. Stage B2a / remaining HTTP Step 6: local uncommitted
+implementation; independent review pending.** Verified integrated main is
+`289dc07bc5b8e85b3a3430f45244e13adc9e3a11`, with approved/merged Stage A/B1 and
+successful exact-baseline main CI. Branch `codex/p416-stage-b2a-swap-http` adds the
+16 authenticated swap routes, one authorized withdrawal adapter and scoped receipt
+history pagination. Dedicated real HTTP/restricted PostgreSQL: **47 PASS / 0 FAIL /
+0 SKIP**; contracts: **362 PASS**; full server: **981 PASS / 0 FAIL / 21 explicit
+opt-in SKIP**. Analyzers/format pass; 13 intended paths, Git index empty.
+[Handoff](../development/phase-4-16-stage-b2a.md) records exact route/DTO/error/privacy/
+replay evidence and remaining gates. No new migration; chain ends at 0029. Step 7
+OpenAPI parity, Flutter/browser and expanded recovery remain pending. No B2a
+independent approval, Security acceptance, commit/publication or P4.16 closure is
+claimed. Next: independent adversarial B2a review. Earlier dated
+Stage A/B1/design status statements below retain historical context.
+
 ## Current P4.16 Stage B1 — 2026-10-13
 
 **P4.16 IN PROGRESS. Stage B1 / Step 5: verified local uncommitted implementation;

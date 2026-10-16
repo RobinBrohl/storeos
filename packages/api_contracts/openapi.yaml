@@ -388,6 +388,36 @@ paths:
     $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1quantity~1preview"
   /api/v1/platform/locations/{locationId}/stock/{levelId}/quantity/correct:
     $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1stock~1{levelId}~1quantity~1correct"
+  /api/v1/platform/employee-home/shifts/{shiftId}/swap-colleagues:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1employee-home~1shifts~1{shiftId}~1swap-colleagues"
+  /api/v1/platform/locations/{locationId}/shift-swaps:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-swaps"
+  /api/v1/platform/locations/{locationId}/shift-swaps/{requestId}:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-swaps~1{requestId}"
+  /api/v1/platform/locations/{locationId}/shift-swaps/{requestId}/approve:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-swaps~1{requestId}~1approve"
+  /api/v1/platform/locations/{locationId}/shift-swaps/{requestId}/history:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-swaps~1{requestId}~1history"
+  /api/v1/platform/locations/{locationId}/shift-swaps/{requestId}/reject:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1locations~1{locationId}~1shift-swaps~1{requestId}~1reject"
+  /api/v1/platform/me/shift-swaps:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps"
+  /api/v1/platform/me/shift-swaps/{requestId}:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps~1{requestId}"
+  /api/v1/platform/me/shift-swaps/{requestId}/confirm:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps~1{requestId}~1confirm"
+  /api/v1/platform/me/shift-swaps/{requestId}/counterparts:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps~1{requestId}~1counterparts"
+  /api/v1/platform/me/shift-swaps/{requestId}/counterparts/{shiftId}:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps~1{requestId}~1counterparts~1{shiftId}"
+  /api/v1/platform/me/shift-swaps/{requestId}/decline:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps~1{requestId}~1decline"
+  /api/v1/platform/me/shift-swaps/{requestId}/history:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps~1{requestId}~1history"
+  /api/v1/platform/me/shift-swaps/{requestId}/offer:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps~1{requestId}~1offer"
+  /api/v1/platform/me/shift-swaps/{requestId}/withdraw:
+    $ref: "./platform.openapi.json#/paths/~1api~1v1~1platform~1me~1shift-swaps~1{requestId}~1withdraw"
 components:
   securitySchemes:
     session:

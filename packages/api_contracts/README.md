@@ -78,19 +78,38 @@ referenced by `openapi.yaml`; `tool/article_quantity_openapi.dart` supplies the
 bounded additions and `article_quantity_openapi_test.dart` verifies the artifact.
 See the [P4.15 contract](../../docs/development/phase-4-15-article-quantities.md).
 
-## P4.16 selected interface design (not implemented)
+## P4.16 bilateral Shift Swap contracts
 
-P4.16 bilateral pristine-future Shift swaps are SELECTED / DESIGN IN PROGRESS;
-implementation is NOT AUTHORIZED. The [interface contract](../../docs/development/phase-4-16-bilateral-shift-swaps.md#7-planned-http-and-flutter-contract)
-specifies future strict request/offer/confirmation/closure/manager commands,
-request-specific summaries and original receipt versus current actionability.
-Proposed roots are `/api/v1/platform/me/shift-swaps` and
-`/api/v1/platform/locations/{locationId}/shift-swaps`, with own-work colleague
-discovery and B-only own counterpart discovery. No colleague-roster permission.
+The independently approved B2a backend implements sixteen authenticated swap
+operations. Stage B2b adds their OpenAPI parity locally under implementation-plan
+Step 7; independent B2b review remains pending. P4.16 remains **IN PROGRESS**.
+The roots are `/api/v1/platform/me/shift-swaps` and
+`/api/v1/platform/locations/{locationId}/shift-swaps`, plus own-Shift
+`swap-colleagues` discovery. Captured recipient B alone discovers own counterparts;
+these operations grant no general colleague roster. Server-side session,
+Company/Location, capability and participant authorization precedes receipt replay.
 
-No shift_swaps.dart, routes, generated OpenAPI additions or new contract tests
-exist in this documentation selection. Existing P4.11 payloads, response evidence,
-receipt namespace and lineage remain intact. Future shared busy handling is a
-bounded compatibility addition, tested before release. M3/M4 containment, strict
-negative cases and release Web compilation remain gates; a design table is not
-an implemented API. See the [file-level plan](../../docs/development/phase-4-16-implementation-plan.md).
+`shift_swaps.dart` supplies strict command and immutable evidence DTOs.
+`platform.openapi.json` contains 22 separate `ShiftSwap*` schemas and the sixteen
+operations, referenced by canonical `openapi.yaml`. Regenerate with
+`dart run tool/shift_swap_openapi.dart`. The bounded generator preserves all
+historical members, is deterministic/idempotent and refuses conflicting or partial
+definitions. Tests independently read actual route registrations, validate DTO
+shapes and per-operation errors, resolve references and check raw preservation of
+P4.11 and unrelated APIs. Historical P4.11 definitions are unchanged.
+
+Commands have an 8192 UTF-8 byte wire limit, independent of reason normalization:
+trim first, then 1–500 Unicode scalar values, excluding controls and unpaired
+surrogates. `x-storeos-*` annotations describe normalization, strict JSON integer
+tokens, UTF-16 cursor length and cross-field identity/temporal constraints that
+standard JSON Schema cannot fully express. Responses retain original accepted
+status/version/kind and explicit replay metadata; current actionability is a
+separate detail read. Lists contain at most fifty items; history pages contain two
+receipts. Native expiry may terminate a connection without an HTTP error response;
+there is no pre-EOF 413 promise. The approved shared body-completion gates and
+transport qualifications remain intact.
+
+See the [B2b handoff](../../docs/development/phase-4-16-stage-b2b.md) for all paths,
+schemas, error sets, preservation hashes and verification. Flutter swap controllers,
+UI/Chrome acceptance, expanded recovery and full A01–A16 acceptance remain later
+gates; a release Web compatibility build does not deliver those features.

@@ -1,5 +1,35 @@
 # StoreOS handover
 
+## Current P4.16 Stage B2a native ingress — 2026-10-16
+
+P4.16 remains **IN PROGRESS**. F01–F03 are independently **CLOSED**. Latest
+independent native review: **STAGE B2a CHANGES REQUIRED**, INGRESS-01 MEDIUM
+(logout before EOF) and INGRESS-02 LOW (bodyless GET keep-alive). Both findings
+are fixed locally on the same uncommitted B2a branch; targeted independent
+re-review remains pending. See [ADR 0031](adr/0031-bounded-native-http-ingress.md)
+and the [current evidence](development/phase-4-16-stage-b2a.md#ingress-01--ingress-02-local-remediation--2026-10-16).
+No restricted unfinished-upload network probes or scanner retries were run; the
+two historical failures and interruption remain recorded. Independent targeted
+transport review, wire/proxy qualification, B2b and broader acceptance remain gates.
+No migration, business-rule, commit, push, PR or deployment change is authorized.
+Earlier dated entries below are historical.
+
+## Current P4.16 Stage B2a — 2026-10-14
+
+P4.16 remains **IN PROGRESS**. The owner authorized local authenticated swap HTTP
+transport on verified integrated main `289dc07bc5b8e85b3a3430f45244e13adc9e3a11`;
+Stage A/B1 are independently approved, merged and baseline main-CI verified.
+Local uncommitted B2a work is on `codex/p416-stage-b2a-swap-http`: all 16 routes,
+transaction-scoped withdrawal resolution and scoped two-receipt history pages.
+Final dedicated real HTTP/restricted PostgreSQL tests: **47 PASS / 0 FAIL / 0 SKIP**;
+contracts: **362 PASS**; full server: **981 PASS / 0 FAIL / 21 explicit opt-in SKIP**.
+Analyzers and non-writing format checks pass; index empty, 13 intended paths.
+See the [B2a handoff](development/phase-4-16-stage-b2a.md) for exact DTOs, errors,
+privacy/replay and evidence. Migration chain remains 0001–0029. Step 7 OpenAPI,
+Flutter/browser and expanded recovery remain separate gates. No commit, push, PR,
+deployment, B2a independent approval or full P4.16 closure. Next: independent
+adversarial B2a review. Earlier dated passages are history.
+
 ## Current P4.16 Stage B1 — 2026-10-13
 
 The owner separately authorized Step 5's internal bilateral swap Application

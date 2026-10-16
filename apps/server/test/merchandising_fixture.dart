@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:postgres/postgres.dart';
-import 'package:shelf/shelf_io.dart' as shelf_io;
+// Released-writer seeding remaps the business package to its immutable snapshot.
+// Keep the current ingress outside that mapping; old snapshots have no guard.
+// ignore: avoid_relative_lib_imports
+import '../lib/src/http/guarded_http_server.dart';
 import 'package:storeos_api_contracts/api_contracts.dart';
 import 'package:storeos_server/src/application/auth_service.dart';
 import 'package:storeos_server/src/application/password_hasher.dart';
@@ -57,27 +60,30 @@ class MerchandisingFixture {
     this.runtimeUser, {
     this.allowedOrigins = const {},
     this.homeLocationId = _home,
+    this.homeCompanyId = _company,
   });
   final Connection owner;
   final Pool<void> pool;
   final String schema, runtimeUser;
   final Set<String> allowedOrigins;
   final String homeLocationId;
+  final String homeCompanyId;
   final HttpClient client = HttpClient();
   late PlatformDatabase database;
   late SessionPrincipal adminPrincipal;
   late AuthService auth;
-  HttpServer? server;
+  GuardedHttpServer? server;
   String? adminToken;
   late String adminId;
   String get base => 'http://127.0.0.1:${server!.port}';
 
   Future<void> restart({
     String? locationId,
-    String companyId = _company,
+    String? companyId,
     int port = 0,
   }) async {
     locationId ??= homeLocationId;
+    companyId ??= homeCompanyId;
     await server?.close(force: true);
     final store = PostgresAuthStore(pool, schemaName: schema);
     auth = await AuthService.create(
@@ -110,7 +116,7 @@ class MerchandisingFixture {
       store: store,
       platformHandler: createPlatformHandler(auth, database),
     );
-    server = await shelf_io.serve(app.handler, '127.0.0.1', port);
+    server = await GuardedHttpServer.bind(app.handler, '127.0.0.1', port);
   }
 
   Future<MerchandisingReply> call(
@@ -324,6 +330,7 @@ Future<void> withMerchandisingFixture(
   String? fixedSchema,
   Set<String> allowedOrigins = const {},
   String homeLocationId = _home,
+  String homeCompanyId = _company,
 }) async {
   final uri = Uri.parse(_url!);
   final split = uri.userInfo.indexOf(':');
@@ -379,6 +386,7 @@ Future<void> withMerchandisingFixture(
     runtime,
     allowedOrigins: allowedOrigins,
     homeLocationId: homeLocationId,
+    homeCompanyId: homeCompanyId,
   );
   Directory? legacyDirectory;
   if (legacyBefore != null) {
@@ -408,7 +416,7 @@ Future<void> withMerchandisingFixture(
     ).bootstrap(
       username: 'test_admin',
       password: _password,
-      companyId: _company,
+      companyId: homeCompanyId,
       locationId: homeLocationId,
     );
     await fixture.restart();

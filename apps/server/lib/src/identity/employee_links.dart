@@ -47,6 +47,22 @@ class EmployeeLinks {
   Future<EmployeeLinkDto?> forAccount(TxSession tx, String accountId) =>
       _links.find(tx, accountId: accountId);
 
+  /// Current reader basis inside an already authorized transaction. Releases
+  /// only a version; callers must keep Account identity/version out of cursors.
+  Future<int> currentReaderAccountVersion(
+    TxSession tx,
+    PlatformActor actor,
+  ) async {
+    final account = await _accounts.user(tx, actor.id);
+    if (account == null ||
+        !account.isActive ||
+        account.companyId != actor.companyId ||
+        account.locationId != actor.locationId) {
+      throw const PlatformFailure(401, 'unauthorized', 'Session is invalid.');
+    }
+    return account.version;
+  }
+
   /// Current consent basis. Account version fences identity/rights revocation;
   /// replacing a link can never revive consent bound to its former identity.
   Future<int?> transferAccountVersion(

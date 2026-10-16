@@ -32,6 +32,30 @@ String transferReason(Object? value) {
     );
   }
   final text = value.trim();
+  // JSON may decode escaped lone UTF-16 surrogates, but they are not Unicode
+  // scalar values and cannot be persisted as PostgreSQL JSON/text.
+  for (var i = 0; i < text.length; i++) {
+    final unit = text.codeUnitAt(i);
+    if (unit >= 0xd800 && unit <= 0xdbff) {
+      if (i + 1 < text.length) {
+        final next = text.codeUnitAt(i + 1);
+        if (next >= 0xdc00 && next <= 0xdfff) {
+          i++;
+          continue;
+        }
+      }
+      throw const TransferInputException(
+        'invalid_reason',
+        'Use 1 to 500 plain-text code points.',
+      );
+    }
+    if (unit >= 0xdc00 && unit <= 0xdfff) {
+      throw const TransferInputException(
+        'invalid_reason',
+        'Use 1 to 500 plain-text code points.',
+      );
+    }
+  }
   if (text.isEmpty ||
       text.runes.length > 500 ||
       RegExp(r'[\x00-\x1f\x7f-\x9f]').hasMatch(text)) {

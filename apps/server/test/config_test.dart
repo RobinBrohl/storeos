@@ -12,6 +12,60 @@ const _base = <String, String>{
 };
 
 void main() {
+  test('HTTP ingress defaults, explicit host and valid bounds', () {
+    final config = ServerConfig.fromEnvironment({
+      ..._base,
+      'STOREOS_HOST': '0.0.0.0',
+    });
+    expect(config.host, '0.0.0.0');
+    final policy = config.httpIngress;
+    expect([policy.connections, policy.requests, policy.bodies], [64, 32, 16]);
+    expect(policy.bodyLifetime, const Duration(seconds: 30));
+    expect(policy.discardWindow, const Duration(seconds: 1));
+    expect(policy.idleTimeout, const Duration(seconds: 15));
+    final custom = HttpIngressPolicy.fromEnvironment({
+      'STOREOS_HTTP_MAX_CONNECTIONS': '3',
+      'STOREOS_HTTP_MAX_REQUESTS': '2',
+      'STOREOS_HTTP_MAX_BODIES': '1',
+      'STOREOS_HTTP_BODY_SECONDS': '2',
+      'STOREOS_HTTP_DISCARD_MILLISECONDS': '500',
+      'STOREOS_HTTP_IDLE_SECONDS': '1',
+    });
+    expect([custom.connections, custom.requests, custom.bodies], [3, 2, 1]);
+  });
+
+  test(
+    'HTTP ingress rejects invalid and inconsistent configuration fail closed',
+    () {
+      for (final bad in [
+        {'STOREOS_HTTP_MAX_CONNECTIONS': '0'},
+        {'STOREOS_HTTP_MAX_CONNECTIONS': '4097'},
+        {'STOREOS_HTTP_MAX_REQUESTS': '-1'},
+        {'STOREOS_HTTP_MAX_BODIES': 'NaN'},
+        {'STOREOS_HTTP_BODY_SECONDS': 'Infinity'},
+        {'STOREOS_HTTP_BODY_SECONDS': '301'},
+        {'STOREOS_HTTP_DISCARD_MILLISECONDS': '0'},
+        {'STOREOS_HTTP_DISCARD_MILLISECONDS': '30001'},
+        {'STOREOS_HTTP_IDLE_SECONDS': '0'},
+        {'STOREOS_HTTP_MAX_CONNECTIONS': '31'},
+        {'STOREOS_HTTP_MAX_BODIES': '33'},
+      ]) {
+        expect(
+          () => ServerConfig.fromEnvironment({..._base, ...bad}),
+          throwsA(isA<ConfigurationException>()),
+        );
+      }
+      expect(
+        () => const HttpIngressPolicy(bodies: 0).validate(),
+        throwsA(isA<ConfigurationException>()),
+      );
+      expect(
+        () => const HttpIngressPolicy(bodyLifetime: Duration.zero).validate(),
+        throwsA(isA<ConfigurationException>()),
+      );
+    },
+  );
+
   test(
     'defaults bind to loopback and accept only explicit browser origins',
     () {

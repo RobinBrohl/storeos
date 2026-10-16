@@ -100,6 +100,7 @@ class ServerConfig {
     this.port = 8080,
     this.sessionTtl = const Duration(hours: 1),
     this.allowedOrigins = const <String>{},
+    this.httpIngress = const HttpIngressPolicy(),
   });
 
   factory ServerConfig.fromEnvironment(Map<String, String> environment) {
@@ -146,6 +147,7 @@ class ServerConfig {
         ),
       ),
       allowedOrigins: origins,
+      httpIngress: HttpIngressPolicy.fromEnvironment(environment),
     );
   }
 
@@ -156,6 +158,87 @@ class ServerConfig {
   final int port;
   final Duration sessionTtl;
   final Set<String> allowedOrigins;
+  final HttpIngressPolicy httpIngress;
+}
+
+class HttpIngressPolicy {
+  const HttpIngressPolicy({
+    this.connections = 64,
+    this.requests = 32,
+    this.bodies = 16,
+    this.bodyLifetime = const Duration(seconds: 30),
+    this.discardWindow = const Duration(seconds: 1),
+    this.idleTimeout = const Duration(seconds: 15),
+  });
+
+  factory HttpIngressPolicy.fromEnvironment(Map<String, String> environment) {
+    final reader = _EnvironmentReader(environment);
+    final policy = HttpIngressPolicy(
+      connections: reader.integer(
+        'STOREOS_HTTP_MAX_CONNECTIONS',
+        64,
+        min: 1,
+        max: 4096,
+      ),
+      requests: reader.integer(
+        'STOREOS_HTTP_MAX_REQUESTS',
+        32,
+        min: 1,
+        max: 4096,
+      ),
+      bodies: reader.integer('STOREOS_HTTP_MAX_BODIES', 16, min: 1, max: 4096),
+      bodyLifetime: Duration(
+        seconds: reader.integer(
+          'STOREOS_HTTP_BODY_SECONDS',
+          30,
+          min: 1,
+          max: 300,
+        ),
+      ),
+      discardWindow: Duration(
+        milliseconds: reader.integer(
+          'STOREOS_HTTP_DISCARD_MILLISECONDS',
+          1000,
+          min: 1,
+          max: 300000,
+        ),
+      ),
+      idleTimeout: Duration(
+        seconds: reader.integer(
+          'STOREOS_HTTP_IDLE_SECONDS',
+          15,
+          min: 1,
+          max: 300,
+        ),
+      ),
+    );
+    policy.validate();
+    return policy;
+  }
+
+  final int connections;
+  final int requests;
+  final int bodies;
+  final Duration bodyLifetime;
+  final Duration discardWindow;
+  final Duration idleTimeout;
+
+  void validate() {
+    if (bodies < 1 ||
+        requests < bodies ||
+        connections < requests ||
+        connections > 4096 ||
+        bodyLifetime <= Duration.zero ||
+        bodyLifetime > const Duration(seconds: 300) ||
+        discardWindow <= Duration.zero ||
+        discardWindow > bodyLifetime ||
+        idleTimeout <= Duration.zero ||
+        idleTimeout > const Duration(seconds: 300)) {
+      throw ConfigurationException(
+        'Invalid HTTP ingress policy: require 1 <= bodies <= requests <= connections <= 4096, positive durations <= 300 seconds and discard <= body lifetime.',
+      );
+    }
+  }
 }
 
 bool isUuid(String value) => _uuidPattern.hasMatch(value);

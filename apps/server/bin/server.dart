@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:postgres/postgres.dart';
-import 'package:shelf/shelf_io.dart' as shelf_io;
 
 import 'package:storeos_server/src/application/auth_service.dart';
 import 'package:storeos_server/src/config.dart';
 import 'package:storeos_server/src/http/json_logger.dart';
+import 'package:storeos_server/src/http/guarded_http_server.dart';
 import 'package:storeos_server/src/http/platform_app.dart';
 import 'package:storeos_server/src/http/server_app.dart';
 import 'package:storeos_server/src/infrastructure/auth_store.dart';
@@ -16,7 +16,7 @@ import 'package:storeos_server/src/platform/platform_database.dart';
 Future<void> main() async {
   const logger = JsonLogger();
   Pool<void>? pool;
-  HttpServer? server;
+  GuardedHttpServer? server;
   EventBus? eventBus;
   final signalSubscriptions = <StreamSubscription<ProcessSignal>>[];
   try {
@@ -42,7 +42,12 @@ Future<void> main() async {
       store: store,
       platformHandler: createPlatformHandler(auth, database),
     );
-    server = await shelf_io.serve(app.handler, config.host, config.port);
+    server = await GuardedHttpServer.bind(
+      app.handler,
+      config.host,
+      config.port,
+      policy: config.httpIngress,
+    );
     eventBus = EventBus(database: database)..start();
     logger.event(
       'server_started',
@@ -75,7 +80,7 @@ Future<void> main() async {
     for (final subscription in signalSubscriptions) {
       await subscription.cancel();
     }
-    await server?.close(force: false);
+    await server?.close();
     await eventBus?.stop();
     await pool?.close();
   }

@@ -346,6 +346,7 @@ Future<StageASwapFixture> stageAFixture(
   DateTime? starts,
   int taskCount = 1,
   String workerPrefix = 'swap_fixture',
+  String taskTitle = 'Frozen fixture work',
 }) async {
   final a = await batchWorker(f, '${workerPrefix}_a'),
       b = await batchWorker(f, '${workerPrefix}_b');
@@ -364,7 +365,7 @@ Future<StageASwapFixture> stageAFixture(
         'locationId': merchandisingTestLocation,
         'content': {
           'schemaVersion': 1,
-          'title': 'Frozen fixture work',
+          'title': taskTitle,
           'steps': [
             {
               'id': newUuid(),

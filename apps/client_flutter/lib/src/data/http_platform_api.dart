@@ -49,6 +49,7 @@ class HttpPlatformApi implements PurchasingApi {
       body: jsonEncode(body),
     ),
     route: route,
+    swapCommand: route.contains('/shift-swaps'),
   );
 
   @override
@@ -83,6 +84,7 @@ class HttpPlatformApi implements PurchasingApi {
   Future<Map<String, dynamic>> _request(
     Future<http.Response> Function() send, {
     required String route,
+    bool swapCommand = false,
   }) async {
     late final http.Response response;
     try {
@@ -160,7 +162,13 @@ class HttpPlatformApi implements PurchasingApi {
     }
     if (response.body.trim().isEmpty) return const {};
     try {
-      return _object(response.body);
+      final result = _object(response.body);
+      if (swapCommand &&
+          (!{200, 201}.contains(response.statusCode) ||
+              result['statusCode'] != response.statusCode)) {
+        throw const FormatException('Invalid swap receipt HTTP status.');
+      }
+      return result;
     } on FormatException {
       throw const StoreApiException(
         'invalid_response',

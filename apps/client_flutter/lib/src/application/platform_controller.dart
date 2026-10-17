@@ -15,7 +15,7 @@ class PlatformController extends ChangeNotifier {
 
   final SessionController _session;
   final PlatformApi _api;
-  String? _boundUserId;
+  Object? _boundSessionIdentity;
   int _epoch = 0;
   bool _disposed = false;
   bool _busy = false;
@@ -26,7 +26,33 @@ class PlatformController extends ChangeNotifier {
   String? _pendingUserId;
   String? _pendingUsername;
 
-  PlatformContext? context;
+  PlatformContext? _context;
+  Object _contextIdentity = Object();
+  Object? _contextSessionIdentity;
+  PlatformContext? get context => _context;
+
+  /// Changes when authorization or configured execution context is replaced.
+  Object get contextIdentity => _contextIdentity;
+  Object? get contextSessionIdentity => _contextSessionIdentity;
+  set context(PlatformContext? value) => _replaceContext(value);
+
+  Object _replaceContext(PlatformContext? value) {
+    _context = value == null
+        ? null
+        : PlatformContext(
+            userId: value.userId,
+            companyId: value.companyId,
+            locationId: value.locationId,
+            role: value.role,
+            permissions: List.unmodifiable(value.permissions),
+          );
+    final identity = Object();
+    _contextIdentity = identity;
+    _contextSessionIdentity = _session.sessionIdentity;
+    _notify();
+    return identity;
+  }
+
   OrganizationSnapshot? organization;
   List<PlatformUser>? users;
   List<Map<String, dynamic>>? audit;
@@ -42,10 +68,13 @@ class PlatformController extends ChangeNotifier {
 
   void _onSessionChanged() {
     final userId = _session.user?.id;
-    if (userId == _boundUserId) return;
-    _boundUserId = userId;
+    final identity = _session.sessionIdentity;
+    if (identical(identity, _boundSessionIdentity)) return;
+    _boundSessionIdentity = identity;
     _epoch++;
-    context = null;
+    _context = null;
+    _contextIdentity = Object();
+    _contextSessionIdentity = identity;
     organization = null;
     users = null;
     audit = null;
@@ -65,7 +94,10 @@ class PlatformController extends ChangeNotifier {
   }
 
   bool _current(int epoch) =>
-      !_disposed && _epoch == epoch && _session.isAuthenticated;
+      !_disposed &&
+      _epoch == epoch &&
+      identical(_boundSessionIdentity, _session.sessionIdentity) &&
+      _session.isAuthenticated;
 
   void _notify() {
     if (!_disposed) notifyListeners();
@@ -77,14 +109,23 @@ class PlatformController extends ChangeNotifier {
   Future<void> _loadInitial() async {
     if (_busy || !_session.isAuthenticated) return;
     final epoch = _epoch;
+    var contextIdentity = _contextIdentity;
+    bool current() =>
+        _current(epoch) && identical(contextIdentity, _contextIdentity);
     _busy = true;
     _error = null;
     _notify();
     try {
-      final rawContext = await _authorized(
-        (token) => _api.get(token, '/context'),
-      );
-      if (!_current(epoch)) return;
+      final rawContext = await _authorized((token) {
+        if (!current()) {
+          throw const StoreApiException(
+            'stale_context',
+            'Platform context changed.',
+          );
+        }
+        return _api.get(token, '/context');
+      });
+      if (!current()) return;
       final loadedContext = PlatformContext.fromJson(rawContext);
       final user = _session.user!;
       if (loadedContext.userId != user.id ||
@@ -99,15 +140,24 @@ class PlatformController extends ChangeNotifier {
         _session.invalidateSession();
         return;
       }
-      context = loadedContext;
-      final rawOrganization = await _authorized(
-        (token) => _api.get(token, '/organization'),
-      );
-      if (!_current(epoch)) return;
+      // Retain the identity published before listeners run, rather than adopting
+      // a replacement context installed by a reentrant notification callback.
+      contextIdentity = _replaceContext(loadedContext);
+      if (!current()) return;
+      final rawOrganization = await _authorized((token) {
+        if (!current()) {
+          throw const StoreApiException(
+            'stale_context',
+            'Platform context changed.',
+          );
+        }
+        return _api.get(token, '/organization');
+      });
+      if (!current()) return;
       final loadedOrganization = _parseOrganization(rawOrganization);
       organization = loadedOrganization;
     } catch (error) {
-      if (_current(epoch)) _error = _message(error);
+      if (current()) _error = _message(error);
     } finally {
       if (_current(epoch)) {
         _busy = false;

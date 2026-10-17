@@ -237,6 +237,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
                       shifts: _shifts,
                       transfers: _transfers,
                       ownTransfers: _ownTransfers,
+                      swaps: _swaps,
+                      ownSwaps: _ownSwaps,
                       home: _home,
                       baseUri: widget.baseUri,
                     )

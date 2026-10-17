@@ -101,6 +101,7 @@ class ShiftSwapController extends ChangeNotifier {
   List<Map<String, dynamic>> _colleagues = const [], _counterparts = const [];
   ShiftSwapDetailDto? _detail;
   ShiftDto? _source;
+  List<TaskInstanceDto> _sourceWork = const [];
   Map<String, dynamic>? _colleague, _counterpart;
   ShiftSwapLegDto? _selectedCounterpart;
   PendingSwapCommand? _pending;
@@ -123,6 +124,7 @@ class ShiftSwapController extends ChangeNotifier {
   List<Map<String, dynamic>> get counterparts => _counterparts;
   ShiftSwapDetailDto? get detail => _detail;
   ShiftDto? get source => _source;
+  List<TaskInstanceDto> get sourceWork => _sourceWork;
   Map<String, dynamic>? get colleague => _colleague;
   Map<String, dynamic>? get counterpart => _counterpart;
   ShiftSwapLegDto? get selectedCounterpart => _selectedCounterpart;
@@ -157,6 +159,7 @@ class ShiftSwapController extends ChangeNotifier {
   void _clearSelection() {
     _detail = null;
     _source = null;
+    _sourceWork = const [];
     _colleague = null;
     _colleagues = const [];
     _colleagueCursor = null;
@@ -466,6 +469,56 @@ class ShiftSwapController extends ChangeNotifier {
     if (matches.isEmpty) return;
     _colleague = matches.single;
     _notify();
+  }
+
+  /// Own work is read through the existing Employee Home endpoints. Discovery
+  /// alone does not disclose Task snapshots, so request review loads them here.
+  Future<void> loadSourceWork() {
+    final source = _source;
+    if (!self || source == null) return Future.value();
+    return _read((b, current) async {
+      _sourceWork = const [];
+      final root = '/employee-home/shifts/${source.id}';
+      final raw = await _get(b, root);
+      if (!current()) return;
+      final fresh = ShiftDto.fromJson(_object(raw['shift']));
+      if (!_same(source.toJson(), fresh.toJson())) {
+        throw const FormatException('Source changed. Open current own work.');
+      }
+      final rows = raw['tasks'];
+      if (rows is! List ||
+          rows.isEmpty ||
+          rows.length > 10 ||
+          rows.length != source.draft.selections.length) {
+        throw const FormatException('Incomplete source work.');
+      }
+      final work = <TaskInstanceDto>[];
+      for (final row in rows) {
+        final summary = TaskInstanceDto.fromJson(_object(row));
+        final task = TaskInstanceDto.fromJson(
+          await _get(b, '$root/tasks/${summary.id}'),
+        );
+        if (!current()) return;
+        if (task.id != summary.id ||
+            task.shiftId != source.id ||
+            task.employeeId != source.draft.employeeId ||
+            task.status != 'open' ||
+            task.version != 1 ||
+            task.position != work.length ||
+            task.content == null ||
+            task.templateId !=
+                source.draft.selections[work.length].templateId ||
+            task.revisionId !=
+                source.draft.selections[work.length].revisionId) {
+          throw const FormatException('Source work changed. Reload own work.');
+        }
+        work.add(task);
+      }
+      if (work.length != source.draft.selections.length || work.isEmpty) {
+        throw const FormatException('Incomplete source work.');
+      }
+      _sourceWork = List.unmodifiable(work);
+    });
   }
 
   bool get _mayDiscover =>
@@ -879,6 +932,9 @@ class ShiftSwapController extends ChangeNotifier {
     _lastConfirmed = null;
     _items = const [];
     _clearSelection();
+    // Mounted review dialogs must remove private evidence on disposal as well.
+    // Publish only the cleared, fenced state; later completions stay silent.
+    notifyListeners();
     super.dispose();
   }
 }

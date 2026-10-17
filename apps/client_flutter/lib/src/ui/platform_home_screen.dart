@@ -1,8 +1,11 @@
 import '../application/shift_controller.dart';
 import '../application/shift_transfer_controller.dart';
+import '../application/shift_swap_controller.dart';
+import 'shift_swap_section.dart';
 import 'shift_transfer_section.dart';
 import 'shift_section.dart';
 import 'package:flutter/material.dart';
+import 'package:storeos_api_contracts/api_contracts.dart';
 import 'package:storeos_design_system/storeos_design_system.dart';
 
 import '../application/article_assortment_controller.dart';
@@ -41,6 +44,8 @@ enum _Section {
   purchasing,
   transfers,
   ownTransfers,
+  swaps,
+  ownSwaps,
   status,
   organization,
   users,
@@ -84,6 +89,8 @@ class PlatformHomeScreen extends StatefulWidget {
     this.shifts,
     this.transfers,
     this.ownTransfers,
+    this.swaps,
+    this.ownSwaps,
     this.home,
     required this.baseUri,
     super.key,
@@ -105,6 +112,7 @@ class PlatformHomeScreen extends StatefulWidget {
   final PurchasingController? purchasing;
   final ShiftController? shifts, home;
   final ShiftTransferController? transfers, ownTransfers;
+  final ShiftSwapController? swaps, ownSwaps;
   final Uri baseUri;
 
   @override
@@ -113,6 +121,13 @@ class PlatformHomeScreen extends StatefulWidget {
 
 class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   _Section _selected = _Section.status;
+  ({
+    Object owner,
+    Object? session,
+    Object context,
+    ShiftSwapController controller,
+  })?
+  _swapNavigation;
 
   List<_Section> get _available => [
     if (widget.assignments != null &&
@@ -127,6 +142,12 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
         widget.platform.allows('purchasing.orders.manage'))
       _Section.purchasing,
     _Section.status,
+    if (widget.ownSwaps != null &&
+        widget.platform.allows('workforce.swaps.self.read'))
+      _Section.ownSwaps,
+    if (widget.swaps != null &&
+        widget.platform.allows('workforce.swaps.manage'))
+      _Section.swaps,
     if (widget.ownTransfers != null &&
         widget.platform.allows('workforce.transfers.self.read'))
       _Section.ownTransfers,
@@ -176,6 +197,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   String _label(_Section section) => switch (section) {
     _Section.purchasing => 'Purchasing',
+    _Section.swaps => 'Schichttausch prüfen',
+    _Section.ownSwaps => 'Meine Schichttausche',
     _Section.transfers => 'Shift transfer review',
     _Section.ownTransfers => 'My shift transfers',
     _Section.shifts => 'Schichten',
@@ -203,6 +226,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
 
   IconData _icon(_Section section) => switch (section) {
     _Section.purchasing => Icons.shopping_cart_outlined,
+    _Section.swaps => Icons.rule_outlined,
+    _Section.ownSwaps => Icons.swap_calls,
     _Section.transfers => Icons.fact_check_outlined,
     _Section.ownTransfers => Icons.swap_horiz,
     _Section.shifts => Icons.calendar_month_outlined,
@@ -236,6 +261,8 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
       case _Section.purchasing:
       case _Section.transfers:
       case _Section.ownTransfers:
+      case _Section.swaps:
+      case _Section.ownSwaps:
       case _Section.batches:
       case _Section.ownBatches:
       case _Section.shifts:
@@ -274,6 +301,10 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
         widget.ownAssignments!.load();
       case _Section.purchasing:
         widget.purchasing!.load();
+      case _Section.swaps:
+        widget.swaps!.load();
+      case _Section.ownSwaps:
+        widget.ownSwaps!.load();
       case _Section.transfers:
         widget.transfers!.load();
       case _Section.ownTransfers:
@@ -312,6 +343,14 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
   }
 
   Widget _body(_Section section) => switch (section) {
+    _Section.swaps => ShiftSwapSection(
+      key: ValueKey((widget.swaps, widget.platform.contextIdentity)),
+      controller: widget.swaps!,
+    ),
+    _Section.ownSwaps => ShiftSwapSection(
+      key: ValueKey((widget.ownSwaps, widget.platform.contextIdentity)),
+      controller: widget.ownSwaps!,
+    ),
     _Section.assignments => PreparationAssignmentSection(
       controller: widget.assignments!,
       batches: widget.batches!,
@@ -336,6 +375,12 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
     _Section.home => ShiftSection(
       key: const ValueKey('work-home'),
       controller: widget.home!,
+      swapShortcut:
+          widget.ownSwaps != null &&
+              widget.platform.allows('workforce.swaps.self.request') &&
+              widget.platform.allows('workforce.swaps.self.read')
+          ? _openSwap
+          : null,
       transferShortcut:
           widget.ownTransfers != null &&
               widget.platform.allows('workforce.transfers.self.request')
@@ -459,6 +504,75 @@ class _PlatformHomeScreenState extends State<PlatformHomeScreen> {
           ),
         ),
       );
+
+  Future<void> _openSwap(ShiftDto shift) async {
+    final swaps = widget.ownSwaps!;
+    final session = swaps.sessionIdentity;
+    final contextIdentity = widget.platform.contextIdentity;
+    bool current() =>
+        mounted &&
+        swaps.canRead &&
+        identical(swaps, widget.ownSwaps) &&
+        identical(session, swaps.sessionIdentity) &&
+        identical(session, widget.session.sessionIdentity) &&
+        identical(contextIdentity, widget.platform.contextIdentity);
+    if (!current() || swaps.locked) return;
+    final active = _swapNavigation;
+    if (active != null &&
+        identical(active.session, session) &&
+        identical(active.context, contextIdentity) &&
+        identical(active.controller, swaps)) {
+      return;
+    }
+    // Own discovery and the entire route lifetime before any asynchronous work.
+    final owner = Object();
+    _swapNavigation = (
+      owner: owner,
+      session: session,
+      context: contextIdentity,
+      controller: swaps,
+    );
+    try {
+      await swaps.chooseSource(shift);
+      if (!mounted || !current()) return;
+      if (swaps.source?.id != shift.id || swaps.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              swaps.error ??
+                  'Diese Schicht ist aktuell nicht für einen Tausch verfügbar.',
+            ),
+          ),
+        );
+        return;
+      }
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => AnimatedBuilder(
+            animation: swaps,
+            builder: (_, _) => Scaffold(
+              appBar: AppBar(
+                title: const Text('Bilateralen Schichttausch anfragen'),
+              ),
+              body: current()
+                  ? ShiftSwapSection(controller: swaps)
+                  : const Center(
+                      child: Text(
+                        'Sitzung oder Standort geändert. Bitte neu öffnen.',
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      );
+      if (!current()) return;
+      await widget.home!.load();
+      if (!current()) return;
+    } finally {
+      // A replaced identity may already own a new shortcut navigation.
+      if (identical(_swapNavigation?.owner, owner)) _swapNavigation = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(

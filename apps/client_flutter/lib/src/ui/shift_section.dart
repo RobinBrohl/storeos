@@ -11,6 +11,7 @@ class ShiftSection extends StatefulWidget {
     this.assignmentsShortcut,
     this.countsShortcut,
     this.transferShortcut,
+    this.swapShortcut,
     super.key,
   });
   final ShiftController controller;
@@ -19,6 +20,7 @@ class ShiftSection extends StatefulWidget {
   final VoidCallback? assignmentsShortcut;
   final VoidCallback? countsShortcut;
   final ValueChanged<ShiftDto>? transferShortcut;
+  final ValueChanged<ShiftDto>? swapShortcut;
   @override
   State<ShiftSection> createState() => _ShiftSectionState();
 }
@@ -270,7 +272,22 @@ class _ShiftSectionState extends State<ShiftSection> {
               onPressed: c.busy
                   ? null
                   : () => widget.transferShortcut!(c.selected!),
-              child: const Text('Propose transfer'),
+              child: const Text(
+                'Propose transfer · Einseitige Schichtübergabe',
+              ),
+            ),
+          if (c.self &&
+              widget.swapShortcut != null &&
+              c.selected?.status == 'published' &&
+              c.selected!.draft.startsAt.isAfter(DateTime.now().toUtc()) &&
+              c.tasks.isNotEmpty &&
+              c.tasks.every((t) => t.status == 'open' && t.version == 1))
+            FilledButton.tonal(
+              key: const Key('request-swap'),
+              onPressed: c.busy
+                  ? null
+                  : () => widget.swapShortcut!(c.selected!),
+              child: const Text('Bilateralen Schichttausch anfragen'),
             ),
           if (!c.self && (c.editingNew || c.selected?.status == 'draft'))
             ..._editor(),

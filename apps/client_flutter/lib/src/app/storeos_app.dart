@@ -1,5 +1,6 @@
 import '../application/shift_controller.dart';
 import '../application/shift_transfer_controller.dart';
+import '../application/shift_swap_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:storeos_design_system/storeos_design_system.dart';
@@ -57,6 +58,7 @@ class _StoreOsAppState extends State<StoreOsApp> {
   PurchasingController? _purchasing;
   ShiftController? _shifts, _home;
   ShiftTransferController? _transfers, _ownTransfers;
+  ShiftSwapController? _swaps, _ownSwaps;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _wasAuthenticated = false;
 
@@ -85,6 +87,13 @@ class _StoreOsAppState extends State<StoreOsApp> {
         _platformController!,
         api,
       );
+      _swaps = ShiftSwapController(
+        _controller,
+        _platformController!,
+        api,
+        self: false,
+      );
+      _ownSwaps = ShiftSwapController(_controller, _platformController!, api);
       _shifts = ShiftController(_controller, _platformController!, api);
       _home = ShiftController(
         _controller,
@@ -150,6 +159,8 @@ class _StoreOsAppState extends State<StoreOsApp> {
     _shifts?.dispose();
     _transfers?.dispose();
     _ownTransfers?.dispose();
+    _swaps?.dispose();
+    _ownSwaps?.dispose();
     _home?.dispose();
     _templates?.dispose();
     _articles?.dispose();

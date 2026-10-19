@@ -41,6 +41,7 @@ import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
 import 'preparation_assignment_acceptance.dart';
 import 'shift_transfer_acceptance.dart';
+import 'shift_swap_recovery_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'dart:io';
 import 'dart:math';
@@ -1398,6 +1399,7 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       transferEmployee,
       template['id'] as String,
       publishedId,
+      seedStale: true,
     );
     await verifyShiftTransfers(
       database,
@@ -1407,12 +1409,97 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       transferRecords,
     );
     await verifyTransferGrants(owner, _schema, runtimeUser);
-    final handoffClaims = await verifyTransferHandoffClaims(owner, _schema);
+    final handoffClaims = await verifyTransferHandoffClaims(
+      owner,
+      _schema,
+      expectedStale: 1,
+    );
+    final swapRecords = await seedRecoverySwaps(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: workerToken,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: transferToken,
+        expected: status,
+      ),
+      locationId,
+      manifest['employeeId'] as String,
+      transferEmployee,
+      template['id'] as String,
+      publishedId,
+    );
+    await verifyRecoverySwapReplay(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: workerToken,
+        expected: status,
+      ),
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: transferToken,
+        expected: status,
+      ),
+      swapRecords,
+      locationId,
+    );
+    final swapEvidence = await verifyRecoverySwaps(owner, _schema);
+    await seedRecoveryQuantity(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      locationId,
+      stockRead,
+    );
+    final quantityEvidence = await recoveryProjection(
+      owner,
+      _schema,
+      quantityRecoveryTables,
+    );
+    final transferEvidence = await recoveryProjection(owner, _schema, const {
+      'workforce_shift_transfer_requests': 'company_id,id',
+      'workforce_shift_transfer_commands': 'company_id,operation_id',
+      'task_transfer_links': 'company_id,request_id,position',
+    });
     // Preserve the upgraded source's active claims/parents across isolated
     // recovery of the older 0010 restore point, which predates these tables.
     await _writePrivateManifest(
       File(_required(env, 'STOREOS_UPDATE_MANIFEST')),
-      {...manifest, 'upgradedHandoffClaims': handoffClaims},
+      {
+        ...manifest,
+        'upgradedHandoffClaims': handoffClaims,
+        'upgradedSwaps': swapEvidence,
+        'upgradedQuantityEvidence': quantityEvidence,
+        'upgradedTransferEvidence': transferEvidence,
+      },
     );
     final purchasingRecords = await seedPurchasing(
       (method, route, body, status) => api.request(
@@ -1455,6 +1542,9 @@ Future<void> _smoke(Map<String, String> env, String source) async {
       expected: 204,
     );
     await _writeJson(resultFile, {
+      'swaps': swapEvidence,
+      'quantities': quantityEvidence,
+      'historicalTransfers': transferEvidence,
       'deliveries': {
         'migration': '0026_purchase_order_delivery_evidence',
         'revisions': 9,
@@ -1682,10 +1772,39 @@ Future<void> _recovery(Map<String, String> env, String source) async {
     final sourceClaims = await verifyTransferHandoffClaims(
       sourceOwner,
       _schema,
+      expectedStale: 1,
     );
+    if (jsonEncode(await verifyRecoverySwaps(sourceOwner, _schema)) !=
+        jsonEncode(manifest['upgradedSwaps'])) {
+      throw StateError('Pre-update recovery changed upgraded swap evidence.');
+    }
+    if (jsonEncode(
+          await recoveryProjection(
+            sourceOwner,
+            _schema,
+            quantityRecoveryTables,
+          ),
+        ) !=
+        jsonEncode(manifest['upgradedQuantityEvidence'])) {
+      throw StateError(
+        'Pre-update recovery changed upgraded quantity evidence.',
+      );
+    }
     if (jsonEncode(sourceClaims) !=
         jsonEncode(manifest['upgradedHandoffClaims'])) {
       throw StateError('Recovery changed upgraded handoff claims or parents.');
+    }
+    if (jsonEncode(
+          await recoveryProjection(sourceOwner, _schema, const {
+            'workforce_shift_transfer_requests': 'company_id,id',
+            'workforce_shift_transfer_commands': 'company_id,operation_id',
+            'task_transfer_links': 'company_id,request_id,position',
+          }),
+        ) !=
+        jsonEncode(manifest['upgradedTransferEvidence'])) {
+      throw StateError(
+        'Pre-update recovery changed historical transfer evidence.',
+      );
     }
     if ((await targetOwner.execute(
           "SELECT to_regclass('$_schema.workforce_shift_handoff_claims')",
@@ -1750,6 +1869,9 @@ Future<void> _recovery(Map<String, String> env, String source) async {
       'sourceSmokeEvidencePresent': true,
       'sourceDistinctFromTarget': true,
       'sourceHandoffClaimsPreserved': true,
+      'sourceSwapEvidencePreserved': true,
+      'sourceQuantityEvidencePreserved': true,
+      'sourceHistoricalTransfersPreserved': true,
       'targetPredatesHandoffClaims': true,
     });
     stdout.writeln('update_recovery_fixture_recovered');

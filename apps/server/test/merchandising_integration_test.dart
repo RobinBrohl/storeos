@@ -13,6 +13,31 @@ import 'package:storeos_server/src/stock/stock_context_port.dart';
 String get l => merchandisingTestLocation;
 String get froot => '/locations/$l/merchandising/fixtures';
 const proot = '/merchandising/planograms';
+
+String printWithoutGeneratedTimestamps(String html) {
+  const utc = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}(?:\d{3})?Z';
+  // Only these two renderer-owned metadata values are excluded from leak checks.
+  for (final (prefix, suffix) in [
+    (r'<p>Revision [1-9]\d* · veröffentlicht ', r'<br>Zuweisung '),
+    (r'<footer>Erzeugt ', r'\. Artikelbezeichnungen entsprechen '),
+  ]) {
+    final pattern = RegExp('($prefix)($utc)($suffix)');
+    final matches = pattern.allMatches(html).toList();
+    if (matches.length != 1) {
+      throw StateError('Expected exactly one generated print timestamp.');
+    }
+    final timestamp = matches.single.group(2)!;
+    if (DateTime.parse(timestamp).toUtc().toIso8601String() != timestamp) {
+      throw StateError('Expected a canonical UTC print timestamp.');
+    }
+    html = html.replaceFirstMapped(
+      pattern,
+      (match) => '${match[1]}[generated timestamp]${match[3]}',
+    );
+  }
+  return html;
+}
+
 void expectDocumented(String method, String route, int status) {
   final document =
       jsonDecode(
@@ -191,7 +216,10 @@ void main() {
           )).body;
           expect(printed['revisionId'], revision);
           expect(printed['html'], contains('Persisted instruction'));
-          expect(printed['html'], isNot(contains('12.5')));
+          expect(
+            printWithoutGeneratedTimestamps(printed['html'] as String),
+            isNot(contains('12.5')),
+          );
           expect(printed['html'], isNot(contains('stockContextStatus')));
         }
         await f.call('GET', route, token: '', expected: 401);

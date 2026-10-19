@@ -25,8 +25,9 @@ Future<List<Map<String, dynamic>>> seedShiftTransfers(
   String sourceEmployee,
   String recipientEmployee,
   String template,
-  String revision,
-) async {
+  String revision, {
+  bool seedStale = false,
+}) async {
   final records = <Map<String, dynamic>>[];
   final start = DateTime.now().toUtc().add(const Duration(days: 2));
   const cases = [
@@ -110,7 +111,18 @@ Future<List<Map<String, dynamic>>> seedShiftTransfers(
         : state == 'approved'
         ? 'manager_approve'
         : null;
-    if (kind == null) continue;
+    if (kind == null) {
+      if (seedStale && state == 'proposed') {
+        await manager('POST', '/api/v1/platform/shifts/$shift/amend', {
+          'expectedVersion': 2,
+          'startsAt': begins.add(const Duration(minutes: 5)).toIso8601String(),
+          'endsAt': begins
+              .add(const Duration(hours: 1, minutes: 5))
+              .toIso8601String(),
+        }, 200);
+      }
+      continue;
+    }
     final action = kind.startsWith('manager_')
         ? kind.substring(8)
         : kind.endsWith('withdraw')
@@ -299,6 +311,7 @@ Future<Map<String, dynamic>> verifyTransferHandoffClaims(
   Connection owner,
   String schema, {
   int expectedActive = 2,
+  int? expectedStale,
 }) async {
   final s = quotedSchema(schema);
   final inconsistentParents = await owner.execute('''
@@ -315,9 +328,9 @@ Future<Map<String, dynamic>> verifyTransferHandoffClaims(
         AND r.id=c.transfer_request_id AND r.source_shift_id=c.shift_id
     LEFT JOIN $s.shifts s ON s.company_id=c.company_id
       AND s.location_id=c.location_id AND s.id=c.shift_id
-    WHERE r.id IS NULL OR s.id IS NULL
+    WHERE c.transfer_request_id IS NOT NULL AND (r.id IS NULL OR s.id IS NULL
       OR r.status NOT IN ('proposed','accepted')
-      OR c.swap_request_id IS NOT NULL OR c.leg IS NOT NULL
+      OR c.swap_request_id IS NOT NULL OR c.leg IS NOT NULL)
   ''');
   final evidence = (await owner.execute('''
     SELECT count(*), md5(coalesce(string_agg(
@@ -327,13 +340,23 @@ Future<Map<String, dynamic>> verifyTransferHandoffClaims(
     JOIN $s.workforce_shift_transfer_requests r
       ON r.company_id=c.company_id AND r.id=c.transfer_request_id
   ''')).single;
+  final stale = (await owner.execute('''
+    SELECT count(*) FROM $s.workforce_shift_transfer_requests r
+    JOIN $s.shifts s ON s.company_id=r.company_id AND s.id=r.source_shift_id
+      AND s.location_id=r.location_id
+    WHERE r.status IN ('proposed','accepted') AND
+      (s.version<>r.source_version OR s.status<>'published'
+        OR s.starts_at<>r.starts_at OR s.ends_at<>r.ends_at)
+  ''')).single.single;
   if (inconsistentParents.single.first != 0 ||
       inconsistentClaims.single.first != 0 ||
-      evidence.first != expectedActive) {
+      evidence.first != expectedActive ||
+      expectedStale != null && stale != expectedStale) {
     throw StateError('Active transfer handoff claims are inconsistent.');
   }
   return {
     'activeTransferClaims': evidence.first,
+    'staleActiveTransferCount': stale,
     'claimsAndParentsDigest': evidence[1],
     'exactScopedParentConsistencyVerified': true,
   };

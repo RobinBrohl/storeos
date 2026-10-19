@@ -34,6 +34,12 @@ $ErrorActionPreference = 'Stop'
 
 $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $serverDirectory = Join-Path $repository 'apps/server'
+$sourceRevision = (& git -C $repository rev-parse HEAD)
+$sourceManifest = @('apps/server/tool/update_recovery_fixture.dart','apps/server/tool/shift_swap_recovery_acceptance.dart',
+    'apps/server/tool/shift_transfer_acceptance.dart','scripts/update/Run-UpdateRecoveryAcceptance.ps1',
+    'scripts/update/Assert-UpdateAcceptanceReport.ps1') | ForEach-Object {
+        [ordered]@{ path = $_; sha256 = (Get-FileHash -LiteralPath (Join-Path $repository $_) -Algorithm SHA256).Hash.ToLowerInvariant() }
+    }
 $composeFile = Join-Path $repository 'compose.yaml'
 $runId = [guid]::NewGuid().ToString('N').Substring(0, 16).ToLowerInvariant()
 $sourceDatabase = "storeos_update_$runId"
@@ -355,6 +361,11 @@ try {
         default { 'none' }
     }
     $report = [ordered]@{
+        acceptanceSchema           = 'storeos.p416.b4.update.v1'
+        sourceRevision             = $sourceRevision
+        sourceManifest             = @($sourceManifest)
+        schemaState                = 'pre-update-0010-upgraded-0029-recovered-0010'
+        classification             = if ($failure -or $cleanupFailure) { 'FAIL' } else { 'PASS' }
         runId                      = $runId
         startedAtUtc               = $startedAtUtc
         finishedAtUtc              = $finishedAtUtc
@@ -371,7 +382,7 @@ try {
                 'encrypted PostgreSQL restore point before migration',
                 'forward-only migration with checksum and prefix validation',
                 'single-transaction migration atomicity',
-                'current application after a successful 0011/0012/0013/0014/0015/0016/0017/0018/0019/0020/0021/0022/0023/0024/0025/0026 upgrade',
+                'current application only after successful forward migration through 0029',
                 'isolated recovery of pre-update PostgreSQL state',
                 'recovery fencing',
                 'operator-verifiable evidence'
@@ -404,7 +415,7 @@ try {
     }
     [IO.File]::WriteAllText($reportPath, ($report | ConvertTo-Json -Depth 10),
         [Text.UTF8Encoding]::new($false))
-    Assert-UpdateAcceptanceReport -Path $reportPath -SensitiveValues $sensitiveValues.ToArray()
+    Assert-UpdateAcceptanceReport -Path $reportPath -SensitiveValues $sensitiveValues.ToArray() -ExpectedResult $(if ($failure -or $cleanupFailure) { 'failed' } else { 'pass' })
 } catch {
     if (!$cleanupFailure) { $cleanupFailure = $_ }
     if (Test-Path -LiteralPath $reportPath -PathType Leaf) {

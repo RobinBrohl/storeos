@@ -22,6 +22,7 @@ import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
 import 'preparation_assignment_acceptance.dart';
 import 'shift_transfer_acceptance.dart';
+import 'shift_swap_recovery_acceptance.dart';
 import 'task_guidance_acceptance.dart';
 import 'backup_planogram_acceptance.dart';
 import 'stock_count_acceptance.dart';
@@ -56,6 +57,9 @@ const _connectionSettings = ConnectionSettings(
 /// Evidence tables and their deterministic ordering keys. Identifiers are
 /// compile-time constants, never user input.
 const _evidenceTables = <String, String>{
+  ...swapRecoveryTables,
+  ...quantityRecoveryTables,
+  'schema_migrations': 'version',
   'purchasing_suppliers': 'company_id,id',
   'purchasing_orders': 'company_id,id',
   'purchasing_order_lines': 'company_id,order_id,position',
@@ -337,11 +341,18 @@ Future<void> _verify(Map<String, String> env, String source) async {
     final sourceClaims = await verifyTransferHandoffClaims(
       sourceOwner,
       _schema,
+      expectedStale: 1,
     );
     final restoredClaims = await verifyTransferHandoffClaims(
       targetOwner,
       _schema,
+      expectedStale: 1,
     );
+    final swapSource = await verifyRecoverySwaps(sourceOwner, _schema);
+    final swapRestored = await verifyRecoverySwaps(targetOwner, _schema);
+    if (jsonEncode(swapSource) != jsonEncode(swapRestored)) {
+      throw StateError('Restored swap evidence differs from source.');
+    }
     if (jsonEncode(sourceClaims) != jsonEncode(restoredClaims)) {
       throw StateError('Restored handoff claims differ from the source.');
     }
@@ -441,6 +452,14 @@ Future<void> _verify(Map<String, String> env, String source) async {
         'Restored historical preparation proof differs from source.',
       );
     }
+    final swapAuthorization = await _verifyRestoredSwapHttp(
+      env,
+      targetOwner,
+      target,
+      expected,
+      runtimeUser,
+      runtimePassword,
+    );
     if (await _activeSessions(targetOwner, _schema) != 0 ||
         await _runtimeConnect(targetOwner, runtimeUser)) {
       throw StateError('Restore verification changed fencing.');
@@ -451,6 +470,8 @@ Future<void> _verify(Map<String, String> env, String source) async {
       'sourceDatabase': source,
       'targetDatabase': target,
       'sourcePreserved': true,
+      'swaps': swapRestored,
+      'restoredSwapAuthorization': swapAuthorization,
       'handoffClaims': {
         ...restoredClaims,
         'sourceAndRestoredClaimsEqual': true,
@@ -516,8 +537,348 @@ Future<void> _verify(Map<String, String> env, String source) async {
   }
 }
 
-/// Runs the bounded employee journey through the real HTTP API and returns the
-/// non-secret identifiers needed for later verification.
+/// A temporary, explicit activation of this run's isolated target, followed by
+/// re-fencing in finally. No owner connection serves functional commands.
+Future<Map<String, dynamic>> _verifyRestoredSwapHttp(
+  Map<String, String> env,
+  Connection owner,
+  String target,
+  Map<String, dynamic> evidence,
+  String runtimeUser,
+  String runtimePassword,
+) async {
+  if (!RegExp(_targetPattern).hasMatch(target)) {
+    throw StateError('Restored HTTP proof requires an isolated target.');
+  }
+  Pool<void>? pool;
+  HttpServer? server;
+  HttpClient? client;
+  AuthService? auth;
+  final tokens = <String>[];
+  final records = evidence['swapRecords'] as List;
+  const historical = {
+    'workforce_shift_transfer_requests': 'company_id,id',
+    'workforce_shift_transfer_commands': 'company_id,operation_id',
+    'task_transfer_links': 'company_id,request_id,position',
+    ...quantityRecoveryTables,
+  };
+  try {
+    await owner.execute(
+      'GRANT CONNECT ON DATABASE "$target" TO "$runtimeUser"',
+    );
+    pool = _runtimePool(
+      _ownerEndpoint(env, target),
+      runtimeUser,
+      runtimePassword,
+    );
+    final role = (await pool.execute('SELECT current_user')).single.single;
+    if (role != runtimeUser) {
+      throw StateError('Restored API did not use runtime role.');
+    }
+    final store = PostgresAuthStore(pool, schemaName: _schema);
+    auth = await AuthService.create(
+      store: store,
+      companyId: evidence['companyId'] as String,
+      locationId: evidence['locationId'] as String,
+      sessionTtl: const Duration(minutes: 10),
+    );
+    final database = PlatformDatabase(
+      pool,
+      schemaName: _schema,
+      companyId: evidence['companyId'] as String,
+      locationId: evidence['locationId'] as String,
+    );
+    server = await shelf_io.serve(
+      _serverApp(
+        endpoint: _ownerEndpoint(env, target),
+        runtimeUser: runtimeUser,
+        runtimePassword: runtimePassword,
+        companyId: database.companyId,
+        locationId: database.locationId,
+        auth: auth,
+        store: store,
+        database: database,
+      ).handler,
+      InternetAddress.loopbackIPv4,
+      0,
+    );
+    client = HttpClient();
+    final api = _Api(client, 'http://127.0.0.1:${server.port}');
+    final sample = records.first as Map;
+    for (final credential in [
+      'preRestoreWorkerToken',
+      'preRestoreAdminToken',
+    ]) {
+      for (final method in ['GET', 'POST']) {
+        await api.request(
+          method,
+          method == 'GET'
+              ? '/api/v1/platform/me/shift-swaps/${sample['requestId']}'
+              : '/api/v1/platform${sample['route']}',
+          token: evidence[credential] as String,
+          body: method == 'POST'
+              ? Map<String, dynamic>.from(sample['body'] as Map)
+              : null,
+          expected: 401,
+        );
+      }
+    }
+    Future<String> login(String username, String password) async {
+      final result = await api.request(
+        'POST',
+        '/api/v1/auth/login',
+        body: {'username': username, 'password': password},
+      );
+      final token = result['token'] as String;
+      tokens.add(token);
+      return token;
+    }
+
+    final manager = await login(
+      'backup_accept_admin',
+      evidence['adminRecoveryPassword'] as String,
+    );
+    final a = await login(
+      'backup_accept_worker',
+      evidence['workerRecoveryPassword'] as String,
+    );
+    final b = await login(
+      'backup_transfer_recipient',
+      evidence['workerRecoveryPassword'] as String,
+    );
+    final observer = await login(
+      'backup_transfer_viewer',
+      evidence['workerRecoveryPassword'] as String,
+    );
+    final before = await recoveryProjection(owner, _schema, _evidenceTables);
+    await verifyRecoverySwapReplay(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        token: manager,
+        body: body,
+        expected: status,
+      ),
+      (method, route, body, status) =>
+          api.request(method, route, token: a, body: body, expected: status),
+      (method, route, body, status) =>
+          api.request(method, route, token: b, body: body, expected: status),
+      records,
+      database.locationId,
+    );
+    await api.request(
+      'GET',
+      '/api/v1/platform/me/shift-swaps/${sample['requestId']}',
+      token: observer,
+      expected: 403,
+    );
+    await api.request(
+      'POST',
+      '/api/v1/platform${sample['route']}',
+      token: observer,
+      body: Map<String, dynamic>.from(sample['body'] as Map),
+      expected: 403,
+    );
+    await api.request(
+      'POST',
+      '/api/v1/platform${sample['route']}',
+      token: b,
+      body: Map<String, dynamic>.from(sample['body'] as Map),
+      expected: 404,
+    );
+    await api.request(
+      'POST',
+      '/api/v1/platform${sample['route']}',
+      token: a,
+      body: {
+        ...Map<String, dynamic>.from(sample['body'] as Map),
+        'expectedSourceVersion': 1,
+      },
+      expected: 409,
+    );
+    final approved = records.last as Map;
+    for (final token in [a, b]) {
+      await api.request(
+        'POST',
+        '/api/v1/platform${approved['route']}',
+        token: token,
+        body: Map<String, dynamic>.from(approved['body'] as Map),
+        expected: 403,
+      );
+    }
+    await api.request(
+      'POST',
+      '/api/v1/platform/me/shift-swaps/${sample['requestId']}/confirm',
+      token: a,
+      body: {
+        'operationId': (sample['body'] as Map)['operationId'],
+        'expectedVersion': 2,
+      },
+      expected: 409,
+    );
+    await api.request(
+      'POST',
+      '/api/v1/platform/me/shift-swaps/${approved['requestId']}/confirm',
+      token: a,
+      body: {'operationId': newUuid(), 'expectedVersion': 2},
+      expected: 409,
+    );
+    if (jsonEncode(await recoveryProjection(owner, _schema, _evidenceTables)) !=
+        jsonEncode(before)) {
+      throw StateError('Recovered reads/replays/denials changed evidence.');
+    }
+    final legacyBefore = await recoveryProjection(owner, _schema, historical);
+    Future<String> capturedConsent() async => jsonEncode(
+      (await owner.execute(
+        "SELECT (to_jsonb(r)-ARRAY['status','version','terminal_by','terminal_at','terminal_operation_id','terminal_kind','terminal_reason'])::text FROM $_schema.workforce_shift_swap_requests r ORDER BY company_id,id",
+      )).map((r) => r.single).toList(),
+    );
+    final consentBefore = await capturedConsent();
+    const pairedWork = {
+      'workforce_shift_swap_legs': 'company_id,request_id,leg',
+      'task_swap_links': 'company_id,request_id,leg,position',
+      'shifts': 'id',
+      'task_instances': 'id',
+    };
+    final pairedBefore = await recoveryProjection(owner, _schema, pairedWork);
+    final receiptBefore = before['workforce_shift_swap_commands'];
+    final recipientId =
+        (await owner.execute(
+              'SELECT recipient_account_id::text FROM $_schema.workforce_shift_swap_requests LIMIT 1',
+            )).single.single
+            as String;
+    await api.request(
+      'POST',
+      '/api/v1/platform/users/$recipientId',
+      token: manager,
+      body: {'expectedVersion': 1, 'role': 'employee', 'isActive': false},
+    );
+    await api.request(
+      'GET',
+      '/api/v1/platform/me/shift-swaps/${sample['requestId']}',
+      token: b,
+      expected: 401,
+    );
+    final offeredReceipt =
+        records.firstWhere((r) => (r as Map)['actor'] == 'b') as Map;
+    await api.request(
+      'POST',
+      '/api/v1/platform${offeredReceipt['route']}',
+      token: b,
+      body: Map<String, dynamic>.from(offeredReceipt['body'] as Map),
+      expected: 401,
+    );
+    await api.request(
+      'POST',
+      '/api/v1/platform/users/$recipientId',
+      token: manager,
+      body: {'expectedVersion': 2, 'role': 'employee', 'isActive': true},
+    );
+    final confirmed =
+        records.firstWhere((r) => (r as Map)['case'] == 'confirmed') as Map;
+    await api.request(
+      'POST',
+      '/api/v1/platform/locations/${database.locationId}/shift-swaps/${confirmed['requestId']}/approve',
+      token: manager,
+      body: {'operationId': newUuid(), 'expectedVersion': 3},
+      expected: 422,
+    );
+    // Capture old receipts separately from newly authorized closure receipts.
+    final oldReceipts = await owner.execute(
+      'SELECT to_jsonb(c)::text FROM $_schema.workforce_shift_swap_commands c ORDER BY operation_id',
+    );
+    var released = 0;
+    for (final state in ['requested', 'offered', 'confirmed']) {
+      final record =
+          records.firstWhere((r) => (r as Map)['case'] == state) as Map;
+      final version = state == 'requested'
+          ? 1
+          : state == 'offered'
+          ? 2
+          : 3;
+      final expectedRelease = version == 1 ? 1 : 2;
+      final closure = {
+        'operationId': newUuid(),
+        'expectedVersion': version,
+        'reason': 'Explicit currently authorized recovery closure',
+      };
+      final route =
+          '/api/v1/platform/locations/${database.locationId}/shift-swaps/${record['requestId']}/reject';
+      await api.request('POST', route, token: manager, body: closure);
+      released += expectedRelease;
+      await verifyRecoverySwaps(
+        owner,
+        _schema,
+        expectedActiveClaims: 5 - released,
+        initialInventory: false,
+      );
+      await api.request('POST', route, token: manager, body: closure);
+    }
+    for (final old in oldReceipts) {
+      final raw = jsonDecode(old.single as String) as Map;
+      final now = await owner.execute(
+        Sql.named(
+          'SELECT to_jsonb(c)::text FROM $_schema.workforce_shift_swap_commands c WHERE operation_id=CAST(@id AS uuid)',
+        ),
+        parameters: {'id': raw['operation_id']},
+      );
+      if (now.single.single != old.single) {
+        throw StateError('Recovery closure modified an old receipt.');
+      }
+    }
+    if ((receiptBefore as Map)['count'] != oldReceipts.length ||
+        jsonEncode(await recoveryProjection(owner, _schema, historical)) !=
+            jsonEncode(legacyBefore)) {
+      throw StateError(
+        'Recovery closure changed historical transfer/quantity evidence.',
+      );
+    }
+    await verifyTransferHandoffClaims(owner, _schema, expectedStale: 1);
+    if (await capturedConsent() != consentBefore ||
+        jsonEncode(await recoveryProjection(owner, _schema, pairedWork)) !=
+            jsonEncode(pairedBefore)) {
+      throw StateError(
+        'Recovery closure changed captured consent or paired work.',
+      );
+    }
+    return {
+      'classification': 'PASS',
+      'runtimeRoleVerified': true,
+      'staleCredentialDenials': 4,
+      'previouslyActiveSourceSessionDenied': true,
+      'revokedCredentialDenials': 2,
+      'exactReplays': records.length,
+      'scopedReadAndReplayDenialsVerified': true,
+      'oldConsentAfterAccountChangeRefused': true,
+      'explicitClosures': 3,
+      'ownedClaimsReleased': released,
+      'terminalReplayClaimsRemainReleased': true,
+      'oldReceiptsUnchanged': oldReceipts.length,
+      'legacyTransferAndQuantityEvidenceUnchanged': true,
+      'capturedConsentAndPairedWorkUnchanged': true,
+    };
+  } finally {
+    client?.close(force: true);
+    await server?.close(force: true);
+    for (final token in tokens) {
+      try {
+        await auth?.logout(token);
+      } on Object {
+        /* Revoked accounts already deny their sessions. */
+      }
+    }
+    await pool?.close();
+    await owner.execute(
+      'UPDATE $_schema.auth_sessions SET revoked_at=coalesce(revoked_at,clock_timestamp())',
+    );
+    await owner.execute(
+      'REVOKE CONNECT ON DATABASE "$target" FROM "$runtimeUser"',
+    );
+  }
+}
+
+/// Runs the bounded HTTP journey and returns private run evidence for the
+/// restricted manifest; credentials are never included in the sanitized report.
 Future<Map<String, dynamic>> _seed(
   _Api api, {
   required String companyId,
@@ -1015,6 +1376,35 @@ Future<Map<String, dynamic>> _seed(
     transferEmployee,
     inProgressTemplate['templateId']!,
     inProgressTemplate['revisionId']!,
+    seedStale: true,
+  );
+  final swapRecords = await seedRecoverySwaps(
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: adminToken,
+      expected: status,
+    ),
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: workerToken,
+      expected: status,
+    ),
+    (method, route, body, status) => api.request(
+      method,
+      route,
+      body: body,
+      token: transferToken,
+      expected: status,
+    ),
+    locationId,
+    employeeId,
+    transferEmployee,
+    inProgressTemplate['templateId']!,
+    inProgressTemplate['revisionId']!,
   );
   await api.request(
     'POST',
@@ -1150,7 +1540,21 @@ Future<Map<String, dynamic>> _seed(
   );
   return {
     'purchasingRecords': purchasingRecords,
+    'quantityEvidence': await seedRecoveryQuantity(
+      (method, route, body, status) => api.request(
+        method,
+        route,
+        body: body,
+        token: adminToken,
+        expected: status,
+      ),
+      locationId,
+      stock,
+    ),
+    'preRestoreWorkerToken': workerToken,
+    'preRestoreAdminToken': adminToken,
     'transferRecords': transferRecords,
+    'swapRecords': swapRecords,
     'transferRecipientEmployeeId': transferEmployee,
     'companyId': companyId,
     'locationId': locationId,
@@ -1280,13 +1684,22 @@ Future<void> _assertSeededJourney(
     'merchandising_planogram_placements': 2,
     'merchandising_planogram_assignments': 2,
 
-    'shifts': 12,
+    'shifts': 30,
     'workforce_shift_transfer_requests': 9,
     'workforce_shift_transfer_commands': 21,
-    'workforce_shift_handoff_claims': 2,
+    'workforce_shift_handoff_claims': 7,
+    'workforce_shift_swap_requests': 8,
+    'workforce_shift_swap_legs': 15,
+    'workforce_shift_swap_commands': 23,
+    'task_swap_links': 2,
+    'inventory_quantity_profiles': 1,
+    'inventory_quantity_revisions': 1,
+    'inventory_quantity_commands': 1,
+    'stock_quantity_bindings': 1,
+    'stock_quantity_corrections': 1,
     'task_transfer_links': 1,
     'task_template_revisions': 5,
-    'task_instances': 15,
+    'task_instances': 33,
     'task_step_results': 2,
     'task_numeric_attempts': 2,
     'task_blockings': 1,
@@ -1300,7 +1713,8 @@ Future<void> _assertSeededJourney(
       );
     }
   }
-  await verifyTransferHandoffClaims(owner, schema);
+  await verifyTransferHandoffClaims(owner, schema, expectedStale: 1);
+  await verifyRecoverySwaps(owner, schema);
   final terminalShapes = await owner.execute(
     'SELECT kind,ledger_version,count(*) '
     'FROM "$schema".purchasing_delivery_terminal_snapshots '
@@ -1316,12 +1730,12 @@ Future<void> _assertSeededJourney(
     'SELECT status FROM "$schema".task_instances ORDER BY status',
   );
   final seeded = statuses.map((row) => row.single as String).toList();
-  if (seeded.length != 15 ||
+  if (seeded.length != 33 ||
       seeded.where((s) => s == 'blocked').length != 1 ||
       seeded.where((s) => s == 'completed').length != 1 ||
       seeded.where((s) => s == 'in_progress').length != 1 ||
-      seeded.where((s) => s == 'cancelled').length != 1 ||
-      seeded.where((s) => s == 'open').length != 11) {
+      seeded.where((s) => s == 'cancelled').length != 3 ||
+      seeded.where((s) => s == 'open').length != 27) {
     throw StateError('Seeded task states differ from the plan.');
   }
   final attempts = await owner.execute(
@@ -1348,18 +1762,14 @@ Future<void> _assertSeededJourney(
 
 Future<_Snapshot> _snapshot(Connection owner, String schema) async {
   final tables = <String, Map<String, dynamic>>{};
+  final shaProjections = await recoveryProjection(
+    owner,
+    schema,
+    _evidenceTables,
+  );
   for (final entry in _evidenceTables.entries) {
-    final result = await owner.execute(
-      'SELECT count(*)::bigint AS row_count, '
-      "coalesce(md5(string_agg(md5(row_to_json(t)::text), '' "
-      'ORDER BY ${entry.value})), \'empty\') AS content_hash '
-      'FROM "$schema"."${entry.key}" t',
-    );
-    final row = result.single.toColumnMap();
-    tables[entry.key] = {
-      'count': row['row_count'],
-      'hash': row['content_hash'],
-    };
+    final row = shaProjections[entry.key] as Map;
+    tables[entry.key] = {'count': row['count'], 'hash': row['sha256']};
   }
   final sequences = <String, Map<String, dynamic>>{};
   for (final name in const ['audit_entries_id_seq', 'plugin_inbox_id_seq']) {

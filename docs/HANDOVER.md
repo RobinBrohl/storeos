@@ -1,5 +1,18 @@
 # StoreOS handover
 
+## Current P4.16 Stage B4 recovery — 2026-10-17
+
+P4.16 remains **IN PROGRESS**. Owner-authorized Step 10 local recovery fixtures
+and acceptance reconciliation are on `codex/p416-b4-recovery-acceptance`, from
+approved main `edf844323cfb5ad39edd63dcc6a0d288897e9fb8`. B1/B2/B3a/B3b are
+integrated; B3A-01 HIGH and B3B-01 LOW remain independently CLOSED. The
+[B4 handoff](development/phase-4-16-stage-b4.md) records encrypted isolated
+restore, forward recovery, exact replay/closure, historical preservation and the
+A01–A16 matrix. B4 independent functional/Security review is pending; queued
+mutation, OS-process/wire-loss and live restore interruption qualifications remain.
+No commit, push, PR, merge, deployment, operator acceptance or P4.16 closure.
+Earlier dated entries retain their historical review and authorization context.
+
 ## Current P4.16 Stage B2a native ingress — 2026-10-16
 
 P4.16 remains **IN PROGRESS**. F01–F03 are independently **CLOSED**. Latest

@@ -1,0 +1,548 @@
+{
+  "acceptanceSchema": "storeos.p416.b4.backup.v1",
+  "sourceRevision": "edf844323cfb5ad39edd63dcc6a0d288897e9fb8",
+  "sourceManifest": [
+    {
+      "path": "apps/server/tool/backup_restore_fixture.dart",
+      "sha256": "8b68af6b27ecd1616bc35888291a139e938ba62e658bd160eb3c8129651edc3f"
+    },
+    {
+      "path": "apps/server/tool/shift_swap_recovery_acceptance.dart",
+      "sha256": "b28913af339f774db2a5177a85153532859e16735bf01bf58bb0ba607439fe09"
+    },
+    {
+      "path": "apps/server/tool/shift_transfer_acceptance.dart",
+      "sha256": "b05354ce61a7764a843234e140a9a4df7d7b07c9e3c7cc705fd1a078939d34e1"
+    },
+    {
+      "path": "scripts/backup/Run-BackupRestoreAcceptance.ps1",
+      "sha256": "e1d38f0f457961a5a76bd7befcc9634149384140e6096119acd48655fe1157e2"
+    },
+    {
+      "path": "scripts/backup/Assert-BackupAcceptanceReport.ps1",
+      "sha256": "611dc0878f9b8c8e925805a68453a16222bbb5df949426846176c671a512142c"
+    }
+  ],
+  "schemaState": {
+    "source": "0001-0029",
+    "restored": "0001-0029"
+  },
+  "classification": "PASS",
+  "runId": "963c470707424f93",
+  "startedAtUtc": "2026-10-17T13:42:07.1421393Z",
+  "finishedAtUtc": "2026-10-17T13:44:18.6092075Z",
+  "result": "pass",
+  "failedStep": "none",
+  "failureInjection": "none",
+  "negativeRecoveryProof": {
+    "scenario": "none",
+    "restoreRejected": false,
+    "unexpectedRestoreSuccess": false
+  },
+  "operatingDatabase": "storeos",
+  "sourceDatabase": "storeos_backup_accept_963c470707424f93",
+  "restoreDatabase": "storeos_restore_bkacc_963c470707424f93",
+  "steps": {
+    "createSourceDatabase": true,
+    "prepare": true,
+    "backup": true,
+    "restore": true,
+    "verify": true,
+    "corruptionRejected": true
+  },
+  "verification": {
+    "runId": "963c470707424f93",
+    "sourceDatabase": "storeos_backup_accept_963c470707424f93",
+    "targetDatabase": "storeos_restore_bkacc_963c470707424f93",
+    "sourcePreserved": true,
+    "swaps": {
+      "classification": "PASS",
+      "tables": {
+        "workforce_shift_swap_requests": {
+          "count": 8,
+          "sha256": "ab141ef1b5e9ff5a7ad3210e7a702cd7289d872eae2c000467a9fb906bc51991"
+        },
+        "workforce_shift_swap_legs": {
+          "count": 15,
+          "sha256": "72f0b76d7e8b71a87401b9dd6e57249443d3591eb8d441f977410fbb2adb9186"
+        },
+        "workforce_shift_swap_commands": {
+          "count": 23,
+          "sha256": "e5d5e234f4e9d5df832a722af35854e658eebaa61cb61d0f059fafa259823bb9"
+        },
+        "task_swap_links": {
+          "count": 2,
+          "sha256": "0d16fe0dcac106c7c39b01ad93cca90b1ef6fbbdac8f9932037553ba0b215f63"
+        }
+      },
+      "activeSwapClaims": 5
+    },
+    "restoredSwapAuthorization": {
+      "classification": "PASS",
+      "runtimeRoleVerified": true,
+      "staleCredentialDenials": 4,
+      "previouslyActiveSourceSessionDenied": true,
+      "revokedCredentialDenials": 2,
+      "exactReplays": 23,
+      "scopedReadAndReplayDenialsVerified": true,
+      "oldConsentAfterAccountChangeRefused": true,
+      "explicitClosures": 3,
+      "ownedClaimsReleased": 5,
+      "terminalReplayClaimsRemainReleased": true,
+      "oldReceiptsUnchanged": 23,
+      "legacyTransferAndQuantityEvidenceUnchanged": true,
+      "capturedConsentAndPairedWorkUnchanged": true
+    },
+    "handoffClaims": {
+      "activeTransferClaims": 2,
+      "staleActiveTransferCount": 1,
+      "claimsAndParentsDigest": "f3d10191939bd2eb6e63311224a38b4c",
+      "exactScopedParentConsistencyVerified": true,
+      "sourceAndRestoredClaimsEqual": true
+    },
+    "tables": {
+      "workforce_shift_swap_requests": {
+        "sourceCount": 8,
+        "sourceHash": "ab141ef1b5e9ff5a7ad3210e7a702cd7289d872eae2c000467a9fb906bc51991",
+        "restoredCount": 8,
+        "restoredHash": "ab141ef1b5e9ff5a7ad3210e7a702cd7289d872eae2c000467a9fb906bc51991"
+      },
+      "workforce_shift_swap_legs": {
+        "sourceCount": 15,
+        "sourceHash": "72f0b76d7e8b71a87401b9dd6e57249443d3591eb8d441f977410fbb2adb9186",
+        "restoredCount": 15,
+        "restoredHash": "72f0b76d7e8b71a87401b9dd6e57249443d3591eb8d441f977410fbb2adb9186"
+      },
+      "workforce_shift_swap_commands": {
+        "sourceCount": 23,
+        "sourceHash": "e5d5e234f4e9d5df832a722af35854e658eebaa61cb61d0f059fafa259823bb9",
+        "restoredCount": 23,
+        "restoredHash": "e5d5e234f4e9d5df832a722af35854e658eebaa61cb61d0f059fafa259823bb9"
+      },
+      "task_swap_links": {
+        "sourceCount": 2,
+        "sourceHash": "0d16fe0dcac106c7c39b01ad93cca90b1ef6fbbdac8f9932037553ba0b215f63",
+        "restoredCount": 2,
+        "restoredHash": "0d16fe0dcac106c7c39b01ad93cca90b1ef6fbbdac8f9932037553ba0b215f63"
+      },
+      "inventory_quantity_profiles": {
+        "sourceCount": 1,
+        "sourceHash": "cc85edbb2ac4db9a3ece9d8a70c886faaf90f9c0d86c4329fd0321cce5bfb77e",
+        "restoredCount": 1,
+        "restoredHash": "cc85edbb2ac4db9a3ece9d8a70c886faaf90f9c0d86c4329fd0321cce5bfb77e"
+      },
+      "inventory_quantity_revisions": {
+        "sourceCount": 1,
+        "sourceHash": "59bd16ad2d2fcbe8661c8aed0e61b7caf9ad952ce3b2b5a1cf2920b6f18f3e5f",
+        "restoredCount": 1,
+        "restoredHash": "59bd16ad2d2fcbe8661c8aed0e61b7caf9ad952ce3b2b5a1cf2920b6f18f3e5f"
+      },
+      "inventory_quantity_commands": {
+        "sourceCount": 1,
+        "sourceHash": "78d1a3ec2448852acb0ba53ecad75b16bfa6bacb3ed47b32c0ec80fdb3106581",
+        "restoredCount": 1,
+        "restoredHash": "78d1a3ec2448852acb0ba53ecad75b16bfa6bacb3ed47b32c0ec80fdb3106581"
+      },
+      "stock_quantity_bindings": {
+        "sourceCount": 1,
+        "sourceHash": "718e93f90caa531b15b6d3bad9fb2709bce3e435cb7970a72927be6f1397e2e8",
+        "restoredCount": 1,
+        "restoredHash": "718e93f90caa531b15b6d3bad9fb2709bce3e435cb7970a72927be6f1397e2e8"
+      },
+      "stock_quantity_corrections": {
+        "sourceCount": 1,
+        "sourceHash": "59d9b4d0657475c9c35a86f0a178c141a963f95ffb6a4b31a37cff20ed9370e7",
+        "restoredCount": 1,
+        "restoredHash": "59d9b4d0657475c9c35a86f0a178c141a963f95ffb6a4b31a37cff20ed9370e7"
+      },
+      "schema_migrations": {
+        "sourceCount": 29,
+        "sourceHash": "21c0ee3d2907944ebb605dbbc7ec9f74b87275ebc656c751a8a0998ac0524b20",
+        "restoredCount": 29,
+        "restoredHash": "21c0ee3d2907944ebb605dbbc7ec9f74b87275ebc656c751a8a0998ac0524b20"
+      },
+      "purchasing_suppliers": {
+        "sourceCount": 2,
+        "sourceHash": "e71b946a383ee834ff3a82de7f0f74dabd3ac4d7f10d6e910a5945c2f2d1a76b",
+        "restoredCount": 2,
+        "restoredHash": "e71b946a383ee834ff3a82de7f0f74dabd3ac4d7f10d6e910a5945c2f2d1a76b"
+      },
+      "purchasing_orders": {
+        "sourceCount": 8,
+        "sourceHash": "ed6fa2ec6d8fee68052fb792c7a93c42eaab326703fac6e70350b9d0940fbac4",
+        "restoredCount": 8,
+        "restoredHash": "ed6fa2ec6d8fee68052fb792c7a93c42eaab326703fac6e70350b9d0940fbac4"
+      },
+      "purchasing_order_lines": {
+        "sourceCount": 6,
+        "sourceHash": "b8d12a194cedfc48e65256c86ade538636d72d16485121e63c586b59bfad81f7",
+        "restoredCount": 6,
+        "restoredHash": "b8d12a194cedfc48e65256c86ade538636d72d16485121e63c586b59bfad81f7"
+      },
+      "purchasing_commands": {
+        "sourceCount": 27,
+        "sourceHash": "cb87baabf76b8002e59163998e1691fe7c3c795372809a0b948ab30d0cce7852",
+        "restoredCount": 27,
+        "restoredHash": "cb87baabf76b8002e59163998e1691fe7c3c795372809a0b948ab30d0cce7852"
+      },
+      "purchasing_delivery_revisions": {
+        "sourceCount": 9,
+        "sourceHash": "d08afc8efbcc45b4541b5aa8e79f2fc3ab33c599ba1d262bacd42914fa55eecd",
+        "restoredCount": 9,
+        "restoredHash": "d08afc8efbcc45b4541b5aa8e79f2fc3ab33c599ba1d262bacd42914fa55eecd"
+      },
+      "purchasing_delivery_revision_lines": {
+        "sourceCount": 8,
+        "sourceHash": "43816f1c5bb4dfe9cb0d85776ae597e13744942d73a186a7334efe65bfb1dfbf",
+        "restoredCount": 8,
+        "restoredHash": "43816f1c5bb4dfe9cb0d85776ae597e13744942d73a186a7334efe65bfb1dfbf"
+      },
+      "purchasing_delivery_commands": {
+        "sourceCount": 9,
+        "sourceHash": "635347ac317ac74adaea234b08751f7877fd313704e92b35f154759979f54a30",
+        "restoredCount": 9,
+        "restoredHash": "635347ac317ac74adaea234b08751f7877fd313704e92b35f154759979f54a30"
+      },
+      "purchasing_delivery_terminal_snapshots": {
+        "sourceCount": 3,
+        "sourceHash": "6c5d2c01f32b402967efb0c3a7d8d0347ae921adcb2001fd2e3d8a93409123eb",
+        "restoredCount": 3,
+        "restoredHash": "6c5d2c01f32b402967efb0c3a7d8d0347ae921adcb2001fd2e3d8a93409123eb"
+      },
+      "articles": {
+        "sourceCount": 8,
+        "sourceHash": "a0bb75c9d1b3498208724817e41f0b0908cee51d94aa4f9703826bc854ff188a",
+        "restoredCount": 8,
+        "restoredHash": "a0bb75c9d1b3498208724817e41f0b0908cee51d94aa4f9703826bc854ff188a"
+      },
+      "article_location_assortment": {
+        "sourceCount": 4,
+        "sourceHash": "920b94a0e2708e189c8141a9edd59563a3ac44581a24905321d7449423798c08",
+        "restoredCount": 4,
+        "restoredHash": "920b94a0e2708e189c8141a9edd59563a3ac44581a24905321d7449423798c08"
+      },
+      "stock_levels": {
+        "sourceCount": 3,
+        "sourceHash": "37245ea852cc1b5ddda9a83ad229f7466b5fc5aea5a599186f76c42bf2e93be8",
+        "restoredCount": 3,
+        "restoredHash": "37245ea852cc1b5ddda9a83ad229f7466b5fc5aea5a599186f76c42bf2e93be8"
+      },
+      "stock_movements": {
+        "sourceCount": 5,
+        "sourceHash": "f830ec049d38a0d0fff531e36f8dc461de4c5e25651cbf1e996369fe9f0795c1",
+        "restoredCount": 5,
+        "restoredHash": "f830ec049d38a0d0fff531e36f8dc461de4c5e25651cbf1e996369fe9f0795c1"
+      },
+      "stock_counts": {
+        "sourceCount": 3,
+        "sourceHash": "3f8e6c65bc781f0e8d1699e98d8873aa4888dbbe4fbc52e21c264ede4f1e0ad9",
+        "restoredCount": 3,
+        "restoredHash": "3f8e6c65bc781f0e8d1699e98d8873aa4888dbbe4fbc52e21c264ede4f1e0ad9"
+      },
+      "stock_count_lines": {
+        "sourceCount": 6,
+        "sourceHash": "3c22f5244749ebf6d01038a77e9917018c7541d36ecf37456a355f45c919dd78",
+        "restoredCount": 6,
+        "restoredHash": "3c22f5244749ebf6d01038a77e9917018c7541d36ecf37456a355f45c919dd78"
+      },
+      "stock_count_rounds": {
+        "sourceCount": 7,
+        "sourceHash": "b51d19ec0586d5cf515f64ea113215837aba73e81ab499d41621de1d53aecde5",
+        "restoredCount": 7,
+        "restoredHash": "b51d19ec0586d5cf515f64ea113215837aba73e81ab499d41621de1d53aecde5"
+      },
+      "stock_count_observations": {
+        "sourceCount": 4,
+        "sourceHash": "06eddb4ecf5400a3476fda538afe13a6daefade99652c77cd19e67b9da54dcb3",
+        "restoredCount": 4,
+        "restoredHash": "06eddb4ecf5400a3476fda538afe13a6daefade99652c77cd19e67b9da54dcb3"
+      },
+      "stock_count_commands": {
+        "sourceCount": 10,
+        "sourceHash": "c7f6105efa599121d7863c7551d219955bcaa09b2aae6ee2bb73309bda41bbb7",
+        "restoredCount": 10,
+        "restoredHash": "c7f6105efa599121d7863c7551d219955bcaa09b2aae6ee2bb73309bda41bbb7"
+      },
+      "production_recipes": {
+        "sourceCount": 3,
+        "sourceHash": "eeb6fe776a8528cad200b8ba3aff9c100acb9559a411b9cee8e5c77ded14d8d4",
+        "restoredCount": 3,
+        "restoredHash": "eeb6fe776a8528cad200b8ba3aff9c100acb9559a411b9cee8e5c77ded14d8d4"
+      },
+      "production_recipe_revisions": {
+        "sourceCount": 7,
+        "sourceHash": "e24cf050a1a668490c97511726d5965f8a2bc0d2498e01f22bd98936c6d4c39c",
+        "restoredCount": 7,
+        "restoredHash": "e24cf050a1a668490c97511726d5965f8a2bc0d2498e01f22bd98936c6d4c39c"
+      },
+      "production_recipe_ingredients": {
+        "sourceCount": 14,
+        "sourceHash": "704db837df9884eaab761e042bc0d247a7136e1af77a3759463fcaa762ac733d",
+        "restoredCount": 14,
+        "restoredHash": "704db837df9884eaab761e042bc0d247a7136e1af77a3759463fcaa762ac733d"
+      },
+      "production_preparation_assignments": {
+        "sourceCount": 7,
+        "sourceHash": "ed736d47746d671de712cb0a4ffaf458b691045655c27a86412c550f43515f71",
+        "restoredCount": 7,
+        "restoredHash": "ed736d47746d671de712cb0a4ffaf458b691045655c27a86412c550f43515f71"
+      },
+      "production_preparation_assignment_commands": {
+        "sourceCount": 12,
+        "sourceHash": "a3fc24a2065f1492dc18977eb65bc25e1d56e47b36614043f0bba3aaa32a09e4",
+        "restoredCount": 12,
+        "restoredHash": "a3fc24a2065f1492dc18977eb65bc25e1d56e47b36614043f0bba3aaa32a09e4"
+      },
+      "production_preparation_batches": {
+        "sourceCount": 9,
+        "sourceHash": "8260b06fc37b0585363b1c1704c759a09e048e00096c3d4e966f17386e7e30d5",
+        "restoredCount": 9,
+        "restoredHash": "8260b06fc37b0585363b1c1704c759a09e048e00096c3d4e966f17386e7e30d5"
+      },
+      "production_preparation_batch_commands": {
+        "sourceCount": 20,
+        "sourceHash": "0c817e30a1ebc3de28a88764e3320d52112b408ac24120caef8b81fbc1cbbc4e",
+        "restoredCount": 20,
+        "restoredHash": "0c817e30a1ebc3de28a88764e3320d52112b408ac24120caef8b81fbc1cbbc4e"
+      },
+      "production_preparation_batch_count_corrections": {
+        "sourceCount": 4,
+        "sourceHash": "f822149f8ec2890e6523f880a7c329d4b51654ff513e849cd8e3c6fb9ee52408",
+        "restoredCount": 4,
+        "restoredHash": "f822149f8ec2890e6523f880a7c329d4b51654ff513e849cd8e3c6fb9ee52408"
+      },
+      "knowledge_articles": {
+        "sourceCount": 3,
+        "sourceHash": "9e50444a8f81dcf416aa820babe6d7a6be5b530c02137d8be69583d747f9cd75",
+        "restoredCount": 3,
+        "restoredHash": "9e50444a8f81dcf416aa820babe6d7a6be5b530c02137d8be69583d747f9cd75"
+      },
+      "knowledge_revisions": {
+        "sourceCount": 8,
+        "sourceHash": "ff465d6406ad633dfe32b743846aa207cac728a23b3d3d9d4f26dcb8abac2fc7",
+        "restoredCount": 8,
+        "restoredHash": "ff465d6406ad633dfe32b743846aa207cac728a23b3d3d9d4f26dcb8abac2fc7"
+      },
+      "shifts": {
+        "sourceCount": 30,
+        "sourceHash": "b6a8dada6b6f50e8ef46878c55c6cbfb590c1fe8477f7439496c40e5310a5c33",
+        "restoredCount": 30,
+        "restoredHash": "b6a8dada6b6f50e8ef46878c55c6cbfb590c1fe8477f7439496c40e5310a5c33"
+      },
+      "shift_template_selections": {
+        "sourceCount": 33,
+        "sourceHash": "4e7f883a0a9dba3140b765ffa455835ccf5f0b6df9466fea5c3436b45842ddbc",
+        "restoredCount": 33,
+        "restoredHash": "4e7f883a0a9dba3140b765ffa455835ccf5f0b6df9466fea5c3436b45842ddbc"
+      },
+      "workforce_shift_transfer_requests": {
+        "sourceCount": 9,
+        "sourceHash": "7a3c4d1b1a5a4c61f005bc8cbccca0e4c7983c8079aca776d5453cd33fa82d9b",
+        "restoredCount": 9,
+        "restoredHash": "7a3c4d1b1a5a4c61f005bc8cbccca0e4c7983c8079aca776d5453cd33fa82d9b"
+      },
+      "workforce_shift_transfer_commands": {
+        "sourceCount": 21,
+        "sourceHash": "ebd0962c2988c13d1f0c3d57ef045155729f2ef8fb8546498874aea181b55a3f",
+        "restoredCount": 21,
+        "restoredHash": "ebd0962c2988c13d1f0c3d57ef045155729f2ef8fb8546498874aea181b55a3f"
+      },
+      "workforce_shift_handoff_claims": {
+        "sourceCount": 7,
+        "sourceHash": "f208fbfe26f3045b5a9309e1d3b13f2383d474dcb1b936f2e224ee63691476dd",
+        "restoredCount": 7,
+        "restoredHash": "f208fbfe26f3045b5a9309e1d3b13f2383d474dcb1b936f2e224ee63691476dd"
+      },
+      "task_transfer_links": {
+        "sourceCount": 1,
+        "sourceHash": "d9452a4de0d8c206bfe9dd3b1c23b5db2502cc1d7832486cc1acb177c14e5dbe",
+        "restoredCount": 1,
+        "restoredHash": "d9452a4de0d8c206bfe9dd3b1c23b5db2502cc1d7832486cc1acb177c14e5dbe"
+      },
+      "merchandising_fixtures": {
+        "sourceCount": 1,
+        "sourceHash": "6efe94741ca22514ce095c600105432c9cd41537dbfb536e2f5b5b91645eed71",
+        "restoredCount": 1,
+        "restoredHash": "6efe94741ca22514ce095c600105432c9cd41537dbfb536e2f5b5b91645eed71"
+      },
+      "merchandising_planograms": {
+        "sourceCount": 1,
+        "sourceHash": "42168a8046bb7136af61a7b68d074285dedae7d7253908c262d96be05426e941",
+        "restoredCount": 1,
+        "restoredHash": "42168a8046bb7136af61a7b68d074285dedae7d7253908c262d96be05426e941"
+      },
+      "merchandising_planogram_revisions": {
+        "sourceCount": 2,
+        "sourceHash": "9d0534228a1aaafec27741fc9f1c85e1574916dbe858c563dab3d8c4fcbd3ea7",
+        "restoredCount": 2,
+        "restoredHash": "9d0534228a1aaafec27741fc9f1c85e1574916dbe858c563dab3d8c4fcbd3ea7"
+      },
+      "merchandising_planogram_zones": {
+        "sourceCount": 2,
+        "sourceHash": "108119d42d71eea674efaddb72db68127b7786ce517a92f32f27782ca5e79605",
+        "restoredCount": 2,
+        "restoredHash": "108119d42d71eea674efaddb72db68127b7786ce517a92f32f27782ca5e79605"
+      },
+      "merchandising_planogram_placements": {
+        "sourceCount": 2,
+        "sourceHash": "9af0e7ee93a640b195418b231fd737e5421f45e7c6e1cae2815c6bc31912a68f",
+        "restoredCount": 2,
+        "restoredHash": "9af0e7ee93a640b195418b231fd737e5421f45e7c6e1cae2815c6bc31912a68f"
+      },
+      "merchandising_planogram_assignments": {
+        "sourceCount": 2,
+        "sourceHash": "381f01f30f7f72c41e6a13042ed86267feb4335d76528545c8eb03c4944c4ae7",
+        "restoredCount": 2,
+        "restoredHash": "381f01f30f7f72c41e6a13042ed86267feb4335d76528545c8eb03c4944c4ae7"
+      },
+      "task_template_revisions": {
+        "sourceCount": 5,
+        "sourceHash": "082a90bb8b485403c01e295b05ae42bad4efb236b253449febc0df377a0dbaee",
+        "restoredCount": 5,
+        "restoredHash": "082a90bb8b485403c01e295b05ae42bad4efb236b253449febc0df377a0dbaee"
+      },
+      "task_instances": {
+        "sourceCount": 33,
+        "sourceHash": "4a5c9a7dfc492da60602c6c5b1eed5c91172d1402963481069cb7c7143875b93",
+        "restoredCount": 33,
+        "restoredHash": "4a5c9a7dfc492da60602c6c5b1eed5c91172d1402963481069cb7c7143875b93"
+      },
+      "task_step_results": {
+        "sourceCount": 2,
+        "sourceHash": "001423d8ad41b181037a48e5312f88cf11983fe463fe2874ce60763ddaf639e8",
+        "restoredCount": 2,
+        "restoredHash": "001423d8ad41b181037a48e5312f88cf11983fe463fe2874ce60763ddaf639e8"
+      },
+      "task_numeric_attempts": {
+        "sourceCount": 2,
+        "sourceHash": "65b1c9ff63974ea34a0aafc60a7b799446b7ca89854bffdb7b9069e7e64b7457",
+        "restoredCount": 2,
+        "restoredHash": "65b1c9ff63974ea34a0aafc60a7b799446b7ca89854bffdb7b9069e7e64b7457"
+      },
+      "task_blockings": {
+        "sourceCount": 1,
+        "sourceHash": "904feabafd84d43ec89f653fd7c4ddf7743b6fe98432b427f0b3972041f9d86a",
+        "restoredCount": 1,
+        "restoredHash": "904feabafd84d43ec89f653fd7c4ddf7743b6fe98432b427f0b3972041f9d86a"
+      },
+      "task_execution_commands": {
+        "sourceCount": 7,
+        "sourceHash": "215b58531cdbf6c459075fa50ebf1bd05210c2bc5ec426c1792df1dcfb760261",
+        "restoredCount": 7,
+        "restoredHash": "215b58531cdbf6c459075fa50ebf1bd05210c2bc5ec426c1792df1dcfb760261"
+      },
+      "audit_entries": {
+        "sourceCount": 346,
+        "sourceHash": "9c9b112d766e04de4d658412a36635b74f327fdadb865fe12d97e157c97d8a8f",
+        "restoredCount": 346,
+        "restoredHash": "9c9b112d766e04de4d658412a36635b74f327fdadb865fe12d97e157c97d8a8f"
+      }
+    },
+    "sequences": {
+      "audit_entries_id_seq": {
+        "sourceLastValue": "346",
+        "sourceIsCalled": true,
+        "restoredLastValue": "346",
+        "restoredIsCalled": true
+      },
+      "plugin_inbox_id_seq": {
+        "sourceLastValue": "1",
+        "sourceIsCalled": false,
+        "restoredLastValue": "1",
+        "restoredIsCalled": false
+      }
+    },
+    "sourceActiveSessions": 1,
+    "restoredActiveSessions": 0,
+    "sourceActivePluginTokens": 1,
+    "restoredActivePluginTokens": 0,
+    "sourceRuntimeConnect": true,
+    "restoredRuntimeConnect": false,
+    "restoredRuntimeConnectionRejected": true,
+    "preparation": {
+      "historicalSource": {
+        "batchId": "09a86355-d1ab-4e62-a266-0718a0d4ad42",
+        "recipeId": "24068b94-a3f4-4ff2-87eb-f69bbe965657",
+        "pinnedR1Id": "37e430cd-d6c3-4cd6-a3eb-6e7b018bdc8a",
+        "laterR2Id": "c27b9df4-28f2-4653-aeae-ccd5c58bcd2c",
+        "recipeRetired": true,
+        "laterPublicationExists": true,
+        "employeeContextR1Verified": true,
+        "managerContextR1Verified": true,
+        "standaloneEmployeeExcluded": true,
+        "otherEmployeeDenied": true,
+        "retiredWarningVerified": true,
+        "contextReadsPreserveBusinessAndAudit": true,
+        "frozenContentSha256": "e1fab055d6d3bd4b143bbe3977827f8765f90b180148ee5c8287d3a6d17ea29b",
+        "laterContentSha256": "b71de9140695ab8af0db3c14056d73af8744a7931678fa49f710c39e70487345"
+      },
+      "historicalRestored": {
+        "batchId": "09a86355-d1ab-4e62-a266-0718a0d4ad42",
+        "recipeId": "24068b94-a3f4-4ff2-87eb-f69bbe965657",
+        "pinnedR1Id": "37e430cd-d6c3-4cd6-a3eb-6e7b018bdc8a",
+        "laterR2Id": "c27b9df4-28f2-4653-aeae-ccd5c58bcd2c",
+        "recipeRetired": true,
+        "laterPublicationExists": true,
+        "employeeContextR1Verified": true,
+        "managerContextR1Verified": true,
+        "standaloneEmployeeExcluded": true,
+        "otherEmployeeDenied": true,
+        "retiredWarningVerified": true,
+        "contextReadsPreserveBusinessAndAudit": true,
+        "frozenContentSha256": "e1fab055d6d3bd4b143bbe3977827f8765f90b180148ee5c8287d3a6d17ea29b",
+        "laterContentSha256": "b71de9140695ab8af0db3c14056d73af8744a7931678fa49f710c39e70487345"
+      },
+      "sourceAndRestoredHistoricalProofEqual": true,
+      "migration": "0022_preparation_batches",
+      "assignmentCount": 7,
+      "assignmentReceiptCount": 12,
+      "batchCount": 9,
+      "receiptCount": 20,
+      "correctionCount": 4,
+      "deterministicEvidencePreserved": true,
+      "ownAndManagerAuthorizationVerified": true,
+      "otherEmployeeDenied": true,
+      "exactContextAndReplayVerified": true,
+      "correctedZeroVerified": true,
+      "runtimeGrantsVerified": true
+    },
+    "recipes": {
+      "migration": "0021_recipe_compositions",
+      "retainedStatesVerified": true,
+      "frozenContentVerified": true,
+      "employeeVisibilityVerified": true,
+      "managerHistoryVerified": true,
+      "replayVerified": true,
+      "authorizationVerified": true
+    },
+    "guidance": {
+      "schemaVersion": 4,
+      "exactPlanogramPinPreserved": true,
+      "retiredReassignedLayoutReadVerified": true,
+      "historicalRevision": 1,
+      "completedPinPreserved": true,
+      "contextualReadVerified": true,
+      "arbitraryHistoryDenied": true,
+      "runtimeProtections": true,
+      "articleAssortmentStockMovementHashesMatch": true,
+      "currentA2R2ReadVerified": true,
+      "currentArticleAssortmentNonemptyStockVerified": true,
+      "planogramHistoricalDenials": 5,
+      "planogramConfiguredLocationDenials": 4,
+      "planogramConfiguredLocationReturnVerified": true,
+      "planogramDatabaseRejections": 14,
+      "planogramGeneratedColumnsVerified": 6
+    }
+  },
+  "corruption": {
+    "rejected": true,
+    "targetRemoved": true
+  },
+  "cleanup": {
+    "storeos_backup_accept_963c470707424f93": "removed",
+    "storeos_restore_bkacc_963c470707424f93": "removed",
+    "storeos_restore_bkacc_963c470707424f93c": "absent",
+    "operatingDatabasePresent": true,
+    "acceptancePortFree": true
+  }
+}

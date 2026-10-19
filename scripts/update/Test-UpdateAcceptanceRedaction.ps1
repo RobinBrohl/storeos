@@ -8,10 +8,9 @@ $ErrorActionPreference = 'Stop'
 $testDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "storeos-update-report-$([Guid]::NewGuid().ToString('N'))"
 [System.IO.Directory]::CreateDirectory($testDirectory) | Out-Null
 try {
-    $secret = 'update-acceptance-test-secret-0123456789'
+    $secret = 'update acceptance synthetic +/ secret-0123456789'
     $cleanPath = Join-Path $testDirectory 'clean.json'
-    [System.IO.File]::WriteAllText($cleanPath,
-        '{"runId":"abcd","result":"pass","upgrade":{"applied":["0011_published_shift_cancellation"],"secondRunApplied":[]}}')
+    [System.IO.File]::Copy((Join-Path $PSScriptRoot '../backup/testdata/p416-update-pass.json'), $cleanPath)
     Assert-UpdateAcceptanceReport -Path $cleanPath -SensitiveValues @($secret)
 
     $cases = [ordered]@{
@@ -23,6 +22,8 @@ try {
         'password-key'                  = '{"password":"value"}'
         'token-key'                     = '{"token":"value"}'
         'private-key'                   = '{"note":"-----BEGIN PRIVATE KEY-----"}'
+        'employee-name'                 = '{"displayName":"synthetic employee"}'
+        'private-reason'                = '{"terminalReason":"synthetic reason"}'
     }
     foreach ($case in $cases.GetEnumerator()) {
         $dirtyPath = Join-Path $testDirectory "$($case.Key).json"
@@ -32,6 +33,9 @@ try {
             Assert-UpdateAcceptanceReport -Path $dirtyPath -SensitiveValues @($secret)
         } catch {
             $failed = $true
+            if ($_.Exception.Message -notmatch 'forbidden pattern|sensitive value') {
+                throw 'Redaction case was rejected for a different reason.'
+            }
             if ($_.Exception.Message.Contains($secret)) {
                 throw 'The sanitizer error message leaked a sensitive value.'
             }

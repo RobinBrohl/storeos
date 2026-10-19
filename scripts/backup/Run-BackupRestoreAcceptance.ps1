@@ -14,7 +14,7 @@ param(
     [string] $DartPath = 'dart',
     [switch] $SkipPackageResolution,
     [string] $DockerPath = 'docker',
-    [ValidateSet('none', 'prepare', 'backup', 'restore', 'verify', 'corruption')]
+    [ValidateSet('none', 'prepare', 'backup', 'restore', 'verify', 'corruption', 'wrong-key', 'interrupted-archive', 'invalid-archive', 'cleanup')]
     # Test hook: abort after the named step to prove failure-path cleanup.
     [string] $InjectFailureAfter = 'none'
 )
@@ -25,6 +25,12 @@ $ErrorActionPreference = 'Stop'
 
 $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $serverDirectory = Join-Path $repository 'apps/server'
+$sourceRevision = (& git -C $repository rev-parse HEAD)
+$sourceManifest = @('apps/server/tool/backup_restore_fixture.dart','apps/server/tool/shift_swap_recovery_acceptance.dart',
+    'apps/server/tool/shift_transfer_acceptance.dart','scripts/backup/Run-BackupRestoreAcceptance.ps1',
+    'scripts/backup/Assert-BackupAcceptanceReport.ps1') | ForEach-Object {
+        [ordered]@{ path = $_; sha256 = (Get-FileHash -LiteralPath (Join-Path $repository $_) -Algorithm SHA256).Hash.ToLowerInvariant() }
+    }
 $composeFile = Join-Path $repository 'compose.yaml'
 $runId = [guid]::NewGuid().ToString('N').Substring(0, 16).ToLowerInvariant()
 $sourceDatabase = "storeos_backup_accept_$runId"
@@ -177,6 +183,7 @@ $corruptRejected = $false
 $corruptTargetRemoved = $false
 $sensitiveValues = [Collections.Generic.List[string]]::new()
 $runVerified = $false
+$negativeRecoveryProof = [ordered]@{ scenario = $InjectFailureAfter; restoreRejected = $false; unexpectedRestoreSuccess = $false }
 
 try {
     Import-LocalConfiguration
@@ -267,6 +274,40 @@ try {
     if ($InjectFailureAfter -ceq 'backup') { throw 'Injected failure after backup.' }
 
     $failedStep = 'restore'
+    if ($InjectFailureAfter -ceq 'wrong-key') {
+        $wrongKeyPath = Join-Path $runDirectory 'wrong-key.bin'
+        [IO.File]::WriteAllBytes($wrongKeyPath, [Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+        try {
+            try {
+                & (Join-Path $repository 'infra/backup/Restore-StoreOS.ps1') -BackupPath $backupPath -TargetDatabase $restoreDatabase -KeyFile $wrongKeyPath -DockerPath $dockerTool
+            } catch { $negativeRecoveryProof.restoreRejected = $true; throw }
+            $negativeRecoveryProof.unexpectedRestoreSuccess = $true
+            throw 'Wrong-key restore unexpectedly succeeded.'
+        } finally { Remove-Item -LiteralPath $wrongKeyPath -Force }
+    }
+    if ($InjectFailureAfter -in @('interrupted-archive','invalid-archive')) {
+        $probePath = Join-Path $runDirectory 'failure-probe.sodb'
+        $probeManifest = Get-Content -Raw -LiteralPath "$backupPath.json" | ConvertFrom-Json
+        if ($InjectFailureAfter -ceq 'interrupted-archive') {
+            # Simulate an interrupted archive transfer at the authenticated
+            # terminator. This is not a process-kill or OS-crash claim.
+            $bytes = [IO.File]::ReadAllBytes($backupPath)
+            [IO.File]::WriteAllBytes($probePath, $bytes[0..($bytes.Length - 2)])
+        } else {
+            Import-Module (Join-Path $repository 'infra/backup/StoreOS.BackupCrypto.psm1') -Force
+            $input = [IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes('synthetic invalid pg_dump archive'))
+            try { Protect-StoreOsStream -InputStream $input -OutputPath $probePath -KeyFile (Join-Path $repository '.local/secrets/backup_key.bin') }
+            finally { $input.Dispose() }
+        }
+        $probeManifest.encryptedFile = [IO.Path]::GetFileName($probePath)
+        $probeManifest.encryptedSha256 = (Get-FileHash -LiteralPath $probePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        [IO.File]::WriteAllText("$probePath.json", ($probeManifest | ConvertTo-Json -Depth 5))
+        try {
+            & (Join-Path $repository 'infra/backup/Restore-StoreOS.ps1') -BackupPath $probePath -TargetDatabase $restoreDatabase -DockerPath $dockerTool
+        } catch { $negativeRecoveryProof.restoreRejected = $true; throw }
+        $negativeRecoveryProof.unexpectedRestoreSuccess = $true
+        throw 'Invalid or interrupted archive unexpectedly restored.'
+    }
     & (Join-Path $repository 'infra/backup/Restore-StoreOS.ps1') -BackupPath $backupPath -TargetDatabase $restoreDatabase -DockerPath $dockerTool
     $steps.restore = $true
     if ($InjectFailureAfter -ceq 'restore') { throw 'Injected failure after restore.' }
@@ -318,10 +359,15 @@ try {
     # strictly named databases are considered.
     foreach ($name in $ownedDatabaseNames) {
         try {
+            if ($InjectFailureAfter -ceq 'cleanup' -and $name -ceq $sourceDatabase) { throw 'Injected first cleanup attempt failure.' }
             $cleanup[$name] = Remove-AcceptanceDatabase $name $ownedDatabaseNames
         } catch {
             $cleanup[$name] = 'FAILED'
             if (!$cleanupFailure) { $cleanupFailure = $_ }
+            # Preserve the failure result while still removing our owned target.
+            if ($InjectFailureAfter -ceq 'cleanup' -and $name -ceq $sourceDatabase) {
+                $cleanup.recoveryAfterInjectedFailure = Remove-AcceptanceDatabase $name $ownedDatabaseNames
+            }
         }
     }
     try {
@@ -340,12 +386,23 @@ try {
         if (!$cleanupFailure) { $cleanupFailure = $_ }
     }
 
+    if ($cleanupFailure -and !$failure) { $failedStep = 'cleanup' }
     $report = [ordered]@{
+        acceptanceSchema   = 'storeos.p416.b4.backup.v1'
+        sourceRevision     = $sourceRevision
+        sourceManifest     = @($sourceManifest)
+        schemaState        = [ordered]@{
+            source = if ($steps.Contains('prepare')) { '0001-0029' } else { 'NOT VERIFIED' }
+            restored = if ($steps.Contains('restore')) { '0001-0029' } else { 'NOT VERIFIED; isolated target only' }
+        }
+        classification     = if ($failure -or $cleanupFailure) { 'FAIL' } else { 'PASS' }
         runId              = $runId
         startedAtUtc       = $startedAtUtc
         finishedAtUtc      = $finishedAtUtc
         result             = if ($failure -or $cleanupFailure) { 'failed' } else { 'pass' }
         failedStep         = $failedStep
+        failureInjection   = $InjectFailureAfter
+        negativeRecoveryProof = $negativeRecoveryProof
         operatingDatabase  = $operatingDatabase
         sourceDatabase     = $sourceDatabase
         restoreDatabase    = $restoreDatabase
@@ -356,7 +413,7 @@ try {
     }
     [IO.File]::WriteAllText($reportPath, ($report | ConvertTo-Json -Depth 8),
         [Text.UTF8Encoding]::new($false))
-    Assert-BackupAcceptanceReport -Path $reportPath -SensitiveValues $sensitiveValues.ToArray()
+    Assert-BackupAcceptanceReport -Path $reportPath -SensitiveValues $sensitiveValues.ToArray() -ExpectedResult $(if ($failure -or $cleanupFailure) { 'failed' } else { 'pass' })
 } catch {
     if (!$cleanupFailure) { $cleanupFailure = $_ }
     if (Test-Path -LiteralPath $reportPath -PathType Leaf) {
@@ -368,7 +425,7 @@ try {
         $path = Join-Path $runDirectory $name
         if (Test-Path -LiteralPath $path -PathType Leaf) { Remove-Item -LiteralPath $path -Force }
     }
-    foreach ($pattern in @('storeos-*.sodb', 'storeos-*.sodb.json', 'corrupt.sodb', 'corrupt.sodb.json')) {
+    foreach ($pattern in @('storeos-*.sodb', 'storeos-*.sodb.json', 'corrupt.sodb', 'corrupt.sodb.json', 'failure-probe.sodb', 'failure-probe.sodb.json')) {
         foreach ($file in @(Get-ChildItem -LiteralPath $runDirectory -Filter $pattern -File -ErrorAction SilentlyContinue)) {
             Remove-Item -LiteralPath $file.FullName -Force
         }

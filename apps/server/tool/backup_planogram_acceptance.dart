@@ -1,5 +1,6 @@
 // Bounded P4.7 probes for the isolated encrypted backup acceptance only.
 import 'dart:convert';
+import 'dart:io';
 import 'stock_count_acceptance.dart';
 import 'recipe_acceptance.dart';
 import 'preparation_acceptance.dart';
@@ -32,12 +33,7 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       maxConnectionCount: 2,
     ),
   );
-  final auth = await AuthService.create(
-    store: PostgresAuthStore(pool, schemaName: schema),
-    companyId: evidence['companyId'] as String,
-    locationId: evidence['locationId'] as String,
-    sessionTtl: const Duration(minutes: 1),
-  );
+  late final AuthService auth;
   AuthService? alternateAuth;
   String? workerToken,
       adminToken,
@@ -45,7 +41,14 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       otherWorkerToken,
       transferToken;
   final roleTokens = <String>[];
+  Object? primaryError;
   try {
+    auth = await AuthService.create(
+      store: PostgresAuthStore(pool, schemaName: schema),
+      companyId: evidence['companyId'] as String,
+      locationId: evidence['locationId'] as String,
+      sessionTtl: const Duration(minutes: 1),
+    );
     final db = PlatformDatabase(
       pool,
       schemaName: schema,
@@ -442,16 +445,98 @@ Future<Map<String, dynamic>> verifyBackupPlanogramReads(
       throw StateError('Restored scope checks/replay duplicated Tasks.');
     }
     return historical;
+  } on Object catch (error) {
+    primaryError = error;
+    rethrow;
   } finally {
-    if (transferToken != null) await auth.logout(transferToken);
-    for (final token in roleTokens) {
-      await auth.logout(token);
+    await cleanupBackupPlanogramReads(pool, schema, [
+      if (transferToken != null) (auth: auth, token: transferToken),
+      for (final token in roleTokens) (auth: auth, token: token),
+      if (otherWorkerToken != null) (auth: auth, token: otherWorkerToken),
+      if (alternateToken != null) (auth: alternateAuth!, token: alternateToken),
+      if (workerToken != null) (auth: auth, token: workerToken),
+      if (adminToken != null) (auth: auth, token: adminToken),
+    ], primaryError: primaryError);
+  }
+}
+
+// Fixture cleanup must release the pool even after an expired or failed logout.
+// Expiry is independently verified; invalidSession alone is not sufficient.
+Future<void> cleanupBackupPlanogramReads(
+  Pool<void> pool,
+  String schema,
+  Iterable<({AuthService auth, String token})> sessions, {
+  Object? primaryError,
+  void Function(String)? diagnostic,
+}) async {
+  Object? cleanupError;
+  StackTrace? cleanupStack;
+  final messages = <String>[];
+  void failed(Object error, StackTrace stack, String operation) {
+    cleanupError ??= error;
+    cleanupStack ??= stack;
+    final reason = error is AuthFailure ? '/${error.reason.name}' : '';
+    messages.add(
+      'Planogram cleanup $operation failed: '
+      '${error.runtimeType}$reason; primary error preserved: '
+      '${primaryError != null}.',
+    );
+  }
+
+  try {
+    for (final session in sessions) {
+      try {
+        try {
+          await session.auth.logout(session.token);
+        } on AuthFailure catch (error) {
+          if (error.reason != AuthFailureReason.invalidSession) rethrow;
+          final s = quotedSchema(schema);
+          final expired = await pool.execute(
+            Sql.named(
+              'SELECT EXISTS (SELECT 1 FROM $s.auth_sessions s '
+              'JOIN $s.accounts a ON a.id = s.account_id '
+              'JOIN $s.locations l ON l.id = a.location_id '
+              'AND l.company_id = a.company_id '
+              'WHERE s.token_hash = @tokenHash AND s.revoked_at IS NULL '
+              'AND s.expires_at <= clock_timestamp() AND a.is_active '
+              'AND a.company_id = CAST(@companyId AS uuid) '
+              'AND a.location_id = CAST(@locationId AS uuid))',
+            ),
+            parameters: {
+              'tokenHash': digestToken(session.token),
+              'companyId': session.auth.companyId,
+              'locationId': session.auth.locationId,
+            },
+            timeout: const Duration(seconds: 3),
+          );
+          if (expired.single.single != true) rethrow;
+          messages.add(
+            'Planogram cleanup: verified expired session; '
+            'logout not performed.',
+          );
+        }
+      } on Object catch (error, stack) {
+        failed(error, stack, 'logout');
+      }
     }
-    if (otherWorkerToken != null) await auth.logout(otherWorkerToken);
-    if (alternateToken != null) await alternateAuth!.logout(alternateToken);
-    if (workerToken != null) await auth.logout(workerToken);
-    if (adminToken != null) await auth.logout(adminToken);
-    await pool.close();
+  } finally {
+    try {
+      await pool.close();
+    } on Object catch (error, stack) {
+      failed(error, stack, 'pool close');
+    }
+  }
+  // Emit only fixed descriptions/types, never tokens or exception messages.
+  for (final message in messages) {
+    try {
+      (diagnostic ?? stderr.writeln)(message);
+    } on Object catch (error, stack) {
+      cleanupError ??= error;
+      cleanupStack ??= stack;
+    }
+  }
+  if (primaryError == null && cleanupError != null) {
+    Error.throwWithStackTrace(cleanupError!, cleanupStack!);
   }
 }
 

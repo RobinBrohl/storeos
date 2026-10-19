@@ -1,5 +1,17 @@
 # Actual implementation status
 
+## Current P4.16 Stage B4 recovery — 2026-10-17
+
+**P4.16 IN PROGRESS.** Step 10 local recovery tooling and final evidence
+reconciliation are recorded in the [B4 handoff](../development/phase-4-16-stage-b4.md),
+on `codex/p416-b4-recovery-acceptance` from approved main
+`edf844323cfb5ad39edd63dcc6a0d288897e9fb8`. Prior B1/B2/B3a/B3b approvals are
+integrated; B3A-01 HIGH and B3B-01 LOW remain CLOSED. No production logic or
+migration changes; all 0001–0029 fingerprints are preserved. Independent B4
+functional/Security review and the matrix's explicit qualifications remain gates.
+No publication, deployment, operator-readiness or P4.16 closure is claimed.
+Earlier dated sections below retain their historical assertions.
+
 ## Current P4.16 Stage B2a native ingress — 2026-10-16
 
 **P4.16 IN PROGRESS.** F01–F03 independently **CLOSED**; latest independent verdict:

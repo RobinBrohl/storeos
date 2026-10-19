@@ -1,0 +1,572 @@
+{
+  "acceptanceSchema": "storeos.p416.b4.update.v1",
+  "sourceRevision": "edf844323cfb5ad39edd63dcc6a0d288897e9fb8",
+  "sourceManifest": [
+    {
+      "path": "apps/server/tool/update_recovery_fixture.dart",
+      "sha256": "9b89229e0150f19185727668a8035a1f051c101fc808695b3b5fdcda196c977e"
+    },
+    {
+      "path": "apps/server/tool/shift_swap_recovery_acceptance.dart",
+      "sha256": "b28913af339f774db2a5177a85153532859e16735bf01bf58bb0ba607439fe09"
+    },
+    {
+      "path": "apps/server/tool/shift_transfer_acceptance.dart",
+      "sha256": "b05354ce61a7764a843234e140a9a4df7d7b07c9e3c7cc705fd1a078939d34e1"
+    },
+    {
+      "path": "scripts/update/Run-UpdateRecoveryAcceptance.ps1",
+      "sha256": "af60dec33c7ac53f68e890df1754a262cef30dc71320a7aa9a24edeea0d10229"
+    },
+    {
+      "path": "scripts/update/Assert-UpdateAcceptanceReport.ps1",
+      "sha256": "a0cee599a61f571b8776fbec91008582f3dc39141d1f3ad321713e24c8f6de68"
+    }
+  ],
+  "schemaState": "pre-update-0010-upgraded-0029-recovered-0010",
+  "classification": "PASS",
+  "runId": "0202e3f5ebe14c74",
+  "startedAtUtc": "2026-10-17T13:42:19.6014203Z",
+  "finishedAtUtc": "2026-10-17T13:43:41.1584936Z",
+  "result": "pass",
+  "failedStep": "none",
+  "injection": {
+    "after": "none",
+    "migrationCommitted": true,
+    "description": "none"
+  },
+  "contract": {
+    "supported": [
+      "quiesced offline update",
+      "encrypted PostgreSQL restore point before migration",
+      "forward-only migration with checksum and prefix validation",
+      "single-transaction migration atomicity",
+      "current application only after successful forward migration through 0029",
+      "isolated recovery of pre-update PostgreSQL state",
+      "recovery fencing",
+      "operator-verifiable evidence"
+    ],
+    "notProven": [
+      "no down migration",
+      "no application downgrade",
+      "no restore over the operating database",
+      "no automated restored-database activation",
+      "no production failover or high availability",
+      "no zero-downtime update",
+      "no attachment, TLS certificate, configuration or external secret backup",
+      "no retention or multi-site coordination"
+    ]
+  },
+  "operatingDatabase": "storeos",
+  "sourceDatabase": "storeos_update_0202e3f5ebe14c74",
+  "recoveryTargetDatabase": "storeos_restore_upd_0202e3f5ebe14c74",
+  "restorePoint": {
+    "createdBeforeUpgrade": true,
+    "artifactSha256": "72ddd3a4a5ba8d30d8700fbc23631e769bac660a94502c7e5916ee78fe76d6af",
+    "artifactStatus": "deleted-after-run"
+  },
+  "prepare": {
+    "sourceDatabase": "storeos_update_0202e3f5ebe14c74",
+    "prefixVersions": [
+      "0001_platform_auth",
+      "0002_platform_organization",
+      "0003_platform_events_plugins",
+      "0004_employee_identity_and_audit",
+      "0005_task_templates",
+      "0006_shifts_and_task_instances",
+      "0007_task_execution",
+      "0008_task_blocking",
+      "0009_task_cancellation",
+      "0010_task_numeric_steps"
+    ],
+    "prefixChecksumsVerified": true,
+    "prefixByteCopiesVerified": true,
+    "prefixTempDirectoryRemoved": true,
+    "seed": {
+      "shifts": 2,
+      "taskInstances": 5,
+      "states": {
+        "open": 1,
+        "in_progress": 1,
+        "blocked": 1,
+        "completed": 1,
+        "cancelled": 1
+      },
+      "stepResults": 2,
+      "numericAttempts": 2,
+      "blockings": 2,
+      "receipts": 11,
+      "auditEntries": 14,
+      "activeSessions": 1,
+      "activePluginTokens": 1
+    },
+    "snapshot": {
+      "tables": {
+        "companies": {
+          "count": 1,
+          "hash": "42008670bddc8b003eb941a2a8c6a3be"
+        },
+        "locations": {
+          "count": 1,
+          "hash": "9a56753652e260a6e346fd6088da7102"
+        },
+        "accounts": {
+          "count": 2,
+          "hash": "f08536b517296409a482a28d7efc6e5c"
+        },
+        "bootstrap_state": {
+          "count": 1,
+          "hash": "4536e81f6b44f0d55b0aa7d8f7b693a7"
+        },
+        "employees": {
+          "count": 1,
+          "hash": "95297be80b72c9de037965f5016f2eba"
+        },
+        "account_employee_links": {
+          "count": 1,
+          "hash": "a2f9427016eade6c6d4c5621022d58f4"
+        },
+        "task_templates": {
+          "count": 5,
+          "hash": "a70910c74fa7cfacbd48e90bd42a0324"
+        },
+        "task_template_revisions": {
+          "count": 5,
+          "hash": "b3051b935b8f5128015e518b1ea88df0"
+        },
+        "shifts": {
+          "count": 2,
+          "hash": "286ba141cb4841138afc1de2697d9cac"
+        },
+        "shift_template_selections": {
+          "count": 5,
+          "hash": "cf15209b61e842ba7cb959529018598f"
+        },
+        "task_instances": {
+          "count": 5,
+          "hash": "a88d49664d84ff183361744eddaddf7b"
+        },
+        "task_step_results": {
+          "count": 2,
+          "hash": "083f80828e2897a5af141a54a90f1bd5"
+        },
+        "task_numeric_attempts": {
+          "count": 2,
+          "hash": "a8bf0429b1cdf6c86c74f1b9c6740d90"
+        },
+        "task_blockings": {
+          "count": 2,
+          "hash": "6c35a6695c534579dad7b5804561821c"
+        },
+        "task_execution_commands": {
+          "count": 11,
+          "hash": "bbf728848e7ea2d7b666fec86ceb113f"
+        },
+        "audit_entries": {
+          "count": 14,
+          "hash": "140422fdac54389594ba07edccaed738"
+        },
+        "plugin_registrations": {
+          "count": 1,
+          "hash": "e74c6baf137a374971c8f7cf5c782688"
+        },
+        "event_outbox": {
+          "count": 0,
+          "hash": "empty"
+        },
+        "plugin_inbox": {
+          "count": 0,
+          "hash": "empty"
+        }
+      },
+      "sequences": {
+        "audit_entries_id_seq": {
+          "lastValue": "14",
+          "isCalled": true
+        },
+        "plugin_inbox_id_seq": {
+          "lastValue": "1",
+          "isCalled": false
+        }
+      },
+      "activeSessions": 1,
+      "activePluginTokens": 1
+    }
+  },
+  "upgrade": {
+    "migrationsBefore": [
+      "0001_platform_auth",
+      "0002_platform_organization",
+      "0003_platform_events_plugins",
+      "0004_employee_identity_and_audit",
+      "0005_task_templates",
+      "0006_shifts_and_task_instances",
+      "0007_task_execution",
+      "0008_task_blocking",
+      "0009_task_cancellation",
+      "0010_task_numeric_steps"
+    ],
+    "applied": [
+      "0011_published_shift_cancellation",
+      "0012_published_shift_amendment",
+      "0013_article_master",
+      "0014_location_assortment",
+      "0015_manual_stock",
+      "0016_local_planograms",
+      "0017_approved_operational_knowledge",
+      "0018_task_knowledge_guidance",
+      "0019_task_planogram_guidance",
+      "0020_stock_counts",
+      "0021_recipe_compositions",
+      "0022_preparation_batches",
+      "0023_one_way_shift_transfers",
+      "0024_bounded_purchase_orders",
+      "0025_planned_preparation_assignments",
+      "0026_purchase_order_delivery_evidence",
+      "0027_article_quantities",
+      "0028_bilateral_shift_swaps",
+      "0029_swap_leg_future_error"
+    ],
+    "migrationsAfter": [
+      "0001_platform_auth",
+      "0002_platform_organization",
+      "0003_platform_events_plugins",
+      "0004_employee_identity_and_audit",
+      "0005_task_templates",
+      "0006_shifts_and_task_instances",
+      "0007_task_execution",
+      "0008_task_blocking",
+      "0009_task_cancellation",
+      "0010_task_numeric_steps",
+      "0011_published_shift_cancellation",
+      "0012_published_shift_amendment",
+      "0013_article_master",
+      "0014_location_assortment",
+      "0015_manual_stock",
+      "0016_local_planograms",
+      "0017_approved_operational_knowledge",
+      "0018_task_knowledge_guidance",
+      "0019_task_planogram_guidance",
+      "0020_stock_counts",
+      "0021_recipe_compositions",
+      "0022_preparation_batches",
+      "0023_one_way_shift_transfers",
+      "0024_bounded_purchase_orders",
+      "0025_planned_preparation_assignments",
+      "0026_purchase_order_delivery_evidence",
+      "0027_article_quantities",
+      "0028_bilateral_shift_swaps",
+      "0029_swap_leg_future_error"
+    ],
+    "repositoryMigrationCount": 29,
+    "checksumsMatchRepository": true,
+    "secondRunApplied": [],
+    "preservation": {
+      "projectionsMatch": true,
+      "sequencesMatch": true,
+      "activeSessionsMatch": true,
+      "activePluginTokensMatch": true
+    },
+    "newColumns": {
+      "shifts.cancelled_at": true,
+      "shifts.cancelled_by": true,
+      "shifts.cancellation_reason": true,
+      "shifts.cancellation_version": true,
+      "task_instances.cancelled_at": true,
+      "task_instances.cancelled_by": true
+    },
+    "newAmendmentColumns": {
+      "shifts.amended_at": true,
+      "shifts.amended_by": true,
+      "shifts.amendment_version": true
+    },
+    "legacyCancellationFieldsNull": true,
+    "constraintsPresent": {
+      "shifts_status": true,
+      "shifts_state": true,
+      "shifts_published_no_overlap": true,
+      "task_execution_status": true,
+      "task_execution_times": true
+    },
+    "triggersPresent": {
+      "shifts_immutable": true,
+      "instances_immutable": true
+    },
+    "articleMasterSchema": {
+      "tablePresent": true,
+      "skuIndexPresent": true,
+      "barcodeIndexPresent": true,
+      "selectGranted": true,
+      "insertGranted": true,
+      "deleteNotGranted": true,
+      "truncateNotGranted": true
+    },
+    "assortmentSchema": {
+      "tablePresent": true,
+      "pairIndexPresent": true,
+      "pageIndexPresent": true,
+      "selectGranted": true,
+      "insertGranted": true,
+      "deleteNotGranted": true,
+      "truncateNotGranted": true
+    },
+    "stockSchema": {
+      "projectionViewPresent": true,
+      "levelTablePresent": true,
+      "movementTablePresent": true,
+      "scopeUniquePresent": true,
+      "movementScopeFkPresent": true,
+      "movementVersionUniquePresent": true,
+      "levelUpdateColumnsExact": true,
+      "movementAppendOnly": true,
+      "projectionSelectGranted": true
+    },
+    "invalidWritesRejected": {
+      "published_shift_evidence_without_transition": true,
+      "cancel_without_evidence": true,
+      "cancelled_instance_gains_unstarted_evidence": true,
+      "overlapping_published_interval": true
+    },
+    "invalidWritesLeftNoChange": true
+  },
+  "smoke": {
+    "swaps": {
+      "classification": "PASS",
+      "tables": {
+        "workforce_shift_swap_requests": {
+          "count": 8,
+          "sha256": "9ef68f6e3321e83791a4608b6195851374b9cc5ed850c5da1ccd3801966307e4"
+        },
+        "workforce_shift_swap_legs": {
+          "count": 15,
+          "sha256": "f50efc42f337a0e04bc5d0ae1bb79f8f174b065ae19b2c890f16d8c2168cef71"
+        },
+        "workforce_shift_swap_commands": {
+          "count": 23,
+          "sha256": "bf0bd077de6fd520c372d410e4341bac14fc152a1df8a17c42145601ab4e6b3c"
+        },
+        "task_swap_links": {
+          "count": 2,
+          "sha256": "21bf59cf03af25e3f32459430118f8af8dabd3e9275f253eaade49ff22a5cb6b"
+        }
+      },
+      "activeSwapClaims": 5
+    },
+    "quantities": {
+      "inventory_quantity_profiles": {
+        "count": 1,
+        "sha256": "3f501c0d9040710bdb26becb0f39b0f53591a11c43f7d350f9e0b9194de9a6ae"
+      },
+      "inventory_quantity_revisions": {
+        "count": 1,
+        "sha256": "271b5872aa9cb1e9339a4d815eb9f2a0947029140ff42d5476653ffe71652f44"
+      },
+      "inventory_quantity_commands": {
+        "count": 1,
+        "sha256": "d370876c11e15db59f55e87ed09ae7faa310df5a3d4d751c9578eb9961803602"
+      },
+      "stock_quantity_bindings": {
+        "count": 1,
+        "sha256": "edc8e26d6800830bdcba05f1003a6567616f986945a283788073151625c5f445"
+      },
+      "stock_quantity_corrections": {
+        "count": 1,
+        "sha256": "ed8ce743aae59243d35433f2446b6b1de29db7aa015ca37adeb7f8ba2017053b"
+      }
+    },
+    "historicalTransfers": {
+      "workforce_shift_transfer_requests": {
+        "count": 9,
+        "sha256": "d0156359fe9c728a88e142d8b6764f22c4d702bfa5427e4a2bd91c6a1f925c49"
+      },
+      "workforce_shift_transfer_commands": {
+        "count": 21,
+        "sha256": "519dd765c046b67fe1647bdbf1f929a3e74e4c8a8602608821a67c44e5073b28"
+      },
+      "task_transfer_links": {
+        "count": 1,
+        "sha256": "969d76108a533b09d1470ad90a26c0a9daa1cedcec1385926a95a1eacf460758"
+      }
+    },
+    "deliveries": {
+      "migration": "0026_purchase_order_delivery_evidence",
+      "revisions": 9,
+      "receipts": 9,
+      "terminalSnapshots": 1,
+      "originalReplayAndTerminalComparisonVerified": true
+    },
+    "purchasing": {
+      "migration": "0024_bounded_purchase_orders",
+      "suppliers": 2,
+      "orders": 8,
+      "lines": 6,
+      "receipts": 27,
+      "allEightKindsAndExactReplayVerified": true
+    },
+    "transfers": {
+      "migration": "0023_one_way_shift_transfers",
+      "requests": 9,
+      "receipts": 21,
+      "taskLinks": 1,
+      "exactReplayVerified": true,
+      "handoffClaims": {
+        "activeTransferClaims": 2,
+        "staleActiveTransferCount": 1,
+        "claimsAndParentsDigest": "44fc8a570c047a22a86c0765ff092c31",
+        "exactScopedParentConsistencyVerified": true
+      }
+    },
+    "recipes": {
+      "preparationMigration": "0022_preparation_batches",
+      "assignmentMigration": "0025_planned_preparation_assignments",
+      "assignmentCount": 7,
+      "assignmentReceipts": 12,
+      "preparationBatches": 9,
+      "preparationReceipts": 20,
+      "preparationCorrections": 4,
+      "preparationReplayAndZeroVerified": true,
+      "migration": "0021_recipe_compositions",
+      "recipeCount": 3,
+      "revisionCount": 7,
+      "ingredientCount": 14,
+      "replayVerified": true,
+      "runtimeProtections": true
+    },
+    "knowledge": {
+      "migration": "0017_approved_operational_knowledge",
+      "articleCount": 3,
+      "revisionCount": 8,
+      "replayVerified": true,
+      "runtimeProtections": true
+    },
+    "guidance": {
+      "migration": "0018_task_knowledge_guidance",
+      "completedPinnedTask": true,
+      "historicalRevision": 1,
+      "articleRetired": true,
+      "runtimeProtections": true
+    },
+    "planogramGuidance": {
+      "migration": "0019_task_planogram_guidance",
+      "exactPinPreserved": true,
+      "historicalContextualRead": true,
+      "retiredReassigned": true,
+      "runtimeProtections": true
+    },
+    "merchandising": {
+      "revisionCount": 2,
+      "assignmentCount": 3,
+      "pinnedPrint": true
+    },
+    "ready": true,
+    "adminLogin": true,
+    "workerLogin": true,
+    "shiftDetail": {
+      "status": "published",
+      "taskCount": 4,
+      "states": {
+        "in_progress": 1,
+        "blocked": 1,
+        "completed": 1,
+        "cancelled": 1
+      }
+    },
+    "executionReads": {
+      "in_progress": "in_progress",
+      "blocked": "blocked",
+      "completed": "completed",
+      "cancelled": "cancelled"
+    },
+    "employeeHome": {
+      "itemCount": 1,
+      "openShiftVisible": true,
+      "openTaskVisible": true
+    },
+    "cancellation": {
+      "shiftStatus": "cancelled",
+      "shiftVersion": 3,
+      "taskStatus": "cancelled",
+      "taskVersion": 2,
+      "cancellationVersion": 2
+    },
+    "readBack": {
+      "status": "cancelled",
+      "version": 2,
+      "hasCancellationEvidence": true
+    },
+    "amendment": {
+      "shiftStatus": "published",
+      "shiftVersion": 3,
+      "amendmentVersion": 2,
+      "auditVerified": true
+    },
+    "articleMaster": {
+      "created": true,
+      "readBack": true,
+      "auditVerified": true
+    },
+    "assortment": {
+      "created": true,
+      "readBack": true,
+      "auditVerified": true
+    },
+    "stock": {
+      "opened": true,
+      "adjusted": true,
+      "readBack": true,
+      "movementHistory": 2,
+      "auditVerified": true
+    },
+    "auditVerified": true,
+    "correlationShared": true
+  },
+  "recovery": {
+    "targetDatabase": "storeos_restore_upd_0202e3f5ebe14c74",
+    "targetMigrationCount": 10,
+    "targetVersions": [
+      "0001_platform_auth",
+      "0002_platform_organization",
+      "0003_platform_events_plugins",
+      "0004_employee_identity_and_audit",
+      "0005_task_templates",
+      "0006_shifts_and_task_instances",
+      "0007_task_execution",
+      "0008_task_blocking",
+      "0009_task_cancellation",
+      "0010_task_numeric_steps"
+    ],
+    "targetHasNoPostPrefixColumns": true,
+    "evidenceProjectionsMatchPreUpdate": true,
+    "sequencesMatchPreUpdate": true,
+    "activeSessions": 0,
+    "activePluginTokens": 0,
+    "runtimeConnectCatalog": false,
+    "runtimeConnectionRejected": true,
+    "accountsPresent": true,
+    "bootstrapSingleton": true,
+    "targetPreUpdateBusinessState": true,
+    "sourceAtLatest": true,
+    "sourceSmokeEvidencePresent": true,
+    "sourceDistinctFromTarget": true,
+    "sourceHandoffClaimsPreserved": true,
+    "sourceSwapEvidencePreserved": true,
+    "sourceQuantityEvidencePreserved": true,
+    "sourceHistoricalTransfersPreserved": true,
+    "targetPredatesHandoffClaims": true
+  },
+  "steps": {
+    "createSourceDatabase": true,
+    "prepare": true,
+    "restorePoint": true,
+    "upgrade": true,
+    "smoke": true,
+    "recoveryRestore": true,
+    "recoveryVerify": true
+  },
+  "cleanup": {
+    "storeos_update_0202e3f5ebe14c74": "removed",
+    "storeos_restore_upd_0202e3f5ebe14c74": "removed",
+    "operatingDatabasePresent": true,
+    "acceptancePortFree": true
+  }
+}

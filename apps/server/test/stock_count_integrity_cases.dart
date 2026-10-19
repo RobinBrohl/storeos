@@ -576,9 +576,11 @@ void registerCountIntegrityCases() {
         token: worker.token,
         expected: 400,
       );
+      final otherId = ids.firstWhere((candidate) => candidate != id);
+      expect(otherId, isNot(id));
       await f.call(
         'GET',
-        '${_root(next['items'][0]['id'] as String)}/lines/${_lines(c).single['id']}/rounds?after=${history['nextCursor']}',
+        '${_root(otherId)}/lines/${_lines(c).single['id']}/rounds?after=${history['nextCursor']}',
         expected: 400,
       );
     }),

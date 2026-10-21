@@ -1,5 +1,19 @@
 # StoreOS handover
 
+## Current Q13/Q5 documentation closure — 2026-10-21
+
+**Q13/Q5 AUTHENTICATION REGRESSION — CLOSED.** See the
+[dated closure addendum](development/phase-4-16-q13-q5-authentication-closure.md)
+for the owner-authorized boundary, independent approvals, exact integrated test,
+execution evidence and successful main CI 39661599286. This closes only plugin-token
+and unauthorized-session exclusion from protected Article/Stock quantity routes.
+Full P4.15 Q5 retains unproven plugin operational requirements; Q13 overall and
+Q03–Q10 remain **OPEN**. Option B remains mandatory. P4.16 is **IN PROGRESS**;
+P4.17 is **UNSELECTED**; pilot/production readiness is **NOT APPROVED**.
+Independent review and separate publication authorization for this uncommitted
+documentation change remain pending. Earlier dated statements retain their
+historical approval and execution context; they do not undo this limited closure.
+
 ## Current P4.16 Stage B4 recovery — 2026-10-17
 
 P4.16 remains **IN PROGRESS**. Owner-authorized Step 10 local recovery fixtures

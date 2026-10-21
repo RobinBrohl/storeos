@@ -1,5 +1,24 @@
 # P4.15 — Explicit Article quantity semantics
 
+## Q5 authentication subgate reconciliation — 2026-10-21
+
+**Q13/Q5 AUTHENTICATION REGRESSION — CLOSED.** The later, independently approved
+[closure addendum](phase-4-16-q13-q5-authentication-closure.md) records dedicated
+plugin-token/session denial execution and exact-main CI for the ten protected
+Article/Stock quantity endpoints. Earlier Q5 statements that dedicated plugin-token
+journeys had not been separately executed remain historical statements; this dated
+addendum supplies the later evidence without rewriting them.
+
+**Full P4.15 Q5 remains OPEN for unproven operational requirements.** Exclusion of
+plugin credentials from core routes does not demonstrate executable plugin
+integration, plugin-specific operational readiness or broader third-party runtime
+isolation. Q1–Q4/Q6, historical 7 PASS / 6 QUALIFIED / 0 FAIL and original skips,
+failures and findings retain their individual dispositions. Q13 overall and
+Q03–Q10 remain OPEN; Option B is mandatory; P4.16 is IN PROGRESS; P4.17 is UNSELECTED;
+pilot/production readiness is NOT APPROVED. Earlier phase-selection statements
+below are historical. This uncommitted documentation change awaits independent
+review and separate publication authorization.
+
 Status: **DONE/CLOSED — accepted implementation** at
 `f4ffffaae235307424133c4ed280328df3e33f01`, with bounded test-only correction
 `c132a88feb619268c65fae69d3eeff64d5363218` on `main`. Targeted functional APPROVE;

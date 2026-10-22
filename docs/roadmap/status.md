@@ -1,5 +1,19 @@
 # Actual implementation status
 
+## Current Q13/Q5 documentation closure — 2026-10-21
+
+**Q13/Q5 AUTHENTICATION REGRESSION — CLOSED**, following independent APPROVE and
+separate owner authorization. The [closure addendum](../development/phase-4-16-q13-q5-authentication-closure.md)
+and [preserved Q13 register](../development/phase-4-16-closure-candidate.md)
+record the exact scope, source/hash, 31 dedicated passes, 27 verified manifest
+entries and Main-CI 39661599286 (1,070 server PASS / 23 SKIP; Q13/Q5 explicitly PASS).
+Full P4.15 Q5 retains unproven plugin operational requirements. Q13 overall and
+Q03–Q10 remain **OPEN**. Option B remains mandatory. P4.16 remains **IN PROGRESS**;
+P4.17 remains **UNSELECTED**; pilot/production readiness is **NOT APPROVED**.
+This documentation candidate is uncommitted, pending independent documentation
+review and separate publication authorization. Earlier dated statements retain
+historical timing and do not imply present approval or closure of any other gate.
+
 ## Current P4.16 Stage B4 recovery — 2026-10-17
 
 **P4.16 IN PROGRESS.** Step 10 local recovery tooling and final evidence
